@@ -77,7 +77,7 @@ baseNoLj_egLj: &baseNoLj_egLj
       - "egLj"
   evt_cuts:
     - *evt_baseNoLj
-    
+
 # add obj-level LJ cuts
 base_ljObjCut: &base_ljObjCut
   obj_cuts:
@@ -90,7 +90,6 @@ base_ljObjCut: &base_ljObjCut
   evt_cuts:
     - *evt_baseNoLj
     
-# add >=2 LJ requirement
 base: &base
   obj_cuts: &obj_base
     <<: *obj_baseNoLj
@@ -916,3 +915,119 @@ baseNoLj_A_mumu_matched_lj_noPfMatch_highLjPt: &baseNoLj_A_mumu_matched_lj_noPfM
   evt_cuts:
     - *evt_pv_cuts
     - "genAs_toMu_matched_muLj"
+
+# Custom base channel inheriting from 'base'
+EGammaIDStudyChannel1: &EGammaIDStudyChannel1
+  obj_cuts:
+    <<: *obj_base
+    # Override genEs cuts
+    genEs:
+      - "status 1" 
+      - "fromGenA" 
+    # Override electrons cuts
+    electrons:
+      - "pT > 10 GeV"
+      - "|eta| < 2.4"
+      - "looseID"
+    # Override photons cuts
+    photons:
+      - "pT > 20 GeV"
+      - "|eta| < 2.5"
+      - 'looseID'
+      - "pixelSeed"
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+  evt_cuts:
+    - "PV filter"
+
+EGammaIDStudyChannel2: &EGammaIDStudyChannel2
+  obj_cuts:
+    <<: *obj_base
+    # Override genEs cuts
+    genEs:
+      - "status 1" 
+      - "fromGenA" 
+    # Override electrons cuts
+    electrons:
+      - "pT > 10 GeV"
+      - "|eta| < 2.4"
+      - 'MVANonIsoWPL'
+    # Override photons cuts
+    photons:
+      - "pT > 20 GeV"
+      - "eta"
+      - 'Custom Cutbased'
+      - "pixelSeed"
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+  evt_cuts:
+    - "PV filter"
+
+EGammaIDStudyChannel3: &EGammaIDStudyChannel3
+  obj_cuts:
+    <<: *obj_base
+    # Override genEs cuts
+    genEs:
+      - "status 1" 
+      - "fromGenA" 
+    # Override electrons cuts
+    electrons:
+      - "pT > 10 GeV"
+      - "|eta| < 2.4"
+      - 'MVANonIsoWPL'
+    # Override photons cuts
+    photons:
+      - "pT > 20 GeV"
+      - "eta"
+      - "pixelSeed"
+      - 'Custom Cutbased'
+      - 'Photon DR Veto 0p025'
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+  evt_cuts:
+    - "PV filter"
+
+EGammaIDStudyChannel4: &EGammaIDStudyChannel4
+  obj_cuts:
+    <<: *obj_base
+    # Override genEs cuts
+    genEs:
+      - "status 1" 
+      - "fromGenA" 
+    # Override electrons cuts
+    electrons:
+      - "pT > 10 GeV"
+      - "|eta| < 2.4"
+      - 'looseID'
+    # Override photons cuts
+    photons:
+      - "pT > 20 GeV"
+      - "eta"
+      - 'looseID'
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+  evt_cuts:
+    - "PV filter"
+
+EGammaIDStudyChannel5: &EGammaIDStudyChannel5
+  obj_cuts:
+    <<: *obj_base
+    # Override genEs cuts
+    genEs:
+      - "status 1" 
+      - "fromGenA" 
+    # Override electrons cuts
+    electrons:
+      - "pT > 10 GeV"
+      - "|eta| < 2.4"
+      - 'looseID'
+    # Override photons cuts
+    photons:
+      - "pT > 20 GeV"
+      - "eta"
+      - 'looseID'
+      - "electronVeto"
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+  evt_cuts:
+    - "PV filter"
