@@ -89,7 +89,7 @@ base_ljObjCut: &base_ljObjCut
       - "mu_charge == 0"
   evt_cuts:
     - *evt_baseNoLj
-    
+
 base: &base
   obj_cuts: &obj_base
     <<: *obj_baseNoLj
@@ -916,6 +916,53 @@ baseNoLj_A_mumu_matched_lj_noPfMatch_highLjPt: &baseNoLj_A_mumu_matched_lj_noPfM
     - *evt_pv_cuts
     - "genAs_toMu_matched_muLj"
 
+## LJ PT Study ##
+## Changes the LJ PT requirement and removes >= 2 LJs ##
+base_LJPTGT30: &base_LJPTGT30
+  <<: *base
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+      - "mu_charge == 0"
+  evt_cuts:
+    - *evt_baseNoLj  
+
+base_LJPTGT40: &base_LJPTGT40
+  <<: *base
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+    ljs:
+      - "pT > 40 GeV"
+      - "|eta| < 2.4"
+      - "mu_charge == 0"
+  evt_cuts:
+    - *evt_baseNoLj  
+
+    
+base_LJPTGT50: &base_LJPTGT50
+  <<: *base
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+    ljs:
+      - "pT > 50 GeV"
+      - "|eta| < 2.4"
+      - "mu_charge == 0"
+  evt_cuts:
+    - *evt_baseNoLj  
+
+base_LJPTGT60: &base_LJPTGT60
+  <<: *base
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+    ljs:
+      - "pT > 60 GeV"
+      - "|eta| < 2.4"
+      - "mu_charge == 0"
+  evt_cuts:
+    - *evt_baseNoLj  
+    
 # Custom base channel inheriting from 'base'
 EGammaIDStudyChannel1: &EGammaIDStudyChannel1
   obj_cuts:
@@ -1031,3 +1078,4 @@ EGammaIDStudyChannel5: &EGammaIDStudyChannel5
     <<: *base_postLj_obj_cuts
   evt_cuts:
     - "PV filter"
+
