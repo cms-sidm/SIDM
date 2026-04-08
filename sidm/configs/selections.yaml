@@ -1358,3 +1358,178 @@ baseNoLj_A_mumu_matched_lj_noPfMatch_highLjPt: &baseNoLj_A_mumu_matched_lj_noPfM
   evt_cuts:
     - *evt_pv_cuts
     - "genAs_toMu_matched_muLj"
+
+baseNoLj_No_Muon_Constraint: &baseNoLj_No_Muon_Constraint
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+  evt_cuts:
+    - *evt_baseNoLj
+
+baseNoLj_Even_Muon_Charge: &baseNoLj_Even_Muon_Charge
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+      - "mu_charge == 0"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Only_One_Muon: &baseNoLj_Only_One_Muon
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu == 1"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Only_Two_Muon: &baseNoLj_Only_Two_Muon
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu == 2"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Only_Three_Muon: &baseNoLj_Only_Three_Muon
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu == 3"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Four_Ormore_Muon: &baseNoLj_Four_Ormore_Muon
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 4"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Two_Ormore_Muon: &baseNoLj_Two_Ormore_Muon
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Even_Muon_Charge_Displacement: &baseNoLj_Even_Muon_Charge_Displacement
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+      - "mu_charge == 0"
+    mu_ljs:
+      - "displaced"
+    egm_ljs:
+      - "displaced"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Only_Two_Muon_Displacement: &baseNoLj_Only_Two_Muon_Displacement
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu == 2"
+      - "displaced"
+    egm_ljs:
+      - "displaced"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Two_Ormore_Muon_Displacement: &baseNoLj_Two_Ormore_Muon_Displacement
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+      - "displaced"
+    egm_ljs:
+      - "displaced"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Two_Ormore_Muon_Displacement_EgmIso: &baseNoLj_Two_Ormore_Muon_Displacement_EgmIso
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+      - "displaced"
+    egm_ljs:
+      - "displaced"
+      - "egm_lj_iso < 0.2"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Two_Ormore_Muon_Displacement_MuIso: &baseNoLj_Two_Ormore_Muon_Displacement_MuIso
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+      - "displaced"
+      - "mu_lj_iso < 0.1"
+    egm_ljs:
+      - "displaced"
+  evt_cuts: 
+    - *evt_baseNoLj
+
+baseNoLj_Two_Ormore_Muon_Displacement_EgmIso_MuIso: &baseNoLj_Two_Ormore_Muon_Displacement_EgmIso_MuIso
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+      - "displaced"
+      - "mu_lj_iso < 0.1"
+    egm_ljs:
+      - "displaced"
+      - "egm_lj_iso < 0.2"
+  evt_cuts: 
+    - *evt_baseNoLj

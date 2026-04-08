@@ -1723,6 +1723,22 @@ hist_defs = {
         ],
         evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
     ),
+    "lj_lj_invmass_2mu2e": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
+                                     label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
+                   lambda objs, mask: (objs["mu_ljs"][mask,:1] + objs["egm_ljs"][mask,:1]).mass),
+        ],
+        evt_mask=lambda objs: (ak.num(objs["mu_ljs"]) > 0) & (ak.num(objs["egm_ljs"]) > 0),
+    ),
+    "lj_lj_invmass_2mu2e_large": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(100, 0, 1500, name="ljlj_mass",
+                                     label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
+                   lambda objs, mask: (objs["mu_ljs"][mask,:1] + objs["egm_ljs"][mask,:1]).mass),
+        ],
+        evt_mask=lambda objs: (ak.num(objs["mu_ljs"]) > 0) & (ak.num(objs["egm_ljs"]) > 0),
+    ),
     "mulj_egmlj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
@@ -3622,6 +3638,13 @@ hist_defs = {
         ],
         evt_mask=lambda objs: ((ak.num(matched(objs["muons"], objs["genAs_toMu"], 0.4)) > 0)
                                & (ak.num(matched(objs["muons"], objs["ljs"], 0.4)) > 0)),
+    ),
+    "muLj_genA_ptRatio": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(100, 0, 2, name="lj_dp_pt_ratio", label=r"Mu-LJ (near DP) PT / DP PT (to $\mu\mu$)"),
+                   lambda objs, mask: derived_objs["mu_lj_matched_genAs_toMu"](objs, 0.4)[mask].pt / derived_objs["genAs_toMu_matched_muLj"](objs, 0.4)[mask].pt),
+        ],
+        evt_mask=lambda objs: (ak.num(derived_objs["mu_lj_matched_genAs_toMu"](objs, 0.4)) == 1),
     ),
     # genA - LJ 0.4 matching radius, LJ Reco Lxy / True Lxy
     "genA_muLj_lxyRatio": h.Histogram(

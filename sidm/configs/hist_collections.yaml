@@ -770,4 +770,8 @@ lj_reco_effi_base: &lj_reco_effi_base
   - *genA_toMu_effi_base
   - *genA_toE_effi_base
 
-
+charge_test_base: &charge_test_base
+  - "mu_lj_pt"
+  - "muLj_genA_ptRatio"
+  - "lj_lj_invmass_2mu2e"
+  - "lj_lj_invmass_2mu2e_large"
