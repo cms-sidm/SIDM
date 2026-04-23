@@ -59,6 +59,11 @@ obj_cut_defs = {
         "mu_lj_iso < 0.1": lambda objs: objs["mu_ljs"].isolation < 0.1,
         "pf_pixelhits <= 2": lambda objs: ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis=-1) <= 2,
         "displaced": lambda objs: (ak.max(objs["mu_ljs"].muons.trkNumPixelHits, axis=-1) <= 2) ,
+        "Mu == 1": lambda objs: objs["mu_ljs"].muon_n == 1,
+        "Mu == 2": lambda objs: objs["mu_ljs"].muon_n == 2,
+        "Mu == 3": lambda objs: objs["mu_ljs"].muon_n == 3,
+        "Mu >= 4": lambda objs: objs["mu_ljs"].muon_n >= 4,
+        "Mu >= 2": lambda objs: objs["mu_ljs"].muon_n >= 2,
     },
     "genMus":{
         "pT >= 10 GeV": lambda objs: objs["genMus"].pt >= 10,
