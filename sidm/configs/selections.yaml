@@ -27,6 +27,28 @@ ljsource_cuts: &ljsource_cuts
       - "displaced ID"
       - "all" # cross-cleaning
 
+ljsource_cuts_chargeCC: &ljsource_cuts_chargeCC
+  obj_cuts: &obj_ljsource_cuts_chargeCC
+    electrons:
+      - "pT > 10 GeV"
+      - "|eta| < 2.4"
+      - 'MVANonIsoWPL'
+    muons: 
+      - "looseID"
+      - "pT > 5 GeV"
+      - "|eta| < 2.4"
+    photons: 
+      - "pT > 20 GeV"
+      - "|eta| < 2.5"
+      - 'Custom Cutbased'
+      - "pixelSeed"
+      - 'Photon DR Veto 0p025'
+    dsaMuons: 
+      - "pT > 10 GeV"
+      - "|eta| < 2.4"
+      - "displaced ID"
+      - "all + charge" # cross-cleaning with charge requirement 
+
 ljsource_cuts_barrel: &ljsource_cuts_barrel
   obj_cuts: &obj_ljsource_cuts_barrel
     electrons: &electrons_ljsource_cuts_barrel
@@ -179,6 +201,54 @@ base: &base
   postLj_obj_cuts:
     <<: *base_postLj_obj_cuts
   evt_cuts: &evt_base
+    - *evt_baseNoLj
+    - ">=2 LJs"
+
+2mu_2LJ_CC: &2mu_2LJ_CC
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "|eta| < 2.4"
+      - "pT > 30 GeV"
+      - "2muLj"
+  evt_cuts:
+    - *evt_baseNoLj
+    - ">=2 LJs"
+
+2mu_2LJ_CC_charge: &2mu_2LJ_CC_charge
+  obj_cuts:
+    <<: *obj_gen_level_cuts
+    <<: *obj_ljsource_cuts_chargeCC
+  postLj_obj_cuts:
+    ljs:
+      - "|eta| < 2.4"
+      - "pT > 30 GeV"
+      - "2muLj"
+  evt_cuts:
+    - *evt_baseNoLj
+    - ">=2 LJs"
+
+2LJ_CC: &2LJ_CC
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    ljs:
+      - "|eta| < 2.4"
+      - "pT > 30 GeV"
+  evt_cuts:
+    - *evt_baseNoLj
+    - ">=2 LJs"
+
+2LJ_CC_charge: &2LJ_CC_charge
+  obj_cuts:
+    <<: *obj_gen_level_cuts
+    <<: *obj_ljsource_cuts_chargeCC
+  postLj_obj_cuts:
+    ljs:
+      - "|eta| < 2.4"
+      - "pT > 30 GeV"
+  evt_cuts:
     - *evt_baseNoLj
     - ">=2 LJs"
 
