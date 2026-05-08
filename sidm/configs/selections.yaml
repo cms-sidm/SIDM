@@ -29,25 +29,12 @@ ljsource_cuts: &ljsource_cuts
 
 ljsource_cuts_chargeCC: &ljsource_cuts_chargeCC
   obj_cuts: &obj_ljsource_cuts_chargeCC
-    electrons:
-      - "pT > 10 GeV"
-      - "|eta| < 2.4"
-      - 'MVANonIsoWPL'
-    muons: 
-      - "looseID"
-      - "pT > 5 GeV"
-      - "|eta| < 2.4"
-    photons: 
-      - "pT > 20 GeV"
-      - "|eta| < 2.5"
-      - 'Custom Cutbased'
-      - "pixelSeed"
-      - 'Photon DR Veto 0p025'
-    dsaMuons: 
-      - "pT > 10 GeV"
-      - "|eta| < 2.4"
-      - "displaced ID"
-      - "all + charge" # cross-cleaning with charge requirement 
+      <<: *obj_ljsource_cuts
+      dsaMuons: 
+        - "pT > 10 GeV"
+        - "|eta| < 2.4"
+        - "displaced ID"
+        - "all + charge" # cross-cleaning with charge requirement 
 
 ljsource_cuts_barrel: &ljsource_cuts_barrel
   obj_cuts: &obj_ljsource_cuts_barrel
