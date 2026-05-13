@@ -770,4 +770,15 @@ lj_reco_effi_base: &lj_reco_effi_base
   - *genA_toMu_effi_base
   - *genA_toE_effi_base
 
+Muon_selection_base: &Muon_selection_base
+  - "mu_lj_pt"
+  - "muLj_genA_ptRatio"
+  - "mulj_egmlj_invmass"
+  - "mu_lj_isolation"
+
+Muon_selection_bkg_base: &Muon_selection_bkg_base
+  - "mu_lj_pt"
+  - "mulj_egmlj_invmass"
+  - "mu_lj_isolation"
+
 
