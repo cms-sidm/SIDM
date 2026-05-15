@@ -34,6 +34,7 @@ obj_cut_defs = {
         "dsaMuLj": lambda objs: ak.num(objs["ljs"].dsaMuons) > 0,
         "2dsaMuLj": lambda objs: ak.num(objs["ljs"].dsaMuons) > 2,
         "pfDsaMuLj": lambda objs: (ak.num(objs["ljs"].pfMuons) > 0) & (ak.num(objs["ljs"].dsaMuons) > 0),
+        "2muLj": lambda objs: objs["ljs"].muon_n >= 2,
         "lj_iso < 0.1": lambda objs: objs["ljs"].isolation < 0.1,
         "lj_iso < 0.2": lambda objs: objs["ljs"].isolation < 0.2,
     },
@@ -207,8 +208,8 @@ obj_cut_defs = {
         "segmatch veto + charge": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dsa.charge[:,:,None] != dsa.good_matched_muons.charge), axis=2),
         "segmatch veto + dR outer": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dR_outer(dsa[:,:,None], dsa.good_matched_muons) > 0.1), axis=2),
         "segmatch veto + num seg": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dsa.good_matched_muons.numMatch/(dsa.nSegments[:,:,None]) < 0.34), axis=2),
-        "segmatch veto + dR outer + num seg": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dR_outer(dsa[:,:,None], dsa.good_matched_muons) > 0.1) | (dsa.good_matched_muons.numMatch/(dsa.nSegments[:,:,None]) < 0.34), axis=2),
-        "all": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dsa.charge[:,:,None] != dsa.good_matched_muons.charge) | (dR_outer(dsa[:,:,None], dsa.good_matched_muons) > 0.1) | (dsa.good_matched_muons.numMatch/(dsa.nSegments[:,:,None]) < 0.34), axis=2),
+        "all": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dR_outer(dsa[:,:,None], dsa.good_matched_muons) > 0.1) | (dsa.good_matched_muons.numMatch/(dsa.nSegments[:,:,None]) < 0.34), axis=2),
+        "all + charge": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dsa.charge[:,:,None] != dsa.good_matched_muons.charge) | (dR_outer(dsa[:,:,None], dsa.good_matched_muons) > 0.1) | (dsa.good_matched_muons.numMatch/(dsa.nSegments[:,:,None]) < 0.34), axis=2),
     },
 }
 
