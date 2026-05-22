@@ -63,11 +63,6 @@ preLj_objs["gens"]       = lambda evts: evts.GenPart
 preLj_objs["genMus"]     = lambda evts: pid(preLj_objs["gens"](evts), 13)
 preLj_objs["genEs"]      = lambda evts: pid(preLj_objs["gens"](evts), 11)
 preLj_objs["genAs"]      = lambda evts: pid(preLj_objs["gens"](evts), 32)
-#preLj_objs["genA_from_genMus"] = lambda evts: withMass(fromPid(preLj_objs["genMus"](evts), 32), 0.105658).sum()
-#preLj_objs["genA_from_genEs"]  = lambda evts: withMass(fromPid(preLj_objs["genEs"](evts),  32), 0.000511).sum()
-#preLj_objs["genBSs"]     = lambda evts: pid(preLj_objs["gens"](evts), 35)
-#preLj_objs["genBSs_toA"] = lambda evts: toPid(preLj_objs["genBSs"](evts), 32)
-#preLj_objs["genBS_from_genAs"] = lambda evts: preLj_objs["genAs"](evts).sum()
 preLj_objs["genAs_toMu"] = lambda evts: toPid(preLj_objs["genAs"](evts), 13)
 preLj_objs["genAs_toE"]  = lambda evts: toPid(preLj_objs["genAs"](evts), 11)
 preLj_objs["rho_PFIso"]  = lambda evts: evts.fixedGridRhoFastjetAll
@@ -99,3 +94,12 @@ derived_objs["genAs_toMu_matched_muLj"] = lambda objs, r: matched(objs["genAs_to
 derived_objs["genAs_matched_egmLj"]     = lambda objs, r: matched(objs["genAs"], objs["egm_ljs"], r)
 derived_objs["genAs_toE_matched_egmLj"] = lambda objs, r: matched(objs["genAs_toE"], objs["egm_ljs"], r)
 derived_objs["mu_lj_matched_genAs_toMu"]   = lambda objs, r: matched(objs["mu_ljs"], objs["genAs_toMu"], r)
+# Gen-level objects that depend on PIDs not present in all samples (signal-only).
+# Defined as derived_objs so they're only evaluated when explicitly referenced by a histogram or cut.
+# Derive from objs["gens"] (uncut) rather than objs["genMus"]/objs["genEs"] (which are channel-filtered
+# by status, breaking the fromPid(., 32) link to the Zd parent).
+derived_objs["genA_from_genMus"] = lambda objs: withMass(fromPid(pid(objs["gens"], 13), 32), 0.105658).sum()
+derived_objs["genA_from_genEs"]  = lambda objs: withMass(fromPid(pid(objs["gens"], 11), 32), 0.000511).sum()
+derived_objs["genBSs"]           = lambda objs: pid(objs["gens"], 35)
+derived_objs["genBSs_toA"]       = lambda objs: toPid(derived_objs["genBSs"](objs), 32)
+derived_objs["genBS_from_genAs"] = lambda objs: pid(objs["gens"], 32).sum()
