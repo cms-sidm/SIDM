@@ -3782,18 +3782,42 @@ hist_defs = {
     # Bound State Kinematics
     "genBS_n": h.Histogram([
                                h.Axis(hist.axis.Integer(0, 10, name=r"Num BS to $Z_d$"),
-                                      lambda objs, mask: ak.num(objs["genBSs_toA"].pt) 
+                                      lambda objs, mask: ak.num(derived_objs["genBSs_toA"](objs).pt)
                                      ),
                            ],
     ),
-    "genBS_pt":              obj_attr("genBSs_toA", "pt", xmax=1000),
-    "genBS_eta":             obj_attr("genBSs_toA", "eta", nbins=50, xmin=-10, xmax=10),
-    "genBS_phi":             obj_attr("genBSs_toA", "phi"),
-    "genBS_mass":            obj_attr("genBSs_toA", "mass", xmax=1200),
-    "genBS_from_genAs_pt":   obj_attr("genBS_from_genAs", "pt", xmax=1000),
-    "genBS_from_genAs_eta":  obj_attr("genBS_from_genAs", "eta", nbins=50, xmin=-10, xmax=10),
-    "genBS_from_genAs_phi":  obj_attr("genBS_from_genAs", "phi"),
-    "genBS_from_genAs_mass": obj_attr("genBS_from_genAs", "mass", xmax=1200),
+    "genBS_pt": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 1000, name="genBSs_toA_pt", label=r"Gen BS (to $Z_d$) $p_T$ (GeV)"),
+               lambda objs, mask: derived_objs["genBSs_toA"](objs).pt),
+    ]),
+    "genBS_eta": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -10, 10, name="genBSs_toA_eta", label=r"Gen BS (to $Z_d$) $\eta$"),
+               lambda objs, mask: derived_objs["genBSs_toA"](objs).eta),
+    ]),
+    "genBS_phi": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -math.pi, math.pi, name="genBSs_toA_phi", label=r"Gen BS (to $Z_d$) $\phi$"),
+               lambda objs, mask: derived_objs["genBSs_toA"](objs).phi),
+    ]),
+    "genBS_mass": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 1200, name="genBSs_toA_mass", label=r"Gen BS (to $Z_d$) Mass (GeV)"),
+               lambda objs, mask: derived_objs["genBSs_toA"](objs).mass),
+    ]),
+    "genBS_from_genAs_pt": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 1000, name="genBS_from_genAs_pt", label=r"BS (reco from Gen $Z_d$) $p_T$ (GeV)"),
+               lambda objs, mask: derived_objs["genBS_from_genAs"](objs).pt),
+    ]),
+    "genBS_from_genAs_eta": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -10, 10, name="genBS_from_genAs_eta", label=r"BS (reco from Gen $Z_d$) $\eta$"),
+               lambda objs, mask: derived_objs["genBS_from_genAs"](objs).eta),
+    ]),
+    "genBS_from_genAs_phi": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -math.pi, math.pi, name="genBS_from_genAs_phi", label=r"BS (reco from Gen $Z_d$) $\phi$"),
+               lambda objs, mask: derived_objs["genBS_from_genAs"](objs).phi),
+    ]),
+    "genBS_from_genAs_mass": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 1200, name="genBS_from_genAs_mass", label=r"BS (reco from Gen $Z_d$) Mass (GeV)"),
+               lambda objs, mask: derived_objs["genBS_from_genAs"](objs).mass),
+    ]),
     # Dark Photon Kinematics
     "genA_n": h.Histogram([
                                h.Axis(hist.axis.Integer(0, 10, name=r"Num $Z_d$"),
@@ -3817,7 +3841,7 @@ hist_defs = {
             h.Axis(hist.axis.Regular(50, -1, 1, name="genAs_cosTheta", label=r"$\cos\theta^*$ (Central BS)"),
                    lambda objs, mask: cos_theta_in_parent_frame(objs, mask, "genAs")),
         ],
-        evt_mask=lambda objs: (ak.num(objs["genBSs_toA"]) > 0) & (abs(objs["genBSs_toA"][:, 0].eta) < 1.0),
+        evt_mask=lambda objs: (ak.num(derived_objs["genBSs_toA"](objs)) > 0) & (abs(derived_objs["genBSs_toA"](objs)[:, 0].eta) < 1.0),
     ),
     "genMus_fromA_n": h.Histogram([
                                h.Axis(hist.axis.Integer(0, 10, name=r"Num Gen $\mu$ (from $Z_d$)"),
@@ -3831,14 +3855,38 @@ hist_defs = {
                                      ),
                            ],
     ),
-    "genA_from_genMus_mass":  obj_attr("genA_from_genMus", "mass", nbins=100, xmax=10),
-    "genA_from_genMus_eta":   obj_attr("genA_from_genMus", "eta", nbins=50, xmin=-5, xmax=5),
-    "genA_from_genMus_phi":   obj_attr("genA_from_genMus", "phi"),
-    "genA_from_genMus_pt":    obj_attr("genA_from_genMus", "pt", xmax=1000),
-    "genA_from_genEs_mass":   obj_attr("genA_from_genEs", "mass", nbins=100, xmax=10),
-    "genA_from_genEs_eta":    obj_attr("genA_from_genEs", "eta", nbins=50, xmin=-5, xmax=5),
-    "genA_from_genEs_phi":    obj_attr("genA_from_genEs", "phi"),
-    "genA_from_genEs_pt":     obj_attr("genA_from_genEs", "pt", xmax=1000),
+    "genA_from_genMus_mass": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 10, name="genA_from_genMus_mass", label=r"genA_from_genMus Mass (GeV)"),
+               lambda objs, mask: derived_objs["genA_from_genMus"](objs).mass),
+    ]),
+    "genA_from_genMus_eta": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -5, 5, name="genA_from_genMus_eta", label=r"genA_from_genMus $\eta$"),
+               lambda objs, mask: derived_objs["genA_from_genMus"](objs).eta),
+    ]),
+    "genA_from_genMus_phi": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -math.pi, math.pi, name="genA_from_genMus_phi", label=r"genA_from_genMus $\phi$"),
+               lambda objs, mask: derived_objs["genA_from_genMus"](objs).phi),
+    ]),
+    "genA_from_genMus_pt": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 1000, name="genA_from_genMus_pt", label=r"genA_from_genMus $p_T$ (GeV)"),
+               lambda objs, mask: derived_objs["genA_from_genMus"](objs).pt),
+    ]),
+    "genA_from_genEs_mass": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 10, name="genA_from_genEs_mass", label=r"genA_from_genEs Mass (GeV)"),
+               lambda objs, mask: derived_objs["genA_from_genEs"](objs).mass),
+    ]),
+    "genA_from_genEs_eta": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -5, 5, name="genA_from_genEs_eta", label=r"genA_from_genEs $\eta$"),
+               lambda objs, mask: derived_objs["genA_from_genEs"](objs).eta),
+    ]),
+    "genA_from_genEs_phi": h.Histogram([
+        h.Axis(hist.axis.Regular(50, -math.pi, math.pi, name="genA_from_genEs_phi", label=r"genA_from_genEs $\phi$"),
+               lambda objs, mask: derived_objs["genA_from_genEs"](objs).phi),
+    ]),
+    "genA_from_genEs_pt": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 1000, name="genA_from_genEs_pt", label=r"genA_from_genEs $p_T$ (GeV)"),
+               lambda objs, mask: derived_objs["genA_from_genEs"](objs).pt),
+    ]),
     # Lepton Kinematics
     "genMus_status":         obj_attr("genMus", "status"),
     "genEs_status":          obj_attr("genEs", "status"),
