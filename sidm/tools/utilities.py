@@ -10,6 +10,7 @@ import scipy.optimize as opt
 import hist.intervals
 from sidm import BASE_DIR
 import coffea.util
+from coffea.processor import accumulate
 
 def print_list(l):
     """Print one list element per line"""
