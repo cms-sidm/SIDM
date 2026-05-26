@@ -536,23 +536,13 @@ def plot_and_fit_gaussian(hist, ax=None, color='black', label_prefix="Data", fit
     hep.cms.label()
     return ax
 
-def sum_hist(name_list, histogram_name, channel_name, folder_name=None, ratio=1, binning=1j):
-    """
-    Sum histograms for a list of backgrounds/data
-    For data give ratio =1
-    When we run all the data or compare background with all data, give ratio=1,
-    """
-    summed_hist = None
-    for x in name_list:
+def sum_hist(samples_list, folder_name):
+    summed_out = None
+    for x in samples_list:
         output = coffea.util.load(f"{folder_name}/{x}.coffea")
-        try:
-            hist = output["out"][x]["hists"][histogram_name][channel_name, ::binning]
-        except:#for 2D histograms
-            hist = output["out"][x]["hists"][histogram_name][channel_name, ::binning, ::binning]
-        if summed_hist is None:
-            summed_hist = hist.copy()
+        hists = output["out"][x]["hists"]
+        if summed_out is None:
+            summed_out = hists.copy()
         else:
-            summed_hist += hist
-    if ratio != 1:
-        summed_hist = ratio* summed_hist
-    return summed_hist
+            summed_out = accumulate ([hists, summed_out])
+    return summed_out
