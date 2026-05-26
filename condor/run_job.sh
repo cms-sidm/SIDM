@@ -93,8 +93,7 @@ python condor/run_sidm_chunk.py \
     --workers 1 \
     --channels base \
     --hist-collections muon_base \
-    --unweighted-hist \
-    --debug
+    --unweighted-hist
 
 echo "Output:"
 ls -lh "${OUTFILE}"

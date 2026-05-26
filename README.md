@@ -12,6 +12,86 @@ Inspired by github.com/phylsix/Firefighter and/or github.com/phylsix/FireROOT
 - From the SIDM directory, run setup.sh to pip install the sidm package
 - You should be good to go! If you want to test that your environment is set up correctly, try running any of the existing notebooks in SIDM/studies and comparing your output with the output shown [here](https://github.com/btcardwell/SIDM/tree/main/sidm/studies)
 
+## Getting started on LPC
+
+This is **one** way to get a working interactive environment on Fermilab LPC (`cmslpc-el9.fnal.gov`). Other paths exist — e.g. the [Elastic Analysis Facility (EAF)](https://analytics-hub.fnal.gov), JupyterHub on LPC, or plain shell sessions — and the venv-setup steps below (1–4) transfer directly to those. Only step 5 (how to actually open a notebook) is specific to running VS Code on a laptop over SSH; on EAF or JupyterHub you skip it and pick the registered kernel from the web UI instead.
+
+This walkthrough covers the **interactive / notebook** environment. For running large batch jobs on LPC Condor, see [condor/README.md](condor/README.md) once steps 1–4 are done.
+
+### 1. Clone the repo
+
+SSH to LPC and clone into your work area:
+
+    ssh cmslpc-el9.fnal.gov
+    cd /uscms_data/d3/$USER
+    git clone <your-fork-of-SIDM>
+    cd SIDM
+
+### 2. Build the venv on LCG_107 Python 3.11
+
+The repo's `requirements.txt` pins versions (`dask`, `awkward`, …) that need Python ≥ 3.10. LPC's system Python is 3.9, so we use Python 3.11 from cvmfs:
+
+    source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/setup.sh
+    unset PYTHONPATH
+    python -m venv sidm_venv
+    source sidm_venv/bin/activate
+    python -m pip install --upgrade pip setuptools wheel
+
+After creation the venv's `bin/python` is a symlink to the cvmfs binary, so you don't need to re-source LCG_107 to run it later.
+
+### 3. Install requirements (skipping the xrootd PyPI build)
+
+The `xrootd` PyPI wheel tries to compile the xrootd C library from source and fails on LPC. We get the same functionality by symlinking LCG's prebuilt `XRootD` and `pyxrootd` packages into the venv:
+
+    grep -v "^xrootd" requirements.txt | python -m pip install -r /dev/stdin
+    python -m pip install "distributed==2025.3.0"   # required by sidm/tools/scaleout.py
+    python -m pip install -e .
+    python -m pip install jupyter ipykernel pyarrow
+
+    cd sidm_venv/lib/python3.11/site-packages
+    ln -sfn /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/lib/python3.11/site-packages/XRootD   XRootD
+    ln -sfn /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/lib/python3.11/site-packages/pyxrootd pyxrootd
+    cd -
+
+Smoke-test that uproot can read a remote ROOT file through xrootd:
+
+    sidm_venv/bin/python -c "import uproot; print(uproot.open('root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo2Mu2e/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-500_MDp-1p2_ctau-1p9_v3/LLPnanoAODv2/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-500_MDp-1p2_ctau-1p9_v3_part-0.root')['Events'].num_entries)"
+
+### 4. Register the Jupyter kernel
+
+    /uscms_data/d3/$USER/SIDM/sidm_venv/bin/python -m ipykernel install --user \
+        --name sidm_venv \
+        --display-name "SIDM (LCG_107 Py3.11)"
+
+This drops a kernelspec under `~/.local/share/jupyter/kernels/sidm_venv/` on LPC. Any Jupyter Server running on LPC — including EAF or JupyterHub — will offer this kernel.
+
+### 5. Open notebooks (one approach: VS Code over SSH)
+
+VS Code on your laptop can't directly see LPC-side kernels through an SSHFS mount, since the kernel binary is x86_64 Linux. One pattern that works: start a Jupyter Server on LPC, port-forward 8888 to your laptop, point VS Code at `http://localhost:8888/` as a remote server.
+
+In a terminal on your laptop:
+
+    ssh -L 8888:localhost:8888 cmslpc-el9.fnal.gov \
+        "cd /uscms_data/d3/$USER/SIDM && source sidm_venv/bin/activate && \
+         jupyter server --no-browser --port=8888 --ip=127.0.0.1"
+
+Copy the URL it prints (`http://localhost:8888/?token=…`). In VS Code: open any notebook → kernel selector (top-right) → **Select Another Kernel…** → **Existing Jupyter Server…** → paste URL → pick **SIDM (LCG_107 Py3.11)**.
+
+If you're on EAF, JupyterHub, or running Jupyter directly on LPC with your own tunneling, skip this step entirely and just pick the kernel from your usual UI.
+
+### 6. Reading remote ROOT files
+
+The location YAMLs (`sidm/configs/ntuples/*.yaml`) use `root://xcache//…` URLs. `xcache` is the coffea-casa cache and does not resolve on LPC. Pass `replace_xcache=True` to `utilities.make_fileset` to substitute the FNAL EOS redirector at fileset-build time:
+
+    fileset = utilities.make_fileset(
+        samples, "llpNanoAOD_v2", location_cfg="signal_2mu2e_v10.yaml",
+        replace_xcache=True,
+    )
+
+Default is `False` so existing coffea-casa notebooks remain unchanged.
+
+For batch processing on LPC Condor, see [condor/README.md](condor/README.md).
+
 ## Code structure
 All the interesting code in this repository is in `SIDM/sidm/`, which is organized into the following subdirectories:
 - `tools` contains the classes and methods that form the backbone of SIDM. In particular, `sidm_processor.py` defines how events are analyzed. We use the NanoAODSchema for the data in our files, as defined within Coffea [here](https://coffea-hep.readthedocs.io/en/latest/api/coffea.nanoevents.NanoAODSchema.html)
