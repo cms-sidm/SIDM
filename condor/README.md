@@ -178,47 +178,14 @@ This creates multiple Condor jobs per signal point. The chunks are merged afterw
 
 ---
 
-## 7. Important path fixes
+## 7. Path fixes (no longer needed)
 
-### Fix the `condor/filelists/` double-prefix issue
+Earlier revisions of this guide had two manual `sed` workarounds in this section: one to strip a `condor/filelists/` double-prefix from `job_args.txt`, and one to rewrite `root://xcache//` to `root://cmseos.fnal.gov//` in every filelist. Both are now fixed at source:
 
-Because we submit from inside the `condor/` directory, the filelist paths inside `job_args.txt` must look like:
+- `make_job_args.py` writes filelist paths in `job_args.txt` relative to `condor/`, so the double-prefix never appears.
+- Passing `--replace-xcache` to `make_job_args.py` (see §6) rewrites xcache URLs at fileset-build time.
 
-    filelists/QCD_Pt800To1000_407.txt
-
-not:
-
-    condor/filelists/QCD_Pt800To1000_407.txt
-
-If needed, fix with:
-
-    sed -i 's#condor/filelists/#filelists/#g' condor/job_args.txt
-
-Check:
-
-    grep -n "condor/filelists" condor/job_args.txt
-
-This should print nothing.
-
-### Fix `root://xcache//` paths
-
-Some YAML configs may produce paths like:
-
-    root://xcache//store/...
-
-These may fail on Condor workers. Replace them with:
-
-    root://cmseos.fnal.gov//store/...
-
-Run:
-
-    sed -i 's#root://xcache//#root://cmseos.fnal.gov//#g' condor/filelists/*.txt
-
-Check:
-
-    grep -R "root://xcache" condor/filelists | head
-
-This should print nothing.
+Skip this section if `make_job_args.py` was run with `--replace-xcache` and `condor/job_args.txt` shows paths starting with `filelists/`.
 
 ---
 
@@ -285,7 +252,7 @@ Example:
 
     executable = run_job.sh
 
-    arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/YOUR_USERNAME/sidm_condor/BackgroundChunks_v1
+    arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
 
     should_transfer_files = YES
     when_to_transfer_output = ON_EXIT
@@ -305,15 +272,13 @@ Example:
 
     queue sample, chunk, filelist from job_args.txt
 
-For signals, change the output path to:
+`$ENV(USER)` is expanded at submit time, so the same file works for any LPC user. The only thing to edit between runs is the trailing "run tag" — for signals use:
 
-    root://cmseos.fnal.gov//store/user/YOUR_USERNAME/sidm_condor/SignalChunks_v1
+    root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/SignalChunks_v1
 
-For backgrounds, use:
+For backgrounds:
 
-    root://cmseos.fnal.gov//store/user/YOUR_USERNAME/sidm_condor/BackgroundChunks_v1
-
-Replace `YOUR_USERNAME` with your LPC username.
+    root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
 
 ---
 
@@ -650,22 +615,6 @@ Add these to `.gitignore`.
 
 ## 21. Common errors
 
-### `condor/condor/filelists/... No such file or directory`
-
-Cause: `job_args.txt` contains `condor/filelists/...` while submitting from inside `condor/`.
-
-Fix:
-
-    sed -i 's#condor/filelists/#filelists/#g' condor/job_args.txt
-
-### `root://xcache//... Invalid address`
-
-Cause: worker cannot resolve `root://xcache//`.
-
-Fix:
-
-    sed -i 's#root://xcache//#root://cmseos.fnal.gov//#g' condor/filelists/*.txt
-
 ### `No module named coffea`
 
 Cause: Condor worker Python does not have Coffea.
@@ -674,20 +623,15 @@ Fix: ensure `run_job.sh` creates the venv and installs:
 
     python -m pip install --no-cache-dir -r requirements.txt
 
-### `KeyError: skim_factor`
+### `KeyError: is_data` (or `skim_factor`, `year`)
 
-Cause: processor expects `events.metadata["skim_factor"]`.
+Cause: the fileset handed to `processor.Runner.run` lacks a `metadata` block. `SidmProcessor.process` reads `events.metadata["is_data"]` / `["skim_factor"]` / `["year"]` without `.get()` defaults.
 
-Fix: either add metadata in `run_sidm_chunk.py`:
+Fix: in `run_sidm_chunk.py`, build the fileset as
 
-    "metadata": {
-        "dataset": args.sample,
-        "skim_factor": 1.0,
-    }
+    fileset = {args.sample: {"files": files, "metadata": {"is_data": False, "skim_factor": 1.0, "year": "2018"}}}
 
-or make the processor use a default:
-
-    skim_factor = events.metadata.get("skim_factor", 1.0)
+Note that `"dataset"` is a reserved key in `metadata` for newer coffea (≥ 2025.x) and must not be supplied — coffea sets it from the fileset key.
 
 ### Missing ROOT file
 

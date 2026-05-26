@@ -174,8 +174,13 @@ def load_yaml(cfg):
     with open(cfg, encoding="utf8") as yaml_cfg:
         return yaml.safe_load(yaml_cfg)
 
-def make_fileset(samples, ntuple_version, max_files=-1, location_cfg="signal_v8.yaml", fileset=None):
-    """Make fileset to pass to processor.runner"""
+def make_fileset(samples, ntuple_version, max_files=-1, location_cfg="signal_v8.yaml", fileset=None,
+                 replace_xcache=False):
+    """Make fileset to pass to processor.runner.
+
+    replace_xcache: when True, rewrite 'root://xcache//' to 'root://cmseos.fnal.gov//' so the
+    fileset is usable from LPC (xcache is the coffea-casa cache and does not resolve elsewhere).
+    """
     # assume location_cfg is stored in sidm/configs/ntuples/
     location_cfg = f"{BASE_DIR}/configs/ntuples/" + location_cfg
     locations = load_yaml(location_cfg)[ntuple_version]
@@ -187,6 +192,8 @@ def make_fileset(samples, ntuple_version, max_files=-1, location_cfg="signal_v8.
         file_list = [base_path + f for f in sample_yaml["files"]]
         if max_files != -1:
             file_list = file_list[:max_files]
+        if replace_xcache:
+            file_list = [f.replace("root://xcache//", "root://cmseos.fnal.gov//") for f in file_list]
         fileset[sample] = {
             "files": file_list,
             "metadata": {

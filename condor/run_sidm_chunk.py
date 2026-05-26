@@ -37,13 +37,24 @@ def main():
 
     parser.add_argument("--channels", default="base")
     parser.add_argument("--hist-collections", default="muon_base")
-    parser.add_argument("--debug", action="store_true")
     parser.add_argument("--unweighted-hist", action="store_true")
 
     args = parser.parse_args()
 
     files = read_filelist(args.filelist)
-    fileset = {args.sample: files}
+    # SidmProcessor.process reads events.metadata["is_data"] / ["skim_factor"] /
+    # ["year"] without .get() defaults, so a bare {sample: files} fileset crashes
+    # with KeyError. Supply MC-sample defaults; data submissions should override.
+    fileset = {
+        args.sample: {
+            "files": files,
+            "metadata": {
+                "is_data": False,
+                "skim_factor": 1.0,
+                "year": "2018",
+            },
+        }
+    }
 
     print("Repo parent:", repo_parent)
     print("Sample:", args.sample)
@@ -66,7 +77,6 @@ def main():
         channels,
         hist_collections,
         unweighted_hist=args.unweighted_hist,
-        debug=args.debug,
     )
 
     output = runner.run(
