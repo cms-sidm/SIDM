@@ -1625,3 +1625,102 @@ baseNoLj_Two_Ormore_Muon_Displacement_EgmIso_MuIso: &baseNoLj_Two_Ormore_Muon_Di
       - "egm_lj_iso < 0.2"
   evt_cuts: 
     - *evt_baseNoLj
+
+data_control_region_1Lj: &data_control_region_1Lj
+  obj_cuts:
+    <<: *obj_ljsource_cuts
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - "= 1 LJs"
+
+data_control_region_1Lj_cosmic_veto: &data_control_region_1Lj_cosmic_veto
+  obj_cuts:
+    <<: *obj_ljsource_cuts
+    dsaMuons:
+      - *dsaMuons_ljsource_cuts
+      - "|dxy| <= 40"
+      - "|dz| <= 60"
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - "= 1 LJs"
+    - "all cos_alpha(dsa, dsa) > -0.9"
+
+data_control_region_1muLj: &data_control_region_1muLj
+  obj_cuts:
+    <<: *obj_ljsource_cuts
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - "= 1 LJs"
+    - "= 1 muLJs"
+
+data_control_region_1muLj_cosmic_veto: &data_control_region_1muLj_cosmic_veto
+  obj_cuts:
+    <<: *obj_ljsource_cuts
+    dsaMuons:
+      - *dsaMuons_ljsource_cuts
+      - "|dxy| <= 40"
+      - "|dz| <= 60"
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs:
+      - "Mu >= 2"
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - "= 1 LJs"
+    - "= 1 muLJs"
+    - "all cos_alpha(dsa, dsa) > -0.9"
+
+data_control_region_1egmLj: &data_control_region_1egmLj
+  obj_cuts:
+    <<: *obj_ljsource_cuts
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - "= 1 LJs"
+    - "= 1 egmLJs"
+
+data_control_region_1egmLj_cosmic_veto: &data_control_region_1egmLj_cosmic_veto
+  obj_cuts:
+    <<: *obj_ljsource_cuts
+    dsaMuons:
+      - *dsaMuons_ljsource_cuts
+      - "|dxy| <= 40"
+      - "|dz| <= 60"
+  postLj_obj_cuts:
+    ljs:
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - "= 1 LJs"
+    - "= 1 egmLJs"
+    - "all cos_alpha(dsa, dsa) > -0.9"

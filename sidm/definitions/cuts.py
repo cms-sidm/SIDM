@@ -4,7 +4,7 @@
 import awkward as ak
 # local
 from sidm.definitions.objects import derived_objs
-from sidm.tools.utilities import dR, lxy, rho, check_bits, returnBitMapTArrayPhoton, dR_outer
+from sidm.tools.utilities import dR, lxy, rho, check_bits, returnBitMapTArrayPhoton, dR_outer, cosAlpha
 
 obj_cut_defs = {
     "pvs": {
@@ -187,6 +187,8 @@ obj_cut_defs = {
     },
     "dsaMuons": {
         "pT > 10 GeV": lambda objs, dsa: dsa.pt > 10,
+        "|dxy| <= 40": lambda objs, dsa: abs(dsa.dxy) <= 40,
+        "|dz| <= 60": lambda objs, dsa: abs(dsa.dz) <= 60,
         "|eta| < 2.4": lambda objs, dsa: abs(dsa.eta) < 2.4,
         # displaced ID as a single flag and as individual cuts
         "displaced ID" : lambda objs, dsa: dsa.displacedID > 0,
@@ -197,7 +199,7 @@ obj_cut_defs = {
         "normChi2 < 2.5": lambda objs, dsa: dsa.normChi2 < 2.5,
         "ptErrorOverPT < 1": lambda objs, dsa: (dsa.ptErr / dsa.pt) < 1.0,
         "barrel": lambda objs, dsa: abs(dsa.eta) <= 1.479,
-        "endcap": lambda objs, dsa: ((abs(dsa.eta) > 1.479)& (abs(dsa.eta) < 2.4)),
+        "endcap": lambda objs, dsa: ((abs(dsa.eta) > 1.479) & (abs(dsa.eta) < 2.4)),
         # just use segment-based matching
        # "no PF match" : lambda objs, dsa: dsa.muonMatch1/dsa.nSegments < 0.667,
         "dR(mu, A) < 0.5": lambda objs, dsa: dR(dsa, objs["genAs_toMu"]) < 0.5,
@@ -221,6 +223,18 @@ evt_cut_defs = {
         | objs["hlt"].DoubleL2Mu25NoVtx_2Cha_Eta2p4
         | objs["hlt"].DoubleL2Mu25NoVtx_2Cha_CosmicSeed_Eta2p4
     ),
+    "pass flags": lambda objs: (
+          objs["flags"].goodVertices
+        & objs["flags"].globalSuperTightHalo2016Filter
+        & objs["flags"].HBHENoiseFilter
+        & objs["flags"].HBHENoiseIsoFilter
+        & objs["flags"].EcalDeadCellTriggerPrimitiveFilter
+        & objs["flags"].BadPFMuonFilter
+        & objs["flags"].BadPFMuonDzFilter
+        & objs["flags"].eeBadScFilter
+        & objs["flags"].ecalBadCalibFilter
+        & objs["flags"].hfNoisyHitsFilter
+    ),
     ">=1 muon": lambda objs: ak.num(objs["muons"]) >= 1,
     "PV filter": lambda objs: ak.flatten(objs["pvs"].npvsGood) >= 1,
     #"Cosmic veto": lambda objs: objs["cosmicveto"].result,
@@ -242,4 +256,8 @@ evt_cut_defs = {
     "genMus": lambda objs: ak.num(objs["genMus"]) > 1,
     "dR(Mu_0, Mu_1) > 0.03": lambda objs: objs["genMus"][:,0].delta_r(objs["genMus"][:,1]) > 0.03,
     "LJ-LJ dPhi > 2": lambda objs: abs(objs["ljs"][:, 0].delta_phi(objs["ljs"][:, 1])) > 2.0,
+    "= 1 LJs": lambda objs: ak.num(objs["ljs"]) == 1,
+    "= 1 muLJs": lambda objs: (ak.num(objs["mu_ljs"]) == 1) & (ak.num(objs["egm_ljs"]) == 0),
+    "= 1 egmLJs": lambda objs: (ak.num(objs["mu_ljs"]) == 0) & (ak.num(objs["egm_ljs"]) == 1),
+    "all cos_alpha(dsa, dsa) > -0.9": lambda objs: ak.all(cosAlpha(objs["dsaMuons"]) > -0.9, axis=1),
 }
