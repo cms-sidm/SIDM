@@ -2296,7 +2296,7 @@ llpNanoAOD_v2:
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-47.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-48.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-49.root
-      - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-5.root
+      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-5.root # DeserializationError
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-50.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-51.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-0p2_v3_part-52.root
@@ -3805,7 +3805,7 @@ llpNanoAOD_v2:
     4Mu_800GeV_1p2GeV_0p012mm:
       files:
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-1p2_ctau-0p012_v3_part-0.root
-      - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-1p2_ctau-0p012_v3_part-1.root
+      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-1p2_ctau-0p012_v3_part-1.root # lzma data error
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-1p2_ctau-0p012_v3_part-10.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-1p2_ctau-0p012_v3_part-11.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-1p2_ctau-0p012_v3_part-12.root
@@ -4432,7 +4432,6 @@ llpNanoAOD_v2:
       path: CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p002_v3/LLPnanoAODv2/
     4Mu_1000GeV_0p25GeV_0p02mm:
       files:
-      - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3_part-0.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3_part-1.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3_part-10.root
@@ -4488,7 +4487,6 @@ llpNanoAOD_v2:
       path: CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3/LLPnanoAODv2/
     4Mu_1000GeV_0p25GeV_0p2mm:
       files:
-      - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p2_v3.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p2_v3_part-0.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p2_v3_part-1.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p2_v3_part-10.root
