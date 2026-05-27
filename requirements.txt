@@ -3,8 +3,8 @@ coffea==2025.5.0rc2
 dask==2025.3.0
 fastjet==3.4.3.1
 hist==2.9.0
-matplotlib==3.10.6
-mplhep==0.4.1
+matplotlib==3.10.9
+mplhep==1.2.0
 numpy==2.3.2
 PyYAML==6.0.2
 setuptools==80.1.0

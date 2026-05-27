@@ -23,7 +23,7 @@ class SimpleCutflow(processor.AccumulatorABC):
     def add(self, other):
         """Add two cutflows"""
         if self.rows.keys() != other.rows.keys():
-            raise RuntimeException("Cutflows must have same set of cuts to be added")
+            raise RuntimeError("Cutflows must have same set of cuts to be added")
         for cut in self.rows:
             self.rows[cut]["raw"] += other.rows[cut]["raw"]
             self.rows[cut]["weighted"] += other.rows[cut]["weighted"]
