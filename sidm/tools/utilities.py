@@ -394,16 +394,16 @@ def lepton_dxy_resolution(leptons, pvs, rank="all", diff=False):
         ratio = ak.where((~ak.is_none(gen)) & (gen.status == 1) & (dxy_gen != 0), result / dxy_gen, np.nan)
 
     return result if diff else ratio
-   
+
 def spin1_model(x, A, alpha):
     """Physics model: dN/dCosTheta ~ A * (1 + alpha * cos^2(theta))"""
     return A * (1 + alpha * x**2)
 
 def plot_and_fit_polarization(hist, ax=None, color='black', label_prefix="Data", fit_range=(0, 0.8), density=False):
     """
-    Extracts data from a CosTheta histogram, fits the Spin-1 model, 
+    Extracts data from a CosTheta histogram, fits the Spin-1 model,
     and plots Data + Fit + 1-Sigma Band.
-    
+
     Args:
         hist: The Coffea histogram object
         ax: The matplotlib axis to plot on (creates new if None)
@@ -416,8 +416,8 @@ def plot_and_fit_polarization(hist, ax=None, color='black', label_prefix="Data",
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 
-    hep.histplot(hist, ax=ax, yerr=True, density=density, color=color, 
-                 histtype='errorbar', marker='o', markersize=4, capsize=2, 
+    hep.histplot(hist, ax=ax, yerr=True, density=density, color=color,
+                 histtype='errorbar', marker='o', markersize=4, capsize=2,
                  label=label_prefix)
 
     raw_counts = hist.values().flatten()
@@ -435,38 +435,38 @@ def plot_and_fit_polarization(hist, ax=None, color='black', label_prefix="Data",
         scale_factor = 1.0 / (integral if integral > 0 else 1.0)
     else:
         scale_factor = 1.0
-        
+
     y_values = raw_counts * scale_factor
-    y_err = np.sqrt(raw_counts) * scale_factor 
-    y_err[y_err == 0] = scale_factor 
+    y_err = np.sqrt(raw_counts) * scale_factor
+    y_err[y_err == 0] = scale_factor
 
     mask = (centers >= fit_range[0]) & (centers <= fit_range[1])
     x_fit = centers[mask]
     y_fit = y_values[mask]
     y_err_fit = y_err[mask]
-    
+
     p0 = [np.max(y_fit), 0.5]
-    
+
     try:
         popt, pcov = opt.curve_fit(
             spin1_model, x_fit, y_fit, sigma=y_err_fit, absolute_sigma=True, p0=p0
         )
         A_opt, alpha_opt = popt
         perr = np.sqrt(np.diag(pcov))
-        
+
         x_model = np.linspace(0, 1, 100)
         y_model = spin1_model(x_model, *popt)
-        
+
         label_fit = f"Fit ($\\alpha={alpha_opt:.2f} \\pm {perr[1]:.2f}$)"
         ax.plot(x_model, y_model, '-', color=color, linewidth=2, label=label_fit)
-        
+
         # Confidence Band
         jac = np.vstack([1 + alpha_opt * x_model**2, A_opt * x_model**2]).T
         y_sigma = np.sqrt(np.sum((jac @ pcov) * jac, axis=1))
-        
-        ax.fill_between(x_model, y_model - y_sigma, y_model + y_sigma, 
+
+        ax.fill_between(x_model, y_model - y_sigma, y_model + y_sigma,
                         color=color, alpha=0.2)
-        
+
         ax.axvline(fit_range[1], color=color, linestyle=':', alpha=0.3)
 
     except Exception as e:
@@ -481,9 +481,9 @@ def gaussian_model(x, A, mu, sigma):
 
 def plot_and_fit_gaussian(hist, ax=None, color='black', label_prefix="Data", fit_range=(-3, 3), density=False):
     """
-    Extracts data from a histogram, fits the standard Gaussian model, 
+    Extracts data from a histogram, fits the standard Gaussian model,
     and plots Data + Fit.
-    
+
     Args:
         hist: The Coffea histogram object
         ax: The matplotlib axis to plot on (creates new if None)
@@ -496,8 +496,8 @@ def plot_and_fit_gaussian(hist, ax=None, color='black', label_prefix="Data", fit
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 
-    hep.histplot(hist, ax=ax, yerr=True, density=density, color=color, 
-                 histtype='errorbar', marker='o', markersize=4, capsize=2, 
+    hep.histplot(hist, ax=ax, yerr=True, density=density, color=color,
+                 histtype='errorbar', marker='o', markersize=4, capsize=2,
                  label=label_prefix)
 
     counts = hist.values().flatten()
@@ -533,13 +533,13 @@ def plot_and_fit_gaussian(hist, ax=None, color='black', label_prefix="Data", fit
             gaussian_model, x_fit, y_fit, sigma=y_err_fit, absolute_sigma=True, p0=p0
         )
         A_opt, mu_opt, sigma_opt = popt
-        
+
         x_model = np.linspace(edges[0], edges[-1], 200)
         y_model = gaussian_model(x_model, *popt)
-        
+
         label_fit = rf"Fit: $\mu={mu_opt:.2f}, \sigma={abs(sigma_opt):.2f}$"
         ax.plot(x_model, y_model, '-', color=color, linewidth=2, label=label_fit)
-        
+
     except Exception as e:
         print(f"Fit failed: {e}")
 
@@ -1156,3 +1156,6 @@ def plot_data_mc(
         plt.show()
 
     return fig, ax_main, ax_ratio
+def get_pairs(obj):
+    pairs = ak.combinations(obj, 2, axis=1)
+    return (pairs)
