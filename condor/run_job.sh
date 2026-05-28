@@ -6,6 +6,11 @@ SAMPLE=$1
 CHUNK=$2
 FILELIST=$3
 EOS_OUTDIR=$4
+# Optional positional args 5/6: comma-separated channels + hist collections.
+# Default to the historical "base" / "muon_base" so older submit.sub files
+# that don't pass them keep working.
+CHANNELS=${5:-base}
+HIST_COLLECTIONS=${6:-muon_base}
 
 echo "Host:"
 hostname
@@ -91,8 +96,8 @@ python condor/run_sidm_chunk.py \
     --output "${OUTFILE}" \
     --chunksize 50000 \
     --workers 1 \
-    --channels base \
-    --hist-collections muon_base \
+    --channels "${CHANNELS}" \
+    --hist-collections "${HIST_COLLECTIONS}" \
     --unweighted-hist
 
 echo "Output:"
