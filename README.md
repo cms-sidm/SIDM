@@ -18,6 +18,49 @@ This is **one** way to get a working interactive environment on Fermilab LPC (`c
 
 This walkthrough covers the **interactive / notebook** environment. For running large batch jobs on LPC Condor, see [condor/README.md](condor/README.md) once steps 1–4 are done.
 
+**Which path to use, by scale:**
+
+| Scale | Path | Section |
+|---|---|---|
+| 1–few files, quick iteration | Interactive notebook (one worker on cmslpc-el9) | Steps 1–6 |
+| 10s–100s of files, want to keep iterating | Dask-from-notebook (elastic Condor workers, single notebook session) | Step 7 |
+| 1000s of files, fire-and-forget | Condor scripts (unattended overnight runs) | [condor/README.md](condor/README.md) |
+
+You can climb this ladder as a study grows — the same notebook can graduate from interactive → dask without restructuring (see step 7.1, "Adapting an existing studies/ notebook").
+
+**Tutorial notebooks** cover the full setup (terminal commands, processor run, sanity plot) for both scaled paths:
+
+- Dask-from-notebook: [`sidm/test_notebooks/lpc_dask_example.ipynb`](sidm/test_notebooks/lpc_dask_example.ipynb)
+- Condor batch: [`sidm/test_notebooks/lpc_condor_example.ipynb`](sidm/test_notebooks/lpc_condor_example.ipynb)
+
+Both are committed with outputs.
+
+**Shared output area + sidecar metadata.** Both tutorials push their merged `.coffea` to `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/` on EOS (CMS-LPC group-writable, world-readable) and write a `.meta.yaml` sidecar next to each `.coffea` recording the input file list, the full selection + hist-collection definitions, the SIDM git commit, the coffea version, and a UTC timestamp. The helpers are in [`sidm/tools/metadata.py`](sidm/tools/metadata.py): `write_run_metadata` and `load_run_metadata`.
+
+### Prerequisites (one-time, from your laptop)
+
+Three pieces of CMS/FNAL access are usually arranged through your institution's CMS computing rep before you can SSH to LPC:
+
+1. **FNAL services account** with `cmslpc` computing access — gives you a username (e.g. `jsmith@FNAL.GOV`) and a home directory under `/uscms_data/d3/jsmith/`.
+2. **CMS VO membership** — required for VOMS proxies and `/store/group/lpcmetx/...` access.
+3. **Grid certificate** loaded into your laptop's keychain (typically obtained from [CILogon](https://cilogon.org)) — used on the LPC side when you run `voms-proxy-init`.
+
+You also need a Kerberos client on your laptop with an FNAL principal:
+
+```bash
+# macOS has Kerberos built in; Linux: install krb5-user (Debian/Ubuntu) or krb5-workstation (RHEL/Alma).
+kinit YOUR_FNAL_USERNAME@FNAL.GOV
+ssh cmslpc-el9.fnal.gov   # should now succeed without a password prompt
+```
+
+The canonical starting page for new CMS-LPC users is [https://uscms.org/uscms_at_work/computing/getstarted/](https://uscms.org/uscms_at_work/computing/getstarted/). Once these are in place, every step below happens on `cmslpc-el9.fnal.gov`.
+
+> **Refresh your VOMS proxy at the start of each work session** (lasts 192 h / 8 days):
+> ```bash
+> voms-proxy-init --valid 192:00 -voms cms
+> ```
+> Needed for reading remote ROOT files over XRootD, submitting Condor jobs, and spawning dask workers via `lpcjobqueue`. The notebook helpers in `sidm/tools/scaleout.py` call `check_voms_proxy()` first and fail with this exact command if your proxy is missing or about to expire.
+
 ### 1. Clone the repo
 
 SSH to LPC and clone into your work area:
@@ -45,6 +88,7 @@ The `xrootd` PyPI wheel tries to compile the xrootd C library from source and fa
 
     grep -v "^xrootd" requirements.txt | python -m pip install -r /dev/stdin
     python -m pip install "distributed==2025.3.0"   # required by sidm/tools/scaleout.py
+    python -m pip install "htcondor<25" "git+https://github.com/CoffeaTeam/lpcjobqueue.git"  # needed by step 7
     python -m pip install -e .
     python -m pip install jupyter ipykernel pyarrow
 
@@ -90,7 +134,65 @@ The location YAMLs (`sidm/configs/ntuples/*.yaml`) use `root://xcache//…` URLs
 
 Default is `False` so existing coffea-casa notebooks remain unchanged.
 
-For batch processing on LPC Condor, see [condor/README.md](condor/README.md).
+### 7. Scaling jobs from a notebook with dask + HTCondor
+
+For studies that exceed what a single interactive node can handle (≳ 4 GB memory, a handful of cores), HTCondor workers can be fanned out from the notebook. The pattern matches coffea-casa: a `Client` connected to a Dask cluster, passed to `processor.DaskExecutor`:
+
+```python
+from sidm.tools import scaleout
+from coffea import processor
+
+scaleout.check_voms_proxy()                       # fails loudly if proxy is missing/expiring
+
+cluster, client = scaleout.make_lpc_client(
+    min_workers=2, max_workers=10,
+    memory="4GB", disk="4GB",
+)
+
+runner = processor.Runner(
+    executor=processor.DaskExecutor(client=client),
+    schema=...,
+    chunksize=50_000,
+)
+output = runner.run(fileset, treename="Events", processor_instance=p)
+
+cluster.close()
+```
+
+Under the hood: workers are HTCondor jobs that run inside the `coffea-dask-almalinux9:2025.5.0.rc2-py3.11` apptainer image on the LPC pool; the notebook itself stays in `sidm_venv` outside the apptainer. Your local `sidm/` tree (including uncommitted edits) is shipped to each worker via `UploadDirectory`, so there is no commit-push roundtrip during iteration.
+
+The required Python packages (`htcondor<25`, `lpcjobqueue`) were installed as part of step 3, so no extra setup is needed. A runnable end-to-end example lives at [sidm/test_notebooks/lpc_dask_example.ipynb](sidm/test_notebooks/lpc_dask_example.ipynb).
+
+### 7.1. Adapting an existing studies/ notebook from coffea-casa to LPC
+
+Most notebooks in `sidm/studies/` were written for coffea-casa. Three swaps move them to LPC:
+
+1. **Drop the `importlib.reload(scaleout)` line.** That was a workaround for editing `sidm/tools/scaleout.py` between runs. With `make_lpc_client()` your local `sidm/` tree is uploaded to workers automatically, so there is no source to edit.
+
+2. **Replace the client constructor.** Where the notebook has:
+   ```python
+   client = scaleout.make_dask_client("tls://localhost:8786")
+   ```
+   write:
+   ```python
+   scaleout.check_voms_proxy()
+   cluster, client = scaleout.make_lpc_client(min_workers=2, max_workers=10)
+   ```
+   Add `cluster.close()` near the end of the notebook (after you've saved/loaded your output) so workers are released.
+
+3. **Add `replace_xcache=True` to every `make_fileset` call.** Without it the URLs in the location YAMLs still point at `root://xcache//`, which does not resolve on LPC.
+   ```python
+   # Before:
+   fileset = utilities.make_fileset(samples, "llpNanoAOD_v2", max_files=2)
+   # After:
+   fileset = utilities.make_fileset(samples, "llpNanoAOD_v2", max_files=2, replace_xcache=True)
+   ```
+
+Everything else (the `processor.Runner` setup, `DaskExecutor(client=client)`, the `runner.run(...)` call, all the cuts/hists logic) stays exactly the same.
+
+### 8. Long-running batch jobs (no notebook attached)
+
+For unattended runs without an open notebook, use the Condor scripts path: [condor/README.md](condor/README.md) is the reference, and [`sidm/test_notebooks/lpc_condor_example.ipynb`](sidm/test_notebooks/lpc_condor_example.ipynb) is the runnable walkthrough (sample list → tarball → submit → merge → load and plot).
 
 ## Code structure
 All the interesting code in this repository is in `SIDM/sidm/`, which is organized into the following subdirectories:
@@ -135,15 +237,17 @@ pipreqs . --force # overwrites current requirements.txt
 ```
 
 ### How to use DASK
-1. In your jupyter notebook make sure you import `scaleout` from `sidm.tools`
-2. Modify the dependencies in  `scaleout.py` from `sidm/tools` so that DASK points to your branch from your fork. i.e.
-```
-dependencies = [
-        "git+https://github.com/YOURUSERNAME/SIDM.git@YOURBRANCH",
-    ]
-```
-3. In a cell of your Jupyter Notebook, instantiate the DASK Client:
-```
-client = scaleout.make_dask_client("tls://localhost:8786")
-```
-4. In your `processor.Runner()` function make sure `executor=processor.DaskExecutor(client=client)`
+
+**On coffea-casa** (connecting to a pre-existing scheduler):
+1. `from sidm.tools import scaleout` in your notebook.
+2. Edit `dependencies` in `sidm/tools/scaleout.py` to point at your fork/branch:
+   ```python
+   dependencies = ["git+https://github.com/YOURUSERNAME/SIDM.git@YOURBRANCH"]
+   ```
+3. Instantiate the client:
+   ```python
+   client = scaleout.make_dask_client("tls://localhost:8786")
+   ```
+4. Pass it to the Runner: `executor=processor.DaskExecutor(client=client)`.
+
+**On LPC** (spinning up an HTCondor-backed cluster from the notebook itself), see [section 7 above](#7-scaling-jobs-from-a-notebook-with-dask--htcondor) — `scaleout.make_lpc_client(...)` returns a ready `(cluster, client)` pair and uploads your local `sidm/` tree to workers automatically, so no edit-the-source step is needed.

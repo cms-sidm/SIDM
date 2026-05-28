@@ -18,6 +18,8 @@ The workflow is:
 
 This setup replaces the Dask workflow with Condor-scale parallelism.
 
+A runnable walkthrough of the full pipeline (with every shell command, file description, and a sanity plot at the end) lives at [`sidm/test_notebooks/lpc_condor_example.ipynb`](../sidm/test_notebooks/lpc_condor_example.ipynb). Read it first if you are new — this README is the detailed reference.
+
 ---
 
 ## 1. Repository assumptions
@@ -41,22 +43,23 @@ From the repository parent:
 
 Most commands assume you are starting from:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+    cd /uscms_data/d3/$USER/SIDM
 
 ---
 
-## 2. Setup CMSSW environment
+## 2. Activate your sidm_venv
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+The submitter side (where you run `make_job_args.py` and `condor_submit`) just needs the LCG_107 `sidm_venv` from the top-level README — no CMSSW required, because `make_job_args.py` only imports `coffea` / `awkward` / `PyYAML` which the venv already has.
 
-    source /cvmfs/cms.cern.ch/cmsset_default.sh
-    export SCRAM_ARCH=el9_amd64_gcc12
+    cd /uscms_data/d3/$USER/SIDM
+    source sidm_venv/bin/activate
+
+The Condor *workers* (where the actual processor runs) do still need CMSSW; that is set up automatically inside `run_job.sh` and you do not need to do anything for it on the submitter side.
 
 This workflow was tested with:
 
-    CMSSW_14_1_0_pre4
-    SCRAM_ARCH=el9_amd64_gcc12
-    Python 3.9.14
+    Submitter: LCG_107 Python 3.11.9, coffea==2025.5.0rc2
+    Worker:    CMSSW_14_1_0_pre4, SCRAM_ARCH=el9_amd64_gcc12
 
 ---
 
@@ -146,7 +149,7 @@ to build the list of ROOT files, split them into chunks, and write:
 
 For backgrounds, use chunks of around 10 ROOT files per job:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+    cd /uscms_data/d3/$USER/SIDM
 
     rm -f condor/filelists/*.txt condor/job_args.txt
 
@@ -163,7 +166,7 @@ This creates many jobs per background sample. For example, if a sample has 3000 
 
 For Dask-like parallelism over signal samples, use chunks of around 5 ROOT files per job:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+    cd /uscms_data/d3/$USER/SIDM
 
     rm -f condor/filelists/*.txt condor/job_args.txt
 
@@ -193,7 +196,7 @@ Skip this section if `make_job_args.py` was run with `--replace-xcache` and `con
 
 Whenever files under `sidm/` or `condor/run_sidm_chunk.py` change, remake the tarball:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+    cd /uscms_data/d3/$USER/SIDM
 
     tar \
       --exclude="*.root" \
@@ -207,7 +210,7 @@ Whenever files under `sidm/` or `condor/run_sidm_chunk.py` change, remake the ta
       --exclude="signal_merged" \
       --exclude="background_chunks" \
       --exclude="background_merged" \
-      --exclude="sidm_check_venv" \
+      --exclude="sidm_venv" \
       --exclude="py39_packages" \
       -czf condor/sidm_code.tar.gz \
       sidm condor/run_sidm_chunk.py
@@ -287,9 +290,20 @@ For backgrounds:
 Before submitting jobs:
 
     voms-proxy-init --valid 192:00 -voms cms
-    export X509_USER_PROXY=$(voms-proxy-info -path)
 
-    voms-proxy-info -timeleft
+`voms-proxy-init` writes to `/tmp/x509up_u<UID>` by default, but `/tmp` is **per-node** — the schedd that runs your jobs lives on a different host (`lpcscheddN.fnal.gov`) and cannot read your interactive node's `/tmp`. Jobs submitted with `x509userproxy=/tmp/...` will land in HOLD with:
+
+    Transfer input files failure ... reading from file /tmp/x509up_u<UID>: (errno 2) No such file or directory
+
+Copy the proxy to a shared NFS location and point `X509_USER_PROXY` at the copy instead — that's what `submit.sub` references via `$ENV(X509_USER_PROXY)`:
+
+    cp /tmp/x509up_u$(id -u) /uscms_data/d3/$USER/x509_proxy.pem
+    chmod 600 /uscms_data/d3/$USER/x509_proxy.pem
+    export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem
+
+    voms-proxy-info -file $X509_USER_PROXY -timeleft
+
+(The dask-from-notebook path via `lpcjobqueue` does **not** need this copy — its submit description uses `use_x509userproxy = true`, which lets condor handle the spooling automatically.)
 
 ---
 
@@ -297,9 +311,9 @@ Before submitting jobs:
 
 Submit from inside the `condor/` directory:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM/condor
+    cd /uscms_data/d3/$USER/SIDM/condor
 
-    export X509_USER_PROXY=$(voms-proxy-info -path)
+    export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem   # the shared-NFS copy from §11
 
     condor_submit submit.sub
 
@@ -341,7 +355,7 @@ If jobs disappear from `condor_q`, they are no longer active. Check logs and EOS
 
 From the `condor/` directory:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM/condor
+    cd /uscms_data/d3/$USER/SIDM/condor
 
     grep -R "return value 0" logs/*59092403*.log | wc -l
     grep -R "return value 1" logs/*59092403*.log | wc -l
@@ -359,7 +373,7 @@ A successful job should have:
 
 From the repo parent:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+    cd /uscms_data/d3/$USER/SIDM
 
     awk '{print $1"_"$2".coffea"}' condor/job_args.txt | sort > expected_outputs.txt
 
@@ -395,7 +409,7 @@ This means one ROOT file in a chunk is missing on EOS. One missing ROOT file cau
 
 ### Get failed ProcIds
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+    cd /uscms_data/d3/$USER/SIDM
 
     condor_history -name lpcschedd5.fnal.gov \
       -constraint 'ClusterId == 59092403 && ExitCode != 0' \
@@ -406,7 +420,7 @@ This means one ROOT file in a chunk is missing on EOS. One missing ROOT file cau
 
 ### Build filtered retry filelists
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
+    cd /uscms_data/d3/$USER/SIDM
 
     mkdir -p condor/filelists_retry
     rm -f condor/failed_retry_job_args_59092403.txt
@@ -457,7 +471,7 @@ Edit the final queue line:
 
 Submit:
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM/condor
+    cd /uscms_data/d3/$USER/SIDM/condor
 
     export X509_USER_PROXY=$(voms-proxy-info -path)
 
@@ -465,99 +479,87 @@ Submit:
 
 ---
 
-## 17. Merge `.coffea` chunks from EOS
+## 17. Merge `.coffea` chunks from EOS into the shared lpcmetx area
 
-Use the EOS-aware merge script:
+Chunks stay in `/store/user/$USER/sidm_condor/...`. Merged outputs go to `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/`, which is group-writable and world-readable under `lpcmetx`. Pass `--filelists-dir` + `--selections` + `--hist-collections` to also emit a `.meta.yaml` sidecar describing each merged file:
 
-    merge_coffea_chunks_eos.py
-
-This script:
-
-    input EOS chunk directory
-            ↓
-    copies chunks to temporary local workdir
-            ↓
-    groups chunks by sample
-            ↓
-    uses processor.accumulate(outputs)
-            ↓
-    writes merged .coffea locally
-            ↓
-    copies merged .coffea to output EOS directory
-            ↓
-    optionally deletes temporary local files
+    cd /uscms_data/d3/$USER/SIDM
+    source sidm_venv/bin/activate
 
 ### Merge backgrounds
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
-    source sidm_check_venv/bin/activate
-
-    python merge_coffea_chunks_eos.py \
-      --input-eos-dir /store/user/$USER/sidm_condor/BackgroundChunks_v1 \
-      --output-eos-dir /store/user/$USER/sidm_condor/BackgroundMerged_v1 \
-      --workdir merge_tmp_background
+    python sidm/scripts/merge_coffea_chunks_eos.py \
+      --input-eos-dir  /store/user/$USER/sidm_condor/BackgroundChunks_v1 \
+      --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1 \
+      --workdir merge_tmp_background \
+      --filelists-dir condor/filelists \
+      --selections base \
+      --hist-collections muon_base \
+      --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
 
 ### Merge signals
 
-    cd /uscms_data/d3/$USER/CMSSW_14_1_0_pre4/src/SIDM
-    source sidm_check_venv/bin/activate
+    python sidm/scripts/merge_coffea_chunks_eos.py \
+      --input-eos-dir  /store/user/$USER/sidm_condor/SignalChunks_v1 \
+      --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1 \
+      --workdir merge_tmp_signal \
+      --filelists-dir condor/filelists \
+      --selections base \
+      --hist-collections muon_base \
+      --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
 
-    python merge_coffea_chunks_eos.py \
-      --input-eos-dir /store/user/$USER/sidm_condor/SignalChunks_v1 \
-      --output-eos-dir /store/user/$USER/sidm_condor/SignalMerged_v1 \
-      --workdir merge_tmp_signal
+### What the sidecar contains
+
+Each `.meta.yaml` records the input ROOT file list, the full selection + hist-collection definitions, the schema, chunksize, `unweighted_hist` flag, the SIDM git commit, the coffea version, and a UTC timestamp. Loaded via `sidm.tools.metadata.load_run_metadata()`.
 
 ### Check merged outputs
 
-    xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/BackgroundMerged_v1
-    xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/SignalMerged_v1
+    xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1
+    xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1
 
-    xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/BackgroundMerged_v1 | wc -l
-    xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/SignalMerged_v1 | wc -l
+Expected: one `.coffea` and one `.meta.yaml` per merged sample.
 
-Expected:
+### Chunk retention and cleanup
 
-    BackgroundMerged_v1: one .coffea per background sample
-    SignalMerged_v1: one .coffea per signal sample
+The per-chunk `.coffea` files under `/store/user/$USER/sidm_condor/<v>Chunks_<n>/` are not deleted by the merge script by default. Re-merging is cheap if the chunks remain, but they accumulate EOS storage over time.
+
+Pass `--delete-chunks-after-merge` to the merge invocation to remove the input chunks once the merged file and sidecar have been xrdcp'd to EOS. The flag is opt-in because the deletion is irreversible; run a merge first and verify the output before passing it.
 
 ---
 
-## 18. Access merged files in Coffea-Casa or CMSLPC notebooks
+## 18. Access merged files in CMSLPC notebooks (and across collaborators)
 
 The merged EOS paths are:
 
-    root://cmseos.fnal.gov//store/user/$USER/sidm_condor/SignalMerged_v1/
-    root://cmseos.fnal.gov//store/user/$USER/sidm_condor/BackgroundMerged_v1/
+    root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1/
+    root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1/
 
-For `.coffea` files, it is usually safer to copy locally before loading with `coffea.util.load()`.
+These are world-readable under the `lpcmetx` group area; substitute another user's name in the path to read theirs.
 
-Example from CMSLPC:
+`.coffea` files are safer to copy locally before loading with `coffea.util.load()`. The `.meta.yaml` sidecars are small text files and can be inspected without copying first:
 
     mkdir -p signal_merged background_merged
 
-    for f in $(xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/SignalMerged_v1 | grep ".coffea"); do
-        base=$(basename "$f")
-        xrdcp -f "root://cmseos.fnal.gov/${f}" "signal_merged/${base}"
-    done
-
-    for f in $(xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/BackgroundMerged_v1 | grep ".coffea"); do
-        base=$(basename "$f")
-        xrdcp -f "root://cmseos.fnal.gov/${f}" "background_merged/${base}"
+    for ext in coffea meta.yaml; do
+        for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1 | grep "\\.${ext}$"); do
+            xrdcp -f "root://cmseos.fnal.gov/${f}" "signal_merged/$(basename ${f})"
+        done
+        for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1 | grep "\\.${ext}$"); do
+            xrdcp -f "root://cmseos.fnal.gov/${f}" "background_merged/$(basename ${f})"
+        done
     done
 
 Then in Python:
 
     import glob
     from coffea.util import load
+    from sidm.tools.metadata import load_run_metadata
 
-    signal_files = sorted(glob.glob("signal_merged/*.coffea"))
-    background_files = sorted(glob.glob("background_merged/*.coffea"))
-
-    sig = load(signal_files[0])
-    bkg = load(background_files[0])
-
+    sig_path = sorted(glob.glob("signal_merged/*.coffea"))[0]
+    sig = load(sig_path)
+    sig_meta = load_run_metadata(sig_path)         # tells you what was run
     print(sig.keys())
-    print(bkg.keys())
+    print("n_files:", sig_meta["n_files"], "  sidm_commit:", sig_meta["sidm_commit"])
 
 ---
 
@@ -593,7 +595,7 @@ Do not commit:
     *.json
     *.pem
     x509up_*
-    sidm_check_venv/
+    sidm_venv/
     py39_packages/
     condor/logs/
     condor/filelists/

@@ -5,10 +5,16 @@ import os
 import glob
 import shutil
 import subprocess
+import sys
 from collections import defaultdict
 
 from coffea.util import load, save
 from coffea import processor
+
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+from sidm.tools.metadata import write_run_metadata
 
 
 def run_cmd(cmd, check=True):
@@ -127,6 +133,45 @@ def main():
         help="Keep local temporary files after merging",
     )
 
+    # Metadata sidecar options. If --filelists-dir is supplied a .meta.yaml is
+    # written next to each merged .coffea (and xrdcp'd to EOS) recording the
+    # full list of ROOT files, selections, hist collections, schema, etc.
+    parser.add_argument(
+        "--filelists-dir",
+        default=None,
+        help=(
+            "Directory containing per-chunk filelists (e.g. condor/filelists)."
+            " Required to write the .meta.yaml sidecar."
+        ),
+    )
+    parser.add_argument(
+        "--selections",
+        default=None,
+        help="Comma-separated selection names (e.g. 'base'). Saved into sidecar.",
+    )
+    parser.add_argument(
+        "--hist-collections",
+        default=None,
+        help="Comma-separated hist-collection names (e.g. 'muon_base'). Saved into sidecar.",
+    )
+    parser.add_argument("--schema", default="LLPNanoAODSchema", help="Schema name saved into sidecar.")
+    parser.add_argument("--chunksize", type=int, default=50_000, help="Chunksize saved into sidecar.")
+    parser.add_argument(
+        "--unweighted-hist",
+        action="store_true",
+        help="Records `unweighted_hist: true` in the sidecar (must match how chunks were run).",
+    )
+
+    parser.add_argument(
+        "--delete-chunks-after-merge",
+        action="store_true",
+        help=(
+            "After a successful merge, delete the per-chunk .coffea files from the input EOS"
+            " directory. Off by default since deletion is irreversible; opt in once a merge"
+            " has been verified."
+        ),
+    )
+
     args = parser.parse_args()
 
     input_eos_dir = args.input_eos_dir.rstrip("/")
@@ -201,6 +246,36 @@ def main():
 
         print("Copying merged file to EOS")
         xrdcp_to_eos(local_merged_path, output_eos_dir)
+
+        if args.filelists_dir:
+            sample_files = []
+            for fl in sorted(glob.glob(os.path.join(args.filelists_dir, f"{sample}_*.txt"))):
+                with open(fl) as f:
+                    sample_files.extend(line.strip() for line in f if line.strip())
+
+            selections = [s.strip() for s in (args.selections or "").split(",") if s.strip()]
+            hist_collections = [s.strip() for s in (args.hist_collections or "").split(",") if s.strip()]
+
+            sidecar = write_run_metadata(
+                local_merged_path,
+                fileset={sample: {"files": sample_files, "metadata": {}}},
+                selections=selections,
+                hist_collections=hist_collections,
+                schema=args.schema,
+                chunksize=args.chunksize,
+                unweighted_hist=args.unweighted_hist,
+                extra={"n_chunks": len(local_paths)},
+                sidm_root=_REPO_ROOT,
+            )
+            print(f"Wrote sidecar: {sidecar}")
+            xrdcp_to_eos(sidecar, output_eos_dir)
+        else:
+            print("--filelists-dir not provided; skipping .meta.yaml sidecar.")
+
+        if args.delete_chunks_after_merge:
+            for eos_path in eos_paths:
+                run_cmd(["xrdfs", "root://cmseos.fnal.gov", "rm", eos_path], check=True)
+            print(f"Deleted {len(eos_paths)} chunks for {sample} from {input_eos_dir}")
 
     print("=" * 80)
     print("All samples merged and copied to EOS")
