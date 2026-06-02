@@ -3,6 +3,7 @@
 # Previously defined selections can be imported with '<<' or '*'
 # Any nested collections created by "<<" or '*' operations will be flattened in sidm_processor.py
 
+### Main selections ###
 
 # Cuts to apply to objects that are clustered into lepton jets
 ljsource_cuts: &ljsource_cuts
@@ -26,6 +27,78 @@ ljsource_cuts: &ljsource_cuts
       - "|eta| < 2.4"
       - "displaced ID"
       - "all" # cross-cleaning
+
+# require final-state gen e and mu
+gen_level_cuts: &gen_level_cuts
+  obj_cuts: &obj_gen_level_cuts
+    genMus:
+      - "status 1"
+    genEs:
+      - "status 1"
+
+# apply trigger
+trigger: &trigger
+  evt_cuts:
+    - "pass triggers"
+
+# PV filter
+pv_cuts: &pv_cuts
+  evt_cuts: &evt_pv_cuts
+    - "PV filter"
+
+# apply trigger, gen cuts, and pv filter
+baseNoLjNoLjsource: &baseNoLjNoLjsource
+  obj_cuts: &obj_baseNoLjNoLjsource
+    <<: *obj_gen_level_cuts
+  evt_cuts: &evt_baseNoLjNoljsource
+    - *trigger
+    - *evt_pv_cuts
+
+# apply trigger, gen cuts, pv filter, and lj-source cuts
+baseNoLj: &baseNoLj
+  obj_cuts: &obj_baseNoLj
+    <<: *obj_baseNoLjNoLjsource
+    <<: *obj_ljsource_cuts
+  evt_cuts: &evt_baseNoLj
+    - *evt_baseNoLjNoljsource
+
+# add obj-level LJ cuts
+base_ljObjCut: &base_ljObjCut
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts: &base_postLj_obj_cuts
+    ljs: &lj_base
+      - "pT > 30 GeV"
+      - "|eta| < 2.4"
+    mu_ljs: &mu_lj_base
+      - "Mu >= 2"
+  evt_cuts:
+    - *evt_baseNoLj
+
+# add >=2 LJ requirement
+base: &base
+  obj_cuts: &obj_base
+    <<: *obj_baseNoLj
+  postLj_obj_cuts:
+    <<: *base_postLj_obj_cuts
+  evt_cuts: &evt_base
+    - *evt_baseNoLj
+    - ">=2 LJs"
+
+4mu: &4mu
+  <<: *base
+  evt_cuts: &evt_4mu
+    - *evt_base
+    - "4mu"
+
+2mu2e: &2mu2e
+  <<: *base
+  evt_cuts: &evt_2mu2e
+    - *evt_base
+    - "2mu2e"
+
+
+### Control regions and specific studies ###
 
 ljsource_cuts_chargeCC: &ljsource_cuts_chargeCC
   obj_cuts: &obj_ljsource_cuts_chargeCC
@@ -81,14 +154,6 @@ ljsource_cuts_endcap: &ljsource_cuts_endcap
       - "all" # cross-cleaning
 
 # require final-state gen e and mu
-gen_level_cuts: &gen_level_cuts
-  obj_cuts: &obj_gen_level_cuts
-    genMus:
-      - "status 1"
-    genEs:
-      - "status 1"
-
-# require final-state gen e and mu
 gen_leptons_final: &gen_leptons_final
   obj_cuts: &obj_gen_leptons_final
     genMus:
@@ -108,54 +173,16 @@ gen_leptons_born: &gen_leptons_born
   evt_cuts:
     - "PV filter"
 
-# apply trigger
-trigger: &trigger
-  evt_cuts:
-    - "pass triggers"
-
-# PV filter
-pv_cuts: &pv_cuts
-  evt_cuts: &evt_pv_cuts
-    - "PV filter"
-
-# apply trigger, gen cuts, and pv filter
-baseNoLjNoLjsource: &baseNoLjNoLjsource
-  obj_cuts: &obj_baseNoLjNoLjsource
-    <<: *obj_gen_level_cuts
-  evt_cuts: &evt_baseNoLjNoljsource
-    - *trigger
-    - *evt_pv_cuts
-
 baseNoLjNoLjsource_noTrigger: &baseNoLjNoLjsource_noTrigger
   obj_cuts:
     <<: *obj_gen_level_cuts
   evt_cuts:
     - *evt_pv_cuts
 
-# apply trigger, gen cuts, pv filter, and lj-source cuts
-baseNoLj: &baseNoLj
-  obj_cuts: &obj_baseNoLj
-    <<: *obj_baseNoLjNoLjsource
-    <<: *obj_ljsource_cuts
-  evt_cuts: &evt_baseNoLj
-    - *evt_baseNoLjNoljsource
-
 baseNoLj_noTrigger: &baseNoLj_noTrigger
   obj_cuts:
     <<: *obj_baseNoLjNoLjsource
     <<: *obj_ljsource_cuts
-  evt_cuts:
-    - *evt_pv_cuts
-
-baseNoLj_noTrigger_distinct_parent: &baseNoLj_noTrigger_distinct_parent
-  obj_cuts:
-    <<: *obj_ljsource_cuts
-    genMus:
-      - "fromGenA"
-      - "status 1"
-    genEs:
-      - "fromGenA"
-      - "status 1"
   evt_cuts:
     - *evt_pv_cuts
 
@@ -168,29 +195,6 @@ baseNoLj_egLj: &baseNoLj_egLj
       - "egLj"
   evt_cuts:
     - *evt_baseNoLj
-
-# add obj-level LJ cuts
-base_ljObjCut: &base_ljObjCut
-  obj_cuts:
-    <<: *obj_baseNoLj
-  postLj_obj_cuts: &base_postLj_obj_cuts
-    ljs: &lj_base
-      - "pT > 30 GeV"
-      - "|eta| < 2.4"
-    mu_ljs: &mu_lj_base
-      - "Mu >= 2"
-  evt_cuts:
-    - *evt_baseNoLj
-
-# add >=2 LJ requirement
-base: &base
-  obj_cuts: &obj_base
-    <<: *obj_baseNoLj
-  postLj_obj_cuts:
-    <<: *base_postLj_obj_cuts
-  evt_cuts: &evt_base
-    - *evt_baseNoLj
-    - ">=2 LJs"
 
 2mu_2LJ_CC: &2mu_2LJ_CC
   obj_cuts:
@@ -239,18 +243,6 @@ base: &base
   evt_cuts:
     - *evt_baseNoLj
     - ">=2 LJs"
-
-4mu: &4mu
-  <<: *base
-  evt_cuts: &evt_4mu
-    - *evt_base
-    - "4mu"
-
-2mu2e: &2mu2e
-  <<: *base
-  evt_cuts: &evt_2mu2e
-    - *evt_base
-    - "2mu2e"
 
 #selection on base_ljObjCut
 base_ljObjCut_pixelHits_as_ljSource: &base_ljObjCut_pixelHits_as_ljSource
