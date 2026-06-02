@@ -75,6 +75,23 @@ base_ljObjCut: &base_ljObjCut
   evt_cuts:
     - *evt_baseNoLj
 
+# add LJ isolation and displacement cuts
+base_ljDisplacementIso: &base_ljDisplacementIso
+  obj_cuts:
+    <<: *obj_baseNoLj
+  postLj_obj_cuts: &lj_displacementIso
+    ljs:
+      - *lj_base
+    mu_ljs: &mu_lj_displacementIso
+      - *mu_lj_base
+      - "mu_lj_iso < 0.1"
+      - "displaced"
+    egm_ljs: &egm_lj_displacementIso
+      - "egm_lj_iso < 0.2"
+      - "displaced"
+  evt_cuts:
+    - *evt_baseNoLj
+
 # add >=2 LJ requirement
 base: &base
   obj_cuts: &obj_base
@@ -95,6 +112,28 @@ base: &base
   <<: *base
   evt_cuts: &evt_2mu2e
     - *evt_base
+    - "2mu2e"
+
+# add LJ iso, displacement, and lj-lj dPhi
+base_sr: &base_sr
+  obj_cuts: &obj_sr
+    <<: *obj_baseNoLj
+  postLj_obj_cuts: &postlj_sr
+    <<: *lj_displacementIso
+  evt_cuts: &evt_sr
+    - *evt_base
+    - "LJ-LJ dPhi > 2"
+
+4mu_sr: &4mu_sr
+  <<: *base_sr
+  evt_cuts: &evt_4mu_sr
+    - *evt_sr
+    - "4mu"
+
+2mu2e_sr: &2mu2e_sr
+  <<: *base_sr
+  evt_cuts: &evt_2mu2e_sr
+    - *evt_sr
     - "2mu2e"
 
 
