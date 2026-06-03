@@ -4,17 +4,19 @@ This directory contains the scripts needed to run the SIDM Coffea processor on C
 
 The workflow is:
 
-    samples + YAML locations
-            ↓
-    make_job_args.py
-            ↓
-    many Condor jobs, each processing a ROOT-file chunk
-            ↓
-    chunk .coffea outputs on EOS
-            ↓
-    merge_coffea_chunks_eos.py
-            ↓
-    one merged .coffea file per sample on EOS
+```
+samples + YAML locations
+        ↓
+make_job_args.py
+        ↓
+many Condor jobs, each processing a ROOT-file chunk
+        ↓
+chunk .coffea outputs on EOS
+        ↓
+merge_coffea_chunks_eos.py
+        ↓
+one merged .coffea file per sample on EOS
+```
 
 This setup replaces the Dask workflow with Condor-scale parallelism.
 
@@ -26,24 +28,28 @@ A runnable walkthrough of the full pipeline (with every shell command, file desc
 
 From the repository parent:
 
-    SIDM/
-      sidm/
-        tools/
-          sidm_processor.py
-          utilities.py
-          llpnanoaodschema.py
-      condor/
-        make_job_args.py
-        run_sidm_chunk.py
-        run_job.sh
-        submit.sub
-        requirements.txt
-        signal_samples.txt
-        background_samples.txt
+```
+SIDM/
+  sidm/
+    tools/
+      sidm_processor.py
+      utilities.py
+      llpnanoaodschema.py
+  condor/
+    make_job_args.py
+    run_sidm_chunk.py
+    run_job.sh
+    submit.sub
+    requirements.txt
+    signal_samples.txt
+    background_samples.txt
+```
 
 Most commands assume you are starting from:
 
-    cd /uscms_data/d3/$USER/SIDM
+```bash
+cd /uscms_data/d3/$USER/SIDM
+```
 
 ---
 
@@ -51,23 +57,29 @@ Most commands assume you are starting from:
 
 The submitter side (where you run `make_job_args.py` and `condor_submit`) just needs the LCG_107 `sidm_venv` from the top-level README — no CMSSW required, because `make_job_args.py` only imports `coffea` / `awkward` / `PyYAML` which the venv already has.
 
-    cd /uscms_data/d3/$USER/SIDM
-    source sidm_venv/bin/activate
+```bash
+cd /uscms_data/d3/$USER/SIDM
+source sidm_venv/bin/activate
+```
 
 The Condor *workers* (where the actual processor runs) do still need CMSSW; that is set up automatically inside `run_job.sh` and you do not need to do anything for it on the submitter side.
 
 This workflow was tested with:
 
-    Submitter: LCG_107 Python 3.11.9, coffea==2025.5.0rc2
-    Worker:    CMSSW_14_1_0_pre4, SCRAM_ARCH=el9_amd64_gcc12
+```
+Submitter: LCG_107 Python 3.11.9, coffea==2025.5.0rc2
+Worker:    CMSSW_14_1_0_pre4, SCRAM_ARCH=el9_amd64_gcc12
+```
 
 ---
 
 ## 3. Condor directory setup
 
-    mkdir -p condor/filelists
-    mkdir -p condor/logs
-    mkdir -p condor/output
+```bash
+mkdir -p condor/filelists
+mkdir -p condor/logs
+mkdir -p condor/output
+```
 
 ---
 
@@ -75,20 +87,24 @@ This workflow was tested with:
 
 The Condor jobs create a temporary Python virtual environment inside the Condor scratch directory and install the packages listed in:
 
-    condor/requirements.txt
+```
+condor/requirements.txt
+```
 
 Recommended contents:
 
-    awkward==2.8.2
-    coffea==2025.5.0rc2
-    fastjet==3.4.3.1
-    hist==2.8.0
-    numpy==1.26.4
-    PyYAML==6.0.2
-    setuptools==80.1.0
-    tabulate==0.9.0
-    vector==1.6.2
-    uproot==5.6.2
+```
+awkward==2.8.2
+coffea==2025.5.0rc2
+fastjet==3.4.3.1
+hist==2.8.0
+numpy==1.26.4
+PyYAML==6.0.2
+setuptools==80.1.0
+tabulate==0.9.0
+vector==1.6.2
+uproot==5.6.2
+```
 
 ---
 
@@ -98,35 +114,43 @@ Sample-list files should contain one sample name per line, with no quotes and no
 
 Example background file:
 
-    condor/background_samples.txt
+```
+condor/background_samples.txt
+```
 
 Example contents:
 
-    TTJets
-    QCD_Pt170To300
-    QCD_Pt300To470
-    QCD_Pt470To600
-    QCD_Pt600To800
-    DYJetsToMuMu_M10to50
-    DYJetsToMuMu_M50
-    QCD_Pt1000
-    QCD_Pt120To170
-    QCD_Pt15To20
-    QCD_Pt20To30
-    QCD_Pt30To50
-    QCD_Pt50To80
-    QCD_Pt80To120
-    QCD_Pt800To1000
+```
+TTJets
+QCD_Pt170To300
+QCD_Pt300To470
+QCD_Pt470To600
+QCD_Pt600To800
+DYJetsToMuMu_M10to50
+DYJetsToMuMu_M50
+QCD_Pt1000
+QCD_Pt120To170
+QCD_Pt15To20
+QCD_Pt20To30
+QCD_Pt30To50
+QCD_Pt50To80
+QCD_Pt80To120
+QCD_Pt800To1000
+```
 
 Example signal file:
 
-    condor/signal_samples.txt
+```
+condor/signal_samples.txt
+```
 
 Example contents:
 
-    2Mu2E_200GeV_0p25GeV_0p1mm
-    2Mu2E_200GeV_0p25GeV_1p0mm
-    2Mu2E_200GeV_0p25GeV_5p0mm
+```
+2Mu2E_200GeV_0p25GeV_0p1mm
+2Mu2E_200GeV_0p25GeV_1p0mm
+2Mu2E_200GeV_0p25GeV_5p0mm
+```
 
 ---
 
@@ -134,31 +158,39 @@ Example contents:
 
 The script:
 
-    condor/make_job_args.py
+```
+condor/make_job_args.py
+```
 
 uses:
 
-    utilities.make_fileset(samples, dataset, location_cfg=...)
+```python
+utilities.make_fileset(samples, dataset, location_cfg=...)
+```
 
 to build the list of ROOT files, split them into chunks, and write:
 
-    condor/job_args.txt
-    condor/filelists/*.txt
+```
+condor/job_args.txt
+condor/filelists/*.txt
+```
 
 ### Backgrounds
 
 For backgrounds, use chunks of around 10 ROOT files per job:
 
-    cd /uscms_data/d3/$USER/SIDM
+```bash
+cd /uscms_data/d3/$USER/SIDM
 
-    rm -f condor/filelists/*.txt condor/job_args.txt
+rm -f condor/filelists/*.txt condor/job_args.txt
 
-    python3 condor/make_job_args.py \
-      --samples-file condor/background_samples.txt \
-      --dataset llpNanoAOD_v2 \
-      --location-cfg backgrounds.yaml \
-      --files-per-job 10 \
-      --replace-xcache
+python3 condor/make_job_args.py \
+  --samples-file condor/background_samples.txt \
+  --dataset llpNanoAOD_v2 \
+  --location-cfg backgrounds.yaml \
+  --files-per-job 10 \
+  --replace-xcache
+```
 
 This creates many jobs per background sample. For example, if a sample has 3000 ROOT files and `--files-per-job 10`, that sample becomes about 300 Condor jobs.
 
@@ -166,16 +198,18 @@ This creates many jobs per background sample. For example, if a sample has 3000 
 
 For Dask-like parallelism over signal samples, use chunks of around 5 ROOT files per job:
 
-    cd /uscms_data/d3/$USER/SIDM
+```bash
+cd /uscms_data/d3/$USER/SIDM
 
-    rm -f condor/filelists/*.txt condor/job_args.txt
+rm -f condor/filelists/*.txt condor/job_args.txt
 
-    python3 condor/make_job_args.py \
-      --samples-file condor/signal_samples.txt \
-      --dataset llpNanoAOD_v2 \
-      --location-cfg signal_2mu2e_v10.yaml \
-      --files-per-job 5 \
-      --replace-xcache
+python3 condor/make_job_args.py \
+  --samples-file condor/signal_samples.txt \
+  --dataset llpNanoAOD_v2 \
+  --location-cfg signal_2mu2e_v10.yaml \
+  --files-per-job 5 \
+  --replace-xcache
+```
 
 This creates multiple Condor jobs per signal point. The chunks are merged afterward.
 
@@ -196,36 +230,42 @@ Skip this section if `make_job_args.py` was run with `--replace-xcache` and `con
 
 Whenever files under `sidm/` or `condor/run_sidm_chunk.py` change, remake the tarball:
 
-    cd /uscms_data/d3/$USER/SIDM
+```bash
+cd /uscms_data/d3/$USER/SIDM
 
-    tar \
-      --exclude="*.root" \
-      --exclude="__pycache__" \
-      --exclude=".git" \
-      --exclude="condor/logs" \
-      --exclude="condor/output" \
-      --exclude="condor/filelists" \
-      --exclude="condor/filelists_retry" \
-      --exclude="signal_chunks" \
-      --exclude="signal_merged" \
-      --exclude="background_chunks" \
-      --exclude="background_merged" \
-      --exclude="sidm_venv" \
-      --exclude="py39_packages" \
-      -czf condor/sidm_code.tar.gz \
-      sidm condor/run_sidm_chunk.py
+tar \
+  --exclude="*.root" \
+  --exclude="__pycache__" \
+  --exclude=".git" \
+  --exclude="condor/logs" \
+  --exclude="condor/output" \
+  --exclude="condor/filelists" \
+  --exclude="condor/filelists_retry" \
+  --exclude="signal_chunks" \
+  --exclude="signal_merged" \
+  --exclude="background_chunks" \
+  --exclude="background_merged" \
+  --exclude="sidm_venv" \
+  --exclude="py39_packages" \
+  -czf condor/sidm_code.tar.gz \
+  sidm condor/run_sidm_chunk.py
+```
 
 Check:
 
-    ls -lh condor/sidm_code.tar.gz
+```bash
+ls -lh condor/sidm_code.tar.gz
+```
 
 You do not need to re-tar if you only changed:
 
-    condor/requirements.txt
-    condor/submit.sub
-    condor/run_job.sh
-    condor/job_args.txt
-    condor/filelists/*.txt
+```
+condor/requirements.txt
+condor/submit.sub
+condor/run_job.sh
+condor/job_args.txt
+condor/filelists/*.txt
+```
 
 Those are transferred separately.
 
@@ -235,11 +275,13 @@ Those are transferred separately.
 
 Use separate directories for signal chunks, background chunks, and merged outputs.
 
-    xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/SignalChunks_v1
-    xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/BackgroundChunks_v1
+```bash
+xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/SignalChunks_v1
+xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/BackgroundChunks_v1
 
-    xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/SignalMerged_v1
-    xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/BackgroundMerged_v1
+xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/SignalMerged_v1
+xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_condor/BackgroundMerged_v1
+```
 
 ---
 
@@ -247,41 +289,49 @@ Use separate directories for signal chunks, background chunks, and merged output
 
 File:
 
-    condor/submit.sub
+```
+condor/submit.sub
+```
 
 Example:
 
-    universe = vanilla
+```
+universe = vanilla
 
-    executable = run_job.sh
+executable = run_job.sh
 
-    arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
 
-    should_transfer_files = YES
-    when_to_transfer_output = ON_EXIT
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
 
-    transfer_input_files = sidm_code.tar.gz, requirements.txt, $(filelist)
-    transfer_output_files = ""
+transfer_input_files = sidm_code.tar.gz, requirements.txt, $(filelist)
+transfer_output_files = ""
 
-    output = logs/$(sample)_$(chunk)_$(Cluster)_$(Process).out
-    error  = logs/$(sample)_$(chunk)_$(Cluster)_$(Process).err
-    log    = logs/$(sample)_$(chunk)_$(Cluster)_$(Process).log
+output = logs/$(sample)_$(chunk)_$(Cluster)_$(Process).out
+error  = logs/$(sample)_$(chunk)_$(Cluster)_$(Process).err
+log    = logs/$(sample)_$(chunk)_$(Cluster)_$(Process).log
 
-    request_cpus = 1
-    request_memory = 4GB
-    request_disk = 4GB
+request_cpus = 1
+request_memory = 4GB
+request_disk = 4GB
 
-    x509userproxy = $ENV(X509_USER_PROXY)
+x509userproxy = $ENV(X509_USER_PROXY)
 
-    queue sample, chunk, filelist from job_args.txt
+queue sample, chunk, filelist from job_args.txt
+```
 
 `$ENV(USER)` is expanded at submit time, so the same file works for any LPC user. The only thing to edit between runs is the trailing "run tag" — for signals use:
 
-    root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/SignalChunks_v1
+```
+root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/SignalChunks_v1
+```
 
 For backgrounds:
 
-    root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
+```
+root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
+```
 
 ---
 
@@ -289,19 +339,25 @@ For backgrounds:
 
 Before submitting jobs:
 
-    voms-proxy-init --valid 192:00 -voms cms
+```bash
+voms-proxy-init --valid 192:00 -voms cms
+```
 
 `voms-proxy-init` writes to `/tmp/x509up_u<UID>` by default, but `/tmp` is **per-node** — the schedd that runs your jobs lives on a different host (`lpcscheddN.fnal.gov`) and cannot read your interactive node's `/tmp`. Jobs submitted with `x509userproxy=/tmp/...` will land in HOLD with:
 
-    Transfer input files failure ... reading from file /tmp/x509up_u<UID>: (errno 2) No such file or directory
+```
+Transfer input files failure ... reading from file /tmp/x509up_u<UID>: (errno 2) No such file or directory
+```
 
 Copy the proxy to a shared NFS location and point `X509_USER_PROXY` at the copy instead — that's what `submit.sub` references via `$ENV(X509_USER_PROXY)`:
 
-    cp /tmp/x509up_u$(id -u) /uscms_data/d3/$USER/x509_proxy.pem
-    chmod 600 /uscms_data/d3/$USER/x509_proxy.pem
-    export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem
+```bash
+cp /tmp/x509up_u$(id -u) /uscms_data/d3/$USER/x509_proxy.pem
+chmod 600 /uscms_data/d3/$USER/x509_proxy.pem
+export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem
 
-    voms-proxy-info -file $X509_USER_PROXY -timeleft
+voms-proxy-info -file $X509_USER_PROXY -timeleft
+```
 
 (The dask-from-notebook path via `lpcjobqueue` does **not** need this copy — its submit description uses `use_x509userproxy = true`, which lets condor handle the spooling automatically.)
 
@@ -311,21 +367,27 @@ Copy the proxy to a shared NFS location and point `X509_USER_PROXY` at the copy 
 
 Submit from inside the `condor/` directory:
 
-    cd /uscms_data/d3/$USER/SIDM/condor
+```bash
+cd /uscms_data/d3/$USER/SIDM/condor
 
-    export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem   # the shared-NFS copy from §11
+export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem   # the shared-NFS copy from §11
 
-    condor_submit submit.sub
+condor_submit submit.sub
+```
 
 Example output:
 
-    Attempting to submit jobs to lpcschedd5.fnal.gov
-    5787 job(s) submitted to cluster 59092403.
+```
+Attempting to submit jobs to lpcschedd5.fnal.gov
+5787 job(s) submitted to cluster 59092403.
+```
 
 Record:
 
-    schedd:  lpcschedd5.fnal.gov
-    cluster: 59092403
+```
+schedd:  lpcschedd5.fnal.gov
+cluster: 59092403
+```
 
 ---
 
@@ -333,19 +395,27 @@ Record:
 
 Use the schedd and cluster ID printed by `condor_submit`.
 
-    condor_q -name lpcschedd5.fnal.gov 59092403
+```bash
+condor_q -name lpcschedd5.fnal.gov 59092403
+```
 
 Summary:
 
-    condor_q -name lpcschedd5.fnal.gov 59092403 -totals
+```bash
+condor_q -name lpcschedd5.fnal.gov 59092403 -totals
+```
 
 Held jobs:
 
-    condor_q -name lpcschedd5.fnal.gov 59092403 -hold
+```bash
+condor_q -name lpcschedd5.fnal.gov 59092403 -hold
+```
 
 Watch live:
 
-    watch -n 10 'condor_q -name lpcschedd5.fnal.gov 59092403 -totals'
+```bash
+watch -n 10 'condor_q -name lpcschedd5.fnal.gov 59092403 -totals'
+```
 
 If jobs disappear from `condor_q`, they are no longer active. Check logs and EOS outputs.
 
@@ -355,17 +425,21 @@ If jobs disappear from `condor_q`, they are no longer active. Check logs and EOS
 
 From the `condor/` directory:
 
-    cd /uscms_data/d3/$USER/SIDM/condor
+```bash
+cd /uscms_data/d3/$USER/SIDM/condor
 
-    grep -R "return value 0" logs/*59092403*.log | wc -l
-    grep -R "return value 1" logs/*59092403*.log | wc -l
-    grep -R "return value 2" logs/*59092403*.log | wc -l
+grep -R "return value 0" logs/*59092403*.log | wc -l
+grep -R "return value 1" logs/*59092403*.log | wc -l
+grep -R "return value 2" logs/*59092403*.log | wc -l
 
-    grep -R "Traceback\|ERROR\|Exception\|No such file" logs/*59092403*.err | tail -100
+grep -R "Traceback\|ERROR\|Exception\|No such file" logs/*59092403*.err | tail -100
+```
 
 A successful job should have:
 
-    Normal termination (return value 0)
+```
+Normal termination (return value 0)
+```
 
 ---
 
@@ -373,26 +447,28 @@ A successful job should have:
 
 From the repo parent:
 
-    cd /uscms_data/d3/$USER/SIDM
+```bash
+cd /uscms_data/d3/$USER/SIDM
 
-    awk '{print $1"_"$2".coffea"}' condor/job_args.txt | sort > expected_outputs.txt
+awk '{print $1"_"$2".coffea"}' condor/job_args.txt | sort > expected_outputs.txt
 
-    xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/BackgroundChunks_v1 \
-      | xargs -n1 basename \
-      | sort > actual_outputs.txt
+xrdfs root://cmseos.fnal.gov ls /store/user/$USER/sidm_condor/BackgroundChunks_v1 \
+  | xargs -n1 basename \
+  | sort > actual_outputs.txt
 
-    comm -23 expected_outputs.txt actual_outputs.txt > missing_outputs.txt
+comm -23 expected_outputs.txt actual_outputs.txt > missing_outputs.txt
 
-    echo "Expected:"
-    wc -l expected_outputs.txt
+echo "Expected:"
+wc -l expected_outputs.txt
 
-    echo "Actual:"
-    wc -l actual_outputs.txt
+echo "Actual:"
+wc -l actual_outputs.txt
 
-    echo "Missing:"
-    wc -l missing_outputs.txt
+echo "Missing:"
+wc -l missing_outputs.txt
 
-    head missing_outputs.txt
+head missing_outputs.txt
+```
 
 For signals, replace `BackgroundChunks_v1` with `SignalChunks_v1`.
 
@@ -402,80 +478,92 @@ For signals, replace `BackgroundChunks_v1` with `SignalChunks_v1`.
 
 A common failure is:
 
-    OSError: Failed to open file:
-    No such file or directory
+```
+OSError: Failed to open file:
+No such file or directory
+```
 
 This means one ROOT file in a chunk is missing on EOS. One missing ROOT file causes the entire chunk to fail.
 
 ### Get failed ProcIds
 
-    cd /uscms_data/d3/$USER/SIDM
+```bash
+cd /uscms_data/d3/$USER/SIDM
 
-    condor_history -name lpcschedd5.fnal.gov \
-      -constraint 'ClusterId == 59092403 && ExitCode != 0' \
-      -af ProcId ExitCode > failed_procs_59092403.txt
+condor_history -name lpcschedd5.fnal.gov \
+  -constraint 'ClusterId == 59092403 && ExitCode != 0' \
+  -af ProcId ExitCode > failed_procs_59092403.txt
 
-    wc -l failed_procs_59092403.txt
-    head failed_procs_59092403.txt
+wc -l failed_procs_59092403.txt
+head failed_procs_59092403.txt
+```
 
 ### Build filtered retry filelists
 
-    cd /uscms_data/d3/$USER/SIDM
+```bash
+cd /uscms_data/d3/$USER/SIDM
 
-    mkdir -p condor/filelists_retry
-    rm -f condor/failed_retry_job_args_59092403.txt
+mkdir -p condor/filelists_retry
+rm -f condor/failed_retry_job_args_59092403.txt
 
-    while read PROC EXITCODE; do
-        LINE=$(awk -v p="$PROC" 'NR==p+1 {print}' condor/job_args.txt)
+while read PROC EXITCODE; do
+    LINE=$(awk -v p="$PROC" 'NR==p+1 {print}' condor/job_args.txt)
 
-        SAMPLE=$(echo "$LINE" | awk '{print $1}')
-        CHUNK=$(echo "$LINE" | awk '{print $2}')
-        FILELIST=$(echo "$LINE" | awk '{print $3}')
+    SAMPLE=$(echo "$LINE" | awk '{print $1}')
+    CHUNK=$(echo "$LINE" | awk '{print $2}')
+    FILELIST=$(echo "$LINE" | awk '{print $3}')
 
-        OLD_FILELIST="condor/${FILELIST}"
-        NEW_FILELIST="condor/filelists_retry/${SAMPLE}_${CHUNK}.txt"
+    OLD_FILELIST="condor/${FILELIST}"
+    NEW_FILELIST="condor/filelists_retry/${SAMPLE}_${CHUNK}.txt"
 
-        echo "Checking $SAMPLE chunk $CHUNK"
+    echo "Checking $SAMPLE chunk $CHUNK"
 
-        > "$NEW_FILELIST"
+    > "$NEW_FILELIST"
 
-        while read ROOTFILE; do
-            EOSPATH=$(echo "$ROOTFILE" | sed 's#root://cmseos.fnal.gov//#/#' | sed 's#^//store#/store#')
+    while read ROOTFILE; do
+        EOSPATH=$(echo "$ROOTFILE" | sed 's#root://cmseos.fnal.gov//#/#' | sed 's#^//store#/store#')
 
-            if xrdfs root://cmseos.fnal.gov stat "$EOSPATH" >/dev/null 2>&1; then
-                echo "$ROOTFILE" >> "$NEW_FILELIST"
-            else
-                echo "  MISSING: $ROOTFILE"
-            fi
-        done < "$OLD_FILELIST"
-
-        NGOOD=$(wc -l < "$NEW_FILELIST")
-
-        if [ "$NGOOD" -gt 0 ]; then
-            echo "$SAMPLE $CHUNK filelists_retry/${SAMPLE}_${CHUNK}.txt" >> condor/failed_retry_job_args_59092403.txt
+        if xrdfs root://cmseos.fnal.gov stat "$EOSPATH" >/dev/null 2>&1; then
+            echo "$ROOTFILE" >> "$NEW_FILELIST"
         else
-            echo "  WARNING: no good files left for $SAMPLE chunk $CHUNK"
+            echo "  MISSING: $ROOTFILE"
         fi
+    done < "$OLD_FILELIST"
 
-    done < failed_procs_59092403.txt
+    NGOOD=$(wc -l < "$NEW_FILELIST")
+
+    if [ "$NGOOD" -gt 0 ]; then
+        echo "$SAMPLE $CHUNK filelists_retry/${SAMPLE}_${CHUNK}.txt" >> condor/failed_retry_job_args_59092403.txt
+    else
+        echo "  WARNING: no good files left for $SAMPLE chunk $CHUNK"
+    fi
+
+done < failed_procs_59092403.txt
+```
 
 ### Submit retry jobs
 
 Create a retry submit file:
 
-    cp condor/submit.sub condor/submit_retry_59092403.sub
+```bash
+cp condor/submit.sub condor/submit_retry_59092403.sub
+```
 
 Edit the final queue line:
 
-    queue sample, chunk, filelist from failed_retry_job_args_59092403.txt
+```
+queue sample, chunk, filelist from failed_retry_job_args_59092403.txt
+```
 
 Submit:
 
-    cd /uscms_data/d3/$USER/SIDM/condor
+```bash
+cd /uscms_data/d3/$USER/SIDM/condor
 
-    export X509_USER_PROXY=$(voms-proxy-info -path)
+export X509_USER_PROXY=$(voms-proxy-info -path)
 
-    condor_submit submit_retry_59092403.sub
+condor_submit submit_retry_59092403.sub
+```
 
 ---
 
@@ -483,30 +571,36 @@ Submit:
 
 Chunks stay in `/store/user/$USER/sidm_condor/...`. Merged outputs go to `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/`, which is group-writable and world-readable under `lpcmetx`. Pass `--filelists-dir` + `--selections` + `--hist-collections` to also emit a `.meta.yaml` sidecar describing each merged file:
 
-    cd /uscms_data/d3/$USER/SIDM
-    source sidm_venv/bin/activate
+```bash
+cd /uscms_data/d3/$USER/SIDM
+source sidm_venv/bin/activate
+```
 
 ### Merge backgrounds
 
-    python sidm/scripts/merge_coffea_chunks_eos.py \
-      --input-eos-dir  /store/user/$USER/sidm_condor/BackgroundChunks_v1 \
-      --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1 \
-      --workdir merge_tmp_background \
-      --filelists-dir condor/filelists \
-      --selections base \
-      --hist-collections muon_base \
-      --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
+```bash
+python sidm/scripts/merge_coffea_chunks_eos.py \
+  --input-eos-dir  /store/user/$USER/sidm_condor/BackgroundChunks_v1 \
+  --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1 \
+  --workdir merge_tmp_background \
+  --filelists-dir condor/filelists \
+  --selections base \
+  --hist-collections muon_base \
+  --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
+```
 
 ### Merge signals
 
-    python sidm/scripts/merge_coffea_chunks_eos.py \
-      --input-eos-dir  /store/user/$USER/sidm_condor/SignalChunks_v1 \
-      --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1 \
-      --workdir merge_tmp_signal \
-      --filelists-dir condor/filelists \
-      --selections base \
-      --hist-collections muon_base \
-      --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
+```bash
+python sidm/scripts/merge_coffea_chunks_eos.py \
+  --input-eos-dir  /store/user/$USER/sidm_condor/SignalChunks_v1 \
+  --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1 \
+  --workdir merge_tmp_signal \
+  --filelists-dir condor/filelists \
+  --selections base \
+  --hist-collections muon_base \
+  --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
+```
 
 ### What the sidecar contains
 
@@ -514,8 +608,10 @@ Each `.meta.yaml` records the input ROOT file list, the full selection + hist-co
 
 ### Check merged outputs
 
-    xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1
-    xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1
+```bash
+xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1
+xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1
+```
 
 Expected: one `.coffea` and one `.meta.yaml` per merged sample.
 
@@ -531,35 +627,41 @@ Pass `--delete-chunks-after-merge` to the merge invocation to remove the input c
 
 The merged EOS paths are:
 
-    root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1/
-    root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1/
+```
+root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1/
+root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1/
+```
 
 These are world-readable under the `lpcmetx` group area; substitute another user's name in the path to read theirs.
 
 `.coffea` files are safer to copy locally before loading with `coffea.util.load()`. The `.meta.yaml` sidecars are small text files and can be inspected without copying first:
 
-    mkdir -p signal_merged background_merged
+```bash
+mkdir -p signal_merged background_merged
 
-    for ext in coffea meta.yaml; do
-        for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1 | grep "\\.${ext}$"); do
-            xrdcp -f "root://cmseos.fnal.gov/${f}" "signal_merged/$(basename ${f})"
-        done
-        for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1 | grep "\\.${ext}$"); do
-            xrdcp -f "root://cmseos.fnal.gov/${f}" "background_merged/$(basename ${f})"
-        done
+for ext in coffea meta.yaml; do
+    for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1 | grep "\\.${ext}$"); do
+        xrdcp -f "root://cmseos.fnal.gov/${f}" "signal_merged/$(basename ${f})"
     done
+    for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1 | grep "\\.${ext}$"); do
+        xrdcp -f "root://cmseos.fnal.gov/${f}" "background_merged/$(basename ${f})"
+    done
+done
+```
 
 Then in Python:
 
-    import glob
-    from coffea.util import load
-    from sidm.tools.metadata import load_run_metadata
+```python
+import glob
+from coffea.util import load
+from sidm.tools.metadata import load_run_metadata
 
-    sig_path = sorted(glob.glob("signal_merged/*.coffea"))[0]
-    sig = load(sig_path)
-    sig_meta = load_run_metadata(sig_path)         # tells you what was run
-    print(sig.keys())
-    print("n_files:", sig_meta["n_files"], "  sidm_commit:", sig_meta["sidm_commit"])
+sig_path = sorted(glob.glob("signal_merged/*.coffea"))[0]
+sig = load(sig_path)
+sig_meta = load_run_metadata(sig_path)         # tells you what was run
+print(sig.keys())
+print("n_files:", sig_meta["n_files"], "  sidm_commit:", sig_meta["sidm_commit"])
+```
 
 ---
 
@@ -567,19 +669,23 @@ Then in Python:
 
 Commit reusable scripts and templates:
 
-    git add condor/README.md
-    git add condor/make_job_args.py
-    git add condor/run_sidm_chunk.py
-    git add condor/run_job.sh
-    git add condor/submit.sub
-    git add condor/requirements.txt
-    git add condor/signal_samples.txt
-    git add condor/background_samples.txt
-    git add merge_coffea_chunks_eos.py
+```bash
+git add condor/README.md
+git add condor/make_job_args.py
+git add condor/run_sidm_chunk.py
+git add condor/run_job.sh
+git add condor/submit.sub
+git add condor/requirements.txt
+git add condor/signal_samples.txt
+git add condor/background_samples.txt
+git add merge_coffea_chunks_eos.py
+```
 
 Also commit relevant processor changes:
 
-    git add sidm/tools/sidm_processor.py
+```bash
+git add sidm/tools/sidm_processor.py
+```
 
 Do not commit generated files or credentials.
 
@@ -589,27 +695,29 @@ Do not commit generated files or credentials.
 
 Do not commit:
 
-    *.coffea
-    *.root
-    *.parquet
-    *.json
-    *.pem
-    x509up_*
-    sidm_venv/
-    py39_packages/
-    condor/logs/
-    condor/filelists/
-    condor/filelists_retry/
-    condor/job_args.txt
-    condor/sidm_code.tar.gz
-    actual_outputs.txt
-    expected_outputs.txt
-    missing_outputs.txt
-    failed_procs_*.txt
-    signal_chunks/
-    signal_merged/
-    background_chunks/
-    background_merged/
+```
+*.coffea
+*.root
+*.parquet
+*.json
+*.pem
+x509up_*
+sidm_venv/
+py39_packages/
+condor/logs/
+condor/filelists/
+condor/filelists_retry/
+condor/job_args.txt
+condor/sidm_code.tar.gz
+actual_outputs.txt
+expected_outputs.txt
+missing_outputs.txt
+failed_procs_*.txt
+signal_chunks/
+signal_merged/
+background_chunks/
+background_merged/
+```
 
 Add these to `.gitignore`.
 
@@ -623,7 +731,9 @@ Cause: Condor worker Python does not have Coffea.
 
 Fix: ensure `run_job.sh` creates the venv and installs:
 
-    python -m pip install --no-cache-dir -r requirements.txt
+```bash
+python -m pip install --no-cache-dir -r requirements.txt
+```
 
 ### `KeyError: is_data` (or `skim_factor`, `year`)
 
@@ -631,7 +741,9 @@ Cause: the fileset handed to `processor.Runner.run` lacks a `metadata` block. `S
 
 Fix: in `run_sidm_chunk.py`, build the fileset as
 
-    fileset = {args.sample: {"files": files, "metadata": {"is_data": False, "skim_factor": 1.0, "year": "2018"}}}
+```python
+fileset = {args.sample: {"files": files, "metadata": {"is_data": False, "skim_factor": 1.0, "year": "2018"}}}
+```
 
 Note that `"dataset"` is a reserved key in `metadata` for newer coffea (≥ 2025.x) and must not be supplied — coffea sets it from the fileset key.
 
@@ -640,4 +752,10 @@ Note that `"dataset"` is a reserved key in `metadata` for newer coffea (≥ 2025
 Cause: file listed in YAML/filelist is not present on EOS.
 
 Fix: use the retry workflow to remove missing ROOT files from failed chunks and resubmit.
+
+### `XRootD: [ERROR] Operation expired` / `ValueError: Empty list provided to reduction`
+
+Cause: EOS is timing out file opens (degraded or congested), so the reads fail. This is not a code or cluster fault, and it hits every read path — Condor jobs, dask workers, and local runs all read the same EOS. `skipbadfiles=True` only rescues a run when *some* files are bad; when every open fails there are no chunks left to process.
+
+Fix: confirm EOS is the problem with `xrdfs cmseos.fnal.gov stat /store/group/lpcmetx/SIDM` (it hangs when EOS is degraded), wait for it to recover, then resubmit (or use the retry workflow in §16).
 
