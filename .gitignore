@@ -1,5 +1,6 @@
-#Coffea output files
+#Coffea output files (and their .meta.yaml sidecars; both live on EOS)
 *.coffea
+*.meta.yaml
 
 # macOS resource forks (created by SSHFS mount on LPC)
 ._*
