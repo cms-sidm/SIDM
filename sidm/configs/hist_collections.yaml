@@ -510,6 +510,21 @@ genA_toE_base: &genA_toE_base
   - "genAs_toE_matched_egmLj_eta"
   - "genAs_toE_matched_egmLj_n"
 
+genA_lifetime: &genA_lifetime
+  - "genAs_n"
+  - "genAs_pt"
+  - "genAs_gamma"
+  - "genAs_betagamma"
+  - "genAs_lxy"
+  - "genAs_lxyz"
+  - "genAs_lxyz_proper"
+  - "genAs_toMu_lxy"
+  - "genAs_toMu_lxyz"
+  - "genAs_toMu_lxyz_proper"
+  - "genAs_toE_lxy"
+  - "genAs_toE_lxyz"
+  - "genAs_toE_lxyz_proper"
+
 genA_ratio: &genA_ratio
   - "genA_lj_ptRatio"
   - "genA_egmLj_ptRatio"
