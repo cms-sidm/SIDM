@@ -13,7 +13,7 @@ import hist
 import awkward as ak
 # local
 from sidm.tools import histogram as h
-from sidm.tools.utilities import dR, lxy, matched, dxy, lepton_dxy_resolution, cosAlpha
+from sidm.tools.utilities import dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha
 from sidm.definitions.objects import derived_objs
 # always reload local modules to pick up changes during development
 importlib.reload(h)
@@ -3349,6 +3349,30 @@ hist_defs = {
     ),
     "genAs_lxy": obj_attr("genAs", "lxy", xmax=500),
     "genAs_lxy_lowRange": obj_attr("genAs", "lxy", xmax=10),
+    "genAs_lxyz": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(240, 1e-7, 1e5, name="genAs_lxyz",
+                                     label=r"$Z_d$ $L_{xyz}$ (cm)",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: lxyz(objs["genAs"])),
+        ],
+    ),
+    "genAs_lxyz_proper": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(300, 1e-7, 1e3, name="genAs_lxyz_proper",
+                                     label=r"$Z_d$ proper $L_{xyz}/\beta\gamma$ (cm)",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: lxyz_proper(objs["genAs"])),
+        ],
+    ),
+    "genAs_betagamma": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(120, 1e0, 1e4, name="genAs_betagamma",
+                                     label=r"$Z_d$ $\beta\gamma$",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: betagamma(objs["genAs"])),
+        ],
+    ),
     "genAs_children_n": h.Histogram(
         [
             h.Axis(hist.axis.Regular(10, 0, 10, name="genAs_children_n"),
@@ -3363,6 +3387,22 @@ hist_defs = {
     ),
     "genAs_toMu_lxy": obj_attr("genAs_toMu", "lxy", xmax=500, nbins=100),
     "genAs_toMu_lxy_lowRange": obj_attr("genAs_toMu", "lxy", xmax=20, nbins=100),
+    "genAs_toMu_lxyz": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(240, 1e-7, 1e5, name="genAs_toMu_lxyz",
+                                     label=r"$Z_d\rightarrow\mu\mu$ $L_{xyz}$ (cm)",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: lxyz(objs["genAs_toMu"])),
+        ],
+    ),
+    "genAs_toMu_lxyz_proper": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(300, 1e-7, 1e3, name="genAs_toMu_lxyz_proper",
+                                     label=r"$Z_d\rightarrow\mu\mu$ proper $L_{xyz}/\beta\gamma$ (cm)",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: lxyz_proper(objs["genAs_toMu"])),
+        ],
+    ),
     "genAs_toMu_pt": obj_attr("genAs_toMu", "pt", xmax=200, nbins=50),
     "genAs_toMu_pt_highRange": obj_attr("genAs_toMu", "pt", xmax=700, nbins=200),
     "genAs_toMu_eta": h.Histogram(
@@ -3374,6 +3414,22 @@ hist_defs = {
     "genAs_toE_lxy": obj_attr("genAs_toE", "lxy", xmax=150, nbins=30),
     "genAs_toE_lxy_highRange": obj_attr("genAs_toE", "lxy", xmax=500),
     "genAs_toE_lxy_lowRange": obj_attr("genAs_toE", "lxy", xmax=20),
+    "genAs_toE_lxyz": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(240, 1e-7, 1e5, name="genAs_toE_lxyz",
+                                     label=r"$Z_d\rightarrow ee$ $L_{xyz}$ (cm)",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: lxyz(objs["genAs_toE"])),
+        ],
+    ),
+    "genAs_toE_lxyz_proper": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(300, 1e-7, 1e3, name="genAs_toE_lxyz_proper",
+                                     label=r"$Z_d\rightarrow ee$ proper $L_{xyz}/\beta\gamma$ (cm)",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: lxyz_proper(objs["genAs_toE"])),
+        ],
+    ),
     "genAs_toE_lxy_midRange": obj_attr("genAs_toE", "lxy", xmin=40, xmax=80),
     "genAs_toE_lxy_ecal": obj_attr("genAs_toE", "lxy", xmin=125, xmax=135),
     "genAs_toE_pt": obj_attr("genAs_toE", "pt", xmax=200, nbins=50),

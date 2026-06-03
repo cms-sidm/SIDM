@@ -127,6 +127,20 @@ def lxy(obj):
     """Return transverse distance between production and decay vertices"""
     return rho(obj, ak.firsts(obj.children, axis=2), use_v=True)
 
+def lxyz(obj):
+    """Return 3D distance between an object's production and decay vertices"""
+    ref = ak.firsts(obj.children, axis=2)
+    return np.sqrt((obj.vx - ref.vx)**2 + (obj.vy - ref.vy)**2 + (obj.vz - ref.vz)**2)
+
+def betagamma(obj):
+    """Return beta*gamma (= p/m = pt*cosh(eta)/mass), guarding unphysical mass==0 gen copies"""
+    mass = ak.where(obj.mass > 0, obj.mass, np.nan)
+    return (obj.pt*np.cosh(obj.eta))/mass
+
+def lxyz_proper(obj):
+    """Return proper decay length: 3D flight distance deboosted by beta*gamma (= p/m)"""
+    return lxyz(obj)/betagamma(obj)
+
 def set_plot_style(style='cms', dpi=50):
     """Set plotting style using mplhep"""
     if style == 'cms':
