@@ -43,7 +43,7 @@ Three pieces of CMS/FNAL access are usually arranged through your institution's 
 
 1. **FNAL services account** with `cmslpc` computing access — gives you a username (e.g. `jsmith@FNAL.GOV`) and a home directory under `/uscms_data/d3/jsmith/`.
 2. **CMS VO membership** — required for VOMS proxies and `/store/group/lpcmetx/...` access.
-3. **Grid certificate** loaded into your laptop's keychain (typically obtained from [CILogon](https://cilogon.org)) — used on the LPC side when you run `voms-proxy-init`.
+3. **Grid certificate** loaded into your laptop's certificate store (Keychain on macOS, Certificate Store on Windows; typically obtained from [CILogon](https://cilogon.org)) — used on the LPC side when you run `voms-proxy-init`.
 
 You also need a Kerberos client on your laptop with an FNAL principal:
 
@@ -52,6 +52,8 @@ You also need a Kerberos client on your laptop with an FNAL principal:
 kinit YOUR_FNAL_USERNAME@FNAL.GOV
 ssh cmslpc-el9.fnal.gov   # should now succeed without a password prompt
 ```
+
+> **On Windows, run all laptop-side steps inside [WSL2](https://learn.microsoft.com/windows/wsl/install) (a real Ubuntu).** There `sudo apt install krb5-user` gives a working `kinit`, SSH's Kerberos/GSSAPI auth behaves, and every bash block below — including the `\` line-continuations — runs verbatim; `localhost` port-forwarding still reaches your Windows browser. Native PowerShell/cmd trip on both: there is no out-of-the-box `kinit`, and `\` is **not** a line-continuation (PowerShell uses `` ` ``), so a pasted multi-line `ssh -L … \` command breaks apart and the `-L` forward silently never takes effect — the server starts on LPC but the browser can't reach it. If you must use native PowerShell, put each command on a single line and keep the server in the same session that holds the `-L` forward (or let VS Code **Remote-SSH** manage the tunnel for you).
 
 The canonical starting page for new CMS-LPC users is [https://uscms.org/uscms_at_work/computing/getstarted/](https://uscms.org/uscms_at_work/computing/getstarted/). Once these are in place, every step below happens on `cmslpc-el9.fnal.gov`.
 
@@ -121,7 +123,15 @@ In a terminal on your laptop:
 
 Copy the URL it prints (`http://localhost:8888/?token=…`). In VS Code: open any notebook → kernel selector (top-right) → **Select Another Kernel…** → **Existing Jupyter Server…** → paste URL → pick **SIDM (LCG_107 Py3.11)**.
 
+That terminal stays attached to the server — press **Ctrl+C** there to shut it down when you're done. If you lose the URL, run `jupyter server list` in another shell on the same node to reprint it (token included).
+
 If you're on EAF, JupyterHub, or running Jupyter directly on LPC with your own tunneling, skip this step entirely and just pick the kernel from your usual UI.
+
+> **If the browser/VS Code can't connect, the usual cause is a leftover server.** If a previous launch is still holding port 8888, Jupyter quietly starts the new one on the next free port (8889, 8890, …) — which your `-L 8888` tunnel isn't forwarding. Run `jupyter server list` to see what's actually running and on which port, kill any strays, and relaunch. If you change the port, change it in *both* the `-L` and `--port`.
+>
+> If you ever run the tunnel and the server as two *separate* commands instead of the combined one above, make sure both land on the same login node: `cmslpc-el9.fnal.gov` load-balances across many (`cmslpc101`, `cmslpc336`, …), and a tunnel to one node won't reach a server on another. Keeping them in a single `ssh -L … "…"` command (as above) avoids it.
+
+**Alternative — let VS Code manage the connection (Remote-SSH).** Instead of the manual `ssh -L` tunnel above, install the **Remote - SSH** extension and run **Remote-SSH: Connect to Host…** → `cmslpc-el9.fnal.gov` from the Command Palette. VS Code runs its server component on LPC, so it sees the x86_64 kernel natively: open the `SIDM` folder, open a notebook, pick **SIDM (LCG_107 Py3.11)** — no port-forward, no token to paste, and none of the PowerShell pitfalls above. The integrated terminal also becomes a Linux shell on LPC, so the bash blocks in steps 1–4 run there directly. (Auth is still Kerberos — on Windows the WSL2 note above still applies — and since `cmslpc-el9` is round-robin you'll land on whichever node it picks.)
 
 ### 6. Reading remote ROOT files
 
