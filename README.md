@@ -67,20 +67,24 @@ The canonical starting page for new CMS-LPC users is [https://uscms.org/uscms_at
 
 SSH to LPC and clone into your work area:
 
-    ssh cmslpc-el9.fnal.gov
-    cd /uscms_data/d3/$USER
-    git clone <your-fork-of-SIDM>
-    cd SIDM
+```bash
+ssh cmslpc-el9.fnal.gov
+cd /uscms_data/d3/$USER
+git clone <your-fork-of-SIDM>
+cd SIDM
+```
 
 ### 2. Build the venv on LCG_107 Python 3.11
 
 The repo's `requirements.txt` pins versions (`dask`, `awkward`, …) that need Python ≥ 3.10. LPC's system Python is 3.9, so we use Python 3.11 from cvmfs:
 
-    source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/setup.sh
-    unset PYTHONPATH
-    python -m venv sidm_venv
-    source sidm_venv/bin/activate
-    python -m pip install --upgrade pip setuptools wheel
+```bash
+source /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/setup.sh
+unset PYTHONPATH
+python -m venv sidm_venv
+source sidm_venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+```
 
 After creation the venv's `bin/python` is a symlink to the cvmfs binary, so you don't need to re-source LCG_107 to run it later.
 
@@ -88,26 +92,44 @@ After creation the venv's `bin/python` is a symlink to the cvmfs binary, so you 
 
 The `xrootd` PyPI wheel tries to compile the xrootd C library from source and fails on LPC. We get the same functionality by symlinking LCG's prebuilt `XRootD` and `pyxrootd` packages into the venv:
 
-    grep -v "^xrootd" requirements.txt | python -m pip install -r /dev/stdin
-    python -m pip install "distributed==2025.3.0"   # required by sidm/tools/scaleout.py
-    python -m pip install "htcondor<25" "git+https://github.com/CoffeaTeam/lpcjobqueue.git"  # needed by step 7
-    python -m pip install -e .
-    python -m pip install jupyter ipykernel pyarrow
+```bash
+grep -v "^xrootd" requirements.txt | python -m pip install -r /dev/stdin
+python -m pip install "distributed==2025.3.0"   # required by sidm/tools/scaleout.py
+python -m pip install "htcondor<25" "git+https://github.com/CoffeaTeam/lpcjobqueue.git"  # needed by step 7
+python -m pip install -e .
+python -m pip install jupyter ipykernel pyarrow
 
-    cd sidm_venv/lib/python3.11/site-packages
-    ln -sfn /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/lib/python3.11/site-packages/XRootD   XRootD
-    ln -sfn /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/lib/python3.11/site-packages/pyxrootd pyxrootd
-    cd -
+cd sidm_venv/lib/python3.11/site-packages
+ln -sfn /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/lib/python3.11/site-packages/XRootD   XRootD
+ln -sfn /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/lib/python3.11/site-packages/pyxrootd pyxrootd
+cd -
+```
+
+Confirm `sidm` installed **editable** (an in-place link to your checkout, not a copy):
+
+```bash
+sidm_venv/bin/pip show sidm | grep Editable    # -> "Editable project location: .../SIDM"
+```
+
+If that line is missing, a non-editable copy of `sidm` is shadowing your checkout in `site-packages`. `import sidm` then resolves to stale code whenever you run a standalone script — `python script.py` puts the script's directory on `sys.path`, not the repo root, so the working tree isn't found (notebooks and `python -c` from the repo root are unaffected). Reinstall editable:
+
+```bash
+sidm_venv/bin/pip uninstall sidm -y && sidm_venv/bin/pip install -e .
+```
 
 Smoke-test that uproot can read a remote ROOT file through xrootd:
 
-    sidm_venv/bin/python -c "import uproot; print(uproot.open('root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo2Mu2e/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-500_MDp-1p2_ctau-1p9_v3/LLPnanoAODv2/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-500_MDp-1p2_ctau-1p9_v3_part-0.root')['Events'].num_entries)"
+```bash
+sidm_venv/bin/python -c "import uproot; print(uproot.open('root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo2Mu2e/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-500_MDp-1p2_ctau-1p9_v3/LLPnanoAODv2/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-500_MDp-1p2_ctau-1p9_v3_part-0.root')['Events'].num_entries)"
+```
 
 ### 4. Register the Jupyter kernel
 
-    /uscms_data/d3/$USER/SIDM/sidm_venv/bin/python -m ipykernel install --user \
-        --name sidm_venv \
-        --display-name "SIDM (LCG_107 Py3.11)"
+```bash
+/uscms_data/d3/$USER/SIDM/sidm_venv/bin/python -m ipykernel install --user \
+    --name sidm_venv \
+    --display-name "SIDM (LCG_107 Py3.11)"
+```
 
 This drops a kernelspec under `~/.local/share/jupyter/kernels/sidm_venv/` on LPC. Any Jupyter Server running on LPC — including EAF or JupyterHub — will offer this kernel.
 
@@ -117,9 +139,11 @@ VS Code on your laptop can't directly see LPC-side kernels through an SSHFS moun
 
 In a terminal on your laptop:
 
-    ssh -L 8888:localhost:8888 cmslpc-el9.fnal.gov \
-        "cd /uscms_data/d3/$USER/SIDM && source sidm_venv/bin/activate && \
-         jupyter server --no-browser --port=8888 --ip=127.0.0.1"
+```bash
+ssh -L 8888:localhost:8888 cmslpc-el9.fnal.gov \
+    "cd /uscms_data/d3/$USER/SIDM && source sidm_venv/bin/activate && \
+     jupyter server --no-browser --port=8888 --ip=127.0.0.1"
+```
 
 Copy the URL it prints (`http://localhost:8888/?token=…`). In VS Code: open any notebook → kernel selector (top-right) → **Select Another Kernel…** → **Existing Jupyter Server…** → paste URL → pick **SIDM (LCG_107 Py3.11)**.
 
@@ -137,10 +161,12 @@ If you're on EAF, JupyterHub, or running Jupyter directly on LPC with your own t
 
 The location YAMLs (`sidm/configs/ntuples/*.yaml`) use `root://xcache//…` URLs. `xcache` is the coffea-casa cache and does not resolve on LPC. Pass `replace_xcache=True` to `utilities.make_fileset` to substitute the FNAL EOS redirector at fileset-build time:
 
-    fileset = utilities.make_fileset(
-        samples, "llpNanoAOD_v2", location_cfg="signal_2mu2e_v10.yaml",
-        replace_xcache=True,
-    )
+```python
+fileset = utilities.make_fileset(
+    samples, "llpNanoAOD_v2", location_cfg="signal_2mu2e_v10.yaml",
+    replace_xcache=True,
+)
+```
 
 Default is `False` so existing coffea-casa notebooks remain unchanged.
 
@@ -172,6 +198,15 @@ cluster.close()
 Under the hood: workers are HTCondor jobs that run inside the `coffea-dask-almalinux9:2025.5.0.rc2-py3.11` apptainer image on the LPC pool; the notebook itself stays in `sidm_venv` outside the apptainer. Your local `sidm/` tree (including uncommitted edits) is shipped to each worker via `UploadDirectory`, so there is no commit-push roundtrip during iteration.
 
 The required Python packages (`htcondor<25`, `lpcjobqueue`) were installed as part of step 3, so no extra setup is needed. A runnable end-to-end example lives at [sidm/test_notebooks/lpc_dask_example.ipynb](sidm/test_notebooks/lpc_dask_example.ipynb).
+
+**Saving the output.** Write the `.coffea` (and a `.meta.yaml` metadata sidecar via `sidm.tools.metadata`) to the group-writable lpcmetx EOS area so it persists and other CMS users can re-read it:
+
+```bash
+xrdfs cmseos.fnal.gov mkdir -p /store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>
+xrdcp -f out.coffea root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/out.coffea
+```
+
+**Troubleshooting — XRootD/EOS read failures.** A run that dies with `ValueError: Empty list provided to reduction` (or workers logging `[ERROR] Operation expired` while opening files) means EOS is timing out the reads, not a fault in the code or the cluster. It affects every executor — the local `IterativeExecutor`/`FuturesExecutor` and the Dask-over-Condor workers all read the same EOS. `skipbadfiles=True` only helps when *some* files are bad; if every open fails there are no chunks left to reduce. Confirm with `xrdfs cmseos.fnal.gov stat /store/group/lpcmetx/SIDM` (it hangs when EOS is degraded), then rerun once EOS recovers.
 
 ### 7.1. Adapting an existing studies/ notebook from coffea-casa to LPC
 
