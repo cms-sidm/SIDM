@@ -84,12 +84,16 @@ def core_slope_fit(output, sample, channel=CHANNEL, k=3.0):
     mask = effN >= 5
     slope, ic, cov = np.nan, np.nan, np.full((2, 2), np.nan)
     if mask.sum() >= 4:
+        hi_x = np.median(centers[mask])   # freeze the upper-half trim gate from the initial core
         for _ in range(30):
+            # cov='unscaled': the weights are exact 1/sigma (Poisson), so the covariance is
+            # the pure statistical one, not rescaled by reduced chi-square (which the
+            # one-sided trim would make ill-defined)
             (slope, ic), cov = np.polyfit(
-                centers[mask], ly[mask], 1, w=np.sqrt(effN[mask]), cov=True)
+                centers[mask], ly[mask], 1, w=np.sqrt(effN[mask]), cov="unscaled")
             with np.errstate(divide="ignore", invalid="ignore"):
                 sig = np.where(effN > 0, 1 / np.sqrt(effN), np.inf)
-            trim = mask & (ly < ic + slope * centers - k * sig) & (centers > np.median(centers[mask]))
+            trim = mask & (ly < ic + slope * centers - k * sig) & (centers > hi_x)
             if not trim.any():
                 break
             mask = mask & ~trim
@@ -103,19 +107,30 @@ def core_slope_fit(output, sample, channel=CHANNEL, k=3.0):
 
 
 def betagamma_cdf(output, anchor, channel=CHANNEL):
-    """Empirical F_βγ and ⟨βγ⟩ from an (un-truncated) anchor sample's βγ histogram."""
+    """Empirical F_βγ and ⟨βγ⟩ from an (un-truncated) anchor sample's βγ histogram.
+
+    The cumulative weight through bin i is the CDF at that bin's RIGHT EDGE, so F_βγ is
+    interpolated on the bin edges (with a leading 0), not the centers — otherwise the CDF
+    is shifted by half a bin and biases the fitted R_max."""
     h = output[anchor]["hists"]["genAs_betagamma"][{"channel": channel}]
-    bg = h.axes[-1].centers
+    edges = h.axes[-1].edges
     w = h.values()
-    cdf = np.cumsum(w) / max(w.sum(), 1)
-    return interp1d(bg, cdf, bounds_error=False, fill_value=(0.0, 1.0)), (bg * w).sum() / max(w.sum(), 1)
+    tot = max(w.sum(), 1)
+    cdf_edges = np.concatenate([[0.0], np.cumsum(w)]) / tot
+    F_bg = interp1d(edges, cdf_edges, bounds_error=False, fill_value=(0.0, 1.0))
+    return F_bg, (h.axes[-1].centers * w).sum() / tot
 
 
-def acceptance_fit(output, sample, F_bg, mean, channel=CHANNEL):
+def acceptance_fit(output, sample, F_bg, mean, channel=CHANNEL, p0_ctau=None):
     """Fit log(dN/dx) = logA - x/cτ + log F_βγ(R_max/x) for (cτ, R_max).
 
     ε(x) = F_βγ(R_max/x) is the probability a decay with proper length x survives the
     lab-decay-length cap R_max, given the (lifetime-independent) boost distribution F_βγ.
+
+    p0_ctau optionally seeds cτ — the core-slope value is less truncation-biased than the
+    histogram mean (the bias being corrected here), so it is a safer start; it falls back
+    to `mean`. absolute_sigma=True keeps the covariance purely statistical (the bin errors
+    are exact Poisson).
 
     Returns a fit dict with cτ, R_max and their uncertainties (from the curve_fit
     covariance), plus the log-model, its parameters and full covariance, the fit
@@ -134,9 +149,11 @@ def acceptance_fit(output, sample, F_bg, mean, channel=CHANNEL):
     def logmodel(x, logA, ctau, logR):
         return logA - x / ctau + np.log(np.clip(F_bg(np.exp(logR) / x), 1e-12, 1))
 
+    seed = p0_ctau if (p0_ctau is not None and np.isfinite(p0_ctau) and p0_ctau > 0) else mean
     try:
         popt, pcov = curve_fit(
-            logmodel, x, y, p0=[y.max(), mean, np.log(800.0)], sigma=yerr,
+            logmodel, x, y, p0=[y.max(), seed, np.log(800.0)], sigma=yerr,
+            absolute_sigma=True,
             bounds=([-50, 1e-6, np.log(10)], [50, 1e5, np.log(1e6)]), maxfev=40000,
         )
     except Exception:
@@ -159,9 +176,12 @@ def model_band(fit, xv):
     J = np.zeros((len(xv), len(popt)))
     for j in range(len(popt)):
         step = 1e-4 * max(abs(popt[j]), 1e-3)
-        dp = np.array(popt, dtype=float)
+        dp, dm = np.array(popt, dtype=float), np.array(popt, dtype=float)
         dp[j] += step
-        J[:, j] = (lm(xv, *dp) - f0) / step
+        dm[j] -= step
+        # central difference: captures R_max sensitivity at the turnover, which a forward
+        # step into the saturated region (log F_βγ = 0) would miss
+        J[:, j] = (lm(xv, *dp) - lm(xv, *dm)) / (2 * step)
     sd = np.sqrt(np.clip(np.einsum("ik,kl,il->i", J, pcov, J), 0, None))
     return np.exp(f0), np.exp(f0 - sd), np.exp(f0 + sd)
 
@@ -190,7 +210,7 @@ def compute_grid(output, channel=CHANNEL):
         bg_mean[key] = bgm
         for s in samples:
             fB = core_slope_fit(output, s, channel)
-            fC = acceptance_fit(output, s, F_bg, fB["mean"], channel)
+            fC = acceptance_fit(output, s, F_bg, fB["mean"], channel, p0_ctau=fB["ctau"])
             rows[s] = dict(mass_point=key, nominal=ctau_cm(s), mean=fB["mean"],
                            core_slope=fB["ctau"], core_slope_err=fB["ctau_err"],
                            acceptance=fC["ctau"], acceptance_err=fC["ctau_err"],
@@ -204,6 +224,7 @@ def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
 
     kind: "core_slope" or "acceptance". Returns the Figure."""
     import matplotlib.pyplot as plt
+    import mplhep as hep
 
     keys = sorted([k for k in groups if k[0] == phys_channel],
                   key=lambda k: (mass_gev(k[1]), mass_gev(k[2])))
@@ -221,7 +242,8 @@ def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
             if kind == "core_slope":
                 fit = core_slope_fit(output, s, channel)
             else:
-                fit = acceptance_fit(output, s, F_bg, mean, channel)
+                cs = core_slope_fit(output, s, channel)
+                fit = acceptance_fit(output, s, F_bg, mean, channel, p0_ctau=cs["ctau"])
             good = effN > 0
             yerr = dens[good] / np.sqrt(effN[good])
             ax.errorbar(centers[good], dens[good], yerr=yerr, fmt="o", ms=3,
@@ -238,16 +260,15 @@ def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
             ax.plot([], [], "-o", color=colors[si], ms=4, label=lab)
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.set_xlabel("proper decay length  $x = \\ell_{xyz}/\\beta\\gamma$  [cm]")
+        ax.set_xlabel("Proper decay length  $x = \\ell_{xyz}/\\beta\\gamma$  [cm]")
         ax.set_ylabel("dN/dx  [cm$^{-1}$]")
-        ax.set_title(mass_label(key), fontsize=14, pad=8)
         ax.legend(title="cτ:  nom → fit ± err  [cm]", fontsize=9.5,
                   title_fontsize=10.5, loc="lower left", framealpha=0.9)
+        hep.cms.label(ax=ax, data=False, fontsize=13)
+        ax.text(0.97, 0.95, mass_label(key), transform=ax.transAxes,
+                ha="right", va="top", fontsize=12)
 
-    kind_label = "core-slope" if kind == "core_slope" else "acceptance-corrected"
-    fig.suptitle(f"CMS Simulation (13 TeV)   —   {phys_channel}, {kind_label} fit per mass point",
-                 fontsize=18, y=0.999)
     for idx in range(len(keys), nrows * ncols):
         axes[idx // ncols][idx % ncols].set_visible(False)
-    fig.tight_layout(rect=[0, 0, 1, 0.99])
+    fig.tight_layout()
     return fig
