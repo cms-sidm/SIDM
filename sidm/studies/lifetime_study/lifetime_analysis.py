@@ -258,6 +258,7 @@ def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
 
     kind: "core_slope" or "acceptance". Returns the Figure."""
     import matplotlib.pyplot as plt
+    import matplotlib.ticker as mticker
     import mplhep as hep
 
     keys = sorted([k for k in groups if k[0] == phys_channel],
@@ -294,7 +295,9 @@ def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
             ax.plot([], [], "-o", color=colors[si], ms=4, label=lab)
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.minorticks_on()
+        for axis in (ax.xaxis, ax.yaxis):  # matplotlib drops log minor ticks on wide ranges
+            axis.set_minor_locator(mticker.LogLocator(base=10.0, subs=np.arange(2, 10), numticks=100))
+            axis.set_minor_formatter(mticker.NullFormatter())
         ax.set_xlabel("Proper decay length  $x = \\ell_{xyz}/\\beta\\gamma$  [cm]")
         ax.set_ylabel("dN/dx  [cm$^{-1}$]")
         ax.legend(title="cτ:  nom → fit ± err  [cm]", fontsize=9.5,
