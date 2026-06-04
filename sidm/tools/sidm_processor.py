@@ -33,6 +33,33 @@ def _patched_local2global(stack):
     stack.append(out)
 tr.local2global = _patched_local2global
 
+class _AwkwardColumnAccumulator(processor.AccumulatorABC):
+    """Accumulator that concatenates per-chunk awkward arrays.
+
+    Used only for the optional debug output. Each chunk contributes one awkward
+    array; chunks are stored by reference and concatenated lazily when `.value`
+    is accessed, which keeps accumulation memory-efficient and avoids converting
+    columns to Python lists.
+    """
+
+    def __init__(self, chunks=None):
+        self._chunks = list(chunks) if chunks is not None else []
+
+    def identity(self):
+        return _AwkwardColumnAccumulator()
+
+    def add(self, other):
+        self._chunks.extend(other._chunks)
+        return self
+
+    @property
+    def value(self):
+        if not self._chunks:
+            return ak.Array([])
+        if len(self._chunks) == 1:
+            return self._chunks[0]
+        return ak.concatenate(self._chunks)
+
 class SidmProcessor(processor.ProcessorABC):
     """Class to apply selections, make histograms, and make cutflows
 
@@ -51,6 +78,10 @@ class SidmProcessor(processor.ProcessorABC):
         histograms_cfg="configs/hist_collections.yaml",
         unweighted_hist=False,
         verbose=False,
+        debug=False,
+        debug_branches=None,
+        include_default_debug_branches=True,
+        debug_suppress_failures=True,
     ):
         self.channel_names = channel_names
         self.hist_collection_names = hist_collection_names
@@ -62,6 +93,28 @@ class SidmProcessor(processor.ProcessorABC):
         self.postLj_objs = postLj_objs
         self.postLj_objs_MC = postLj_objs_MC
         self.verbose = verbose
+
+        # Optional debug output. Disabled by default, no effect on the standard
+        # output. When debug=True, an additional out["debug"] dict is added:
+        #
+        #     out["debug"][lj_reco][channel][branch_name]  -> _AwkwardColumnAccumulator
+        #     read with: output[dataset]["debug"]["0.4"][channel]["name"].value
+        #
+        # apply_evt_cuts already filters sel_objs to the events passing the event
+        # selection, so branches that read sel_objs are over selected events;
+        # branches that read raw `events` (e.g. gen weights) stay full-chunk.
+        #
+        # Supply analysis-specific branches via debug_branches, e.g.:
+        #     SidmProcessor(..., debug=True, debug_branches=sidm_debug_branches(),
+        #                   include_default_debug_branches=False)
+        self.debug = debug
+        self.debug_suppress_failures = debug_suppress_failures
+
+        self.debug_branches = {}
+        if include_default_debug_branches:
+            self.debug_branches.update(self.default_debug_branches())
+        if debug_branches is not None:
+            self.debug_branches.update(debug_branches)
 
     def process(self, events):
         """Apply selections, make histograms and cutflow"""
@@ -98,6 +151,7 @@ class SidmProcessor(processor.ProcessorABC):
 
         cutflows = {}
         counters = {}
+        debug_output = {} if self.debug else None
 
         # define histograms
         hists = self.build_histograms()
@@ -149,6 +203,18 @@ class SidmProcessor(processor.ProcessorABC):
                 evt_selection = selection.Selection(cuts["evt"], self.verbose)
                 sel_objs = evt_selection.apply_evt_cuts(sel_objs)
 
+                # optional debug output (no effect unless debug=True).
+                # apply_evt_cuts has already trimmed sel_objs to events passing the
+                # event selection, so branches that read sel_objs are over selected
+                # events; branches that read raw `events` stay full-chunk.
+                if self.debug:
+                    lj_reco_key = str(lj_reco)
+                    if lj_reco_key not in debug_output:
+                        debug_output[lj_reco_key] = {}
+                    debug_output[lj_reco_key][channel] = self.fill_debug_branches(
+                        sel_objs, events
+                    )
+
                 # fill all hists
 
                 # fixme: disable cutflows due to sequential event cut implementation
@@ -195,7 +261,65 @@ class SidmProcessor(processor.ProcessorABC):
             },
         }
 
+        # optional debug output: keep the standard return shape, add one key
+        if self.debug:
+            out["debug"] = debug_output
+
         return {events.metadata["dataset"]: out}
+
+    @staticmethod
+    def default_debug_branches():
+        """Minimal, analysis-agnostic debug branches.
+
+        passing_weights reads sel_objs, so it is over selected events.
+        gen_weights reads raw events, so it stays full-chunk (useful for scaling);
+        it is skipped on data (no Generator) when debug_suppress_failures=True.
+        Anything analysis-specific should be supplied via debug_branches.
+        """
+        return {
+            "passing_weights": lambda sel_objs, events: sel_objs["evt_weights"],
+            "gen_weights": lambda sel_objs, events: (
+                events.Generator.weight if hasattr(events, "Generator") else ak.Array([])
+            ),
+        }
+
+    def fill_debug_branches(self, sel_objs, events):
+        """Evaluate all registered debug branches for one channel + lj_reco pair.
+
+        apply_evt_cuts has already trimmed sel_objs to the events passing the full
+        event selection, so branches reading sel_objs are automatically over
+        selected events; branches reading raw `events` (e.g. generator weights)
+        remain full-chunk. Each branch is wrapped in its own try/except so one
+        failing branch does not abort the job (unless debug_suppress_failures is
+        False). Results are stored as awkward arrays in an accumulator that
+        concatenates across chunks.
+        """
+        debug = {}
+        for name, branch_func in self.debug_branches.items():
+            try:
+                value = self._to_debug_array(branch_func(sel_objs, events))
+                debug[name] = _AwkwardColumnAccumulator([value])
+            except Exception as e:
+                if not self.debug_suppress_failures:
+                    raise
+                print(f"Warning: cannot fill debug branch {name}. Skipping. Error: {e}")
+                debug[name] = _AwkwardColumnAccumulator()
+        return debug
+
+    @staticmethod
+    def _to_debug_array(value):
+        """Coerce a branch result into an awkward array.
+
+        Awkward arrays are kept as-is (preserving option types from ak.firsts and
+        avoiding the memory cost of Python lists). numpy arrays and Python lists
+        are wrapped directly; a bare scalar becomes a length-1 array.
+        """
+        if isinstance(value, ak.Array):
+            return value
+        try:
+            return ak.Array(value)
+        except (ValueError, TypeError):
+            return ak.Array([value])
 
     def make_vector(self, objs, collection, fields, type_id=None, mass=None):
         shape = ak.ones_like(objs[collection].pt, dtype=np.dtype(int))
