@@ -112,6 +112,7 @@ ax.set_ylim(0, 1.8)
 ax.set_xlabel(r"Nominal $c\tau$  [cm]")
 ax.set_ylabel(r"Measured / nominal $c\tau$")
 ax.legend(fontsize=13, loc="lower left", framealpha=0.9)
+ax.minorticks_on()
 hep.cms.label(ax=ax, data=False)
 
 faith = [r["mean"] / r["nominal"] for r in rows.values() if r["nominal"] <= 1.0]
@@ -202,6 +203,7 @@ ax.set_ylim(0, 1.8)
 ax.set_xlabel(r"Nominal $c\tau$  [cm]")
 ax.set_ylabel(r"Measured / nominal $c\tau$")
 ax.legend(fontsize=13, loc="lower left", framealpha=0.9)
+ax.minorticks_on()
 hep.cms.label(ax=ax, data=False)
 
 corr = [r["acceptance"] / r["nominal"] for r in rows.values()
@@ -231,6 +233,7 @@ ax.set_ylim(0.7, 1.3)
 ax.set_xlabel(r"Nominal $c\tau$  [cm]")
 ax.set_ylabel(r"Acceptance-corrected / nominal $c\tau$")
 ax.legend(fontsize=13, loc="lower left", framealpha=0.9)
+ax.minorticks_on()
 hep.cms.label(ax=ax, data=False)
 
 within5 = [abs(r["acceptance"] / r["nominal"] - 1) <= 0.05 for r in rows.values()
@@ -281,6 +284,7 @@ axL.set_ylim(0, 2 * med)
 axL.set_xlabel(r"Nominal $c\tau$  [cm]")
 axL.set_ylabel(r"Fitted lab decay-length cap  $R_\mathrm{max}$  [cm]")
 axL.legend(fontsize=14)
+axL.minorticks_on()
 hep.cms.label(ax=axL, data=False)
 
 # right: truncation onset ctau vs <betagamma> -- interpolate each scan to the 0.9 crossing
@@ -309,11 +313,102 @@ axR.set_yscale("log")
 axR.set_xlabel(r"$\langle\beta\gamma\rangle$")
 axR.set_ylabel(r"Truncation onset $c\tau$  [cm]")
 axR.legend(fontsize=14)
+axR.minorticks_on()
 hep.cms.label(ax=axR, data=False)
 
 print(f"median fitted R_max = {med:.0f} cm over {len(trunc)} heavily-truncated samples")
 print(f"onset lab length C = onset*<bg> = {C:.0f} cm (16-84%: {p16:.0f}-{p84:.0f} cm) "
       f"= {C/med:.2f} R_max, over {len(onset)} mass points ({n_skip} skipped: no clean 0.9 crossing)")"""),
+    md("""\
+## Diagnostic: where is a strictly-insulated core even possible?
+
+The core-slope fit *avoids* the cap by trimming the truncated tail; the acceptance fit
+*models* it. A third option is a **strictly-insulated core** — fit only `x < x_insul =
+R_max/βγ_p99`, the proper-length region where *every* event survives (ε = 1), needing no
+truncation model at all. The catch is lever arm: to measure the slope `−1/cτ` the window
+must span a meaningful fraction of `cτ`, but the insulated window only reaches `R_max/βγ`,
+which shrinks with boost. So a strictly-insulated fit is clean **only when `cτ ≲ x_insul/κ`**
+(κ ≈ 2–3), with enough events in the window. Here the regime is keyed on the lever arm; a few
+green windows have as few as ~10 effective events (the minimum is printed below) and are
+correspondingly noisier.
+
+This is a **diagnostic, not a production estimator** — it draws the handoff between the two
+estimators we actually use (iterative-trim core-slope at short cτ, acceptance fit at long
+cτ). **Left:** the lever-arm ratio `x_insul/cτ` per sample — green where a strictly-insulated
+fit is clean (lever arm `≥ κ`), gold/marginal (`≥ 1`), red where there is no insulated lever
+arm and the acceptance fit is required. **Right:** the strictly-insulated-core `cτ` cross-check — it
+recovers nominal in the green region and falls apart (bias + exploding errors) once the lever
+arm is gone, as predicted. (`βγ_p99` is used, not `βγ_max`, which on this grid is pinned to
+the β-γ histogram's axis ceiling at high boost.)"""),
+    code(r"""fig, (axL, axR) = plt.subplots(1, 2, figsize=(21, 8))
+Rmax = np.median([r["Rmax"] for r in rows.values() if np.isfinite(r["Rmax"])
+                  and np.isfinite(r["Rmax_err"]) and r["mean"] / r["nominal"] < 0.7])
+kappa = 2.5
+
+diag = []
+for key, samples in groups.items():
+    x_insul = Rmax / la.betagamma_pct(output, samples[0], 0.99)
+    for s in samples:
+        nom = la.ctau_cm(s)
+        fit = la.insulated_core_fit(output, s, x_insul)
+        diag.append((key[0], nom, x_insul / nom, fit["ctau"], fit["ctau_err"], fit["n"]))
+ch = np.array([d[0] for d in diag])
+nom = np.array([d[1] for d in diag])
+ratio = np.array([d[2] for d in diag])
+ins = np.array([d[3] for d in diag])
+inse = np.array([d[4] for d in diag])
+nwin = np.array([d[5] for d in diag])
+regime = np.where(ratio >= kappa, "green", np.where(ratio >= 1, "gold", "red"))
+
+# left: lever-arm map -- which samples a strictly-insulated fit can even do
+axL.axhspan(kappa, 1e4, color="green", alpha=0.07)
+axL.axhspan(1, kappa, color="gold", alpha=0.12)
+axL.axhspan(1e-3, 1, color="red", alpha=0.06)
+for c, col in {"4Mu": "#1f77b4", "2Mu2E": "#d62728"}.items():
+    m = ch == c
+    axL.scatter(nom[m], ratio[m], s=45, color=col, alpha=0.75, label=c)
+axL.axhline(kappa, color="green", ls="--", lw=1)
+axL.axhline(1, color="red", ls="--", lw=1)
+axL.set_xscale("log")
+axL.set_yscale("log")
+axL.set_ylim(0.1, ratio.max() * 2)
+for yv, txt, cc in [(ratio.max() * 1.1, "strictly-insulated fit clean", "green"),
+                    (1.55, "marginal", "darkgoldenrod"),
+                    (0.45, "acceptance fit required", "red")]:
+    axL.text(nom.min() * 1.4, yv, txt, color=cc, fontsize=12, va="center")
+axL.set_xlabel(r"Nominal $c\tau$  [cm]")
+axL.set_ylabel(r"Lever arm  $x_\mathrm{insul}/c\tau$")
+axL.legend(loc="upper right")
+axL.minorticks_on()
+hep.cms.label(ax=axL, data=False)
+
+# right: strictly-insulated-core ctau cross-check, colored by regime
+ok = np.isfinite(ins)
+axR.errorbar(nom[ok], (ins / nom)[ok], yerr=(inse / nom)[ok], fmt="none", ecolor="gray", alpha=0.35)
+for rg, lab in [("green", "insulated"), ("gold", "marginal"), ("red", "acceptance-only")]:
+    m = (regime == rg) & ok
+    axR.scatter(nom[m], (ins / nom)[m], s=42, color=rg, alpha=0.85, label=lab)
+axR.axhspan(0.95, 1.05, color="green", alpha=0.07)
+axR.axhline(1.0, color="k", ls="--", lw=1.2)
+axR.set_xscale("log")
+axR.set_ylim(0, 2)
+axR.set_xlabel(r"Nominal $c\tau$  [cm]")
+axR.set_ylabel(r"Strictly-insulated-core $c\tau$ / nominal")
+axR.legend(loc="lower left", fontsize=11)
+axR.minorticks_on()
+hep.cms.label(ax=axR, data=False)
+
+n_i = int((regime == "green").sum())
+n_m = int((regime == "gold").sum())
+n_a = int((regime == "red").sum())
+gsel = (regime == "green") & ok
+rec = (ins / nom)[gsel]
+med_rec = np.median(rec) if len(rec) else float("nan")
+print(f"R_max = {Rmax:.0f} cm, kappa = {kappa};  insulated {n_i} / marginal {n_m} / "
+      f"acceptance-only {n_a}  of {len(diag)} samples")
+print(f"insulated region (x_insul/ctau >= {kappa}): strictly-insulated-core measured/nominal "
+      f"median = {med_rec:.3f} (N = {len(rec)}); "
+      f"min events-in-window = {int(nwin[regime == 'green'].min()) if n_i else 0}")"""),
     md("""\
 ## Result
 
