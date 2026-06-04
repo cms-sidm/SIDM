@@ -308,18 +308,26 @@ class SidmProcessor(processor.ProcessorABC):
 
     @staticmethod
     def _to_debug_array(value):
-        """Coerce a branch result into an awkward array.
+        """Coerce a branch result into a plain, picklable awkward array.
 
-        Awkward arrays are kept as-is (preserving option types from ak.firsts and
-        avoiding the memory cost of Python lists). numpy arrays and Python lists
-        are wrapped directly; a bare scalar becomes a length-1 array.
+        NanoAOD / `vector` LorentzVector behaviors are implemented with lambdas,
+        which the distributed (condor) pickler cannot serialize when the output is
+        shipped back from the workers. Any array that still carries that behavior
+        (e.g. a saved `ljs`/object collection, or a weight that kept its behavior)
+        breaks pickling. So we strip behavior and record/array names and store plain
+        data. numpy arrays and Python lists are wrapped directly; a bare scalar
+        becomes a length-1 array.
         """
         if isinstance(value, ak.Array):
-            return value
-        try:
-            return ak.Array(value)
-        except (ValueError, TypeError):
-            return ak.Array([value])
+            arr = value
+        else:
+            try:
+                arr = ak.Array(value)
+            except (ValueError, TypeError):
+                arr = ak.Array([value])
+
+        # drop behavior (the unpicklable lambdas live here) and metadata names
+        return ak.Array(ak.without_parameters(arr).layout)
 
     def make_vector(self, objs, collection, fields, type_id=None, mass=None):
         shape = ak.ones_like(objs[collection].pt, dtype=np.dtype(int))
