@@ -218,6 +218,40 @@ def compute_grid(output, channel=CHANNEL):
     return rows, groups, bg_mean
 
 
+def betagamma_pct(output, anchor, p, channel=CHANNEL):
+    """β-γ at percentile p (0..1) from the anchor sample's β-γ histogram — a robust
+    high-boost scale. (βγ_max is a noisy single-event order statistic and, on this grid,
+    is also pinned to the histogram's upper-edge axis ceiling at high boost.)"""
+    h = output[anchor]["hists"]["genAs_betagamma"][{"channel": channel}]
+    edges = h.axes[-1].edges
+    w = h.values()
+    cdf = np.cumsum(w) / max(w.sum(), 1)
+    return edges[min(int(np.searchsorted(cdf, p)) + 1, len(edges) - 1)]
+
+
+def insulated_core_fit(output, sample, x_insul, channel=CHANNEL):
+    """Strictly-insulated core cτ: fit log(dN/dx) = a - x/cτ over x < x_insul only — the
+    region where every event survives (ε=1, no truncation at all).
+
+    DIAGNOSTIC, not a production estimator: once x_insul << cτ the window sits on the flat
+    top of the exponential, so it has no lever arm and a huge error. Returns cτ, its error,
+    the effective event count in the window (n), and the window's fitted log-fall in nats
+    (lever_nats = (x_max - x_min)/cτ over the used window) as a lever-arm measure."""
+    centers, dens, effN, _ = proper_density(output, sample, channel)
+    sel = (centers < x_insul) & (effN >= 5)
+    n = float(effN[sel].sum())
+    if sel.sum() < 4:
+        return dict(ctau=np.nan, ctau_err=np.nan, n=n, lever_nats=np.nan)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        (slope, ic), cov = np.polyfit(
+            centers[sel], np.log(dens[sel]), 1, w=np.sqrt(effN[sel]), cov="unscaled")
+    ctau = -1 / slope if (np.isfinite(slope) and slope < 0) else np.nan
+    ctau_err = (ctau**2 * math.sqrt(cov[0, 0])
+                if (np.isfinite(ctau) and np.isfinite(cov[0, 0])) else np.nan)
+    lever_nats = (centers[sel].max() - centers[sel].min()) / ctau if np.isfinite(ctau) else np.nan
+    return dict(ctau=ctau, ctau_err=ctau_err, n=n, lever_nats=lever_nats)
+
+
 def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
     """One panel per mass point (cτ scan overlaid) showing every signal sample's
     proper-lxyz dN/dx with its fit + ±1σ band; cτ_fit ± error annotated per curve.
@@ -260,6 +294,7 @@ def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
             ax.plot([], [], "-o", color=colors[si], ms=4, label=lab)
         ax.set_xscale("log")
         ax.set_yscale("log")
+        ax.minorticks_on()
         ax.set_xlabel("Proper decay length  $x = \\ell_{xyz}/\\beta\\gamma$  [cm]")
         ax.set_ylabel("dN/dx  [cm$^{-1}$]")
         ax.legend(title="cτ:  nom → fit ± err  [cm]", fontsize=9.5,
