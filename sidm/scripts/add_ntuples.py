@@ -57,6 +57,22 @@ def parse_name(name):
         "ZZ_TuneCP5_13TeV" : "ZZ",
         "Run2018C" : "DoubleMuon_2018C",
         "Run2018C_15Feb2022_UL2018": "DoubleMuon_2018C",
+
+        "Run2018B_15Feb2022_UL2018_Block1": "DoubleMuon_2018B_0",
+        "Run2018B_15Feb2022_UL2018_Block2": "DoubleMuon_2018B_1",
+        "Run2018B_15Feb2022_UL2018_Block3": "DoubleMuon_2018B_2",
+        "Run2018B_15Feb2022_UL2018_Block4": "DoubleMuon_2018B_3",
+        "Run2018B_15Feb2022_UL2018_Block5": "DoubleMuon_2018B_4",
+        "Run2018B_15Feb2022_UL2018_Block6": "DoubleMuon_2018B_5",
+        "Run2018B_15Feb2022_UL2018_Block7": "DoubleMuon_2018B_6",
+        "Run2018B_15Feb2022_UL2018_Block8": "DoubleMuon_2018B_7",
+        "Run2018B_15Feb2022_UL2018_Block9": "DoubleMuon_2018B_8",
+        "Run2018B_15Feb2022_UL2018_Block10": "DoubleMuon_2018B_9",
+        "Run2018B_15Feb2022_UL2018_Block11": "DoubleMuon_2018B_10",
+        "Run2018B_15Feb2022_UL2018_Block12": "DoubleMuon_2018B_11",
+        "Run2018B_15Feb2022_UL2018_Block13": "DoubleMuon_2018B_12",
+        "Run2018B_15Feb2022_UL2018_Block14": "DoubleMuon_2018B_13",
+
         "Run2018D_15Feb2022_UL2018_Block_0aface09": "DoubleMuon_2018D_0",
         "Run2018D_15Feb2022_UL2018_Block_18f48385": "DoubleMuon_2018D_1",
         "Run2018D_15Feb2022_UL2018_Block_1cf7400c": "DoubleMuon_2018D_2",
@@ -230,7 +246,19 @@ for sample in samples:
                 print(f"failed reading {file_path}")
                 print("skipping")
                 continue
-            tree = in_file.Events
+            if not in_file or in_file.IsZombie():
+                print(f"failed reading {file_path}")
+                print("skipping")
+                continue
+
+            # tree = in_file.Events
+            tree = in_file.Get("Events")
+            if tree is None:
+                print(f"No Events tree in {file_path}")
+                print("skipping")
+                in_file.Close()
+                continue
+
             for entry in tree:
                 file_skimmed_evts = tree.GetEntries()
                 file_original_evts = entry.OriginalEventIndex
