@@ -625,43 +625,26 @@ Pass `--delete-chunks-after-merge` to the merge invocation to remove the input c
 
 ## 18. Access merged files in CMSLPC notebooks (and across collaborators)
 
-The merged EOS paths are:
-
-```
-root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1/
-root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1/
-```
-
-These are world-readable under the `lpcmetx` group area; substitute another user's name in the path to read theirs.
-
-`.coffea` files are safer to copy locally before loading with `coffea.util.load()`. The `.meta.yaml` sidecars are small text files and can be inspected without copying first:
-
-```bash
-mkdir -p signal_merged background_merged
-
-for ext in coffea meta.yaml; do
-    for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/signals_v1 | grep "\\.${ext}$"); do
-        xrdcp -f "root://cmseos.fnal.gov/${f}" "signal_merged/$(basename ${f})"
-    done
-    for f in $(xrdfs root://cmseos.fnal.gov ls /store/group/lpcmetx/SIDM/coffea_outputs/$USER/backgrounds_v1 | grep "\\.${ext}$"); do
-        xrdcp -f "root://cmseos.fnal.gov/${f}" "background_merged/$(basename ${f})"
-    done
-done
-```
-
-Then in Python:
+Merged outputs live under `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/`, world-readable under the `lpcmetx` group area. On LPC that path is also reachable through the **`/eos/uscms` POSIX mount**, so `coffea.util.load` / `load_run_metadata` read it **directly** — no `xrdcp` to local, and no VOMS proxy for the read. Set the producer to your own `$USER`, or to a collaborator's name to read theirs:
 
 ```python
-import glob
+import os, glob
 from coffea.util import load
 from sidm.tools.metadata import load_run_metadata
 
-sig_path = sorted(glob.glob("signal_merged/*.coffea"))[0]
-sig = load(sig_path)
-sig_meta = load_run_metadata(sig_path)         # tells you what was run
-print(sig.keys())
-print("n_files:", sig_meta["n_files"], "  sidm_commit:", sig_meta["sidm_commit"])
+producer, study = os.environ["USER"], "signals_v1"   # collaborator: set producer to their name
+eos_dir = f"/eos/uscms/store/group/lpcmetx/SIDM/coffea_outputs/{producer}/{study}"
+
+for path in sorted(glob.glob(f"{eos_dir}/*.coffea")):
+    out  = load(path)                 # dict {out, processed, exception}; out["out"] is keyed by sample
+    meta = load_run_metadata(path)    # reads the sibling <name>.meta.yaml
+    print(path.split("/")[-1], "->", list(out.get("out", out).keys()),
+          "| sidm_commit:", meta["sidm_commit"])
+    for s in meta["samples"]:         # n_files / xsec_pb are per-sample, under "samples"
+        print("   ", s["name"], s["n_files"], "files, xsec_pb =", s["xsec_pb"])
 ```
+
+`coffea.util.load` opens a local file — it does **not** accept a `root://` URL, which is why the *write* side uses xrootd but reads come straight off the `/eos/uscms` mount. The two example notebooks (`sidm/test_notebooks/lpc_dask_example.ipynb`, `lpc_condor_example.ipynb`) use this exact pattern.
 
 ---
 
