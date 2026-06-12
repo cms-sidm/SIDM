@@ -653,7 +653,7 @@ for path in sorted(glob.glob(f"{local}/*.coffea")):
         print("   ", s["name"], s["n_files"], "files, xsec_pb =", s["xsec_pb"])
 ```
 
-Reading these world-readable files works with your Kerberos ticket; EOS writes need a valid VOMS proxy. The two example notebooks (`sidm/test_notebooks/lpc_dask_example.ipynb`, `lpc_condor_example.ipynb`) use this exact pattern.
+Reading these world-readable files works with your Kerberos ticket; EOS writes need a valid VOMS proxy. The two example notebooks (`sidm/test_notebooks/lpc_dask_example.ipynb`, `lpc_condor_example.ipynb`) use this exact pattern, with a guard that raises a clear error if `producer`/`study` is wrong or the directory has no `.coffea`.
 
 ---
 
