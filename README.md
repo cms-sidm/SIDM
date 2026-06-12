@@ -14,7 +14,7 @@ Inspired by github.com/phylsix/Firefighter and/or github.com/phylsix/FireROOT
 
 ## Getting started on LPC
 
-This is **one** way to get a working interactive environment on Fermilab LPC (`cmslpc-el9.fnal.gov`). Other paths exist — e.g. the [Elastic Analysis Facility (EAF)](https://analytics-hub.fnal.gov), JupyterHub on LPC, or plain shell sessions — and the venv-setup steps below (1–4) transfer directly to those. Only step 5 (how to actually open a notebook) is specific to running VS Code on a laptop over SSH; on EAF or JupyterHub you skip it and pick the registered kernel from the web UI instead.
+This is **one** way to get a working interactive environment on Fermilab LPC (`cmslpc-el9.fnal.gov`). Other paths exist — e.g. the [Elastic Analysis Facility (EAF)](https://analytics-hub.fnal.gov), JupyterHub on LPC, or plain shell sessions — and the venv-setup steps below (1–4) transfer directly to those. Only step 5 (how to actually open a notebook) is laptop-specific — it offers two options, **JupyterLab in a browser** (5a) or **VS Code over SSH** (5b); on EAF or JupyterHub you skip it and pick the registered kernel from the web UI instead.
 
 This walkthrough covers the **interactive / notebook** environment. For running large batch jobs on LPC Condor, see [condor/README.md](condor/README.md) once steps 1–4 are done.
 
@@ -74,6 +74,8 @@ git clone <your-fork-of-SIDM>
 cd SIDM
 ```
 
+`/uscms_data/d3/$USER/SIDM` is the permanent home for this checkout — a standalone directory in your data area with `sidm_venv/` built inside it. The venv records this absolute path in every console script (`pip`, `jupyter`, …) and in the Jupyter kernelspec, so **build the venv here and do not move or rename the folder afterward**; a relocated venv fails with `bad interpreter: …/sidm_venv/bin/python: No such file or directory`. If you must relocate, move the checkout first, then delete `sidm_venv/` and redo steps 2–4 (re-registering the kernel in step 4).
+
 ### 2. Build the venv on LCG_107 Python 3.11
 
 The repo's `requirements.txt` pins versions (`dask`, `awkward`, …) that need Python ≥ 3.10. LPC's system Python is 3.9, so we use Python 3.11 from cvmfs:
@@ -105,6 +107,14 @@ ln -sfn /cvmfs/sft.cern.ch/lcg/views/LCG_107/x86_64-el9-gcc13-opt/lib/python3.11
 cd -
 ```
 
+Verify the scale-out dependencies used by step 7 are all installed (no `MISSING:` list = success):
+
+```bash
+python -c "import importlib.util as u; miss=[x for x in ['lpcjobqueue','dask_jobqueue','distributed','htcondor'] if u.find_spec(x) is None]; print('MISSING: '+', '.join(miss) if miss else 'scale-out deps OK')"
+```
+
+A name in the `MISSING:` list means that install line above did not land (commonly the `lpcjobqueue` git install) — rerun it. This checks the packages are present without importing them, so it stays fast and avoids the harmless "Condor configuration not found!" notice that `import lpcjobqueue` prints when `CONDOR_CONFIG` is unset.
+
 Confirm `sidm` installed **editable** (an in-place link to your checkout, not a copy):
 
 ```bash
@@ -133,29 +143,50 @@ sidm_venv/bin/python -c "import uproot; print(uproot.open('root://cmseos.fnal.go
 
 This drops a kernelspec under `~/.local/share/jupyter/kernels/sidm_venv/` on LPC. Any Jupyter Server running on LPC — including EAF or JupyterHub — will offer this kernel.
 
-### 5. Open notebooks (one approach: VS Code over SSH)
+### 5. Open notebooks
 
-VS Code on your laptop can't directly see LPC-side kernels through an SSHFS mount, since the kernel binary is x86_64 Linux. One pattern that works: start a Jupyter Server on LPC, port-forward 8888 to your laptop, point VS Code at `http://localhost:8888/` as a remote server.
+The kernel runs on LPC (its binary is x86_64 Linux), so you open notebooks through a frontend that connects to a Jupyter server on LPC. Two patterns work, and both reach the **SIDM (LCG_107 Py3.11)** kernel from step 4: **JupyterLab in a browser** (5a — simplest) and **VS Code over SSH** (5b).
 
-In a terminal on your laptop:
+#### 5a. JupyterLab in a browser (simplest)
+
+From a terminal on your laptop, start a JupyterLab server on LPC and forward its ports:
+
+```bash
+ssh -L 8888:localhost:8888 -L 8787:localhost:8787 cmslpc-el9.fnal.gov \
+    "export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem && \
+     cd /uscms_data/d3/$USER/SIDM && source sidm_venv/bin/activate && \
+     jupyter lab --no-browser --port=8888 --ip=127.0.0.1"
+```
+
+Open the URL it prints — `http://127.0.0.1:8888/lab?token=…` (`localhost` also works over the tunnel) — in your laptop browser and pick the **SIDM (LCG_107 Py3.11)** kernel. `--no-browser` is required (LPC is headless) and the token in the URL logs you in. The second `-L 8787` forwards the Dask dashboard (step 7) to `http://localhost:8787/status` — drop it if you don't need it.
+
+> **VOMS proxy — mint it from a JupyterLab terminal.** Your dask/condor cells need a valid CMS proxy that the **kernel** can find. Two things bite: the `ssh "…"` launch runs a non-interactive shell that does **not** source your `.bashrc` (so the kernel won't inherit a proxy path set there), and the default `/tmp/x509up_u<UID>` is per-node. So mint the proxy to the fixed NFS path that the launch's `X509_USER_PROXY` already points at — from a terminal **inside JupyterLab** (File ▸ New ▸ Terminal), which runs on your kernel's node:
+> ```bash
+> voms-proxy-init --valid 192:00 -voms cms -out /uscms_data/d3/$USER/x509_proxy.pem
+> chmod 600 /uscms_data/d3/$USER/x509_proxy.pem
+> ```
+> `scaleout.check_voms_proxy()` and the Condor workers then resolve the same file. Forgot the launch export? Set it from the kernel in the notebook before `check_voms_proxy()` (it runs on LPC, so `os.environ['USER']` resolves): `import os; os.environ["X509_USER_PROXY"] = f"/uscms_data/d3/{os.environ['USER']}/x509_proxy.pem"`.
+
+**List and stop servers.** `jupyter server list` (equivalently `jupyter lab list`) prints each running server with its port and token. To shut one down, press **Ctrl+C** in the launch terminal, or from a shell on the same node run `jupyter lab stop 8888` (equivalently `jupyter server stop 8888`).
+
+> **Port and same-node gotchas.** Port 8888 is per-node. If a previous launch still holds it, Jupyter quietly starts on the next free port (8889, 8890, …) — which your `-L 8888` tunnel isn't forwarding; run `jupyter server list`, stop the stray, and relaunch (change the port in *both* the `-L` and `--port` if you change it). And because `cmslpc-el9.fnal.gov` load-balances across many nodes (`cmslpc101`, `cmslpc336`, …), `jupyter … stop` and the in-Lab terminal only reach a server that's on their node — keeping the tunnel and server in one `ssh -L … "…"` command keeps everything together.
+
+#### 5b. VS Code over SSH
+
+VS Code attaches to the same kind of server — launch it like 5a but with `jupyter server` in place of `jupyter lab` (the `-L 8787` is optional unless you want the dashboard):
 
 ```bash
 ssh -L 8888:localhost:8888 cmslpc-el9.fnal.gov \
-    "cd /uscms_data/d3/$USER/SIDM && source sidm_venv/bin/activate && \
+    "export X509_USER_PROXY=/uscms_data/d3/$USER/x509_proxy.pem && \
+     cd /uscms_data/d3/$USER/SIDM && source sidm_venv/bin/activate && \
      jupyter server --no-browser --port=8888 --ip=127.0.0.1"
 ```
 
-Copy the URL it prints (`http://localhost:8888/?token=…`). In VS Code: open any notebook → kernel selector (top-right) → **Select Another Kernel…** → **Existing Jupyter Server…** → paste URL → pick **SIDM (LCG_107 Py3.11)**.
+Copy the URL it prints (`http://localhost:8888/?token=…`). In VS Code: open any notebook → kernel selector (top-right) → **Select Another Kernel…** → **Existing Jupyter Server…** → paste URL → pick **SIDM (LCG_107 Py3.11)**. The VOMS-proxy note, the list/stop note, and the port/same-node gotchas from 5a apply identically — except there is no in-Lab terminal in the bare `jupyter server` flow, so mint the proxy from a separate `ssh` shell on the **same node** as this server (or use the in-notebook `os.environ["X509_USER_PROXY"]` override).
 
-That terminal stays attached to the server — press **Ctrl+C** there to shut it down when you're done. If you lose the URL, run `jupyter server list` in another shell on the same node to reprint it (token included).
+**Alternative — let VS Code manage the connection (Remote-SSH).** Instead of the manual `ssh -L` tunnel above, install the **Remote - SSH** extension and run **Remote-SSH: Connect to Host…** → `cmslpc-el9.fnal.gov` from the Command Palette. VS Code runs its server component on LPC, so it sees the x86_64 kernel natively: open the `SIDM` folder, open a notebook, pick **SIDM (LCG_107 Py3.11)** — no port-forward, no token to paste, and none of the PowerShell pitfalls above. The integrated terminal also becomes a Linux shell on LPC, so the bash blocks in steps 1–4 run there directly. (Auth is still Kerberos — on Windows the WSL2 note above still applies — and since `cmslpc-el9` is round-robin you'll land on whichever node it picks.) Because VS Code — not an `ssh "…"` command — launches the kernel here, the `X509_USER_PROXY` export does not reach it; set the proxy from inside the kernel instead, via the `os.environ["X509_USER_PROXY"]` override in the dask notebook's proxy-check cell before `check_voms_proxy()`.
 
 If you're on EAF, JupyterHub, or running Jupyter directly on LPC with your own tunneling, skip this step entirely and just pick the kernel from your usual UI.
-
-> **If the browser/VS Code can't connect, the usual cause is a leftover server.** If a previous launch is still holding port 8888, Jupyter quietly starts the new one on the next free port (8889, 8890, …) — which your `-L 8888` tunnel isn't forwarding. Run `jupyter server list` to see what's actually running and on which port, kill any strays, and relaunch. If you change the port, change it in *both* the `-L` and `--port`.
->
-> If you ever run the tunnel and the server as two *separate* commands instead of the combined one above, make sure both land on the same login node: `cmslpc-el9.fnal.gov` load-balances across many (`cmslpc101`, `cmslpc336`, …), and a tunnel to one node won't reach a server on another. Keeping them in a single `ssh -L … "…"` command (as above) avoids it.
-
-**Alternative — let VS Code manage the connection (Remote-SSH).** Instead of the manual `ssh -L` tunnel above, install the **Remote - SSH** extension and run **Remote-SSH: Connect to Host…** → `cmslpc-el9.fnal.gov` from the Command Palette. VS Code runs its server component on LPC, so it sees the x86_64 kernel natively: open the `SIDM` folder, open a notebook, pick **SIDM (LCG_107 Py3.11)** — no port-forward, no token to paste, and none of the PowerShell pitfalls above. The integrated terminal also becomes a Linux shell on LPC, so the bash blocks in steps 1–4 run there directly. (Auth is still Kerberos — on Windows the WSL2 note above still applies — and since `cmslpc-el9` is round-robin you'll land on whichever node it picks.)
 
 ### 6. Reading remote ROOT files
 
@@ -198,6 +229,10 @@ cluster.close()
 Under the hood: workers are HTCondor jobs that run inside the `coffea-dask-almalinux9:2025.5.0.rc2-py3.11` apptainer image on the LPC pool; the notebook itself stays in `sidm_venv` outside the apptainer. Your local `sidm/` tree (including uncommitted edits) is shipped to each worker via `UploadDirectory`, so there is no commit-push roundtrip during iteration.
 
 The required Python packages (`htcondor<25`, `lpcjobqueue`) were installed as part of step 3, so no extra setup is needed. A runnable end-to-end example lives at [sidm/test_notebooks/lpc_dask_example.ipynb](sidm/test_notebooks/lpc_dask_example.ipynb).
+
+`scaleout.check_voms_proxy()` (called at the top of the example, and again inside `make_lpc_client`) needs `X509_USER_PROXY` visible to the **kernel** — see the proxy note in step 5. The same exported file is spooled to the Condor workers via `use_x509userproxy`, so one export covers both.
+
+To watch the Dask dashboard from your laptop browser, forward its port too: the 5a launch already includes `-L 8787:localhost:8787` (if you started from 5b or dropped it, add it to the `ssh` launch), then open `http://localhost:8787/status` (the client repr prints the actual port if 8787 was already taken). The dashboard is optional — the run completes without it.
 
 **Saving the output.** Write the `.coffea` (and a `.meta.yaml` metadata sidecar via `sidm.tools.metadata`) to the group-writable lpcmetx EOS area so it persists and other CMS users can re-read it:
 

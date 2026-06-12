@@ -51,6 +51,8 @@ Most commands assume you are starting from:
 cd /uscms_data/d3/$USER/SIDM
 ```
 
+This is the same standalone checkout built in the [top-level README](../README.md) — a directory in your data area with `sidm_venv/` inside it. The venv records this absolute path, so keep the checkout where its venv was built; if you relocate it, rebuild the venv (top-README steps 2–4) before submitting.
+
 ---
 
 ## 2. Activate your sidm_venv
