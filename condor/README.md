@@ -627,26 +627,33 @@ Pass `--delete-chunks-after-merge` to the merge invocation to remove the input c
 
 ## 18. Access merged files in CMSLPC notebooks (and across collaborators)
 
-Merged outputs live under `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/`, world-readable under the `lpcmetx` group area. On LPC that path is also reachable through the **`/eos/uscms` POSIX mount**, so `coffea.util.load` / `load_run_metadata` read it **directly** — no `xrdcp` to local, and no VOMS proxy for the read. Set the producer to your own `$USER`, or to a collaborator's name to read theirs:
+Merged outputs live under `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/` on EOS, world-readable under the `lpcmetx` group area. `coffea.util.load` / `load_run_metadata` open **local files** (not `root://` URLs), and LPC recommends accessing EOS over **xrootd** rather than the `/eos/uscms` FUSE mount — so `xrdcp` the files down first, then load the local copies. Set the producer to your own `$USER`, or a collaborator's name to read theirs:
 
 ```python
-import os, glob
+import os, glob, subprocess
 from coffea.util import load
 from sidm.tools.metadata import load_run_metadata
 
 producer, study = os.environ["USER"], "signals_v1"   # collaborator: set producer to their name
-eos_dir = f"/eos/uscms/store/group/lpcmetx/SIDM/coffea_outputs/{producer}/{study}"
+redir   = "root://cmseos.fnal.gov"
+eos_dir = f"/store/group/lpcmetx/SIDM/coffea_outputs/{producer}/{study}"
+local   = f"/uscms_data/d3/{os.environ['USER']}/SIDM/imported/{producer}_{study}"
+os.makedirs(local, exist_ok=True)
 
-for path in sorted(glob.glob(f"{eos_dir}/*.coffea")):
-    out  = load(path)                 # dict {out, processed, exception}; out["out"] is keyed by sample
-    meta = load_run_metadata(path)    # reads the sibling <name>.meta.yaml
-    print(path.split("/")[-1], "->", list(out.get("out", out).keys()),
-          "| sidm_commit:", meta["sidm_commit"])
+for r in subprocess.run(["xrdfs", redir, "ls", eos_dir], check=True,
+                        capture_output=True, text=True).stdout.split():
+    if r.endswith((".coffea", ".meta.yaml")):          # copy the .coffea AND its sidecar
+        subprocess.run(["xrdcp", "-f", f"{redir}/{r}", f"{local}/{os.path.basename(r)}"], check=True)
+
+for path in sorted(glob.glob(f"{local}/*.coffea")):
+    out  = load(path)                 # local file; dict {out, processed, exception}
+    meta = load_run_metadata(path)    # reads the sibling local .meta.yaml
+    print(path.split("/")[-1], "->", list(out.get("out", out).keys()), "| sidm_commit:", meta["sidm_commit"])
     for s in meta["samples"]:         # n_files / xsec_pb are per-sample, under "samples"
         print("   ", s["name"], s["n_files"], "files, xsec_pb =", s["xsec_pb"])
 ```
 
-`coffea.util.load` opens a local file — it does **not** accept a `root://` URL, which is why the *write* side uses xrootd but reads come straight off the `/eos/uscms` mount. The two example notebooks (`sidm/test_notebooks/lpc_dask_example.ipynb`, `lpc_condor_example.ipynb`) use this exact pattern.
+Reading these world-readable files works with your Kerberos ticket; EOS writes need a valid VOMS proxy. The two example notebooks (`sidm/test_notebooks/lpc_dask_example.ipynb`, `lpc_condor_example.ipynb`) use this exact pattern.
 
 ---
 
