@@ -149,8 +149,16 @@ def set_plot_style(style='cms', dpi=50):
         raise NotImplementedError
     plt.rcParams['figure.dpi'] = dpi
 
-def plot(hists, skip_label=False, **kwargs):
-    """Plot using hep.hist(2d)plot and add cms labels"""
+def plot(hists, skip_label=False, yerr=None, **kwargs):
+    """Plot using hep.hist(2d)plot and add cms labels.
+
+    yerr: error bars for a 1D histogram. **Pass this explicitly for any derived
+        quantity** -- an efficiency, ratio, scale factor, or any hist filled via
+        ``.view()[:] = ...`` rather than from event counts -- otherwise mplhep draws
+        sqrt(bin_content) bars, which are meaningless for a non-count value.
+        ``get_eff_hist`` returns the matching ``errors`` to pass here. Leave as None
+        for an ordinary count histogram, where mplhep's sqrt(N) bars are correct.
+    """
 
     # set default arguments
     default_kwargs = {
@@ -160,7 +168,7 @@ def plot(hists, skip_label=False, **kwargs):
 
     dim = len(hists[0].axes) if isinstance(hists, list) else len(hists.axes)
     if dim == 1:
-        h = hep.histplot(hists, **kwargs)
+        h = hep.histplot(hists, yerr=yerr, **kwargs)
     elif dim == 2:
         h = hep.hist2dplot(hists, **kwargs)
     else:
