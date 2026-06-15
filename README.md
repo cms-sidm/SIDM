@@ -110,7 +110,7 @@ cd -
 Verify the scale-out dependencies used by step 7 are all installed (no `MISSING:` list = success):
 
 ```bash
-python -c "import importlib.util as u; miss=[x for x in ['lpcjobqueue','dask_jobqueue','distributed','htcondor'] if u.find_spec(x) is None]; print('MISSING: '+', '.join(miss) if miss else 'scale-out deps OK')"
+python -c "import importlib.util as u; miss=[x for x in ['bokeh','lpcjobqueue','dask_jobqueue','distributed','htcondor'] if u.find_spec(x) is None]; print('MISSING: '+', '.join(miss) if miss else 'scale-out deps OK')"
 ```
 
 A name in the `MISSING:` list means that install line above did not land (commonly the `lpcjobqueue` git install) — rerun it. This checks the packages are present without importing them, so it stays fast and avoids the harmless "Condor configuration not found!" notice that `import lpcjobqueue` prints when `CONDOR_CONFIG` is unset.
@@ -232,7 +232,7 @@ The required Python packages (`htcondor<25`, `lpcjobqueue`) were installed as pa
 
 `scaleout.check_voms_proxy()` (called at the top of the example, and again inside `make_lpc_client`) needs `X509_USER_PROXY` visible to the **kernel** — see the proxy note in step 5. The same exported file is spooled to the Condor workers via `use_x509userproxy`, so one export covers both.
 
-To watch the Dask dashboard from your laptop browser, forward its port too: the 5a launch already includes `-L 8787:localhost:8787` (if you started from 5b or dropped it, add it to the `ssh` launch), then open `http://localhost:8787/status` (the client repr prints the actual port if 8787 was already taken). The dashboard is optional — the run completes without it.
+To watch the Dask dashboard from your laptop browser, forward its port too: the 5a launch already includes `-L 8787:localhost:8787` (if you started from 5b or dropped it, add it to the `ssh` launch), then open `http://localhost:8787/status`. `make_lpc_client()` pins the dashboard link to `localhost` so the URL shown by the cluster (and printed by the example notebook's `print('dashboard:', cluster.dashboard_link)` cell) matches this tunnel — otherwise `lpcjobqueue` advertises a relative `/proxy/8787/status` link that only resolves under a JupyterHub, not over a plain SSH forward. The repr shows the actual port if 8787 was already taken. The dashboard needs the `bokeh` package (pinned in `requirements.txt`); without it `localhost:8787` still loads but shows a *"Dask needs bokeh>=3.1.0 for the dashboard"* notice instead of the live charts. One caveat: the **Groups** tab (Task Group Graph) can log a harmless `KeyError: 'automatic_retries'` — a bug in distributed's dashboard layout, triggered by coffea's retry wrapper rather than by your run; the main **Status**, task-stream, and worker panels are unaffected, as is the computation itself. The dashboard is optional — the run completes without it.
 
 **Saving the output.** Write the `.coffea` (and a `.meta.yaml` metadata sidecar via `sidm.tools.metadata`) to the group-writable lpcmetx EOS area so it persists and other CMS users can re-read it:
 
@@ -315,6 +315,8 @@ cd SIDM/
 pip install pipreqs
 pipreqs . --force # overwrites current requirements.txt
 ```
+
+`pipreqs` derives requirements from `import` statements, so import-less runtime dependencies are silently dropped on regeneration and must be re-added by hand: `bokeh` (loaded by `distributed` for the Dask dashboard — see step 7), plus the scale-out packages installed manually in step 3 (`lpcjobqueue`, `htcondor`, `distributed`).
 
 ### How to use DASK
 

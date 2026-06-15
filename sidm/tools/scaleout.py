@@ -4,6 +4,7 @@ import os
 import subprocess
 from pathlib import Path
 
+import dask
 from dask.distributed import Client, PipInstall
 
 
@@ -122,6 +123,17 @@ def make_lpc_client(
 
     from lpcjobqueue import LPCCondorCluster
     from distributed.diagnostics.plugin import UploadDirectory
+
+    # Point the dashboard link at localhost so it matches the documented SSH
+    # tunnel (`ssh -L 8787:localhost:8787`, README step 7). Importing lpcjobqueue
+    # above sets distributed.dashboard.link to the relative "/proxy/{port}/status"
+    # -- a jupyter-server-proxy route that does not exist on a plain SSH-forwarded
+    # LPC scheduler (the dashboard serves /status at the root), so that link 404s
+    # over the tunnel. Rewrite it unless we are genuinely under a JupyterHub, where
+    # the proxy route is real. This must run AFTER the import, which would
+    # otherwise clobber the setting.
+    if "JUPYTERHUB_SERVICE_PREFIX" not in os.environ:
+        dask.config.set({"distributed.dashboard.link": "{scheme}://localhost:{port}/status"})
 
     cluster = LPCCondorCluster(
         memory=memory,
