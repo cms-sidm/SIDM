@@ -1,6 +1,7 @@
 """Module to define miscellaneous helper methods"""
 
 import math
+import warnings
 import yaml
 import numpy as np
 import awkward as ak
@@ -157,7 +158,9 @@ def plot(hists, skip_label=False, yerr=None, **kwargs):
         ``.view()[:] = ...`` rather than from event counts -- otherwise mplhep draws
         sqrt(bin_content) bars, which are meaningless for a non-count value.
         ``get_eff_hist`` returns the matching ``errors`` to pass here. Leave as None
-        for an ordinary count histogram, where mplhep's sqrt(N) bars are correct.
+        for an ordinary count histogram, where mplhep's default is correct:
+        asymmetric Poisson (Garwood) bars for unweighted/unit-weight counts, and
+        symmetric sqrt(sum w^2) for weighted hists.
     """
 
     # set default arguments
@@ -183,13 +186,20 @@ def get_eff_hist(num_hist, denom_hist):
     denom_vals = denom_hist.values()
     num_vals = num_hist.values()
     eff_values = num_vals/denom_vals
-    eff_hist = hist.Hist(*num_hist.axes)
-    eff_hist.values()[:] = eff_values
+    eff_hist = hist.Hist(*num_hist.axes, storage=hist.storage.Weight())
+    eff_hist.view().value[:] = eff_values
 
     # approximate weighted-hist errors based on avg (per-bin) weights
     num_counts = num_vals**2 / num_hist.variances()
     denom_counts = denom_vals**2 / denom_hist.variances()
     errors = hist.intervals.ratio_uncertainty(num_counts, denom_counts, 'efficiency')
+
+    # Store the symmetrized Clopper-Pearson error^2 as the bin variance, so that
+    # plotting this hist WITHOUT yerr=errors yields a right-magnitude (symmetric)
+    # bar instead of mplhep's default sqrt(efficiency). Callers should still pass
+    # yerr=errors for the correct asymmetric interval (e.g. plot_ratio does).
+    sym_err = 0.5 * (errors[0] + errors[1])
+    eff_hist.view().variance[:] = sym_err ** 2
 
     return eff_hist, errors
 
@@ -242,7 +252,28 @@ def get_hist_mean(h):
     """Return mean of 1D histogram"""
     return np.atleast_1d(h.profile(axis=0).view())[0].value
 
+def _gaussian_ratio(num_hist, den_hist):
+    """Generic bin-by-bin ratio num/den with Gaussian-propagated errors, for ratios
+    that are NOT efficiencies (num not a subset of den), where the binomial
+    Clopper-Pearson interval used by get_eff_hist is invalid. Returns
+    (ratio_hist, errors) with errors a symmetric (2, N) array for plot()."""
+    n = num_hist.values()
+    d = den_hist.values()
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = np.where(d != 0, n / d, np.nan)
+        rel2 = (np.where(n != 0, num_hist.variances() / n**2, 0.0)
+                + np.where(d != 0, den_hist.variances() / d**2, 0.0))
+        rerr = np.nan_to_num(np.abs(ratio) * np.sqrt(rel2))
+    ratio_hist = hist.Hist(*num_hist.axes, storage=hist.storage.Weight())
+    ratio_hist.view().value[:] = np.nan_to_num(ratio)
+    ratio_hist.view().variance[:] = rerr**2
+    return ratio_hist, np.array([rerr, rerr])
+
 def plot_ratio(num, den, **kwargs):
+    # Lower-panel label/limits default to the efficiency convention but can be
+    # overridden for a generic ratio; popped so they do not reach hep.histplot.
+    ratio_ylabel = kwargs.pop("ratio_ylabel", "Efficiency")
+    ratio_ylim = kwargs.pop("ratio_ylim", (0, 1.2))
     fig, (ax1, ax2) = plt.subplots(
         2, 1, figsize=(12, 12), sharex=True,
         gridspec_kw={'height_ratios': [3, 1], 'hspace': 0}
@@ -267,11 +298,18 @@ def plot_ratio(num, den, **kwargs):
     plt.tight_layout()
     plt.sca(ax2)
     for x in num:
-        eff, errors = get_eff_hist(x, den)
+        try:
+            eff, errors = get_eff_hist(x, den)
+        except ValueError:
+            # num is not a subset of den (a shape ratio, not an efficiency): the
+            # binomial Clopper-Pearson interval is invalid and ratio_uncertainty
+            # raises -- fall back to a Gaussian-propagated ratio.
+            eff, errors = _gaussian_ratio(x, den)
         plot(eff, histtype='errorbar', yerr=errors, skip_label=True)
 
-    ax2.set_ylabel("Efficiency")
-    ax2.set_ylim(0, 1.2)
+    ax2.set_ylabel(ratio_ylabel)
+    if ratio_ylim is not None:
+        ax2.set_ylim(*ratio_ylim)
 
 def round_sigfig(val, digits=1):
     """Return a number rounded to a given number of significant figures. Uses magic copied from
@@ -438,10 +476,6 @@ def plot_and_fit_polarization(hist, ax=None, color='black', label_prefix="Data",
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 
-    hep.histplot(hist, ax=ax, yerr=True, density=density, color=color,
-                 histtype='errorbar', marker='o', markersize=4, capsize=2,
-                 label=label_prefix)
-
     raw_counts = hist.values().flatten()
     edges = hist.axes[-1].edges
     centers = (edges[:-1] + edges[1:]) / 2
@@ -449,10 +483,10 @@ def plot_and_fit_polarization(hist, ax=None, color='black', label_prefix="Data",
     min_len = min(len(raw_counts), len(centers))
     raw_counts = raw_counts[:min_len]
     centers = centers[:min_len]
+    edges = edges[:min_len + 1]
 
     if density:
         widths = edges[1:] - edges[:-1]
-        widths = widths[:min_len]
         integral = np.sum(raw_counts * widths)
         scale_factor = 1.0 / (integral if integral > 0 else 1.0)
     else:
@@ -460,7 +494,15 @@ def plot_and_fit_polarization(hist, ax=None, color='black', label_prefix="Data",
 
     y_values = raw_counts * scale_factor
     y_err = np.sqrt(raw_counts) * scale_factor
-    y_err[y_err == 0] = scale_factor
+    y_err[raw_counts == 0] = scale_factor
+
+    # Draw the SAME symmetric sqrt(N) errors the fit uses below, so the plotted
+    # bars equal the curve_fit sigmas. (Passing the raw hist with yerr=True would
+    # let mplhep draw its asymmetric Garwood interval, which the fit does not use;
+    # density is applied here too so the markers match the fit input exactly.)
+    hep.histplot(y_values, bins=edges, ax=ax, yerr=y_err, color=color,
+                 histtype='errorbar', marker='o', markersize=4, capsize=2,
+                 label=label_prefix)
 
     mask = (centers >= fit_range[0]) & (centers <= fit_range[1])
     x_fit = centers[mask]
@@ -518,10 +560,6 @@ def plot_and_fit_gaussian(hist, ax=None, color='black', label_prefix="Data", fit
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 
-    hep.histplot(hist, ax=ax, yerr=True, density=density, color=color,
-                 histtype='errorbar', marker='o', markersize=4, capsize=2,
-                 label=label_prefix)
-
     counts = hist.values().flatten()
     edges = hist.axes[-1].edges
     centers = (edges[:-1] + edges[1:]) / 2
@@ -533,14 +571,19 @@ def plot_and_fit_gaussian(hist, ax=None, color='black', label_prefix="Data", fit
     else:
         scale_factor = 1.0
 
-    y_fit = counts * scale_factor
-    y_err_fit = np.sqrt(counts) * scale_factor
-    y_err_fit[y_err_fit == 0] = scale_factor
+    y_values = counts * scale_factor
+    y_err = np.sqrt(counts) * scale_factor
+    y_err[counts == 0] = scale_factor
+
+    # Draw the same symmetric errors the fit uses below (see plot_and_fit_polarization).
+    hep.histplot(y_values, bins=edges, ax=ax, yerr=y_err, color=color,
+                 histtype='errorbar', marker='o', markersize=4, capsize=2,
+                 label=label_prefix)
 
     mask = (centers >= fit_range[0]) & (centers <= fit_range[1])
     x_fit = centers[mask]
-    y_fit = y_fit[mask]
-    y_err_fit = y_err_fit[mask]
+    y_fit = y_values[mask]
+    y_err_fit = y_err[mask]
 
     if len(x_fit) > 0 and np.sum(y_fit) > 0:
         mean_guess = np.average(x_fit, weights=y_fit)
@@ -907,6 +950,19 @@ def plot_MC_sig_vs_bkg_panels(
 
     if len(background_hists) == 0:
         raise ValueError("No background histograms were found to plot")
+
+    # Warn if a background MC hist looks unweighted (integer variances): the yerr=True
+    # below then draws asymmetric Poisson (Garwood) bars rather than sqrt(sum w^2), and
+    # the normalization is probably not lumi*xsec-weighted. Catches a real MC mistake.
+    for _lbl, _h in zip(background_labels, background_hists):
+        _v = _h.variances()
+        if _v is not None and np.allclose(_v, np.round(_v)):
+            warnings.warn(
+                f"plot_MC_sig_vs_bkg_panels: background '{_lbl}' has integer variances "
+                f"(looks unweighted) -- its error bars will be asymmetric Poisson, not "
+                f"sqrt(sum w^2); check that it is lumi*xsec-weighted.",
+                stacklevel=2,
+            )
 
     background_plot_kwargs = {}
     if background_colors is not None:
