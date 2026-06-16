@@ -21,6 +21,11 @@ QCD:
 TTJets:
   - TTJets
 
+Diboson:
+  - WW
+  - WZ
+  - ZZ
+
 Background:
   - DYtoMuMu
   - QCD
