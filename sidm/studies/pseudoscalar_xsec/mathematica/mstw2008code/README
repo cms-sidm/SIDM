@@ -1,0 +1,188 @@
+MSTW 2008 PDFs
+==============
+
+The enclosed Fortran, C++ and Mathematica code provides public access 
+to the parton distribution functions (PDFs) published in:
+
+  A. D. Martin, W. J. Stirling, R. S. Thorne and G. Watt,
+  "Parton distributions for the LHC",
+  Eur. Phys. J. C63 (2009) 189-285
+  [arXiv:0901.0002 [hep-ph]].
+
+Please reference this paper if you use the PDFs for a publication.
+
+Unpack the code tarball with "tar zxvf mstw2008code.tar.gz" to give the
+following files:
+
+  README      : This short documentation file.
+  mstwpdf.f   : Fortran code to access PDF grids.
+  mstwpdf.h   : C++ class header file.
+  mstwpdf.cc  : C++ class implementation file.
+  example.f   : Fortran example code.
+  example.cc  : C++ example code.
+  Makefile    : Compilation using Make utility.
+  alphaS.f    : Fortran code for alphaS.
+
+  mstwpdf.m   : Mathematica package to access PDF grids.
+  example.nb  : Mathematica example notebook.
+  alphaS.tm   : Mathlink template for alphaS code. 
+  alphaS.c    : Mathlink C wrapper around Fortran code for alphaS.
+  diff3all.sh : Compare output of Fortran, C++ and Mathematica example code.
+                
+Unpack the grids tarball with "tar zxvf mstw2008grids.tar.gz".  The PDF
+grids from the best fit at LO, NLO and NNLO are stored in files named
+
+  Grids/mstw2008lo.00.dat
+  Grids/mstw2008nlo.00.dat
+  Grids/mstw2008nnlo.00.dat
+
+The grids are provided for
+
+  10^-6 <= x <= 1 and 1 GeV^2 <= Q^2 <= 10^9 GeV^2
+
+with an extrapolation invoked for smaller x or smaller/larger Q^2.  As usual,
+it is always the momentum density that is returned, that is, x times the number
+density.  The values of the heavy quark masses used and the values of alphaS
+obtained from the fits are stored in the grid files.  For consistency, the same
+values should be used in all calculations involving the PDFs.  Code is provided
+for the alphaS definition used in the fitting code: this differs from the
+alphaS definition used previously by MRST.  In particular, the input alphaS
+value can be given at any reference scale, and there is no Lambda_{QCD}^{nf=4}
+parameter as in the previous MRST definition.  Note that the PDFs (and alphaS)
+are discontinuous at NNLO at the heavy quark thresholds Q^2 = mc^2 and
+Q^2 = mb^2.  To account for this, Q^2 grid points are chosen at mc^2, mc^2+eps,
+mb^2, mb^2+eps (with eps = 10^-6 GeV^2).  If the PDFs are requested for
+mc^2 < Q^2 < mc^2+eps the value at mc^2+eps is used, and similarly if
+mb^2 < Q^2 < mb^2+eps the value at mb^2+eps is used.
+
+The eigenvector PDF sets are stored in files named
+
+  Grids/mstw2008lo.90cl.ii.dat
+  Grids/mstw2008nlo.90cl.ii.dat
+  Grids/mstw2008nnlo.90cl.ii.dat
+
+and
+
+  Grids/mstw2008lo.68cl.ii.dat
+  Grids/mstw2008nlo.68cl.ii.dat
+  Grids/mstw2008nnlo.68cl.ii.dat
+
+where ii = 01 to ii = 40 label the eigenvector sets and ii = (2*n-1) and
+ii = (2*n) correspond, respectively, to the '+' and '-' directions of the nth
+eigenvector (n = 1 to 20).  In producing the eigenvector PDF sets, the
+tolerance parameter T, i.e. the square root of the change in global chi^2
+when moving along an eigenvector direction starting from the global minimum,
+is determined by a new dynamic procedure such that each individual data set
+included in the global fit is described within its 90% or one-sigma (68%)
+confidence level (C.L.) limits.  The values of the tolerance T, and also the
+corresponding distance t moved along each eigenvector direction, are stored in
+the grid files.  (In the ideal quadratic case, t = T.)  The user is therefore
+free to choose which of the two error sets to use to obtain PDF uncertainties,
+or indeed to rescale the uncertainties to obtain a different tolerance T.  
+However, we recommend the use of the conservative 90% C.L. PDF uncertainties
+as the default choice.  Note that these 90% and 68% C.L. limits are defined
+according to "hypothesis-testing" criteria and therefore the values of the
+tolerance T differ from the values of T = 1.64 (90% C.L.) and T = 1 (68% C.L.)
+expected according to the more usual "parameter-fitting" criteria.  Previous
+MRST eigenvector PDF sets have used a fixed value of T = sqrt(50) corresponding
+ to an estimated 90% C.L. limit.  Also, previous MRST uncertainties were
+determined for fixed data set normalisations, whereas we now allow data set
+normalisations to go free when determining PDF uncertainties.  Full details
+of the new dynamic procedure for determining PDF uncertainties are given in
+Section 6 of the paper mentioned above.
+
+Corresponding Fortran code for calculating proton (and neutron) structure
+functions in neutral-current deep-inelastic scattering (only photon exchange),
+i.e. F_2 and F_L including their heavy quark (c,b) components, is available
+on request.  Note that the previous MRST structure function code, available
+from HEPDATA, should not be used with the MSTW PDFs due to the different
+implementation of the general-mass variable flavour number scheme (GM-VFNS).
+
+
+Fortran and C++ example programs
+--------------------------------
+
+To compile the Fortran and C++ example programs, check that the correct
+Fortran and/or C++ compilers are enabled in the Makefile, then just type
+"make".  Of course, the compilation can also be done by hand, e.g.
+
+  g77 example.f mstwpdf.f alphaS.f -o example
+
+Then run the programs with:
+
+  ./example
+  ./example_cpp
+
+The C++ example program contains a wrapper to the Fortran alphaS code, and
+therefore requires a Fortran compiler.  If this is not available, comment out
+the corresponding parts of the C++ example program.  The Fortran and C++
+example programs should give identical output.  Verify this with e.g. for
+the gluon:
+
+  diff xg_vs_x.dat xg_vs_x_cpp.dat
+  diff xg_vs_q2.dat xg_vs_q2_cpp.dat
+
+Note that the numbering scheme for the flavour "f" now follows the PDG 
+convention (apart from the gluon has f=0, not 21) used in e.g. LHAPDF
+and differs from the numbering scheme used in previous versions of
+the MRST code.  See the example programs for usage.
+
+
+Mathematica package
+-------------------
+
+For the first time a Mathematica package is provided to access the PDFs.  The
+grids are interpolated using exactly the same method adopted in the Fortran
+and C++ code, rather than using Mathematica's own interpolation routines.  This
+ensures that identical results will be obtained for the PDFs using the Fortran,
+C++ or Mathematica interfaces.  The Mathematica example notebook will output
+files in an identical format to the Fortran and C++ example programs.  Check
+these with e.g.
+
+  diff xg_vs_x.dat xg_vs_x_math.dat
+  diff xg_vs_q2.dat xg_vs_q2_math.dat
+
+A script diff3all.sh is provided to allow a check of all output files from the
+Fortran, C++ and Mathematica example programs.
+
+The Fortran alphaS code can be called from Mathematica using the Mathlink
+interface.  The binary alphaS.exe should be compiled from alphaS.c,
+alphaS.tm and alphaS.f.  Under Linux, this can be done with e.g.
+
+  mcc -o alphaS.exe alphaS.c alphaS.tm alphaS.f -lg2c
+
+(Use -lg2c with g77 and -lgfortran with gfortran.)  Alternatively, compile in
+steps by checking the variables in the Makefile then doing "make alphaS.exe".
+
+
+Updates
+-------
+
+5th January 2009.  First public version.
+
+22nd January 2009.  Minor changes to code and grids:
+- "alphaSnfmax" added in header of grid files.  Gives maximum number of
+flavours used in alphaS evolution.  Interpolation codes modified accordingly
+to read this in.  This might be useful in future for automatic initialisation
+of alphaS when using PDFs generated in a Fixed Flavour Number Scheme.
+- Minor changes made when extrapolating for small x or large Q^2 beyond the
+grid points.  Original code extrapolated ln(xf) for xf > 0 and xf itself
+for xf <= 0.  This causes numerical problems if xf is positive but very
+small (e.g. close to the nodes in xsv, xcv, xbv), so now only extrapolate
+in ln(xf) if xf > 10^-3, otherwise extrapolate in xf itself.
+- Mathematica version: now allow any numeric values of x and q as input to
+xf[ih,x,q,f], not only floating-point numbers as in the previous version.
+
+14th July 2010.  Minor extension to allow wider range of heavy-quark masses.
+- Previously 1.5 < m_c^2 < 2.5 GeV^2 and 12 < m_b^2 < 26 GeV^2.
+- Now allow 1 < m_c^2 < 4 GeV^2 and 10 < m_b^2 < 40 GeV^2.
+- Impose minimum anomalous dimension for low Q^2 < 1 GeV^2 extrapolation.
+- Avoid using Fortran 90 intrinsic function "len_trim"
+  since not supported by all Fortran 77 compilers.
+- Steps to build "alphaS.exe" used for Mathlink interface added to Makefile.
+(None of these changes affects any numerical results obtained using the
+previous grids other than possibly with the Q^2 < 1 GeV^2 extrapolation.)
+
+25th January 2011.  Fix "NaN" bug for q <= m_c when m_c^2 < 1.25 GeV^2.
+
+Comments to Graeme.Watt(at)cern.ch.
