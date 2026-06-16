@@ -17,5 +17,10 @@ QCD_Pt800To1000: 3.318
 QCD_Pt1000: 1.085
 TTJets: 471.7 # used LO value -- NLO is 734.6
 
+# GenXSecAnalyzer results from the RunIISummer20UL18RECO AODSIM samples.
+WW: 76.03
+WZ: 27.51
+ZZ: 12.14
+
 # assume 1fb for all signal
 # hardcoded in utilities.get_xs() and will be overridden by specific entries here
