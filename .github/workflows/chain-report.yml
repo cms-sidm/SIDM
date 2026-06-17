@@ -1,0 +1,42 @@
+name: chain-report
+
+# Reviewer-facing report (NOT a hard gate): on every PR and PR update, run the
+# processing+plotting chain over a small committed fixture for both the base
+# (main) and the PR, and post a current-vs-after diff to the Actions job summary.
+# The check goes soft-red only if the PR introduces a NEW error (a newly broken
+# hist collection or a chain crash); new warnings stay informational/green.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need the base commit to compute the "current" state
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # analysis pins (numpy 2.3, coffea 2025) need >=3.10
+
+      - name: Install the analysis stack
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install "distributed==2025.3.0"   # coffea's Client import path needs it
+          pip install -e .
+
+      - name: Compute chain state for this PR
+        run: MPLBACKEND=Agg python tests/chain_report.py compute /tmp/state_pr.json
+
+      - name: Compute chain state for base (main)
+        run: |
+          # swap only the analysis code to the base commit; keep the PR's harness + fixture
+          git checkout ${{ github.event.pull_request.base.sha }} -- sidm
+          MPLBACKEND=Agg python tests/chain_report.py compute /tmp/state_base.json
+
+      - name: Render report to job summary (soft red check on new errors)
+        run: MPLBACKEND=Agg python tests/chain_report.py render /tmp/state_base.json /tmp/state_pr.json >> "$GITHUB_STEP_SUMMARY"
