@@ -25,8 +25,12 @@ jobs:
       - name: Install the analysis stack
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install "distributed==2025.3.0"   # coffea's Client import path needs it
+          # skip the xrootd line: its PyPI wheel builds the C library from source and is
+          # not needed here (the report reads a local fixture -- no XRootD at runtime)
+          grep -v '^xrootd' requirements.txt | pip install -r /dev/stdin
+          # distributed: coffea's Client import path needs it. scipy: imported by
+          # sidm.tools.utilities but not pinned in requirements.txt.
+          pip install "distributed==2025.3.0" scipy
           pip install -e .
 
       - name: Compute chain state for this PR
