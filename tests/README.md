@@ -6,7 +6,7 @@ side by side, how the processing + plotting chain behaves — so a reviewer can 
 glance what your change does to the analysis.
 
 ## What it shows
-- **Cutflows** — raw per-channel event counts, current (`main`) → your PR, with any changes called out.
+- **Cutflows** — per channel, the raw cumulative count of events passing each **event-level** cut (object-level cuts slim collections but add no cutflow rows), shown `main` → your PR. A *regression* check: it flags when a surviving count moves, not whether the count is physically correct.
 - **Selections** — how many of the ~135 channels executed, plus a ❌ banner if the chain crashes.
 - **Hist collections / hists** — how many collections are valid vs. broken (referencing undefined hists), and which hists could not be filled.
 - **Warnings** — the processor's "Unable to apply … skipping" messages, and which ones your PR **adds** or **removes**.
