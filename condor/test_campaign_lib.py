@@ -248,7 +248,8 @@ def test_classifier():
 
     r = classify([att(terminated=True, return_value=1)],
                  err="Traceback (most recent call last):\nKeyError: 'LJ_pt'\n")
-    check("CODE_BUG", r.state == cl.CODE_BUG and not r.auto_retryable)
+    check("CODE_BUG (reason keeps the key)",
+          r.state == cl.CODE_BUG and not r.auto_retryable and "LJ_pt" in r.reason)
 
     r = classify([att(terminated=True, return_value=1)],
                  err="step 1 of 5\nopening file X\nTraceback (most recent call last):\nKeyError: 'LJ_pt'\n")
