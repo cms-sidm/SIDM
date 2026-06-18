@@ -1,20 +1,23 @@
-"""Shared helpers for the end-to-end chain regression test.
+"""Shared helpers for the per-PR chain report (chain_report.py).
 
 Runs the SidmProcessor over a small committed fixture (a 200-event 2Mu2E signal
-file) and exposes the pieces the test asserts on:
-  * broken hist collections   -- static: collections referencing undefined hists
-  * processor warnings        -- the "Unable to apply ... Skipping" lines, captured
+file) and exposes the pieces the report compares between `main` and the PR:
+  * broken hist collections    -- static: collections referencing undefined hists
+  * processor warnings         -- the "Unable to apply ... Skipping" lines, captured
   * per-channel cutflow counts -- raw cumulative event counts (selection regression)
-  * the histogram output       -- for the plotting-helper checks
 
-The same helpers are used by generate_baselines.py to (re)write the committed
-baselines, so the test and the baselines can never drift in how they are computed.
+There is no committed baseline: chain_report.py recomputes both sides from the
+checkout it runs against, so there is nothing for these helpers to keep in sync.
 """
 import os
 import re
 import sys
 import io
 import contextlib
+
+# Heavy deps (coffea, sidm.*) are imported lazily inside the functions that use
+# them, so importing this module stays cheap for the static-only helpers.
+# pylint: disable=import-outside-toplevel
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO_ROOT = os.path.dirname(_HERE)
