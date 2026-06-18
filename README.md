@@ -307,6 +307,15 @@ I suggest the following workflow for performing a physics study:
 2. After defining your new cut in `cuts.py`, add it's name to an existing selection in [selections.yaml](https://github.com/btcardwell/SIDM/blob/4e6685669067429e8492d4dcfc87f463c86b96d7/analysis/configs/selections.yaml). Alternatively, you can also create an entirely new selection. Note that object-level and event-level cuts must be listed separately within a selection, and object-level cuts are further organized by object type. As with histogram collections, any selections that include the selection to which you added your cut will also include your cut.
 3. That's it! Running `sidm_processor` while specifying the proper selection will now apply your new cut.
 
+### Error bars on plots
+
+`utilities.plot` follows one convention for error bars:
+
+- **Count histograms** (filled from event counts): leave `yerr` alone -- mplhep's default is correct. That is asymmetric Poisson (Garwood) bars for unweighted/unit-weight counts and symmetric `sqrt(sum w^2)` for lumi*xsec-weighted hists, so a raw-count plot showing *asymmetric* bars is expected, not a bug.
+- **Derived quantities** (efficiency, ratio, scale factor, or any hist filled via `.view()`): **pass explicit `yerr`** -- otherwise mplhep draws `sqrt(bin_content)`, which is meaningless for a non-count value. `utilities.get_eff_hist(num, den)` returns the efficiency hist plus the matching `errors` to pass as `yerr`; `utilities.plot_ratio` does this for you (and falls back to a Gaussian interval when the ratio exceeds 1, where the binomial interval is undefined).
+
+One runtime guard to know: `plot_MC_sig_vs_bkg_panels` warns *"background '<name>' has integer variances (looks unweighted) ... check that it is lumi*xsec-weighted"* when a background's per-bin variances are integers -- the hist looks like raw counts rather than lumi*xsec-weighted MC. If you meant to show normalized MC, confirm the weights were applied. It is a guard, not an error; the plot still renders.
+
 ## Miscellaneous how-tos
 
 ### How to update requirements.txt

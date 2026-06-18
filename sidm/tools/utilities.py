@@ -914,7 +914,12 @@ def plot_MC_sig_vs_bkg_panels(
     ylim=(1e-3, 1e9),
     show=True,
 ):
-    """Plot stacked MC backgrounds and signal overlays in panels grouped by mass."""
+    """Plot stacked MC backgrounds and signal overlays in panels grouped by mass.
+
+    Warns if a background's per-bin variances are integers, which means it looks
+    unweighted -- its bars are then asymmetric Poisson rather than sqrt(sum w^2) and its
+    normalization is probably not lumi*xsec-weighted. See the README, "Error bars on plots".
+    """
     if variable is None:
         raise ValueError("variable must be specified")
     if len(backgrounds) == 0:
