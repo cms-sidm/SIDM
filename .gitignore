@@ -171,3 +171,6 @@ dmypy.json
 # pdfs and pngs
 *.pdf
 *.png
+
+# condor campaign orchestrator: generated per-campaign reports
+condor/campaigns/

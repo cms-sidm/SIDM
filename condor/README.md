@@ -751,3 +751,76 @@ Cause: EOS is timing out file opens (degraded or congested), so the reads fail. 
 
 Fix: confirm EOS is the problem with `xrdfs cmseos.fnal.gov stat /store/group/lpcmetx/SIDM` (it hangs when EOS is degraded), wait for it to recover, then resubmit (or use the retry workflow in §16).
 
+
+---
+
+## 22. Orchestrated reconcile and report (`condor_campaign.py`)
+
+Sections 13–16 walk through checking a campaign by hand: `condor_q`, grepping the
+logs for `return value`, an `awk`/`comm` of expected vs actual EOS outputs, and a
+copy-paste loop to rebuild failed chunks. `condor/condor_campaign.py` automates the
+*read-only* half of that — it reconciles what you submitted against the logs and
+EOS, classifies every failure by root cause, and writes one report — in a single
+command. It submits and resubmits nothing (that is a later phase), so it is safe to
+run at any time, including while jobs are still going.
+
+It is standard-library only; run it on the submitter in the `sidm_venv` (a bare
+`python3` works too):
+
+```bash
+cd /uscms_data/d3/$USER/SIDM
+python condor/condor_campaign.py reconcile \
+    --job-args      condor/job_args.txt \
+    --logs-dir      condor/logs \
+    --eos-chunk-dir /store/user/$USER/sidm_condor/SignalChunks_v1 \
+    --run-id        signals_v1
+```
+
+This writes `condor/campaigns/signals_v1/report.json` and `report.md` (and prints
+the report). Re-render or summarize an existing report without re-scanning:
+
+```bash
+python condor/condor_campaign.py report --report condor/campaigns/signals_v1/report.json
+python condor/condor_campaign.py status --report condor/campaigns/signals_v1/report.json
+```
+
+### What the report tells you
+
+- Campaign totals: expected / DONE (present on EOS, non-empty) / failed / terminal.
+- A breakdown of the non-DONE chunks by failure class. Each class is the root cause,
+  read from the durable per-job `.log` and `.err` (so it still works after
+  `condor_history` has aged out):
+  - `MISSING_ROOT_FILE` — an input ROOT file is **confirmed absent** on EOS now (an
+    `xrdfs stat` returned "No such file"); a timeout or any other error is treated as
+    `EOS_TIMEOUT`, never as a missing file.
+  - `EOS_TIMEOUT` — a transient EOS read failure; inputs are still present (or could
+    not be probed). Resubmit the whole chunk unchanged once EOS is healthy.
+  - `OOM` — killed for memory; resubmit at higher `request_memory`.
+  - `HELD_PROXY` — held because the x509 proxy was unreadable by the schedd (the
+    `/tmp` proxy problem; see §11). Renew + copy the proxy, then resubmit unchanged.
+  - `CODE_BUG` — a deterministic python exception (e.g. a `KeyError`). A plain retry
+    re-fails; fix the processor and rebuild `sidm_code.tar.gz` first.
+  - `STALLED` / `HELD_TRANSFER` / `XRDCP_FAILED` / `MISSING_OUTPUT` /
+    `ZERO_BYTE_OUTPUT` / `UNKNOWN` / `LOST` — see each chunk reason in the report.
+- Per-sample completeness, listing the missing chunk indices, so you never merge a
+  sample that is not yet complete.
+- A "what to do next" block derived from the class histogram.
+
+`--no-stat-missing` skips the per-file `xrdfs stat`, which is faster but cannot tell
+`MISSING_ROOT_FILE` from `EOS_TIMEOUT` (everything that open-failed is reported as
+`EOS_TIMEOUT`, i.e. nothing is ever blamed on a missing file). A unit suite covering
+the parsers and every failure class is in `condor/test_campaign_lib.py`
+(`python condor/test_campaign_lib.py`).
+
+Generated reports live under `condor/campaigns/<run-id>/` and are git-ignored.
+
+### Exit codes and mid-campaign safety
+
+`reconcile` / `status` / `report` exit `0` only when **every** chunk is DONE, `1`
+when something is not DONE (confirmed failures, in-flight, or presence-unknown), `2`
+when the EOS dir could not be listed, and `3` for both — so
+`condor_campaign.py status ... && merge ...` will not merge an incomplete campaign.
+Chunks still queued or running are reported `IN_PROGRESS` and are **not** counted as
+failures, so the reconcile is safe to run mid-campaign. `--eos-chunk-dir` takes a bare
+`/store/...` path (a full `root://…` URL is accepted and stripped); a typo is reported
+as a "not-found" directory, not an EOS outage.
