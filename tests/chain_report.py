@@ -6,7 +6,7 @@ vs. this PR -- what executes, what errors, what warns, and how the cutflows move
 It does NOT gate the merge; it informs the reviewer.
 
 Two modes:
-    python tests/chain_report.py compute  > state.json          # run the chain, dump state
+    python tests/chain_report.py compute state.json              # run chain, dump state to file
     python tests/chain_report.py render base.json pr.json        # diff two states -> markdown
 
 CI runs `compute` once on the base commit and once on the PR, then `render`s the
@@ -27,7 +27,9 @@ matplotlib.use("Agg")  # headless: utilities imports pyplot at import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _e2e_common as e2e
 
-_SKIPPED_HIST_RE = re.compile(r"histogram with the name (\w+) could not be evaluated")
+# the processor skips a hist on TWO paths: fill-function "could not be evaluated"
+# (histogram.py:65) and "could not be filled" (histogram.py:81) -- catch both
+_SKIPPED_HIST_RE = re.compile(r"histogram with the name (\w+) could not be (?:evaluated|filled)")
 
 
 def compute_state():
@@ -101,7 +103,7 @@ def render(base, pr):
         f"| valid hist collections | {base.get('valid_collection_count',0)} | {pr.get('valid_collection_count',0)} |",
         f"| broken collections | {len(b_brk)} | {len(p_brk)} |",
         f"| catch-and-skip warnings | {len(b_warn)} | {len(p_warn)} |",
-        f"| hists skipped (could not evaluate) | {len(b_skip)} | {len(p_skip)} |",
+        f"| hists skipped (could not evaluate/fill) | {len(b_skip)} | {len(p_skip)} |",
         f"| channels with changed cutflow | — | {len(changed)} |",
         "",
     ]
@@ -151,11 +153,13 @@ def main(argv):
     # compute writes JSON to a FILE (not stdout): the chain emits banner/progress
     # text to stdout at the C level (fastjet), which would corrupt a stdout dump.
     if len(argv) == 2 and argv[0] == "compute":
-        with open(argv[1], "w") as fh:
+        with open(argv[1], "w", encoding="utf-8") as fh:
             json.dump(compute_state(), fh, indent=2, sort_keys=True)
     elif len(argv) == 3 and argv[0] == "render":
-        base = json.load(open(argv[1]))
-        pr = json.load(open(argv[2]))
+        with open(argv[1], encoding="utf-8") as fh:
+            base = json.load(fh)
+        with open(argv[2], encoding="utf-8") as fh:
+            pr = json.load(fh)
         print(render(base, pr))
         if new_errors(base, pr):   # soft red check -- report is already printed
             sys.exit(1)

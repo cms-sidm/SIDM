@@ -7,7 +7,7 @@ glance what your change does to the analysis.
 
 ## What it shows
 - **Cutflows** — raw per-channel event counts, current (`main`) → your PR, with any changes called out.
-- **Selections** — how many of the ~135 channels executed; anything that errors out.
+- **Selections** — how many of the ~135 channels executed, plus a ❌ banner if the chain crashes.
 - **Hist collections / hists** — how many collections are valid vs. broken (referencing undefined hists), and which hists could not be filled.
 - **Warnings** — the processor's "Unable to apply … skipping" messages, and which ones your PR **adds** or **removes**.
 
@@ -36,6 +36,8 @@ python tests/chain_report.py render base.json my_state.json   # markdown diff of
 
 ## Scope
 This verifies **execution + regression against `main`**, not physics correctness — a
-silently wrong value or a mis-set cut can still execute cleanly. The committed fixture
-(`tests/data/events_2mu2e_500GeV_200ev.root`, a 200-event 2Mu2E skim) lets the chain run
-on a stock CI runner with no EOS/XRootD/cvmfs access.
+silently wrong value or a mis-set cut can still execute cleanly. The **cutflow** pass
+covers all ~135 channels; the **histogram/warning** pass runs a 14-channel representative
+sample (one per selection family), so the hist/warning deltas reflect those channels. The
+committed fixture (`tests/data/events_2mu2e_500GeV_200ev.root`, a 200-event 2Mu2E skim)
+lets the chain run on a stock CI runner with no EOS/XRootD/cvmfs access.
