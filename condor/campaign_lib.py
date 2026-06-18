@@ -309,10 +309,17 @@ def read_err_tail(path, max_bytes=20000):
 
 
 def last_traceback_line(err_text):
-    """The exception line of the last python traceback in err_text, if any."""
-    matches = list(_CODE_BUG_EXC.finditer(err_text))
-    if matches:
-        return matches[-1].group(0).strip()
+    """The exception line (e.g. "KeyError: 'LJ_pt'") of the last python traceback.
+
+    Keep the whole matching line, not just up to the colon, so the reason carries
+    the exception value (the key/attribute name), which is the useful part.
+    """
+    hit = ""
+    for ln in err_text.splitlines():
+        if _CODE_BUG_EXC.match(ln):
+            hit = ln.strip()
+    if hit:
+        return hit
     # Fall back to the last non-empty line if a bare 'Traceback' is present.
     if "Traceback" in err_text:
         for ln in reversed(err_text.splitlines()):
