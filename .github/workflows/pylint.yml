@@ -1,24 +1,44 @@
 name: Pylint
 
-on: [push]
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: pylint-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  pylint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8"]
+    timeout-minutes: 20
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        python -m pip install --upgrade pip
-        pip install pylint
-    - name: Analysing the code with pylint
-      run: |
-        pylint --rcfile .pylintrc $(git ls-files '*.py')
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need the PR base commit for the changed-files lint
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # analysis pins (numpy 2.3, coffea 2025) need >=3.10
+
+      - name: Install the analysis stack + pylint
+        run: |
+          python -m pip install --upgrade pip
+          # skip the xrootd line: its wheel builds from source and is not needed for static analysis
+          grep -v '^xrootd' requirements.txt | pip install -r /dev/stdin
+          # distributed + scipy are imported by the analysis but not pinned in requirements.txt
+          pip install "distributed==2025.3.0" scipy
+          pip install "pylint==4.0.6"
+
+      - name: Pylint (whole repo, fail-under)
+        run: pylint --rcfile .pylintrc $(git ls-files '*.py')
+
+      - name: Pylint changed files (no new errors)
+        if: github.event_name == 'pull_request'
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          files=$(git diff --name-only --diff-filter=ACMR "$base"...HEAD -- '*.py')
+          if [ -z "$files" ]; then echo "No changed .py files"; exit 0; fi
+          echo "Linting changed files:"; echo "$files"
+          pylint --rcfile .pylintrc --fail-under=0 --fail-on=E,F $files
