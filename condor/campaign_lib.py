@@ -91,6 +91,7 @@ class AttemptLog:
     peak_mem_mb: int = 0
     request_mem_mb: int = 0
     last_event_local: str = ""    # timestamp of the last event seen (schedd-LOCAL time, not UTC)
+    last_progress_local: str = "" # timestamp of the last progress event (001 exec / 006 image-size)
 
 
 @dataclass
@@ -107,6 +108,7 @@ class ChunkResult:
     eos_size: int = None          # bytes of the EOS output, or None if absent
     auto_retryable: bool = True
     log_paths: dict = field(default_factory=dict)  # newest attempt's {log,err,out}
+    last_output: str = ""         # tail of the job's stdout/stderr, to diagnose stalls/unknowns
 
 
 # --------------------------------------------------------------------------
@@ -233,6 +235,7 @@ def parse_event_log(path):
             a.submitted = True
         elif code == "001":
             a.executed = True
+            a.last_progress_local = a.last_event_local
             rm = _REQUEST_MEM.search(body_text)
             if rm:
                 a.request_mem_mb = int(rm.group(1))
@@ -245,6 +248,7 @@ def parse_event_log(path):
             elif sg:
                 a.signal = int(sg.group(1))
         elif code == "006":
+            a.last_progress_local = a.last_event_local
             for mm in _MEM_USAGE.finditer(body_text):
                 a.peak_mem_mb = max(a.peak_mem_mb, int(mm.group(1)))
         elif code == "009":
@@ -508,6 +512,7 @@ def classify_chunk(spec, attempts, eos_size, root_files, redirector,
             if _CODE_BUG_EXC.search(err_text):
                 res.state = CODE_BUG
                 res.reason = last_traceback_line(err_text) or "deterministic python exception"
+                res.last_output = _output_tail(err_text)
                 res.auto_retryable = False
                 return res
             # Input-open failure -> confirm (read-only) whether a file is really gone.
@@ -555,6 +560,7 @@ def classify_chunk(spec, attempts, eos_size, root_files, redirector,
                 mem_note = (f" [peak {newest.peak_mem_mb} MB of {newest.request_mem_mb} MB "
                             f"requested -- possibly memory]")
             res.state = UNKNOWN
+            res.last_output = _output_tail(err_text)
             res.reason = "non-zero exit; see .err: " + _tail_snippet(err_text) + mem_note
             return res
         # 3d. Abnormal termination by a signal other than 9.
@@ -567,7 +573,8 @@ def classify_chunk(spec, attempts, eos_size, root_files, redirector,
     if newest.aborted:
         if "SIDM_STALL" in newest.abort_reason:
             res.state = STALLED
-            res.reason = "removed by stall guard: " + newest.abort_reason
+            res.last_output = _output_tail(err_text)
+            res.reason = "removed by stall guard" + _idle_note(newest) + ": " + newest.abort_reason
             return res
         if any_proxy_hold:
             res.state = HELD_PROXY
@@ -578,10 +585,13 @@ def classify_chunk(spec, attempts, eos_size, root_files, redirector,
             res.reason = "removed manually (" + newest.abort_reason + "); needs a human"
             res.auto_retryable = False
             return res
-        # A non-manual removal (e.g. a SYSTEM_PERIODIC_REMOVE policy) is a stall-like,
-        # retryable removal rather than a human action.
+        # A non-manual removal (e.g. a SYSTEM_PERIODIC_REMOVE policy after the job ran
+        # too long) is a stall-like, retryable removal. Surface how long it made no
+        # progress and the tail of its output so the cause is visible, not just "stalled".
         res.state = STALLED
-        res.reason = "removed by a system/periodic policy: " + (newest.abort_reason or "unknown")
+        res.last_output = _output_tail(err_text)
+        res.reason = ("stalled" + _idle_note(newest) + ": "
+                      + (newest.abort_reason or "unknown"))
         return res
 
     # 5. The newest attempt is still HELD (never terminated, aborted, or released).
@@ -614,6 +624,41 @@ def classify_chunk(spec, attempts, eos_size, root_files, redirector,
 def _tail_snippet(err_text, n=3):
     lines = [ln for ln in err_text.splitlines() if ln.strip()]
     return " | ".join(lines[-n:])[:300]
+
+
+def _output_tail(text, n=20, max_chars=2000):
+    """The last n non-empty lines of text, in chronological order, as a multi-line
+    string capped at max_chars. Enough context to see what a job was doing before
+    it stalled/failed -- not just the final line. Stored per non-DONE chunk in the
+    report (a small minority of chunks), so the size is not a concern."""
+    lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+    tail = "\n".join(lines[-n:])
+    return ("...\n" + tail[-max_chars:]) if len(tail) > max_chars else tail
+
+
+def _hours_between(t0, t1):
+    """Hours between two 'YYYY-MM-DD HH:MM:SS' local timestamps, or None if unparseable."""
+    if not t0 or not t1:
+        return None
+    try:
+        a = datetime.strptime(t0, "%Y-%m-%d %H:%M:%S")
+        b = datetime.strptime(t1, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
+    return (b - a).total_seconds() / 3600.0
+
+
+def _idle_note(att):
+    """' (no progress for ~Xh before removal)' when a stall is measurable, else ''.
+
+    The gap between the job's last progress event (001/006) and the removal event
+    distinguishes a genuine hang (hours of no progress) from a job that was simply
+    slow-but-working when a wall-clock policy reaped it.
+    """
+    h = _hours_between(att.last_progress_local, att.last_event_local)
+    if h is None or h < 0.5:
+        return ""
+    return f" (no progress for ~{h:.0f}h before removal)"
 
 
 # --------------------------------------------------------------------------
@@ -778,7 +823,7 @@ _CLASS_NOTE = {
     OOM: "out of memory",
     HELD_PROXY: "x509 proxy unreadable",
     HELD_TRANSFER: "input transfer failure",
-    STALLED: "removed by stall guard",
+    STALLED: "stalled (guard or site policy)",
     REMOVED: "removed manually (condor_rm)",
     CODE_BUG: "deterministic python error -- NOT a retry",
     XRDCP_FAILED: "output copy to EOS failed",
@@ -841,11 +886,21 @@ def render_report(report):
         L.append(f"  (all {n_complete} sample(s) complete)")
     else:
         L.append(f"  ({n_complete} sample(s) complete, collapsed)")
-    if report["terminal_failures"]:
+    detail = [c for c in report["chunks"] if c["state"] not in (DONE, IN_PROGRESS)]
+    if detail:
+        detail.sort(key=lambda c: (c.get("auto_retryable", True), c["key"]))  # terminal first
         L.append("")
-        L.append("TERMINAL FAILURES (manual action required)")
-        for r in report["terminal_failures"][:40]:
-            L.append(f"  {r['key']:<36} {r['state']:<16} {r['reason'][:60]}")
+        L.append("NON-DONE CHUNK DETAIL (root cause per chunk)")
+        for c in detail[:40]:
+            flag = "" if c.get("auto_retryable", True) else "  [needs a human]"
+            L.append(f"  {c['key']:<32} {c['state']:<15} {c['reason'][:74]}{flag}")
+            tail = c.get("last_output", "")
+            if tail:
+                L.append("       last output (tail):")
+                for ol in tail.splitlines()[-4:]:
+                    L.append(f"         | {ol[:108]}")
+        if len(detail) > 40:
+            L.append(f"  ... (+{len(detail) - 40} more; see report.json)")
     L.append("")
     L.append("WHAT TO DO NEXT")
     for step in report["next_steps"]:

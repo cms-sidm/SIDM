@@ -136,6 +136,23 @@ _UNTERMINATED_LOG = """\
 """
 
 
+# A job that ran, made progress until 12:04, then hung for ~2 days until LPC's
+# site policy reaped it (real shape from a student's log).
+_STALL_LOG = """\
+000 (3124017.069.000) 2026-06-12 11:43:24 Job submitted from host: <1.2.3.4:9618>
+...
+001 (3124017.069.000) 2026-06-12 11:44:18 Job executing on host: <1.2.3.4:9618>
+\tMemory = 4096
+...
+006 (3124017.069.000) 2026-06-12 12:04:35 Image size of job updated: 983
+\t983  -  MemoryUsage of job (MB)
+...
+009 (3124017.069.000) 2026-06-14 11:44:49 Job was aborted.
+\tLPC job removed by SYSTEM_PERIODIC_REMOVE due to job running for more than 2 days.
+...
+"""
+
+
 def _write_log(tmpdir, name, text):
     path = os.path.join(tmpdir, name)
     with open(path, "w") as f:
@@ -163,6 +180,23 @@ def test_event_log():
         check("resync recovers terminal", u.terminated and u.return_value == 0)
         check("resync recovers exec+mem",
               u.executed and u.request_mem_mb == 4096 and u.peak_mem_mb == 700)
+
+        s = cl.parse_event_log(_write_log(d, "QCD_63_3124017_69.log", _STALL_LOG))
+        check("stall parsed aborted", s.aborted and "SYSTEM_PERIODIC_REMOVE" in s.abort_reason)
+        check("stall last progress = last 006", s.last_progress_local == "2026-06-12 12:04:35")
+        check("stall not OOM (mem under request)", s.peak_mem_mb == 983 and s.request_mem_mb == 4096)
+
+
+def test_stall_diagnostics():
+    check("hours_between ~47.7h",
+          abs(cl._hours_between("2026-06-12 12:04:35", "2026-06-14 11:44:49") - 47.67) < 0.1)
+    check("hours_between bad -> None", cl._hours_between("nope", "2026-06-14 11:44:49") is None)
+    check("idle_note empty for short gap",
+          cl._idle_note(cl.AttemptLog("S", 0, 1, 0, "x.log",
+                        last_progress_local="2026-06-12 12:00:00",
+                        last_event_local="2026-06-12 12:10:00")) == "")
+    check("output_tail keeps last n lines", cl._output_tail("a\nb\nc\nd\ne", n=3) == "c\nd\ne")
+    check("output_tail skips blank lines", cl._output_tail("a\n\n\nb\n", n=5) == "a\nb")
 
 
 # --------------------------------------------------------------------------
@@ -216,6 +250,11 @@ def test_classifier():
                  err="Traceback (most recent call last):\nKeyError: 'LJ_pt'\n")
     check("CODE_BUG", r.state == cl.CODE_BUG and not r.auto_retryable)
 
+    r = classify([att(terminated=True, return_value=1)],
+                 err="step 1 of 5\nopening file X\nTraceback (most recent call last):\nKeyError: 'LJ_pt'\n")
+    check("CODE_BUG carries multi-line output tail",
+          r.state == cl.CODE_BUG and "\n" in r.last_output and "opening file X" in r.last_output)
+
     r = classify([att(terminated=True, return_value=1)], err=OPEN_ERR, stat=cl.ABSENT,
                  root_files=[BAD_URL])
     check("MISSING_ROOT_FILE (declared input, confirmed absent)",
@@ -268,6 +307,13 @@ def test_classifier():
     r = classify([att(aborted=True, abort_reason="SYSTEM_PERIODIC_REMOVE evaluated to TRUE")])
     check("system periodic remove -> STALLED retryable",
           r.state == cl.STALLED and r.auto_retryable)
+
+    r = classify([att(aborted=True,
+                      abort_reason="LPC job removed by SYSTEM_PERIODIC_REMOVE due to job running for more than 2 days.",
+                      last_progress_local="2026-06-12 12:04:35",
+                      last_event_local="2026-06-14 11:44:49")])
+    check("site-policy stall -> STALLED with idle note",
+          r.state == cl.STALLED and "no progress for" in r.reason and r.auto_retryable)
 
     r = classify([att(aborted=True, abort_reason="via condor_rm (by user murtazas)")])
     check("REMOVED manual", r.state == cl.REMOVED and not r.auto_retryable)
@@ -347,6 +393,7 @@ if __name__ == "__main__":
     test_parsers()
     test_eos_probe()
     test_event_log()
+    test_stall_diagnostics()
     test_classifier()
     test_report()
     test_real_logs_if_present()
