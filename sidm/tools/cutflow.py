@@ -47,21 +47,27 @@ class SimpleCutflow(processor.AccumulatorABC):
             "weighted N",
             "weighted %",
         ]
+        # Normalize the "weighted %" column to the initial ("None") row, falling back to
+        # the first row if "None" is absent and guarding a zero denominator. Previously
+        # total_weighted was only assigned on the "None" row inside the loop, so a cutflow
+        # whose first row was not "None" raised NameError before the first append.
+        first = self.rows.get("None") or next(iter(self.rows.values()), {"weighted": 0})
+        total_weighted = first["weighted"]
         data = []
         for cut, vals in self.rows.items():
-            if cut == "None":
-                total_weighted = vals["weighted"]
-            data.append([
-                cut,
-                vals["raw"],
-                vals["weighted"],
-                100*vals["weighted"]/total_weighted
-            ])
+            pct = 100 * vals["weighted"] / total_weighted if total_weighted else float("nan")
+            data.append([cut, vals["raw"], vals["weighted"], pct])
         print(tabulate(data, headers, floatfmt=".1f"))
 
 
 class Cutflow(processor.AccumulatorABC):
     """Class to represent the number of events that pass each cut in a selection
+
+    NOTE: currently UNUSED and not constructable -- the processor builds SimpleCutflow,
+    and CutflowElement.__init__ indexes a non-subscriptable Cutflow, so instantiating
+    this class raises TypeError. The n_ind accounting is also half-removed (init
+    commented out but still referenced). Left in place pending a decision to repair or
+    remove it; do not rely on it.
 
     Cutflow can print tables of the following values:
     - n_ind: number of events that pass each cut individually
