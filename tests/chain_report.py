@@ -127,7 +127,7 @@ def render(base, pr):
         if added_ch or removed_ch:
             out += [f"**Channels added:** {added_ch or '_none_'}  **removed:** {removed_ch or '_none_'}", ""]
         if changed:
-            out += [f"**Cutflow changed in {len(changed)} channel(s):**", "",
+            out += [f"**Cutflow changed in {len(changed)} channel(s)** _(raw cumulative events passing each event-level cut)_:", "",
                     "| channel | cut | current | this PR |", "|---|---|--:|--:|"]
             for c in changed[:50]:
                 cuts = sorted(set(cf_b[c]) | set(cf_p[c]))

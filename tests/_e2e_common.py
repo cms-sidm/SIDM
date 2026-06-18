@@ -110,8 +110,10 @@ def run_chain(channels, collections):
 
 
 def cutflow_counts(per_sample_output):
-    """{channel: {cut_name: raw_cumulative_count}} -- raw integer counts, which are
-    independent of the (1 fb placeholder) cross-section weighting."""
+    """{channel: {cut_name: raw_cumulative_count}} for each channel's EVENT-LEVEL cut
+    sequence (object-level cuts slim collections but add no cutflow rows). Raw integer
+    counts -- deterministic and independent of the (1 fb placeholder) cross-section
+    weighting, so the weighted column is intentionally ignored."""
     cf = per_sample_output["cutflow"]
     return {ch: {cut: int(cf[ch].rows[cut]["raw"]) for cut in cf[ch].rows}
             for ch in cf}
