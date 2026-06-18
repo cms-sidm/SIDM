@@ -805,6 +805,7 @@ python condor/condor_campaign.py status --report condor/campaigns/signals_v1/rep
 - Per-sample completeness, listing the missing chunk indices, so you never merge a
   sample that is not yet complete.
 - A "what to do next" block derived from the class histogram.
+- A per-chunk **NON-DONE CHUNK DETAIL** section listing each failed or stalled chunk, its class and root-cause reason (the "needs a human" ones first), with a tail of the job stdout/stderr so you can see what it was doing before it failed -- e.g. a stalled chunk shows how long it made no progress before removal.
 
 `--no-stat-missing` skips the per-file `xrdfs stat`, which is faster but cannot tell
 `MISSING_ROOT_FILE` from `EOS_TIMEOUT` (everything that open-failed is reported as
