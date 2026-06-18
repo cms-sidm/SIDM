@@ -230,7 +230,10 @@ Skip this section if `make_job_args.py` was run with `--replace-xcache` and `con
 
 ## 8. Package the SIDM code
 
-Whenever files under `sidm/` or `condor/run_sidm_chunk.py` change, remake the tarball:
+Whenever files under `sidm/` or `condor/run_sidm_chunk.py` change, remake the tarball.
+The `sidm/studies/` exclude matters: it holds committed notebooks with embedded plot
+outputs (hundreds of MB) the workers never use -- without it the tarball balloons ~100x
+and per-job input transfer slows accordingly:
 
 ```bash
 cd /uscms_data/d3/$USER/SIDM
@@ -249,6 +252,7 @@ tar \
   --exclude="background_merged" \
   --exclude="sidm_venv" \
   --exclude="py39_packages" \
+  --exclude="sidm/studies" \
   -czf condor/sidm_code.tar.gz \
   sidm condor/run_sidm_chunk.py
 ```
