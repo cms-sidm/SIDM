@@ -1,0 +1,2057 @@
+{
+ "run_id": "backgrounds_skimmed_light",
+ "meta": {
+  "mode": "shallow",
+  "started_utc": "2026-06-23T02:54:54Z",
+  "ended_utc": "2026-06-23T05:44:53Z",
+  "duration_s": 10199.0,
+  "user": "murtazas",
+  "host": "cmslpc306.fnal.gov",
+  "python": "3.11.9",
+  "uproot_version": "5.7.4",
+  "sidm_commit": "e119c8c",
+  "sidm_branch": "file-census",
+  "source_yaml": "/uscms_data/d3/murtazas/SIDM-wt-file-census/sidm/configs/ntuples/backgrounds.yaml",
+  "source_yaml_sha256": "15206044d682539e4cf43b6d3ed16366caf70750985174a0cd3dd7580d5b7f6f",
+  "version": "ALL",
+  "samples": "ALL",
+  "max_live": null,
+  "commented_files_tested": true,
+  "redirector": "root://cmseos.fnal.gov",
+  "probe": {
+   "open_timeout": 120,
+   "retries": 2
+  },
+  "backend": "condor (113 shards)",
+  "n_enumerated": 56296,
+  "n_probed": 56296,
+  "complete": true
+ },
+ "n_files": 56296,
+ "samples": [
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "DYJetsToMuMu_M10to50",
+   "skim_factor": 0.013186077643908969,
+   "is_data": false,
+   "n_files": 1086,
+   "n_live": 1086,
+   "n_commented": 0,
+   "reachable": 1086,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1086,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "DYJetsToMuMu_M50",
+   "skim_factor": 0.594578732659367,
+   "is_data": false,
+   "n_files": 6153,
+   "n_live": 6153,
+   "n_commented": 0,
+   "reachable": 6153,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 6153,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt800To1000",
+   "skim_factor": 0.5972341649419732,
+   "is_data": false,
+   "n_files": 5036,
+   "n_live": 4942,
+   "n_commented": 94,
+   "reachable": 5036,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 5036,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt80To120",
+   "skim_factor": 0.014286774408992795,
+   "is_data": false,
+   "n_files": 2822,
+   "n_live": 2822,
+   "n_commented": 0,
+   "reachable": 2822,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2822,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "TTJets",
+   "skim_factor": 0.2746591272963762,
+   "is_data": false,
+   "n_files": 265,
+   "n_live": 222,
+   "n_commented": 43,
+   "reachable": 250,
+   "bad": 0,
+   "unreachable": 15,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 250,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "WW",
+   "skim_factor": 0.2052949494949495,
+   "is_data": false,
+   "n_files": 999,
+   "n_live": 999,
+   "n_commented": 0,
+   "reachable": 999,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 999,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "WZ",
+   "skim_factor": 0.15794053208137715,
+   "is_data": false,
+   "n_files": 730,
+   "n_live": 730,
+   "n_commented": 0,
+   "reachable": 730,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 730,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "ZZ",
+   "skim_factor": 0.11241287458379579,
+   "is_data": false,
+   "n_files": 338,
+   "n_live": 338,
+   "n_commented": 0,
+   "reachable": 338,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 338,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt1000",
+   "skim_factor": 0.8031732896223562,
+   "is_data": false,
+   "n_files": 3087,
+   "n_live": 3086,
+   "n_commented": 1,
+   "reachable": 3087,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 3087,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt120To170",
+   "skim_factor": 0.03363592243718427,
+   "is_data": false,
+   "n_files": 2100,
+   "n_live": 2100,
+   "n_commented": 0,
+   "reachable": 2099,
+   "bad": 0,
+   "unreachable": 1,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2099,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt15To20",
+   "skim_factor": 0.0001348428077141562,
+   "is_data": false,
+   "n_files": 590,
+   "n_live": 590,
+   "n_commented": 0,
+   "reachable": 590,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 590,
+   "n_empty": 149,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt170To300",
+   "skim_factor": 0.066154771961903,
+   "is_data": false,
+   "n_files": 6998,
+   "n_live": 6998,
+   "n_commented": 0,
+   "reachable": 6998,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 6998,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt20To30",
+   "skim_factor": 0.00043795804424951633,
+   "is_data": false,
+   "n_files": 3758,
+   "n_live": 3758,
+   "n_commented": 0,
+   "reachable": 3758,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 3758,
+   "n_empty": 83,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt300To470",
+   "skim_factor": 0.12404162102957283,
+   "is_data": false,
+   "n_files": 6849,
+   "n_live": 6849,
+   "n_commented": 0,
+   "reachable": 6849,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 6849,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt30To50",
+   "skim_factor": 0.0017645864375659575,
+   "is_data": false,
+   "n_files": 3518,
+   "n_live": 3518,
+   "n_commented": 0,
+   "reachable": 3518,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 3518,
+   "n_empty": 7,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt470To600",
+   "skim_factor": 0.21285990128045446,
+   "is_data": false,
+   "n_files": 4782,
+   "n_live": 4782,
+   "n_commented": 0,
+   "reachable": 4782,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 4782,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt50To80",
+   "skim_factor": 0.0050432875255487794,
+   "is_data": false,
+   "n_files": 2457,
+   "n_live": 2457,
+   "n_commented": 0,
+   "reachable": 2457,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2457,
+   "n_empty": 1,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "skimmed_llpNanoAOD_v2",
+   "sample": "QCD_Pt600To800",
+   "skim_factor": 0.3632706836306701,
+   "is_data": false,
+   "n_files": 4728,
+   "n_live": 4728,
+   "n_commented": 0,
+   "reachable": 4728,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 4728,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  }
+ ],
+ "dropped": [
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part1_part-18.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-123.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-156.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-166.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-175.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-18.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-19.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-195.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-21.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-64.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-67.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-69.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-7.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-74.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "TTJets",
+   "filename": "TTJets_TuneCP5_part2_part-76.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "QCD_Pt120To170",
+   "filename": "skimmed_output_2553.root",
+   "reason": "unreachable",
+   "error": "OSError: Failed to open file: [ERROR] Server responded with an error: [3011] Unable to no such file or directory /store/group/lpcmetx/SIDM/B"
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_100.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_101.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_103.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_104.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_105.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_106.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_112.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_123.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_125.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_126.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_128.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_14.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_140.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_143.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_145.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_149.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_151.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_159.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_173.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_180.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_188.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_19.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_195.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_196.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_20.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_200.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_210.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_212.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_213.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_215.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_229.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_230.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_233.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_239.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_24.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_242.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_244.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_252.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_256.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_260.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_266.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_271.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_278.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_279.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_286.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_288.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_298.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_3.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_301.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_302.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_304.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_31.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_314.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_318.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_319.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_326.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_327.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_329.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_33.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_333.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_345.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_35.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_350.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_351.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_361.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_363.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_370.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_377.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_383.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_385.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_391.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_40.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_405.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_408.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_41.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_413.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_414.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_415.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_416.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_418.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_422.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_425.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_430.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_432.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_433.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_435.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_440.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_441.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_444.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_445.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_45.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_450.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_455.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_457.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_458.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_468.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_470.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_475.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_476.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_479.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_492.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_495.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_499.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_50.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_501.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_502.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_503.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_512.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_514.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_518.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_52.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_523.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_524.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_538.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_540.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_543.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_546.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_549.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_55.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_563.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_565.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_566.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_567.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_573.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_574.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_579.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_580.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_581.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_583.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_586.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_59.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_6.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_61.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_63.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_64.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_67.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_69.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_7.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_70.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_74.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_76.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_79.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_80.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_83.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_84.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_85.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_9.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_95.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt15To20",
+   "filename": "skimmed_output_99.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1025.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1218.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_130.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1368.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1450.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1533.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1534.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1545.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1565.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1632.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1673.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1751.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1765.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1876.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1907.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1923.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1931.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_1963.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2024.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2040.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_206.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2111.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2166.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2221.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_223.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2277.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2418.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2419.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2518.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_254.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2569.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2605.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2651.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2655.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2719.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2735.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2781.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2899.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2900.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2932.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2966.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_2973.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3002.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3011.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3043.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3088.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3095.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3097.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3098.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3104.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3127.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_318.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3205.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3338.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3350.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3396.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3460.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3467.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_35.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3538.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_3744.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_379.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_430.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_438.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_451.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_480.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_49.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_503.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_515.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_523.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_545.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_622.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_623.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_636.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_642.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_648.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_778.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_816.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_867.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_94.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_941.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_956.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt20To30",
+   "filename": "skimmed_output_962.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt30To50",
+   "filename": "skimmed_output_1019.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt30To50",
+   "filename": "skimmed_output_2146.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt30To50",
+   "filename": "skimmed_output_2321.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt30To50",
+   "filename": "skimmed_output_2663.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt30To50",
+   "filename": "skimmed_output_3396.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt30To50",
+   "filename": "skimmed_output_3472.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt30To50",
+   "filename": "skimmed_output_466.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "QCD_Pt50To80",
+   "filename": "skimmed_output_2074.root",
+   "reason": "empty",
+   "error": ""
+  }
+ ]
+}
