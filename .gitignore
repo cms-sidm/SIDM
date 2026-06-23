@@ -174,3 +174,9 @@ dmypy.json
 
 # condor campaign orchestrator: generated per-campaign reports
 condor/campaigns/
+
+# file census: generated manifests, cleaned filelists, condor census chunking
+census_*.json
+cleaned_*/
+condor/filelists_census/
+condor/census_job_args.txt

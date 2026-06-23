@@ -1,0 +1,23 @@
+universe = vanilla
+
+executable = run_census_job.sh
+
+# args: chunk, filelist, EOS shard dir, mode(shallow|deep). Edit the EOS dir + mode per run.
+arguments = $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_census/run_v1 shallow
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = sidm_code.tar.gz, requirements.txt, $(filelist)
+
+output = logs/census_$(chunk)_$(Cluster)_$(Process).out
+error  = logs/census_$(chunk)_$(Cluster)_$(Process).err
+log    = logs/census_$(chunk)_$(Cluster)_$(Process).log
+
+request_cpus = 1
+request_memory = 4GB
+request_disk = 4GB
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+queue chunk, filelist from census_job_args.txt
