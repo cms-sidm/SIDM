@@ -9,6 +9,7 @@ run_census_chunk.py reads and merge_census_shards.py reconstructs into a manifes
 """
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -27,6 +28,8 @@ def main():
     p.add_argument("--version", default=None)
     p.add_argument("--files-per-job", type=int, default=200,
                    help="census probes are cheap, so use big chunks (default 200)")
+    p.add_argument("--max-files", type=int, default=None,
+                   help="cap the total files enumerated (smoke tests / sampling)")
     p.add_argument("--outdir", default="condor/filelists_census")
     p.add_argument("--job-args", default="condor/census_job_args.txt")
     p.add_argument("--redirector", default="root://cmseos.fnal.gov")
@@ -36,6 +39,8 @@ def main():
     if not os.path.isfile(cfg):
         cfg = os.path.join(repo_parent, "sidm", "configs", "ntuples", cfg)
     entries = fc.enumerate_location(cfg, version=args.version)
+    if args.max_files:
+        entries = entries[:args.max_files]
     os.makedirs(args.outdir, exist_ok=True)
 
     n_jobs = 0
@@ -46,7 +51,10 @@ def main():
             fpath = os.path.join(args.outdir, name)
             with open(fpath, "w") as f:
                 for e in chunk:
-                    f.write("\t".join([e.url, e.sample, e.source, str(e.skim_factor),
+                    # version is FIRST: run_census_chunk reconstructs it into the row, and
+                    # file_census._rollup requires r["version"]. Omitting it makes the whole
+                    # Condor merge crash with KeyError('version').
+                    f.write("\t".join([e.version, e.url, e.sample, e.source, str(e.skim_factor),
                                        str(e.is_data), e.year,
                                        (e.commented_reason or "").replace("\t", " ")]) + "\n")
             # path relative to condor/ (condor_submit runs from there)
@@ -54,9 +62,19 @@ def main():
             ja.write(f"{i // args.files_per_job} {rel}\n")
             n_jobs += 1
 
+    # Expected-count sidecar so merge_census_shards can detect a missing shard / missing job
+    # and refuse to publish a PARTIAL census as complete. Named after the job-args file so two
+    # campaigns (e.g. backgrounds + data_skimmed) can be chunked concurrently without clobbering.
+    exp_path = os.path.splitext(args.job_args)[0] + "_expected.json"
+    with open(exp_path, "w") as f:
+        json.dump({"n_files": len(entries), "n_jobs": n_jobs,
+                   "files_per_job": args.files_per_job,
+                   "version": args.version or "ALL",
+                   "source_yaml": os.path.abspath(cfg)}, f, indent=2)
+
     print(f"Enumerated {len(entries)} files ({sum(1 for e in entries if e.source=='commented')} "
           f"commented) -> {n_jobs} census jobs")
-    print(f"Wrote {args.job_args} and {args.outdir}/*.txt")
+    print(f"Wrote {args.job_args}, {args.outdir}/*.txt, and {exp_path}")
 
 
 if __name__ == "__main__":

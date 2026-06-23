@@ -49,13 +49,24 @@ python sidm/scripts/census_dask.py --location-cfg backgrounds.yaml \
     --version skimmed_llpNanoAOD_v2 --batch-size 50 --max-workers 40 \
     --out census_backgrounds.json --run-id backgrounds
 
-# Condor (the authoritative, detached run; supports deep):
+# Condor (the authoritative, detached run; supports deep) -- FOUR steps:
+# 1. chunk: writes condor/census_job_args.txt, condor/filelists_census/*.txt, census_expected.json
 python condor/make_census_args.py --location-cfg backgrounds.yaml \
     --version skimmed_llpNanoAOD_v2 --files-per-job 200
-ssh lpc '... condor_submit condor/submit_census.sub'          # edit EOS dir + mode in the .sub
+# 2. rebuild the code tarball INCLUDING the census worker + campaign_lib, and mkdir the EOS dir:
+tar -czf condor/sidm_code.tar.gz sidm \
+    condor/run_sidm_chunk.py condor/run_census_chunk.py condor/campaign_lib.py
+xrdfs root://cmseos.fnal.gov mkdir -p /store/user/$USER/sidm_census/run_v1
+# 3. submit (edit the EOS shard dir + shallow|deep in submit_census.sub to match step 2/4):
+ssh lpc 'cd /uscms_data/d3/$USER/SIDM/condor && condor_submit submit_census.sub'
+# 4. merge WITH the expected sidecar so a missing shard / partial run is caught, not published:
 python condor/merge_census_shards.py --shard-eos-dir /store/user/$USER/sidm_census/run_v1 \
-    --out census_backgrounds.json --run-id backgrounds
+    --expected condor/census_expected.json --out census_backgrounds.json --run-id backgrounds
 ```
+
+The tarball **must** contain `run_census_chunk.py` + `campaign_lib.py` (step 2) or every job dies on
+its first command; the EOS shard dir **must** exist (step 2) or every `xrdcp` fails; and `--expected`
+(step 4) is what lets `merge` refuse to publish a partial census (it stamps `meta.complete`).
 
 ## Cleaned filelists (what people run over)
 

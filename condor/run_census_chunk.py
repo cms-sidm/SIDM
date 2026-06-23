@@ -33,15 +33,18 @@ def read_shard(path):
             if not line.strip() or line.lstrip().startswith("##"):
                 continue
             parts = line.split("\t")
-            url = parts[0]
-            sample = parts[1] if len(parts) > 1 else "UNKNOWN"
-            source = parts[2] if len(parts) > 2 else "live"
-            skim = float(parts[3]) if len(parts) > 3 and parts[3] else 1.0
-            is_data = (parts[4].lower() == "true") if len(parts) > 4 else False
-            year = parts[5] if len(parts) > 5 else "2018"
-            reason = parts[6] if len(parts) > 6 else ""
-            rows.append(dict(url=url, sample=sample, source=source, skim_factor=skim,
-                             is_data=is_data, year=year, commented_reason=reason))
+            # version is FIRST (make_census_args writes it there); _rollup requires row["version"].
+            version = parts[0]
+            url = parts[1] if len(parts) > 1 else ""
+            sample = parts[2] if len(parts) > 2 else "UNKNOWN"
+            source = parts[3] if len(parts) > 3 else "live"
+            skim = float(parts[4]) if len(parts) > 4 and parts[4] else 1.0
+            is_data = (parts[5].lower() == "true") if len(parts) > 5 else False
+            year = parts[6] if len(parts) > 6 else "2018"
+            reason = parts[7] if len(parts) > 7 else ""
+            rows.append(dict(version=version, url=url, sample=sample, source=source,
+                             skim_factor=skim, is_data=is_data, year=year,
+                             commented_reason=reason))
     return rows
 
 
@@ -80,8 +83,10 @@ def main():
         out_rows.append(row)
 
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
+    # n_expected lets merge_census_shards detect an under-filled shard (a job that died
+    # mid-probe) distinct from a legitimately small final chunk.
     with open(args.output, "w") as f:
-        json.dump({"files": out_rows}, f)
+        json.dump({"n_expected": len(shard), "files": out_rows}, f)
     print("Saved:", args.output)
 
 

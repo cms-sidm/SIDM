@@ -154,6 +154,7 @@ _BAD = re.compile(
     r"lzma|zlib|decompress|not a TFile|Deserialization|truncat|corrupt|"
     r"unknown compression|invalid.*key|bad magic", re.I)
 _ABSENT = re.compile(r"no such file|\[3011\]|not found", re.I)
+_OPEN_TIMEOUT = 120   # seconds; passed to uproot.open AND recorded in the manifest provenance
 
 
 def _classify_open_error(exc):
@@ -165,6 +166,25 @@ def _classify_open_error(exc):
     return "transient"
 
 
+def _xrdfs_absent(redirector, url):
+    """Positive-only existence check, self-contained (no campaign_lib): return True ONLY when
+    the server explicitly says the file does not exist. Any other stat outcome (timeout, auth,
+    redirector error) returns False -> stays `inconclusive`, never a wrong condemnation. This
+    lets the probe still emit `unreachable` on a dask/Condor worker where condor/campaign_lib
+    is not importable (the `_cl is None` path)."""
+    m = re.search(r"(/store/\S+)$", url)
+    path = m.group(1) if m else url
+    host = redirector.split("://")[-1].strip("/")
+    try:
+        r = subprocess.run(["xrdfs", host, "stat", path],
+                           capture_output=True, text=True, timeout=60)
+    except Exception:
+        return False
+    if r.returncode == 0:
+        return False
+    return bool(re.search(r"no such file|not found|\[3011\]", r.stderr + r.stdout, re.I))
+
+
 def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
     """Open `url`, read its Runs tree, and return a ProbeResult."""
     last_err = ""
@@ -172,7 +192,7 @@ def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
     for attempt in range(retries + 1):
         attempts = attempt + 1
         try:
-            with uproot.open(url) as f:
+            with uproot.open(url, timeout=_OPEN_TIMEOUT) as f:
                 top = {k.split(";")[0] for k in f.keys(recursive=False)}
                 ev = int(f["Events"].num_entries) if "Events" in top else None
                 # No Runs tree is NOT a failure: skimmed ntuples legitimately strip Runs. The
@@ -215,13 +235,17 @@ def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
             if kind == "absent":
                 return ProbeResult("unreachable", n_attempts=attempts, error=last_err)
             # transient -> retry; on the last try fall through to the stat probe
-    # Exhausted retries on a transient error: ask the server directly (positive-only).
+    # Exhausted retries on a transient error: ask the server directly (positive-only). Prefer
+    # campaign_lib's tested probe when it shipped (serial/Condor); fall back to the self-contained
+    # check on a worker where condor/ is absent (dask), so both backends can emit `unreachable`.
     if _cl is not None:
         try:
             if _cl.xrdfs_stat_exists(redirector, url) == _cl.ABSENT:
                 return ProbeResult("unreachable", n_attempts=attempts, error=last_err)
         except Exception:
             pass
+    elif _xrdfs_absent(redirector, url):
+        return ProbeResult("unreachable", n_attempts=attempts, error=last_err)
     return ProbeResult("inconclusive", n_attempts=attempts, error=last_err)
 
 
@@ -321,7 +345,7 @@ def _provenance(yaml_path, version, samples, max_live, redirector, mode, started
             sha = hashlib.sha256(f.read()).hexdigest()
     except OSError:
         pass
-    probe = {"open_timeout": 120, "retries": 2}
+    probe = {"open_timeout": _OPEN_TIMEOUT, "retries": 2}
     if deep_cfg:
         probe.update(deep_cfg)
     return {
@@ -401,11 +425,18 @@ def run_census(yaml_path, version=None, samples=None, max_live=None,
     ended = _utc()
     deep_cfg = ({"channels": list(channels), "hist_collections": list(hist_collections),
                  "chunksize": chunksize} if mode == "deep" else None)
+    meta = _provenance(yaml_path, version, samples, max_live, redirector, mode,
+                       started, ended, deep_cfg)
+    # Completeness reconciliation: a consumer must be able to tell a full census from a partial
+    # one. Serial always probes every enumerated file; the dask/Condor mergers stamp the same
+    # keys, and cleaned_filelists warns when complete is False.
+    meta["n_enumerated"] = len(entries)
+    meta["n_probed"] = len(rows)
+    meta["complete"] = (len(rows) == len(entries))
     return {
         "schema_version": 2,
         "run_id": run_id,
-        "meta": _provenance(yaml_path, version, samples, max_live, redirector, mode,
-                            started, ended, deep_cfg),
+        "meta": meta,
         "files": rows,
         "samples": _rollup(rows),
     }
@@ -571,6 +602,11 @@ def cleaned_filelists(manifest, out_dir, keep_empty=False):
     (unless keep_empty) non-empty -- live OR commented-but-actually-good (so a wrongly
     retired file is restored). Drops bad / unreachable / empty. Also writes _dropped.tsv
     (with reasons) and _census_ref.json (provenance pointer). Returns a summary dict."""
+    meta = manifest.get("meta", {})
+    if meta.get("complete") is False:
+        print(f"WARNING: census is PARTIAL ({meta.get('n_probed')}/{meta.get('n_enumerated')} "
+              f"files probed) -- the cleaned filelists will OMIT the unprobed files. "
+              f"Re-run the census to completion before publishing.", file=sys.stderr)
     os.makedirs(out_dir, exist_ok=True)
     by_sample = {}
     dropped = []
@@ -616,8 +652,10 @@ def build_parser():
                    help="deep mode: comma-separated hist collections")
     c.add_argument("--chunksize", type=int, default=50000, help="deep mode: coffea chunksize")
     c.add_argument("--run-id", default="manual", help="label recorded in the manifest meta")
-    c.add_argument("--workers", type=int, default=1,
-                   help="concurrent probe threads (shallow mode only; I/O-bound, scales well)")
+    c.add_argument("--workers", type=int, default=16,
+                   help="concurrent probe threads (shallow mode only; I/O-bound, scales well). "
+                        "Parallelizes the unavoidable per-file open timeouts instead of "
+                        "serializing them; deep mode ignores this and stays serial.")
 
     fl = sub.add_parser("filelists", help="write cleaned per-sample filelists from a manifest")
     fl.add_argument("--manifest", required=True, help="census manifest JSON")

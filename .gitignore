@@ -180,3 +180,9 @@ census_*.json
 cleaned_*/
 condor/filelists_census/
 condor/census_job_args.txt
+condor/filelists_census*/
+condor/census_job_args*.txt
+condor/census_expected*.json
+condor/submit_census_*.sub
+condor/sidm_code.tar.gz
+condor/logs/

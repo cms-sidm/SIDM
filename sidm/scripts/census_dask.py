@@ -64,29 +64,49 @@ def main():
 
     cluster, client = scaleout.make_lpc_client(min_workers=1, max_workers=args.max_workers)
     rows = []
+    failed_batches = 0
     try:
         from dask.distributed import as_completed
-        futures = client.map(probe_batch, batches, redirector=args.redirector)
+        # retries>0 re-runs a batch whose worker was evicted/OOM'd; raise_errors=False keeps a
+        # batch that still fails after retries from crashing the WHOLE run and discarding every
+        # row already gathered (over thousands of preemptible LPC workers, a death is near-certain).
+        futures = client.map(probe_batch, batches, redirector=args.redirector, retries=2)
         done = 0
-        for fut in as_completed(futures):
-            rows.extend(fut.result())
+        for fut, res in as_completed(futures, with_results=True, raise_errors=False):
             done += 1
+            if isinstance(res, Exception):
+                failed_batches += 1
+                print(f"  batch FAILED ({type(res).__name__}: {str(res)[:120]}) -- its files "
+                      f"will be missing from the manifest", file=sys.stderr)
+            else:
+                rows.extend(res)
             if done % 10 == 0:
-                print(f"  {done}/{len(batches)} batches done ({len(rows)} files)")
+                print(f"  {done}/{len(batches)} batches done "
+                      f"({len(rows)} files, {failed_batches} failed)")
     finally:
+        client.close()
         cluster.close()
 
+    complete = (len(rows) == len(entries))
+    meta = fc._provenance(cfg, args.version, "ALL", None, args.redirector, "shallow",
+                          started, fc._utc(), None)
+    meta["backend"] = f"dask (max_workers={args.max_workers})"
+    meta["n_enumerated"] = len(entries)
+    meta["n_probed"] = len(rows)
+    meta["complete"] = complete
     manifest = {
         "schema_version": 2, "run_id": args.run_id,
-        "meta": fc._provenance(cfg, args.version, "ALL", None, args.redirector, "shallow",
-                               started, fc._utc(), None),
-        "files": rows, "samples": fc._rollup(rows),
+        "meta": meta, "files": rows, "samples": fc._rollup(rows),
     }
-    manifest["meta"]["backend"] = f"dask (max_workers={args.max_workers})"
     with open(args.out, "w") as f:
         json.dump(manifest, f, indent=2)
     print(fc.render_census(manifest))
-    print(f"\nWrote {args.out} ({len(rows)} files)")
+    print(f"\nWrote {args.out} ({len(rows)} files, complete={complete})")
+    if not complete:
+        print(f"\n*** PARTIAL CENSUS: probed {len(rows)}/{len(entries)} files "
+              f"({failed_batches} failed batches). Manifest is marked complete=false; "
+              f"re-run before publishing. ***", file=sys.stderr)
+        sys.exit(2)
 
 
 if __name__ == "__main__":
