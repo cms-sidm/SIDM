@@ -87,7 +87,10 @@ def main():
 
     started = rows[0].get("probed_utc", fc._utc()) if rows else fc._utc()
     ended = fc._utc()
-    meta = fc._provenance(args.source_yaml or args.out, None, "ALL", None,
+    # version isn't in the shards' rows-meta, but make_census_args recorded it in the expected
+    # sidecar -- use it so meta.version is the censused block, not a blanket "ALL".
+    ver = expected.get("version") if expected else None
+    meta = fc._provenance(args.source_yaml or args.out, ver, "ALL", None,
                           args.redirector, args.mode, started, ended, None)
     meta["backend"] = f"condor ({len(shards)} shards)"
     meta["n_enumerated"] = n_enumerated

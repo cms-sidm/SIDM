@@ -88,3 +88,15 @@ host, sidm commit + branch, uproot version, the source YAML **+ its sha256**, ve
 `process_status`); `samples[]` is the per-sample rollup (counts, `n_empty`, `skim_basis`,
 `genEventSumw_reachable_norm`). The light shallow run is the artifact published with the PR; the
 deep run is operational validation.
+
+## Published censuses
+
+The censuses already run for this analysis are indexed in
+[`sidm/configs/census/README.md`](../sidm/configs/census/README.md) — one row per run with its
+file / sample / dropped counts, backend, completeness, and date. For each run the committed
+`sidm/configs/census/<run-id>.census.summary.json` holds the per-sample rollup + the dropped-file
+list, and the **full manifest + cleaned filelists** live on EOS at
+`/store/group/lpcmetx/SIDM/census/<run-id>/`. The example notebook
+[`sidm/test_notebooks/file_census.ipynb`](../sidm/test_notebooks/file_census.ipynb) walks through
+loading one and reading its verdicts. Re-generate the index with
+`python sidm/scripts/build_census_index.py` after publishing a new run.

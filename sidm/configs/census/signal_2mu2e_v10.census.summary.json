@@ -2,14 +2,14 @@
  "run_id": "signal_2mu2e_v10_light",
  "meta": {
   "mode": "shallow",
-  "started_utc": "2026-06-23T00:41:18Z",
-  "ended_utc": "2026-06-23T02:00:26Z",
-  "duration_s": 4748.0,
+  "started_utc": "2026-06-23T06:08:24Z",
+  "ended_utc": "2026-06-23T06:45:42Z",
+  "duration_s": 2238.0,
   "user": "murtazas",
   "host": "cmslpc306.fnal.gov",
   "python": "3.11.9",
   "uproot_version": "5.7.4",
-  "sidm_commit": "d6ae2e3",
+  "sidm_commit": "a8f82f0",
   "sidm_branch": "file-census",
   "source_yaml": "/uscms_data/d3/murtazas/SIDM-wt-file-census/sidm/configs/ntuples/signal_2mu2e_v10.yaml",
   "source_yaml_sha256": "7655da76702596e531bf038e1c4af9c2012fa99221ff1d29206296477e49ce9f",
@@ -21,7 +21,11 @@
   "probe": {
    "open_timeout": 120,
    "retries": 2
-  }
+  },
+  "backend": "condor (9 shards)",
+  "n_enumerated": 4082,
+  "n_probed": 4082,
+  "complete": true
  },
  "n_files": 4082,
  "samples": [
