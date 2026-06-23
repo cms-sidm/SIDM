@@ -144,6 +144,7 @@ class ProbeResult:
     has_runs: bool = True      # False if the file (legitimately, for a skim) has no Runs tree
     n_attempts: int = 0
     error: str = ""
+    runs_anomaly: str = ""     # set when Events > genEventCount: a counting-convention note, NOT corruption
     process_status: str = None  # deep mode only: "ok" | "failed" (full SidmProcessor on this file)
     process_error: str = ""
 
@@ -215,18 +216,22 @@ def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
                 arr = runs.arrays(["genEventSumw", "genEventCount"], library="np")
                 gesw = float(arr["genEventSumw"].sum())
                 gec = int(arr["genEventCount"].sum())
-                # A file can OPEN with a readable Runs tree yet be truncated/corrupt: if the
-                # Events tree has MORE entries than Runs claims were generated, the Runs tree
-                # is incomplete (you cannot reconstruct more events than were generated). This
-                # is a deterministic "bad" that a plain open-check (and `xrdfs stat`) both miss.
+                # A readable Runs tree can report Events > genEventCount. That is NOT corruption:
+                # the Events tree is intact and the analysis reads it (the processor sums genWeight
+                # over Events, never the Runs counters). In the SIDM CutDecayFalse signals the Runs
+                # counters (genEventCount AND genEventSumw) are written at ~half the Events count --
+                # a producer counting convention, confirmed by the files processing cleanly through
+                # the full SidmProcessor. So flag it as an anomaly but KEEP the file: a Runs-count
+                # mismatch is a normalization caveat (the census Sw-from-Runs is unreliable for these
+                # samples; use the Events genWeight sum), not a reason to drop a processable file.
+                runs_anomaly = ""
                 if ev is not None and gec and ev > gec * 1.05:
-                    return ProbeResult("bad", genEventSumw=gesw, genEventCount=gec,
-                                       events_entries=ev, n_runs_entries=n_runs,
-                                       n_attempts=attempts,
-                                       error=f"truncated/corrupt Runs: Events {ev} > genEventCount {gec}")
+                    runs_anomaly = (f"Runs counters undercount: Events {ev} = {ev / gec:.2f}x "
+                                    f"genEventCount {gec} (genEventSumw too) -- counting convention, "
+                                    f"not corruption; normalize from the Events genWeight sum")
                 return ProbeResult("reachable", genEventSumw=gesw, genEventCount=gec,
                                    events_entries=ev, n_runs_entries=n_runs,
-                                   has_runs=True, n_attempts=attempts)
+                                   has_runs=True, n_attempts=attempts, runs_anomaly=runs_anomaly)
         except Exception as exc:  # noqa: BLE001 -- we deliberately classify, not crash
             last_err = f"{type(exc).__name__}: {exc}"[:300]
             kind = _classify_open_error(exc)
@@ -401,7 +406,7 @@ def run_census(yaml_path, version=None, samples=None, max_live=None,
         row.update(status=pr.status, genEventSumw=pr.genEventSumw,
                    genEventCount=pr.genEventCount, events_entries=pr.events_entries,
                    n_runs_entries=pr.n_runs_entries, has_runs=pr.has_runs,
-                   n_attempts=pr.n_attempts, last_error=pr.error,
+                   n_attempts=pr.n_attempts, last_error=pr.error, runs_anomaly=pr.runs_anomaly,
                    process_status=pr.process_status, process_error=pr.process_error,
                    probed_utc=_utc())
         return row
@@ -451,7 +456,7 @@ def _rollup(rows):
             "n_files": 0, "n_live": 0, "n_commented": 0,
             "reachable": 0, "bad": 0, "unreachable": 0, "inconclusive": 0,
             "reachable_with_runs": 0, "reachable_no_runs": 0, "n_empty": 0,
-            "n_process_ok": 0, "n_process_failed": 0,
+            "n_process_ok": 0, "n_process_failed": 0, "n_runs_anomaly": 0,
             "genEventCount_reachable": 0, "events_entries_reachable": 0,
             "genEventSumw_reachable_raw": 0.0, "skim_basis_votes": {}})
         s["n_files"] += 1
@@ -463,6 +468,9 @@ def _rollup(rows):
                 s["n_process_ok"] += 1
             elif r.get("process_status") == "failed":
                 s["n_process_failed"] += 1
+            # Runs-count anomaly (Events > genEventCount): kept as reachable, flagged for awareness.
+            if r.get("runs_anomaly"):
+                s["n_runs_anomaly"] += 1
             # An empty (0-event) file is reachable and not corrupt, but contributes nothing;
             # a chunk built ENTIRELY of empties makes coffea's executor return None ->
             # "TypeError: cannot unpack non-iterable NoneType object". Surface it.
@@ -565,6 +573,18 @@ def render_census(manifest):
             L.append(f"       {r['last_error'][:96]}")
         if len(bad) > 60:
             L.append(f"  ... (+{len(bad) - 60} more; see manifest)")
+    anomalies = [r for r in manifest["files"] if r.get("runs_anomaly")]
+    if anomalies:
+        L.append("")
+        L.append("RUNS-COUNT ANOMALIES (Events > genEventCount -- NOT corruption; these files are KEPT).")
+        L.append("The Runs counters (genEventCount + genEventSumw) undercount vs the Events tree -- a")
+        L.append("producer counting convention. The files process fine; normalize from the Events")
+        L.append("genWeight sum, not the Runs Sw (the census Sw-from-Runs is unreliable for these samples).")
+        for r in anomalies[:30]:
+            L.append(f"  {r['sample']}/{r['filename']}")
+            L.append(f"       {r['runs_anomaly'][:96]}")
+        if len(anomalies) > 30:
+            L.append(f"  ... (+{len(anomalies) - 30} more; see manifest)")
     empties = [r for r in manifest["files"]
                if r["status"] == "reachable" and (r["events_entries"] or 0) == 0]
     if empties:

@@ -21,6 +21,7 @@ for f in sorted(glob.glob("sidm/configs/census/*.census.summary.json")):
         "n_files": s["n_files"],
         "n_samples": len(s["samples"]),
         "n_dropped": len(s["dropped"]),
+        "n_anomaly": sum(x.get("n_runs_anomaly", 0) for x in s["samples"]),
         "complete": m.get("complete"),
         "backend": m.get("backend", "threaded"),
         "date": (m.get("ended_utc") or "")[:10],
@@ -37,16 +38,22 @@ lines.append(f"`{REDIR_DIR}/<run-id>/` as `manifest.json` + `cleaned_filelists.t
 lines.append("- How to run a census: [`condor/CENSUS_README.md`](../../../condor/CENSUS_README.md)")
 lines.append("- How to read one: [`sidm/test_notebooks/file_census.ipynb`]"
              "(../../test_notebooks/file_census.ipynb)\n")
-lines.append("| run-id | source YAML | version | files | samples | dropped | complete | backend | date |")
-lines.append("|---|---|---|---:|---:|---:|:---:|---|---|")
+lines.append("| run-id | source YAML | version | files | samples | dropped | runs-anomaly | complete | backend | date |")
+lines.append("|---|---|---|---:|---:|---:|---:|:---:|---|---|")
 for r in rows:
     chk = "yes" if r["complete"] else "**NO**"
     lines.append(f"| `{r['run_id']}` | {r['yaml']} | {r['version']} | {r['n_files']:,} | "
-                 f"{r['n_samples']} | {r['n_dropped']} | {chk} | {r['backend']} | {r['date']} |")
+                 f"{r['n_samples']} | {r['n_dropped']} | {r['n_anomaly']} | {chk} | {r['backend']} | {r['date']} |")
 tot_f = sum(r["n_files"] for r in rows)
 tot_d = sum(r["n_dropped"] for r in rows)
+tot_a = sum(r["n_anomaly"] for r in rows)
 lines.append(f"\n**Total: {tot_f:,} files** across {len(rows)} censuses, {tot_d} dropped "
-             "(bad / unreachable / empty -- excluded from the cleaned filelists).\n")
+             f"(bad / unreachable / empty -- excluded from the cleaned filelists), {tot_a} "
+             "runs-count anomalies (kept).\n")
+lines.append("**runs-anomaly** = files where the Runs-tree counters (genEventCount + genEventSumw) "
+             "undercount the Events tree (Events > genEventCount) -- a producer counting convention in "
+             "the signal ntuples, NOT corruption. These files are KEPT (they process cleanly); "
+             "normalize from the Events genWeight sum, not the Runs Sw.\n")
 lines.append("Each run is `complete`: the dask driver and the Condor merge both reconcile probed-")
 lines.append("vs-enumerated counts and refuse to publish a partial census as complete. To load any")
 lines.append("run, `xrdcp` its `manifest.json` from the EOS path above (see the notebook).")

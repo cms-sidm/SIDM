@@ -139,6 +139,15 @@ def test_rollup():
     d = {x["sample"]: x for x in fc._rollup(rows)}["D"]
     check("rollup process counts", d["n_process_ok"] == 1 and d["n_process_failed"] == 1)
 
+    # Runs-count anomaly (Events > genEventCount): KEPT as reachable, flagged, never 'bad'
+    rows = [_row("A", "reachable", True, 141.0, 141, 284),
+            _row("A", "reachable", True, 154.0, 154, 297)]
+    for r in rows:
+        r["runs_anomaly"] = "Runs counters undercount: Events 2x genEventCount"
+    a = {x["sample"]: x for x in fc._rollup(rows)}["A"]
+    check("rollup anomaly stays reachable", a["reachable"] == 2 and a["bad"] == 0)
+    check("rollup n_runs_anomaly counted", a["n_runs_anomaly"] == 2)
+
 
 if __name__ == "__main__":
     test_enumerate()

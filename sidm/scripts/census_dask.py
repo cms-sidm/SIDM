@@ -37,6 +37,7 @@ def probe_batch(entries, redirector):
         row.update(status=pr.status, genEventSumw=pr.genEventSumw, genEventCount=pr.genEventCount,
                    events_entries=pr.events_entries, n_runs_entries=pr.n_runs_entries,
                    has_runs=pr.has_runs, n_attempts=pr.n_attempts, last_error=pr.error,
+                   runs_anomaly=pr.runs_anomaly,
                    process_status=pr.process_status, process_error=pr.process_error,
                    probed_utc=_fc._utc())
         out.append(row)
