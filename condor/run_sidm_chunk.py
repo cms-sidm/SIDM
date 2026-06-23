@@ -79,11 +79,24 @@ def main():
         unweighted_hist=args.unweighted_hist,
     )
 
-    output = runner.run(
-        fileset,
-        treename=args.treename,
-        processor_instance=p,
-    )
+    try:
+        output = runner.run(
+            fileset,
+            treename=args.treename,
+            processor_instance=p,
+        )
+    except TypeError as e:
+        # coffea's Runner unpacks the executor result without guarding the empty case:
+        # when every file in this chunk has 0 events (legitimate after a skim), the
+        # preprocessing produces zero work items, the executor returns None, and
+        # `wrapped_out, e = executor(...)` raises "cannot unpack non-iterable NoneType
+        # object". That is not a failure of this chunk -- it simply has nothing to
+        # process -- so emit a valid EMPTY output (the additive identity for the merge's
+        # processor.accumulate) and exit cleanly instead of crashing the whole job.
+        if "unpack non-iterable NoneType" not in str(e):
+            raise
+        print("All files in this chunk have 0 events; saving an empty output.")
+        output = {"out": {}, "processed": set(), "exception": 0}
 
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     coffea.util.save(output, args.output)
