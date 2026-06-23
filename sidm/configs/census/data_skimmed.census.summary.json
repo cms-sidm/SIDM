@@ -1,0 +1,3815 @@
+{
+ "run_id": "data_skimmed_light",
+ "meta": {
+  "mode": "shallow",
+  "started_utc": "2026-06-23T02:48:39Z",
+  "ended_utc": "2026-06-23T05:58:28Z",
+  "duration_s": 11389.0,
+  "user": "murtazas",
+  "host": "cmslpc306.fnal.gov",
+  "python": "3.11.9",
+  "uproot_version": "5.7.4",
+  "sidm_commit": "a8f82f0",
+  "sidm_branch": "file-census",
+  "source_yaml": "/uscms_data/d3/murtazas/SIDM-wt-file-census/sidm/configs/ntuples/data_skimmed.yaml",
+  "source_yaml_sha256": "e7076e383a07d0d2c1de56d80c8fa3a78510190a4cfb2850a1dc50eed6e1768a",
+  "version": "llpNanoAOD_v2",
+  "samples": "ALL",
+  "max_live": null,
+  "commented_files_tested": true,
+  "redirector": "root://cmseos.fnal.gov",
+  "probe": {
+   "open_timeout": 120,
+   "retries": 2
+  },
+  "backend": "condor (255 shards)",
+  "n_enumerated": 127415,
+  "n_probed": 127415,
+  "complete": true
+ },
+ "n_files": 127415,
+ "samples": [
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018A_0",
+   "skim_factor": 0.3395500686047371,
+   "is_data": true,
+   "n_files": 999,
+   "n_live": 999,
+   "n_commented": 0,
+   "reachable": 999,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 999,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018A_1",
+   "skim_factor": 0.3960224080770357,
+   "is_data": true,
+   "n_files": 994,
+   "n_live": 994,
+   "n_commented": 0,
+   "reachable": 994,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 994,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_0",
+   "skim_factor": 0.40475390933182287,
+   "is_data": true,
+   "n_files": 3530,
+   "n_live": 3530,
+   "n_commented": 0,
+   "reachable": 3530,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 3530,
+   "n_empty": 32,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_2",
+   "skim_factor": 0.4214874988413149,
+   "is_data": true,
+   "n_files": 6866,
+   "n_live": 6866,
+   "n_commented": 0,
+   "reachable": 6866,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 6866,
+   "n_empty": 6,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_20",
+   "skim_factor": 0.43948706707584395,
+   "is_data": true,
+   "n_files": 1663,
+   "n_live": 1663,
+   "n_commented": 0,
+   "reachable": 1663,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1663,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_21",
+   "skim_factor": 0.4165905467348701,
+   "is_data": true,
+   "n_files": 2829,
+   "n_live": 2829,
+   "n_commented": 0,
+   "reachable": 2829,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2829,
+   "n_empty": 5,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_22",
+   "skim_factor": 0.43716603236843116,
+   "is_data": true,
+   "n_files": 11,
+   "n_live": 11,
+   "n_commented": 0,
+   "reachable": 11,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 11,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_23",
+   "skim_factor": 0.41847839704666373,
+   "is_data": true,
+   "n_files": 6117,
+   "n_live": 6117,
+   "n_commented": 0,
+   "reachable": 6117,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 6117,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_1",
+   "skim_factor": 0.4022321508036811,
+   "is_data": true,
+   "n_files": 66,
+   "n_live": 66,
+   "n_commented": 0,
+   "reachable": 66,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 66,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_2",
+   "skim_factor": 0.40393803133562844,
+   "is_data": true,
+   "n_files": 31,
+   "n_live": 31,
+   "n_commented": 0,
+   "reachable": 31,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 31,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_3",
+   "skim_factor": 0.4016722341127758,
+   "is_data": true,
+   "n_files": 5314,
+   "n_live": 5314,
+   "n_commented": 0,
+   "reachable": 5314,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 5314,
+   "n_empty": 40,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_24",
+   "skim_factor": 0.4271267838711604,
+   "is_data": true,
+   "n_files": 191,
+   "n_live": 191,
+   "n_commented": 0,
+   "reachable": 191,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 191,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_25",
+   "skim_factor": 0.44717417238294066,
+   "is_data": true,
+   "n_files": 12,
+   "n_live": 12,
+   "n_commented": 0,
+   "reachable": 12,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 12,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_26",
+   "skim_factor": 0.4333291517608025,
+   "is_data": true,
+   "n_files": 181,
+   "n_live": 181,
+   "n_commented": 0,
+   "reachable": 181,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 181,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_27",
+   "skim_factor": 0.4263262668948416,
+   "is_data": true,
+   "n_files": 16,
+   "n_live": 16,
+   "n_commented": 0,
+   "reachable": 16,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 16,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_28",
+   "skim_factor": 0.4199417910760276,
+   "is_data": true,
+   "n_files": 3755,
+   "n_live": 3755,
+   "n_commented": 0,
+   "reachable": 3755,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 3755,
+   "n_empty": 11,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_29",
+   "skim_factor": 0.4497649163497757,
+   "is_data": true,
+   "n_files": 159,
+   "n_live": 159,
+   "n_commented": 0,
+   "reachable": 159,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 159,
+   "n_empty": 2,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_3",
+   "skim_factor": 0.4383325078566388,
+   "is_data": true,
+   "n_files": 150,
+   "n_live": 150,
+   "n_commented": 0,
+   "reachable": 150,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 150,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_30",
+   "skim_factor": 0.45684618895481516,
+   "is_data": true,
+   "n_files": 9044,
+   "n_live": 9044,
+   "n_commented": 0,
+   "reachable": 9044,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 9044,
+   "n_empty": 20,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_31",
+   "skim_factor": 0.41878386614679436,
+   "is_data": true,
+   "n_files": 2198,
+   "n_live": 2198,
+   "n_commented": 0,
+   "reachable": 2198,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2198,
+   "n_empty": 8,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_32",
+   "skim_factor": 0.415681233933162,
+   "is_data": true,
+   "n_files": 2468,
+   "n_live": 2468,
+   "n_commented": 0,
+   "reachable": 2468,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2468,
+   "n_empty": 5,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_33",
+   "skim_factor": 0.4533117641772266,
+   "is_data": true,
+   "n_files": 28,
+   "n_live": 28,
+   "n_commented": 0,
+   "reachable": 28,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 28,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_34",
+   "skim_factor": 0.4120998985238715,
+   "is_data": true,
+   "n_files": 6170,
+   "n_live": 6170,
+   "n_commented": 0,
+   "reachable": 6170,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 6170,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_35",
+   "skim_factor": 0.42212622183373816,
+   "is_data": true,
+   "n_files": 5652,
+   "n_live": 5652,
+   "n_commented": 0,
+   "reachable": 5652,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 5652,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_36",
+   "skim_factor": 0.4284664019997059,
+   "is_data": true,
+   "n_files": 15,
+   "n_live": 15,
+   "n_commented": 0,
+   "reachable": 15,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 15,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_37",
+   "skim_factor": 0.4178404342107454,
+   "is_data": true,
+   "n_files": 2090,
+   "n_live": 2090,
+   "n_commented": 0,
+   "reachable": 2090,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2090,
+   "n_empty": 1,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_38",
+   "skim_factor": 0.4347569303458713,
+   "is_data": true,
+   "n_files": 14,
+   "n_live": 14,
+   "n_commented": 0,
+   "reachable": 14,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 14,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_39",
+   "skim_factor": 0.44477219418579855,
+   "is_data": true,
+   "n_files": 14,
+   "n_live": 14,
+   "n_commented": 0,
+   "reachable": 14,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 14,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_4",
+   "skim_factor": 0.43859649122807015,
+   "is_data": true,
+   "n_files": 29,
+   "n_live": 29,
+   "n_commented": 0,
+   "reachable": 29,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 29,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_40",
+   "skim_factor": 0.42140428925168927,
+   "is_data": true,
+   "n_files": 3795,
+   "n_live": 3795,
+   "n_commented": 0,
+   "reachable": 3795,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 3795,
+   "n_empty": 5,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_41",
+   "skim_factor": 0.43042864040342627,
+   "is_data": true,
+   "n_files": 30,
+   "n_live": 30,
+   "n_commented": 0,
+   "reachable": 30,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 30,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_42",
+   "skim_factor": 0.4292355063501676,
+   "is_data": true,
+   "n_files": 511,
+   "n_live": 511,
+   "n_commented": 0,
+   "reachable": 511,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 511,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_43",
+   "skim_factor": 0.4368299658640096,
+   "is_data": true,
+   "n_files": 33,
+   "n_live": 33,
+   "n_commented": 0,
+   "reachable": 33,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 33,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_44",
+   "skim_factor": 0.42921175641928666,
+   "is_data": true,
+   "n_files": 5966,
+   "n_live": 5966,
+   "n_commented": 0,
+   "reachable": 5966,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 5966,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_45",
+   "skim_factor": 0.440643340509935,
+   "is_data": true,
+   "n_files": 1710,
+   "n_live": 1710,
+   "n_commented": 0,
+   "reachable": 1710,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1710,
+   "n_empty": 2,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_46",
+   "skim_factor": 0.4228657161761793,
+   "is_data": true,
+   "n_files": 1507,
+   "n_live": 1507,
+   "n_commented": 0,
+   "reachable": 1507,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1507,
+   "n_empty": 2,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_47",
+   "skim_factor": 0.42079453598795497,
+   "is_data": true,
+   "n_files": 1498,
+   "n_live": 1498,
+   "n_commented": 0,
+   "reachable": 1498,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1498,
+   "n_empty": 1,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_48",
+   "skim_factor": 0.44233021462503125,
+   "is_data": true,
+   "n_files": 4373,
+   "n_live": 4373,
+   "n_commented": 0,
+   "reachable": 4373,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 4373,
+   "n_empty": 9,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_49",
+   "skim_factor": 0.45394579306668115,
+   "is_data": true,
+   "n_files": 1587,
+   "n_live": 1587,
+   "n_commented": 0,
+   "reachable": 1587,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1587,
+   "n_empty": 6,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_4",
+   "skim_factor": 0.39687938539114714,
+   "is_data": true,
+   "n_files": 7344,
+   "n_live": 7344,
+   "n_commented": 0,
+   "reachable": 7344,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 7344,
+   "n_empty": 16,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_5",
+   "skim_factor": 0.4270638644136756,
+   "is_data": true,
+   "n_files": 416,
+   "n_live": 416,
+   "n_commented": 0,
+   "reachable": 416,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 416,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_6",
+   "skim_factor": 0.420196230204389,
+   "is_data": true,
+   "n_files": 537,
+   "n_live": 537,
+   "n_commented": 0,
+   "reachable": 537,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 537,
+   "n_empty": 4,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_7",
+   "skim_factor": 0.4237862887199479,
+   "is_data": true,
+   "n_files": 1555,
+   "n_live": 1555,
+   "n_commented": 0,
+   "reachable": 1555,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1555,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_8",
+   "skim_factor": 0.4060791160006157,
+   "is_data": true,
+   "n_files": 6314,
+   "n_live": 6314,
+   "n_commented": 0,
+   "reachable": 6314,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 6314,
+   "n_empty": 21,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_9",
+   "skim_factor": 0.4542247461710549,
+   "is_data": true,
+   "n_files": 2794,
+   "n_live": 2794,
+   "n_commented": 0,
+   "reachable": 2794,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 2794,
+   "n_empty": 16,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018A_2",
+   "skim_factor": 0.3617809117162447,
+   "is_data": true,
+   "n_files": 769,
+   "n_live": 769,
+   "n_commented": 0,
+   "reachable": 769,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 769,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_5",
+   "skim_factor": 0.39686637550435355,
+   "is_data": true,
+   "n_files": 9386,
+   "n_live": 9386,
+   "n_commented": 0,
+   "reachable": 9386,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 9386,
+   "n_empty": 65,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_6",
+   "skim_factor": 0.41103417192493646,
+   "is_data": true,
+   "n_files": 274,
+   "n_live": 274,
+   "n_commented": 0,
+   "reachable": 274,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 274,
+   "n_empty": 8,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_7",
+   "skim_factor": 0.4031233392917532,
+   "is_data": true,
+   "n_files": 224,
+   "n_live": 224,
+   "n_commented": 0,
+   "reachable": 224,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 224,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_8",
+   "skim_factor": 0.401841200876084,
+   "is_data": true,
+   "n_files": 27,
+   "n_live": 27,
+   "n_commented": 0,
+   "reachable": 27,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 27,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_9",
+   "skim_factor": 0.40430551697204675,
+   "is_data": true,
+   "n_files": 3162,
+   "n_live": 3162,
+   "n_commented": 0,
+   "reachable": 3162,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 3162,
+   "n_empty": 10,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_10",
+   "skim_factor": 0.4282515909166106,
+   "is_data": true,
+   "n_files": 140,
+   "n_live": 140,
+   "n_commented": 0,
+   "reachable": 140,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 140,
+   "n_empty": 14,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_11",
+   "skim_factor": 0.4202956743931374,
+   "is_data": true,
+   "n_files": 25,
+   "n_live": 25,
+   "n_commented": 0,
+   "reachable": 25,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 25,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_12",
+   "skim_factor": 0.4036632116995598,
+   "is_data": true,
+   "n_files": 31,
+   "n_live": 31,
+   "n_commented": 0,
+   "reachable": 31,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 31,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018B_13",
+   "skim_factor": 0.4023514390594244,
+   "is_data": true,
+   "n_files": 29,
+   "n_live": 29,
+   "n_commented": 0,
+   "reachable": 29,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 29,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018C",
+   "skim_factor": 0.40991912557418,
+   "is_data": true,
+   "n_files": 632,
+   "n_live": 632,
+   "n_commented": 0,
+   "reachable": 632,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 632,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_0",
+   "skim_factor": 0.44433805928926534,
+   "is_data": true,
+   "n_files": 13,
+   "n_live": 13,
+   "n_commented": 0,
+   "reachable": 13,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 13,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_1",
+   "skim_factor": 0.44375792211921933,
+   "is_data": true,
+   "n_files": 686,
+   "n_live": 686,
+   "n_commented": 0,
+   "reachable": 686,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 686,
+   "n_empty": 4,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_10",
+   "skim_factor": 0.4313046474566051,
+   "is_data": true,
+   "n_files": 1795,
+   "n_live": 1795,
+   "n_commented": 0,
+   "reachable": 1795,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1795,
+   "n_empty": 1,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_11",
+   "skim_factor": 0.43734923790589797,
+   "is_data": true,
+   "n_files": 39,
+   "n_live": 39,
+   "n_commented": 0,
+   "reachable": 39,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 39,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_12",
+   "skim_factor": 0.42895200293221053,
+   "is_data": true,
+   "n_files": 60,
+   "n_live": 60,
+   "n_commented": 0,
+   "reachable": 60,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 60,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_13",
+   "skim_factor": 0.4142556614280411,
+   "is_data": true,
+   "n_files": 1828,
+   "n_live": 1828,
+   "n_commented": 0,
+   "reachable": 1828,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1828,
+   "n_empty": 5,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_14",
+   "skim_factor": 0.4375628794449263,
+   "is_data": true,
+   "n_files": 194,
+   "n_live": 194,
+   "n_commented": 0,
+   "reachable": 194,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 194,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_15",
+   "skim_factor": 0.4365995161739205,
+   "is_data": true,
+   "n_files": 96,
+   "n_live": 96,
+   "n_commented": 0,
+   "reachable": 96,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 96,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_16",
+   "skim_factor": 0.42775079311024683,
+   "is_data": true,
+   "n_files": 57,
+   "n_live": 57,
+   "n_commented": 0,
+   "reachable": 57,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 57,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_17",
+   "skim_factor": 0.43495989879512154,
+   "is_data": true,
+   "n_files": 44,
+   "n_live": 44,
+   "n_commented": 0,
+   "reachable": 44,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 44,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_18",
+   "skim_factor": 0.4328953341956263,
+   "is_data": true,
+   "n_files": 5444,
+   "n_live": 5444,
+   "n_commented": 0,
+   "reachable": 5444,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 5444,
+   "n_empty": 1,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  },
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018D_19",
+   "skim_factor": 0.4151119094129722,
+   "is_data": true,
+   "n_files": 1884,
+   "n_live": 1884,
+   "n_commented": 0,
+   "reachable": 1884,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 1884,
+   "n_empty": 4,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  }
+ ],
+ "dropped": [
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3446.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3447.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3453.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3454.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_21",
+   "filename": "skimmed_output_168.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_21",
+   "filename": "skimmed_output_179.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3475.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3498.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3510.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_3519.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_556.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_732.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_21",
+   "filename": "skimmed_output_268.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_21",
+   "filename": "skimmed_output_434.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_21",
+   "filename": "skimmed_output_756.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_739.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_744.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_746.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_747.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_761.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_778.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_105.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_112.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_235.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_127.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_324.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_328.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_329.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_348.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_358.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_360.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_445.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_556.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_28",
+   "filename": "skimmed_output_778.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_29",
+   "filename": "skimmed_output_106.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_29",
+   "filename": "skimmed_output_93.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1103.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1113.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1187.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1190.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1203.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1981.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1989.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_1998.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_2005.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_2009.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_2015.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_2751.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_2757.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_3424.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_190.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_5347.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_5902.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_5920.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_6877.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_6900.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_30",
+   "filename": "skimmed_output_6906.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_2047.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_2052.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_2074.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_24.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_1026.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_13.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_1573.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_1594.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_1598.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_323.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_667.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_31",
+   "filename": "skimmed_output_778.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_32",
+   "filename": "skimmed_output_2367.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_32",
+   "filename": "skimmed_output_584.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_32",
+   "filename": "skimmed_output_597.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_32",
+   "filename": "skimmed_output_620.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_32",
+   "filename": "skimmed_output_863.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_35.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_37",
+   "filename": "skimmed_output_1446.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_401.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_40",
+   "filename": "skimmed_output_131.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_40",
+   "filename": "skimmed_output_179.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_40",
+   "filename": "skimmed_output_1837.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_40",
+   "filename": "skimmed_output_1863.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_40",
+   "filename": "skimmed_output_2960.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_457.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4764.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4781.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4789.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4820.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4824.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4831.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4837.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4859.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4860.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4908.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4910.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4922.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4924.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4932.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4933.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_4950.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_45",
+   "filename": "skimmed_output_1674.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_45",
+   "filename": "skimmed_output_648.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_46",
+   "filename": "skimmed_output_1453.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_46",
+   "filename": "skimmed_output_443.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_47",
+   "filename": "skimmed_output_1430.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_523.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_5276.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_5279.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_5280.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_5294.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_5299.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_5301.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_5309.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_568.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_612.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_64.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_3317.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_3498.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_3508.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_3627.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_3639.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_3652.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_3653.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_800.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_48",
+   "filename": "skimmed_output_819.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_49",
+   "filename": "skimmed_output_1130.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_49",
+   "filename": "skimmed_output_1206.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_49",
+   "filename": "skimmed_output_1216.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_49",
+   "filename": "skimmed_output_1221.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_49",
+   "filename": "skimmed_output_224.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_49",
+   "filename": "skimmed_output_235.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_90.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_3",
+   "filename": "skimmed_output_956.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_6",
+   "filename": "skimmed_output_112.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_6",
+   "filename": "skimmed_output_146.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_6",
+   "filename": "skimmed_output_35.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_6",
+   "filename": "skimmed_output_498.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_115.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_117.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_12.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_1323.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_1335.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_157.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_179.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_241.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_247.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_1319.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_1351.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_29.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_317.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_342.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_343.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_445.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_446.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_46.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_510.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_571.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_583.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_6195.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_8",
+   "filename": "skimmed_output_767.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1061.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1063.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1076.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1101.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1111.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1127.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1128.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1139.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1148.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_1315.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_2415.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_2748.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_2769.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_2777.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_2794.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_9",
+   "filename": "skimmed_output_572.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_3078.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_3360.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_3363.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_3365.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_3367.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_3372.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_3378.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_5313.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_5339.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_5383.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_6187.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_7021.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_7026.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_4",
+   "filename": "skimmed_output_7034.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_235.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_2985.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_2987.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_2998.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3000.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3001.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_301.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3011.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3012.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3017.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3049.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3051.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3062.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3073.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3075.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3081.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3083.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_346.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3510.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_3529.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_4986.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_4990.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5016.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5019.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5037.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5053.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5058.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5065.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5080.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5124.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5142.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5148.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_5158.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_568.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_6671.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_701.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_712.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_7185.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_7215.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_723.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_7238.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_796.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_799.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_802.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_805.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_827.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_830.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_838.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_839.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_843.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_844.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_855.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_880.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_883.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_885.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_893.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_894.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_898.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_906.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_916.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_917.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_918.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_942.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_957.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_5",
+   "filename": "skimmed_output_959.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_101.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_113.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_157.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_200.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_201.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_211.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_233.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_6",
+   "filename": "skimmed_output_266.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_119.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_130.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_178.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_193.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1469.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1470.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1479.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1482.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1485.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1491.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1506.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1510.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1513.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1608.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1609.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1615.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1626.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1641.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_198.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_2185.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_2529.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_2530.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_2537.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_9",
+   "filename": "skimmed_output_3130.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_102.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_103.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_104.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_108.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_119.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_13.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_50.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_52.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_54.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_61.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_62.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_63.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_79.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_10",
+   "filename": "skimmed_output_80.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_1",
+   "filename": "skimmed_output_527.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_1",
+   "filename": "skimmed_output_561.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_1",
+   "filename": "skimmed_output_596.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_1",
+   "filename": "skimmed_output_599.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_10",
+   "filename": "skimmed_output_1781.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1669.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018B_0",
+   "filename": "skimmed_output_1678.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_13",
+   "filename": "skimmed_output_112.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_13",
+   "filename": "skimmed_output_1245.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_13",
+   "filename": "skimmed_output_1272.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_13",
+   "filename": "skimmed_output_190.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_13",
+   "filename": "skimmed_output_46.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_18",
+   "filename": "skimmed_output_1188.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_19",
+   "filename": "skimmed_output_1629.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_19",
+   "filename": "skimmed_output_1657.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_19",
+   "filename": "skimmed_output_40.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_19",
+   "filename": "skimmed_output_742.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_2",
+   "filename": "skimmed_output_1450.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_2",
+   "filename": "skimmed_output_148.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_2",
+   "filename": "skimmed_output_29.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_2",
+   "filename": "skimmed_output_382.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_2",
+   "filename": "skimmed_output_407.root",
+   "reason": "empty",
+   "error": ""
+  },
+  {
+   "sample": "DoubleMuon_2018D_2",
+   "filename": "skimmed_output_511.root",
+   "reason": "empty",
+   "error": ""
+  }
+ ]
+}

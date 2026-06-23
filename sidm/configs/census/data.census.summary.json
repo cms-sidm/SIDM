@@ -1,0 +1,61 @@
+{
+ "run_id": "data_light",
+ "meta": {
+  "mode": "shallow",
+  "started_utc": "2026-06-23T02:35:22Z",
+  "ended_utc": "2026-06-23T02:39:46Z",
+  "duration_s": 264.0,
+  "user": "murtazas",
+  "host": "cmslpc306.fnal.gov",
+  "python": "3.11.9",
+  "uproot_version": "5.7.4",
+  "sidm_commit": "57156ac",
+  "sidm_branch": "file-census",
+  "source_yaml": "/uscms_data/d3/murtazas/SIDM-wt-file-census/sidm/configs/ntuples/data.yaml",
+  "source_yaml_sha256": "861ee595e72c8ae91d5d61edb6d7dc75584322f736e953c847ad7241f63096bc",
+  "version": "ALL",
+  "samples": "ALL",
+  "max_live": null,
+  "commented_files_tested": true,
+  "redirector": "root://cmseos.fnal.gov",
+  "probe": {
+   "open_timeout": 120,
+   "retries": 2
+  },
+  "backend": "dask (max_workers=20)",
+  "n_enumerated": 636,
+  "n_probed": 636,
+  "complete": true
+ },
+ "n_files": 636,
+ "samples": [
+  {
+   "version": "llpNanoAOD_v2",
+   "sample": "DoubleMuon_2018C",
+   "skim_factor": 1.0,
+   "is_data": true,
+   "n_files": 636,
+   "n_live": 636,
+   "n_commented": 0,
+   "reachable": 636,
+   "bad": 0,
+   "unreachable": 0,
+   "inconclusive": 0,
+   "reachable_with_runs": 0,
+   "reachable_no_runs": 636,
+   "n_empty": 0,
+   "n_process_ok": 0,
+   "n_process_failed": 0,
+   "genEventCount_reachable": 0,
+   "events_entries_reachable": 0,
+   "genEventSumw_reachable_raw": 0.0,
+   "skim_basis": "no_runs",
+   "genEventSumw_reachable_norm": null,
+   "norm_basis_skim": "skim_factor+events_sum (Runs stripped)",
+   "norm_mismatch_warning": false,
+   "events_over_runs_ratio": null,
+   "skim_basis_disagreement": false
+  }
+ ],
+ "dropped": []
+}
