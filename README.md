@@ -241,6 +241,22 @@ xrdfs cmseos.fnal.gov mkdir -p /store/group/lpcmetx/SIDM/coffea_outputs/$USER/<s
 xrdcp -f out.coffea root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/out.coffea
 ```
 
+**Reading a saved output back.** `coffea.util.load` does a local `open()` and rejects `root://` URLs, so `xrdcp` the `.coffea` to local scratch first, then load the local copy. The redirector to use depends on where you run:
+
+```python
+import os, subprocess, tempfile
+from coffea.util import load
+
+lfn   = "/store/group/lpcmetx/SIDM/coffea_outputs/<user>/<study>/out.coffea"
+redir = "root://cmseos.fnal.gov/"     # on LPC / EAF (needs a VOMS proxy or a Kerberos ticket)
+# redir = "root://xcache/"            # on coffea.casa instead (auto-authenticated via SciToken)
+local = os.path.join(tempfile.mkdtemp(), os.path.basename(lfn))
+subprocess.run(["xrdcp", "-f", redir + lfn, local], check=True)
+output = load(local)
+```
+
+The working redirector **flips between facilities**: on LPC use `root://cmseos.fnal.gov//…`; on **coffea.casa** use `root://xcache//…` (the same `cmseos`↔`xcache` swap as the inputs in §6). On coffea.casa the direct `cmseos` door fails (`Auth failed` — no proxy in the session) and the global `cms-xrd-global` redirector times out (group space is not advertised cross-site), so `xcache` is the one that works there — confirmed by running the notebook below. A runnable walkthrough that probes all three redirectors and loads the output plus its `.meta.yaml` sidecar is [`sidm/test_notebooks/coffea_casa_read_output.ipynb`](sidm/test_notebooks/coffea_casa_read_output.ipynb); to *find* which outputs exist in the first place, see [`sidm/test_notebooks/output_browser.ipynb`](sidm/test_notebooks/output_browser.ipynb).
+
 **Troubleshooting — XRootD/EOS read failures.** A run that dies with `ValueError: Empty list provided to reduction` (or workers logging `[ERROR] Operation expired` while opening files) means EOS is timing out the reads, not a fault in the code or the cluster. It affects every executor — the local `IterativeExecutor`/`FuturesExecutor` and the Dask-over-Condor workers all read the same EOS. `skipbadfiles=True` only helps when *some* files are bad; if every open fails there are no chunks left to reduce. Confirm with `xrdfs cmseos.fnal.gov stat /store/group/lpcmetx/SIDM` (it hangs when EOS is degraded), then rerun once EOS recovers.
 
 ### 7.1. Adapting an existing studies/ notebook from coffea-casa to LPC
