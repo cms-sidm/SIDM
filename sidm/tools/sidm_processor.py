@@ -258,6 +258,7 @@ class SidmProcessor(processor.ProcessorABC):
                 # add sample metadata as set_accumulator to only keep unique values during accumulation
                 "year": processor.set_accumulator([events.metadata["year"]]),
                 "is_data": processor.set_accumulator([events.metadata["is_data"]]),
+                "unweighted_hist": processor.set_accumulator([self.unweighted_hist]),
             },
         }
 
