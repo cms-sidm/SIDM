@@ -582,6 +582,30 @@ cd /uscms_data/d3/$USER/SIDM
 source sidm_venv/bin/activate
 ```
 
+### How the merge normalizes — important
+
+`merge_coffea_chunks_eos.py` does more than concatenate: it **corrects the per-chunk
+normalization**. Each Condor job is its own `Runner.run`, so `SidmProcessor.postprocess()` scales
+that job's outputs by `lumi*xs / sumw` using only **that job's** sum of weights — as if its files
+were the whole sample. A naive add of those pieces inflates yields by ~the number of jobs (and more
+files-per-job → more inflation). The merge instead re-weights each chunk by its own `sumw`,
+accumulates, and divides by the **total** `sumw`, recovering the correct
+`lumi*xs/sumw_full × Σ_chunks(raw)`. **Always go through this script — never hand-add chunk
+`.coffea` files.**
+
+The correction mirrors `postprocess` and is conditional: **data** is never scaled; the **cutflow**
+(simulation) is always corrected; **hists** are corrected only for *weighted* runs — with
+`--unweighted-hist` the hists were never per-chunk-scaled, so they are left as a plain sum.
+So **`--unweighted-hist` must match how the chunks were produced** (the same flag also records this
+in the sidecar). Chunks produced after this change carry `unweighted_hist` in their metadata, so the
+merge is self-describing; the flag is then only needed to re-merge **older** outputs.
+
+> Running a full sample over **dask** (a single `Runner.run` over the whole fileset, as in the dask
+> example notebook) does *not* need this: `postprocess` runs once there with the full `sumw`, so the
+> output is already correctly normalized and there is no separate merge step. This correction is
+> specific to the **Condor** path, where each job normalizes its own slice and the merge stitches
+> them back together.
+
 ### Merge backgrounds
 
 ```bash
