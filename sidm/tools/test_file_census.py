@@ -184,6 +184,12 @@ def test_genpart_selfref():
     d_drop = tempfile.mkdtemp()
     s_drop = fc.cleaned_filelists(manifest, d_drop, drop_genpart_corrupt=True)
     check("filelists drop genpart on request", s_drop["n_good"] == 1 and s_drop["n_dropped"] == 1)
+    # _skip.json (the runner veto) lists exactly the dropped files, per sample
+    import json as _json
+    skip = _json.load(open(os.path.join(d_drop, "_skip.json")))["skip"]
+    check("skip.json lists the dropped genpart file", skip == {"G": ["f0.root"]})
+    skip_keep = _json.load(open(os.path.join(d_keep, "_skip.json")))["skip"]
+    check("skip.json empty when nothing dropped", skip_keep == {})
 
 
 if __name__ == "__main__":

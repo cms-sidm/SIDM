@@ -731,6 +731,15 @@ def cleaned_filelists(manifest, out_dir, keep_empty=False, drop_genpart_corrupt=
             f.write("\t".join(str(x) for x in row) + "\n")
     with open(os.path.join(out_dir, "_census_ref.json"), "w") as f:
         json.dump({"run_id": manifest.get("run_id"), "meta": manifest.get("meta")}, f, indent=2)
+    # _skip.json: the machine-readable veto consumed by utilities.make_fileset (and thus the
+    # notebook / dask / Condor runners) to additively skip these files on top of the YAML comments.
+    skip = {}
+    for sample, filename, _reason, _err in dropped:
+        skip.setdefault(sample, []).append(filename)
+    with open(os.path.join(out_dir, "_skip.json"), "w") as f:
+        json.dump({"run_id": manifest.get("run_id"),
+                   "source_yaml": manifest.get("meta", {}).get("source_yaml"),
+                   "skip": {s: sorted(v) for s, v in sorted(skip.items())}}, f, indent=2)
     return {"n_samples": len(by_sample), "n_good": sum(len(v) for v in by_sample.values()),
             "n_dropped": len(dropped), "out_dir": os.path.abspath(out_dir)}
 

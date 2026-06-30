@@ -1,6 +1,8 @@
 """Module to define miscellaneous helper methods"""
 
 import math
+import os
+import json
 import warnings
 import yaml
 import numpy as np
@@ -208,26 +210,55 @@ def load_yaml(cfg):
     with open(cfg, encoding="utf8") as yaml_cfg:
         return yaml.safe_load(yaml_cfg)
 
+def load_census_skip(census_skip):
+    """Load a census skip-list into {sample: set(basenames-to-skip)}. census_skip is a path to a
+    skip JSON (the `_skip.json` written by file_census.cleaned_filelists, or a promoted copy under
+    sidm/configs/census/), or a bare name resolved there. The skip JSON is {"skip": {sample: [...]}}."""
+    path = census_skip
+    if not os.path.isfile(path):
+        path = f"{BASE_DIR}/configs/census/{census_skip}"
+    with open(path, encoding="utf8") as f:
+        data = json.load(f)
+    return {sample: set(files) for sample, files in data.get("skip", {}).items()}
+
+
+def apply_census_veto(file_list, skip_basenames):
+    """Additively drop files whose basename is in skip_basenames (ON TOP of any the location YAML
+    already comments out -- the YAML commenting is honored upstream; this only removes more).
+    Returns (kept_files, n_dropped)."""
+    if not skip_basenames:
+        return file_list, 0
+    kept = [f for f in file_list if os.path.basename(f) not in skip_basenames]
+    return kept, len(file_list) - len(kept)
+
+
 def make_fileset(samples, ntuple_version, max_files=-1, location_cfg="signal_v8.yaml", fileset=None,
-                 replace_xcache=False):
+                 replace_xcache=False, census_skip=None):
     """Make fileset to pass to processor.runner.
 
     replace_xcache: when True, rewrite 'root://xcache//' to 'root://cmseos.fnal.gov//' so the
     fileset is usable from LPC (xcache is the coffea-casa cache and does not resolve elsewhere).
+    census_skip: optional census skip-list (a path, or a name under sidm/configs/census/). Files
+    the census flagged (bad / unreachable / empty -- see file_census) are dropped IN ADDITION to
+    those the location YAML comments out; the YAML's manual commenting is always honored.
     """
     # assume location_cfg is stored in sidm/configs/ntuples/
     location_cfg = f"{BASE_DIR}/configs/ntuples/" + location_cfg
     locations = load_yaml(location_cfg)[ntuple_version]
+    skip = load_census_skip(census_skip) if census_skip else {}
     if not fileset:
         fileset = {}
     for sample in samples:
         sample_yaml = locations["samples"][sample]
         base_path = locations["path"] + sample_yaml["path"]
         file_list = [base_path + f for f in sample_yaml["files"]]
-        if max_files != -1:
-            file_list = file_list[:max_files]
         if replace_xcache:
             file_list = [f.replace("root://xcache//", "root://cmseos.fnal.gov//") for f in file_list]
+        file_list, n_vetoed = apply_census_veto(file_list, skip.get(sample))
+        if n_vetoed:
+            print(f"  census veto: dropped {n_vetoed} flagged file(s) from {sample}")
+        if max_files != -1:
+            file_list = file_list[:max_files]
         fileset[sample] = {
             "files": file_list,
             "metadata": {

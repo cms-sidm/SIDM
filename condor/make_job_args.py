@@ -33,6 +33,9 @@ def main():
     parser.add_argument("--replace-xcache", action="store_true",
                         help="Rewrite root://xcache// to root://cmseos.fnal.gov// in the "
                              "fileset before chunking (use on LPC where xcache does not resolve).")
+    parser.add_argument("--census-skip", default=None,
+                        help="census skip-list (path, or a name under sidm/configs/census/); its "
+                             "flagged files are dropped in addition to the YAML's commented ones.")
     args = parser.parse_args()
 
     samples = read_samples(args.samples_file)
@@ -43,6 +46,7 @@ def main():
         location_cfg=args.location_cfg,
         max_files=args.max_files,
         replace_xcache=args.replace_xcache,
+        census_skip=args.census_skip,
     )
 
     os.makedirs(args.outdir, exist_ok=True)
