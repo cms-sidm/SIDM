@@ -1,4 +1,6 @@
 from coffea.nanoevents import NanoAODSchema
+from sidm.tools import gen as _gen  # noqa: F401 -- import installs the cycle-safe
+# distinctParent kernel patch: self-referential GenPart in some skims would otherwise hang.
 
 class LLPNanoAODSchema(NanoAODSchema):
     """LLPNano schema builder
