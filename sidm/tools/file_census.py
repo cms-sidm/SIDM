@@ -145,6 +145,11 @@ class ProbeResult:
     n_attempts: int = 0
     error: str = ""
     runs_anomaly: str = ""     # set when Events > genEventCount: a counting-convention note, NOT corruption
+    n_genpart_selfref_events: int = None  # --check-genpart: events with >=1 self-referential GenPart
+                                          # mother (mother == own index) -- the distinctParent loop-causer.
+                                          # None = not checked, no GenPart (e.g. data), OR scan errored
+                                          # (then genpart_anomaly is set).
+    genpart_anomaly: str = ""             # set to the error message when the GenPart scan could not run
     process_status: str = None  # deep mode only: "ok" | "failed" (full SidmProcessor on this file)
     process_error: str = ""
 
@@ -186,8 +191,23 @@ def _xrdfs_absent(redirector, url):
     return bool(re.search(r"no such file|not found|\[3011\]", r.stderr + r.stdout, re.I))
 
 
-def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
-    """Open `url`, read its Runs tree, and return a ProbeResult."""
+def _count_selfref_events(mother):
+    """Given the jagged GenPart_genPartIdxMother array for a file, return the number of events with
+    >=1 SELF-REFERENTIAL mother (index points to itself) -- the signature that makes coffea's
+    distinctParent walk loop forever and hang the job. Pure awkward, unit-testable. (An out-of-range
+    local mother index is NOT flagged: coffea's local2global masks it to -1, so it does not hang
+    distinctParent.)"""
+    import awkward as ak
+    local = ak.local_index(mother)
+    selfref = ak.any(mother == local, axis=1)
+    return int(ak.sum(selfref))
+
+
+def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2, check_genpart=False):
+    """Open `url`, read its Runs tree, and return a ProbeResult. When check_genpart is set,
+    also read GenPart_genPartIdxMother and flag self-referential / out-of-range mother indices
+    (the GenPart corruption that hangs coffea's distinctParent) -- an extra full-branch read,
+    so it is opt-in."""
     last_err = ""
     attempts = 0
     for attempt in range(retries + 1):
@@ -196,6 +216,21 @@ def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
             with uproot.open(url, timeout=_OPEN_TIMEOUT) as f:
                 top = {k.split(";")[0] for k in f.keys(recursive=False)}
                 ev = int(f["Events"].num_entries) if "Events" in top else None
+                # Optional GenPart-integrity scan: the self-referential mother index that makes
+                # coffea's distinctParent loop forever. One extra branch read (opt-in). Absent
+                # GenPart (e.g. data) leaves the count None (not applicable). A read error leaves
+                # the count None AND records genpart_anomaly so the failure is visible, not silent.
+                gp_selfref = None
+                genpart_anomaly = ""
+                if check_genpart and ev and "Events" in top:
+                    if "GenPart_genPartIdxMother" in set(f["Events"].keys()):
+                        try:
+                            mother = f["Events"].arrays(
+                                ["GenPart_genPartIdxMother"],
+                                library="ak")["GenPart_genPartIdxMother"]
+                            gp_selfref = _count_selfref_events(mother)
+                        except Exception as exc:  # noqa: BLE001
+                            genpart_anomaly = f"GenPart scan failed: {type(exc).__name__}: {exc}"[:160]
                 # No Runs tree is NOT a failure: skimmed ntuples legitimately strip Runs. The
                 # file is still reachable for processing (the analysis reads Events); its
                 # normalization then comes from skim_factor + an Events genWeight sum, not Runs.
@@ -212,7 +247,9 @@ def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
                         return ProbeResult("bad", n_attempts=attempts,
                                            error="no Events tree and no usable Runs")
                     return ProbeResult("reachable", events_entries=ev, n_runs_entries=n_runs,
-                                       has_runs=False, n_attempts=attempts)
+                                       has_runs=False, n_attempts=attempts,
+                                       n_genpart_selfref_events=gp_selfref,
+                                       genpart_anomaly=genpart_anomaly)
                 arr = runs.arrays(["genEventSumw", "genEventCount"], library="np")
                 gesw = float(arr["genEventSumw"].sum())
                 gec = int(arr["genEventCount"].sum())
@@ -231,7 +268,9 @@ def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2):
                                     f"not corruption; normalize from the Events genWeight sum")
                 return ProbeResult("reachable", genEventSumw=gesw, genEventCount=gec,
                                    events_entries=ev, n_runs_entries=n_runs,
-                                   has_runs=True, n_attempts=attempts, runs_anomaly=runs_anomaly)
+                                   has_runs=True, n_attempts=attempts, runs_anomaly=runs_anomaly,
+                                   n_genpart_selfref_events=gp_selfref,
+                                   genpart_anomaly=genpart_anomaly)
         except Exception as exc:  # noqa: BLE001 -- we deliberately classify, not crash
             last_err = f"{type(exc).__name__}: {exc}"[:300]
             kind = _classify_open_error(exc)
@@ -290,9 +329,14 @@ def probe_file_deep(url, sample, metadata, channels, hist_collections,
     recorded) rather than being silently skipped. A postprocess cross-section
     lookup failure is a config issue, not a file fault, so it is reported as 'ok'.
     """
-    pr = probe_file(url, redirector=redirector)
+    pr = probe_file(url, redirector=redirector, check_genpart=True)
     if pr.status != "reachable" or (pr.events_entries or 0) == 0:
         return pr  # bad / unreachable / empty: nothing to process-test
+    # The cycle-safe distinctParent kernel (sidm.tools.gen, installed via the LLPNanoAOD schema)
+    # keeps the processor from hanging on self-referential GenPart, so deep mode runs the full
+    # SidmProcessor on those files too -- they are flagged (GENPART INTEGRITY), not skipped. (The
+    # default channels don't read .distinctParent, so a green deep run does not itself exercise the
+    # guard -- that is covered by test_gen.py and the standalone corrupt-file check.)
     try:
         from coffea import processor
         from sidm.tools import sidm_processor, llpnanoaodschema
@@ -370,7 +414,7 @@ def _provenance(yaml_path, version, samples, max_live, redirector, mode, started
 def run_census(yaml_path, version=None, samples=None, max_live=None,
                redirector="root://cmseos.fnal.gov", progress=True, mode="shallow",
                channels=("base",), hist_collections=("muon_base",), chunksize=50000,
-               run_id="manual", workers=1):
+               run_id="manual", workers=1, check_genpart=True):
     """Enumerate + probe every file; return a self-describing manifest dict.
 
     mode="shallow" (default): cheap open + read Runs + peek Events (the publishable
@@ -401,12 +445,15 @@ def run_census(yaml_path, version=None, samples=None, max_live=None,
             pr = probe_file_deep(e.url, e.sample, md, list(channels), list(hist_collections),
                                  redirector=redirector, chunksize=chunksize)
         else:
-            pr = probe_file(e.url, redirector=redirector)
+            pr = probe_file(e.url, redirector=redirector,
+                            check_genpart=(check_genpart and not e.is_data))
         row = {**asdict(e)}
         row.update(status=pr.status, genEventSumw=pr.genEventSumw,
                    genEventCount=pr.genEventCount, events_entries=pr.events_entries,
                    n_runs_entries=pr.n_runs_entries, has_runs=pr.has_runs,
                    n_attempts=pr.n_attempts, last_error=pr.error, runs_anomaly=pr.runs_anomaly,
+                   n_genpart_selfref_events=pr.n_genpart_selfref_events,
+                   genpart_anomaly=pr.genpart_anomaly,
                    process_status=pr.process_status, process_error=pr.process_error,
                    probed_utc=_utc())
         return row
@@ -432,6 +479,7 @@ def run_census(yaml_path, version=None, samples=None, max_live=None,
                  "chunksize": chunksize} if mode == "deep" else None)
     meta = _provenance(yaml_path, version, samples, max_live, redirector, mode,
                        started, ended, deep_cfg)
+    meta["probe"]["check_genpart"] = bool(check_genpart) or (mode == "deep")
     # Completeness reconciliation: a consumer must be able to tell a full census from a partial
     # one. Serial always probes every enumerated file; the dask/Condor mergers stamp the same
     # keys, and cleaned_filelists warns when complete is False.
@@ -456,7 +504,8 @@ def _rollup(rows):
             "n_files": 0, "n_live": 0, "n_commented": 0,
             "reachable": 0, "bad": 0, "unreachable": 0, "inconclusive": 0,
             "reachable_with_runs": 0, "reachable_no_runs": 0, "n_empty": 0,
-            "n_process_ok": 0, "n_process_failed": 0, "n_runs_anomaly": 0,
+            "n_process_ok": 0, "n_process_failed": 0,
+            "n_runs_anomaly": 0, "n_genpart_anomaly": 0, "genpart_selfref_events": 0,
             "genEventCount_reachable": 0, "events_entries_reachable": 0,
             "genEventSumw_reachable_raw": 0.0, "skim_basis_votes": {}})
         s["n_files"] += 1
@@ -471,6 +520,10 @@ def _rollup(rows):
             # Runs-count anomaly (Events > genEventCount): kept as reachable, flagged for awareness.
             if r.get("runs_anomaly"):
                 s["n_runs_anomaly"] += 1
+            # GenPart self-reference: kept as reachable, flagged; distinctParent hangs without the guard.
+            if r.get("n_genpart_selfref_events"):
+                s["n_genpart_anomaly"] += 1
+                s["genpart_selfref_events"] += r["n_genpart_selfref_events"]
             # An empty (0-event) file is reachable and not corrupt, but contributes nothing;
             # a chunk built ENTIRELY of empties makes coffea's executor return None ->
             # "TypeError: cannot unpack non-iterable NoneType object". Surface it.
@@ -585,6 +638,31 @@ def render_census(manifest):
             L.append(f"       {r['runs_anomaly'][:96]}")
         if len(anomalies) > 30:
             L.append(f"  ... (+{len(anomalies) - 30} more; see manifest)")
+    genpart = [r for r in manifest["files"] if r.get("n_genpart_selfref_events")]
+    if genpart:
+        L.append("")
+        L.append("GENPART INTEGRITY -- SELF-REFERENTIAL MOTHER (distinctParent infinite-loop risk).")
+        L.append("These files have GenPart entries whose mother index points to themselves. coffea's")
+        L.append("distinctParent walks that self-loop forever and HANGS the job. The files are otherwise")
+        L.append("readable and KEPT (this scan reads only GenPart_genPartIdxMother). Process them with")
+        L.append("the distinctParent self-reference guard, or run `filelists --drop-genpart-corrupt` to")
+        L.append("exclude them until the guard is in place.")
+        total = sum(r["n_genpart_selfref_events"] for r in genpart)
+        L.append(f"  {len(genpart)} file(s), {total} affected event(s):")
+        for r in genpart[:40]:
+            L.append(f"  {r['sample']}/{r['filename']}: {r['n_genpart_selfref_events']} event(s)")
+        if len(genpart) > 40:
+            L.append(f"  ... (+{len(genpart) - 40} more; see manifest)")
+    scan_err = [r for r in manifest["files"]
+                if r.get("genpart_anomaly") and r.get("n_genpart_selfref_events") is None]
+    if scan_err:
+        L.append("")
+        L.append("GENPART SCAN ERRORS (--check-genpart could not read GenPart on these files; their")
+        L.append("self-reference status is UNKNOWN, not certified clean).")
+        for r in scan_err[:30]:
+            L.append(f"  {r['sample']}/{r['filename']}: {r['genpart_anomaly'][:90]}")
+        if len(scan_err) > 30:
+            L.append(f"  ... (+{len(scan_err) - 30} more; see manifest)")
     empties = [r for r in manifest["files"]
                if r["status"] == "reachable" and (r["events_entries"] or 0) == 0]
     if empties:
@@ -617,7 +695,7 @@ def render_census(manifest):
     return "\n".join(L)
 
 
-def cleaned_filelists(manifest, out_dir, keep_empty=False):
+def cleaned_filelists(manifest, out_dir, keep_empty=False, drop_genpart_corrupt=False):
     """Write per-sample filelists of GOOD files from a census manifest: reachable and
     (unless keep_empty) non-empty -- live OR commented-but-actually-good (so a wrongly
     retired file is restored). Drops bad / unreachable / empty. Also writes _dropped.tsv
@@ -632,11 +710,17 @@ def cleaned_filelists(manifest, out_dir, keep_empty=False):
     dropped = []
     for r in manifest["files"]:
         empty = (r.get("events_entries") or 0) == 0
-        good = r["status"] == "reachable" and (keep_empty or not empty)
+        genpart_corrupt = drop_genpart_corrupt and bool(r.get("n_genpart_selfref_events"))
+        good = r["status"] == "reachable" and (keep_empty or not empty) and not genpart_corrupt
         if good:
             by_sample.setdefault(r["sample"], []).append(r["url"])
         else:
-            reason = "empty" if (r["status"] == "reachable" and empty) else r["status"]
+            if r["status"] == "reachable" and genpart_corrupt:
+                reason = "genpart_selfref"
+            elif r["status"] == "reachable" and empty:
+                reason = "empty"
+            else:
+                reason = r["status"]
             dropped.append((r["sample"], r["filename"], reason, (r.get("last_error") or "")[:100]))
     for sample, urls in sorted(by_sample.items()):
         with open(os.path.join(out_dir, f"{sample}.txt"), "w") as f:
@@ -671,6 +755,12 @@ def build_parser():
     c.add_argument("--hist-collections", default="muon_base",
                    help="deep mode: comma-separated hist collections")
     c.add_argument("--chunksize", type=int, default=50000, help="deep mode: coffea chunksize")
+    c.add_argument("--no-check-genpart", action="store_true",
+                   help="disable the GenPart-integrity scan. By DEFAULT the census reads "
+                        "GenPart_genPartIdxMother on each MC file and flags self-referential mother "
+                        "indices (the corruption that hangs coffea's distinctParent) -- a cheap extra "
+                        "branch read (~5%; the file open dominates). Data has no GenPart and is "
+                        "skipped. Always on in --deep mode regardless.")
     c.add_argument("--run-id", default="manual", help="label recorded in the manifest meta")
     c.add_argument("--workers", type=int, default=16,
                    help="concurrent probe threads (shallow mode only; I/O-bound, scales well). "
@@ -682,6 +772,9 @@ def build_parser():
     fl.add_argument("--out-dir", required=True, help="dir to write <sample>.txt good-file lists")
     fl.add_argument("--keep-empty", action="store_true",
                     help="keep 0-event files in the lists (default: drop them)")
+    fl.add_argument("--drop-genpart-corrupt", action="store_true",
+                    help="drop files flagged with self-referential GenPart (default: keep them -- "
+                         "the distinctParent guard handles them; use this to exclude until it ships)")
     return p
 
 
@@ -698,7 +791,8 @@ def main(argv=None):
     if args.command == "filelists":
         with open(args.manifest) as f:
             manifest = json.load(f)
-        s = cleaned_filelists(manifest, args.out_dir, keep_empty=args.keep_empty)
+        s = cleaned_filelists(manifest, args.out_dir, keep_empty=args.keep_empty,
+                              drop_genpart_corrupt=args.drop_genpart_corrupt)
         print(f"Wrote {s['n_good']} good files across {s['n_samples']} samples to {s['out_dir']}"
               f"  ({s['n_dropped']} dropped; see _dropped.tsv, _census_ref.json)")
         return 0
@@ -710,7 +804,8 @@ def main(argv=None):
                           redirector=args.redirector,
                           mode=("deep" if args.deep else "shallow"),
                           channels=channels, hist_collections=hcoll,
-                          chunksize=args.chunksize, run_id=args.run_id, workers=args.workers)
+                          chunksize=args.chunksize, run_id=args.run_id, workers=args.workers,
+                          check_genpart=(not args.no_check_genpart))
     out = args.out or f"census_{os.path.splitext(os.path.basename(cfg))[0]}.json"
     with open(out, "w") as f:
         json.dump(manifest, f, indent=2)

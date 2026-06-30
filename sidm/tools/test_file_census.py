@@ -149,10 +149,48 @@ def test_rollup():
     check("rollup n_runs_anomaly counted", a["n_runs_anomaly"] == 2)
 
 
+def test_genpart_selfref():
+    import awkward as ak
+    # event0 clean; event1 has a self-referential mother (idx1 -> 1); event2 a normal record.
+    # Pure-array, no network.
+    mother = ak.Array([[-1, 0, 1], [-1, 1, 1], [-1, 0, 0]])
+    check("genpart self-ref event count", fc._count_selfref_events(mother) == 1)
+    clean = ak.Array([[-1, 0, 1], [-1, 0, 0]])
+    check("genpart clean -> zero", fc._count_selfref_events(clean) == 0)
+    empty = ak.Array([[], []])
+    check("genpart empty events -> zero", fc._count_selfref_events(empty) == 0)
+
+    # rollup: a self-ref file stays reachable, is flagged, never 'bad'
+    rows = [_row("G", "reachable", True, 100.0, 100, 100),
+            _row("G", "reachable", True, 100.0, 100, 100)]
+    rows[0]["n_genpart_selfref_events"] = 3
+    rows[1]["n_genpart_selfref_events"] = None
+    g = {x["sample"]: x for x in fc._rollup(rows)}["G"]
+    check("rollup genpart stays reachable", g["reachable"] == 2 and g["bad"] == 0)
+    check("rollup n_genpart_anomaly", g["n_genpart_anomaly"] == 1)
+    check("rollup genpart_selfref_events total", g["genpart_selfref_events"] == 3)
+
+    # filelists: KEEP by default, DROP only with drop_genpart_corrupt
+    manifest = {"meta": {"complete": True}, "files": [
+        {"sample": "G", "filename": "f0.root", "url": "root://x//f0.root", "status": "reachable",
+         "events_entries": 100, "n_genpart_selfref_events": 3, "commented_reason": "",
+         "last_error": ""},
+        {"sample": "G", "filename": "f1.root", "url": "root://x//f1.root", "status": "reachable",
+         "events_entries": 100, "n_genpart_selfref_events": None, "commented_reason": "",
+         "last_error": ""}]}
+    d_keep = tempfile.mkdtemp()
+    s_keep = fc.cleaned_filelists(manifest, d_keep)
+    check("filelists keep genpart by default", s_keep["n_good"] == 2 and s_keep["n_dropped"] == 0)
+    d_drop = tempfile.mkdtemp()
+    s_drop = fc.cleaned_filelists(manifest, d_drop, drop_genpart_corrupt=True)
+    check("filelists drop genpart on request", s_drop["n_good"] == 1 and s_drop["n_dropped"] == 1)
+
+
 if __name__ == "__main__":
     test_enumerate()
     test_skim_basis()
     test_classify_error()
     test_rollup()
+    test_genpart_selfref()
     print(f"\n{_P} passed, {_F} failed")
     sys.exit(1 if _F else 0)

@@ -93,6 +93,10 @@ def main():
     meta = fc._provenance(args.source_yaml or args.out, ver, "ALL", None,
                           args.redirector, args.mode, started, ended, None)
     meta["backend"] = f"condor ({len(shards)} shards)"
+    # The GenPart scan is per-shard (deep always scans; shallow does not). Derive it from the rows
+    # so a Condor manifest still records whether self-reference was checked, like the other paths.
+    meta["probe"]["check_genpart"] = any(
+        r.get("n_genpart_selfref_events") is not None for r in rows)
     meta["n_enumerated"] = n_enumerated
     meta["n_probed"] = len(rows)
     meta["complete"] = complete

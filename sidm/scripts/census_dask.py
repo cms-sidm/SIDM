@@ -27,17 +27,20 @@ from sidm.tools import file_census as fc
 from sidm.tools import scaleout
 
 
-def probe_batch(entries, redirector):
+def probe_batch(entries, redirector, check_genpart=True):
     """Runs on a dask worker (sidm/ shipped via UploadDirectory). entries are plain dicts."""
     from sidm.tools import file_census as _fc
     out = []
     for e in entries:
-        pr = _fc.probe_file(e["url"], redirector=redirector)
+        pr = _fc.probe_file(e["url"], redirector=redirector,
+                            check_genpart=(check_genpart and not e["is_data"]))
         row = dict(e)
         row.update(status=pr.status, genEventSumw=pr.genEventSumw, genEventCount=pr.genEventCount,
                    events_entries=pr.events_entries, n_runs_entries=pr.n_runs_entries,
                    has_runs=pr.has_runs, n_attempts=pr.n_attempts, last_error=pr.error,
                    runs_anomaly=pr.runs_anomaly,
+                   n_genpart_selfref_events=pr.n_genpart_selfref_events,
+                   genpart_anomaly=pr.genpart_anomaly,
                    process_status=pr.process_status, process_error=pr.process_error,
                    probed_utc=_fc._utc())
         out.append(row)
@@ -53,6 +56,8 @@ def main():
     p.add_argument("--redirector", default="root://cmseos.fnal.gov")
     p.add_argument("--out", required=True)
     p.add_argument("--run-id", default="manual")
+    p.add_argument("--no-check-genpart", action="store_true",
+                   help="disable the default GenPart self-reference scan (on by default for MC)")
     args = p.parse_args()
 
     cfg = args.location_cfg
@@ -71,7 +76,8 @@ def main():
         # retries>0 re-runs a batch whose worker was evicted/OOM'd; raise_errors=False keeps a
         # batch that still fails after retries from crashing the WHOLE run and discarding every
         # row already gathered (over thousands of preemptible LPC workers, a death is near-certain).
-        futures = client.map(probe_batch, batches, redirector=args.redirector, retries=2)
+        futures = client.map(probe_batch, batches, redirector=args.redirector,
+                             check_genpart=(not args.no_check_genpart), retries=2)
         done = 0
         for fut, res in as_completed(futures, with_results=True, raise_errors=False):
             done += 1
@@ -92,6 +98,7 @@ def main():
     meta = fc._provenance(cfg, args.version, "ALL", None, args.redirector, "shallow",
                           started, fc._utc(), None)
     meta["backend"] = f"dask (max_workers={args.max_workers})"
+    meta["probe"]["check_genpart"] = (not args.no_check_genpart)
     meta["n_enumerated"] = len(entries)
     meta["n_probed"] = len(rows)
     meta["complete"] = complete
