@@ -290,6 +290,8 @@ Everything else (the `processor.Runner` setup, `DaskExecutor(client=client)`, th
 
 For unattended runs without an open notebook, use the Condor scripts path: [condor/README.md](condor/README.md) is the reference, and [`sidm/test_notebooks/lpc_condor_example.ipynb`](sidm/test_notebooks/lpc_condor_example.ipynb) is the runnable walkthrough (sample list → tarball → submit → merge → load and plot).
 
+The merge step is also where per-sample **normalization** is made correct: each Condor job normalizes only its own files (`lumi*xs/sumw_chunk`), and `merge_coffea_chunks_eos.py` re-stitches them into the full-sample normalization rather than inflating yields by the number of jobs — see [condor/README.md](condor/README.md) §17. (The dask path in §7 runs a single pass and normalizes once, so it needs no separate merge.)
+
 ## Code structure
 All the interesting code in this repository is in `SIDM/sidm/`, which is organized into the following subdirectories:
 - `tools` contains the classes and methods that form the backbone of SIDM. In particular, `sidm_processor.py` defines how events are analyzed. We use the NanoAODSchema for the data in our files, as defined within Coffea [here](https://coffea-hep.readthedocs.io/en/latest/api/coffea.nanoevents.NanoAODSchema.html)
