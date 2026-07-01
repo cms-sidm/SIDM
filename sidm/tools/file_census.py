@@ -161,6 +161,10 @@ _BAD = re.compile(
     r"unknown compression|invalid.*key|bad magic", re.I)
 _ABSENT = re.compile(r"no such file|\[3011\]|not found", re.I)
 _OPEN_TIMEOUT = 120   # seconds; passed to uproot.open AND recorded in the manifest provenance
+_GENPART_SCAN_MAX_EVENTS = 500000  # cap the --check-genpart branch read so a huge/slow file
+                                   # cannot balloon or wedge a census; corruption (a few % of
+                                   # events) is caught well within this bound -- files above
+                                   # it are partial-scanned and noted.
 
 
 def _classify_open_error(exc):
@@ -225,10 +229,16 @@ def probe_file(url, redirector="root://cmseos.fnal.gov", retries=2, check_genpar
                 if check_genpart and ev and "Events" in top:
                     if "GenPart_genPartIdxMother" in set(f["Events"].keys()):
                         try:
+                            # Cap the events read so a huge/slow file cannot balloon or wedge the
+                            # census; real corruption (a few % of events) is caught well within it.
+                            n_scan = min(ev, _GENPART_SCAN_MAX_EVENTS)
                             mother = f["Events"].arrays(
-                                ["GenPart_genPartIdxMother"],
+                                ["GenPart_genPartIdxMother"], entry_stop=n_scan,
                                 library="ak")["GenPart_genPartIdxMother"]
                             gp_selfref = _count_selfref_events(mother)
+                            if n_scan < ev:
+                                genpart_anomaly = (f"GenPart scan capped at first {n_scan} of {ev} "
+                                                   "events")
                         except Exception as exc:  # noqa: BLE001
                             genpart_anomaly = f"GenPart scan failed: {type(exc).__name__}: {exc}"[:160]
                 # No Runs tree is NOT a failure: skimmed ntuples legitimately strip Runs. The
