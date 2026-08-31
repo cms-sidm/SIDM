@@ -1,0 +1,32 @@
+# mu-LJ decay-angle campaign (MuljDecayAngle_Run2018_v1) -- submit_mulj_bkg.sub
+# chunking: 30 ROOT files per job, 2109 jobs
+# Submit from inside condor/ with X509_USER_PROXY pointing at the shared-NFS proxy copy.
+universe = vanilla
+
+executable = run_job.sh
+
+# run_job.sh args: SAMPLE CHUNK FILELIST EOS_OUTDIR CHANNELS HIST_COLLECTIONS [NTUPLE_YAML] [NTUPLE_SECTION]
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/MuljDecayAngle_Run2018_v1 data_control_region_1muLj,data_control_region_1muLj_cosmic_veto,data_control_region_1muLj_spread_cosAlpha_mu_veto,test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto,test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto,4mu,2mu2e,4mu_sr,2mu2e_sr,4mu_noMuPtCut,2mu2e_noMuPtCut mulj_decay_angle,mulj_decay_angle_gen
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = sidm_code.tar.gz, requirements.txt, constraints.txt, $(filelist)
+transfer_output_files = ""
+
+output = logs_mulj_bkg/$(sample)_$(chunk)_$(Cluster)_$(Process).out
+error  = logs_mulj_bkg/$(sample)_$(chunk)_$(Cluster)_$(Process).err
+log    = logs_mulj_bkg/$(sample)_$(chunk)_$(Cluster)_$(Process).log
+
+request_cpus = 1
+request_memory = 4GB
+request_disk = 4GB
+
+# Release jobs held for transient reasons (xrootd/EOS input-transfer hiccups, proxy
+# refresh) after 10 minutes, at most twice. Memory holds (HoldReasonCode 34) and
+# user holds (1) are NOT auto-released -- resubmit those at a higher request_memory.
+periodic_release = (NumJobStarts < 3) && (HoldReasonCode =!= 34) && (HoldReasonCode =!= 1) && ((time() - EnteredCurrentStatus) > 600)
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+queue sample, chunk, filelist from job_args_mulj_bkg.txt
