@@ -18,13 +18,18 @@ one of them can be carried to another.
 
 | file | what it is |
 | --- | --- |
+| `00_produce_inputs.ipynb` | **step 0**: makes the `.coffea` inputs; committed with its outputs |
+| `_build_produce_inputs.py` | writes `00_produce_inputs.ipynb` |
+| `mulj_decay_angle.ipynb` | the study itself; committed with its outputs |
+| `_build_mulj_notebook.py` | writes `mulj_decay_angle.ipynb` |
 | `_mulj_lib.py` | all loading, normalisation, statistics and drawing; one function per figure |
-| `_build_mulj_notebook.py` | writes `mulj_decay_angle.ipynb`; edit this, not the notebook |
-| `mulj_decay_angle.ipynb` | the study, committed with its outputs |
-| `figures/` | vector PDFs of every figure, written by the notebook; untracked |
+| `figures/` | vector PDFs of every figure, written by the study notebook; untracked |
 
-The notebook is generated. Edit the builder or the library, regenerate, re-execute; hand
-edits to the `.ipynb` put it out of step with its source.
+Read them in that order: `00_produce_inputs.ipynb` produces one `.coffea` per sample, and
+`mulj_decay_angle.ipynb` reads a directory of them.
+
+Both notebooks are generated. Edit the builder or the library, regenerate, re-execute; hand
+edits to a `.ipynb` put it out of step with its source.
 
 ## Quantities
 
@@ -83,6 +88,12 @@ in any figure here.
 
 ## Reproducing the inputs
 
+`00_produce_inputs.ipynb` is the executable version of this section. It runs two files of
+one signal sample and two of one data sample end to end, with the same processor, channels
+and histogram collections the campaign used, and its committed outputs are the evidence
+that the recipe works. The full campaign is written out there as commands, the same ones
+repeated below.
+
 Everything runs on the LPC. Each `ssh` is a fresh shell, so chain the environment setup
 into one invocation.
 
@@ -129,9 +140,12 @@ condor_submit submit_mulj_data.sub      # 4,278 jobs
 ```
 
 Each submit file is `condor/submit.sub` with its `job_args` and `filelists` paths pointed
-at one category; the sample lists and the three submit files are the only inputs above that
-are not yet committed. A drained queue is not success: read the exit-code histogram and the
-chunk count on EOS. When a cluster drains, reconcile it with the committed tool:
+at one category, and carries the channel list and the histogram collections as arguments.
+The sample lists, the three submit files, the job-argument generator and the merge script
+are all in the repository; only the generated file lists and job-argument files are not,
+which is why the step above regenerates them. A drained queue is not success: read the
+exit-code histogram and the chunk count on EOS. When a cluster drains, reconcile it with
+the committed tool:
 
 ```bash
 python condor/condor_campaign.py reconcile \
