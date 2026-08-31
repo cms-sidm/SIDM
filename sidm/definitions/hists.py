@@ -177,6 +177,106 @@ def daughters_dR(objs, mask, obj_name):
     children = decayed_daughter_pairs(objs, mask, obj_name).children
     return children[:, :, 0].delta_r(children[:, :, 1])
 
+
+
+# muon mass (GeV) used to build the four-vectors of muon-LJ constituents, which mix PF and DSA
+# muons and therefore do not carry a consistent mass field
+MU_MASS = 0.105658
+
+# binnings shared by the muon-LJ leading-pair companion axes
+MULJ_PAIR_LJPT_BINS = [0, 30, 50, 75, 100, 150, 200, 300, 500, 1000]
+MULJ_PAIR_MASS_BINS = [0, 0.2, 0.3, 0.4, 0.6, 0.8, 1.0, 1.2, 1.5, 2, 3, 4, 5, 6, 8, 12,
+                       20, 50, 200]
+MULJ_PAIR_ISO_BINS = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2, 10]
+MULJ_PAIR_DXY_BINS = [0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 5, 50, 1000]
+MULJ_PAIR_SPREAD_BINS = [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 1000]
+MULJ_PAIR_MUPT_BINS = [0, 10, 15, 20, 23, 26, 30, 40, 60, 100, 200, 1000]
+MULJ_PAIR_DR_BINS = [0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.2, 0.3, 0.5]
+
+
+def mulj_leading_mumu_pair(objs, mask):
+    """Kinematics of the two leading-pT muons of each muon-type lepton jet.
+
+    One record is returned per mu-type LJ holding at least two constituent muons, so every field
+    shares the same (events x LJs) structure and any combination of them can fill the axes of one
+    histogram. Muon four-vectors are built with the PDG muon mass for both PF and DSA muons.
+
+    Impact parameters are read from the PV-referenced branches (dxyPVSigned, dzPV), which are
+    present for both PF and DSA muons. The plain dxy/dz branches must not be used here: they
+    are referenced to the first primary vertex for PF muons but to the beamspot for DSA
+    muons, so a mixed PF-DSA pair would pick up a spurious offset of order |PV_z| in dz and
+    of order the beamspot transverse position in dxy.
+
+    Fields:
+      absCosTheta -- |cos(theta*)| of the leading muon in the pair rest frame, measured from the
+                     pair's lab flight direction
+      ptRatio     -- lab-frame pT(sublead)/pT(lead), in (0, 1]
+      mass        -- invariant mass of the pair
+      dR          -- dR between the two muons
+      iso         -- isolation of the parent LJ
+      minDxy/maxDxy -- smaller/larger |dxy| of the two muons, w.r.t. the PV [cm]
+      dxySpread/dzSpread -- |dxy(lead) - dxy(sub)| / |dz(lead) - dz(sub)| w.r.t. the PV [cm]
+      vxySpreadMu/dzSpreadMu -- the parent LJ's vxySpread_mu / dzSpread_mu, i.e. the max
+                     over all constituent-muon pairs of the transverse / longitudinal
+                     vertex separation, the variables the cosmic spread veto cuts on [cm]
+      nDsa        -- number of DSA muons among the two (0 = PF-PF, 1 = PF-DSA, 2 = DSA-DSA)
+      leadPt/subPt -- lab pT of the two muons
+      ljPt        -- pT of the parent LJ
+    """
+    ljs = objs["mu_ljs"][mask]
+    ljs = ljs[ljs.muon_n >= 2]
+    muons = ljs.muons
+    muons = muons[ak.argsort(muons.pt, axis=-1, ascending=False)]
+    lead = muons[:, :, 0]
+    sub = muons[:, :, 1]
+
+    lead_p4 = ak.zip(
+        {"pt": lead.pt, "eta": lead.eta, "phi": lead.phi,
+         "mass": ak.full_like(lead.pt, MU_MASS)},
+        with_name="PtEtaPhiMLorentzVector"
+    )
+    sub_p4 = ak.zip(
+        {"pt": sub.pt, "eta": sub.eta, "phi": sub.phi,
+         "mass": ak.full_like(sub.pt, MU_MASS)},
+        with_name="PtEtaPhiMLorentzVector"
+    )
+    pair = lead_p4 + sub_p4
+    pair_p4 = ak.zip(
+        {"pt": pair.pt, "eta": pair.eta, "phi": pair.phi, "mass": pair.mass},
+        with_name="PtEtaPhiMLorentzVector"
+    )
+    boosted_lead = boost_to_frame(lead, pair_p4, mass=MU_MASS)
+
+    # the merged PF+DSA muon collection keeps only the fields common to both, so it carries no
+    # type flag; tag DSA muons by matching their pT against the LJ's DSA-only collection
+    dsa_pt = ljs.dsaMuons.pt
+    n_dsa = (ak.values_astype(ak.any(lead.pt[:, :, None] == dsa_pt, axis=-1), np.int32)
+             + ak.values_astype(ak.any(sub.pt[:, :, None] == dsa_pt, axis=-1), np.int32))
+
+    return ak.zip(
+        {
+            "absCosTheta": abs(np.cos(boosted_lead.deltaangle(pair_p4))),
+            "ptRatio": sub.pt/lead.pt,
+            "mass": pair.mass,
+            "dR": lead_p4.delta_r(sub_p4),
+            "iso": ljs.isolation,
+            "minDxy": np.minimum(abs(lead.dxyPVSigned), abs(sub.dxyPVSigned)),
+            "maxDxy": np.maximum(abs(lead.dxyPVSigned), abs(sub.dxyPVSigned)),
+            "dxySpread": abs(lead.dxyPVSigned - sub.dxyPVSigned),
+            "dzSpread": abs(lead.dzPV - sub.dzPV),
+            "nDsa": n_dsa,
+            "leadPt": lead.pt,
+            "subPt": sub.pt,
+            "ljPt": ljs.pt,
+            "vxySpreadMu": ljs.vxySpread_mu,
+            "dzSpreadMu": ljs.dzSpread_mu,
+        }
+    )
+
+def mulj_pair_axis(axis, field):
+    """Bundle a hist axis with the matching field of mulj_leading_mumu_pair"""
+    return h.Axis(axis, lambda objs, mask, field=field: mulj_leading_mumu_pair(objs, mask)[field])
+
 hist_defs = {
     # pv
     "pv_n": obj_attr("pvs", "npvs", nbins=50, label="Number of PVs"),
@@ -5500,4 +5600,202 @@ hist_defs = {
         ],
     ),
 
+    # muon-LJ leading mu-mu pair: decay angle in the pair rest frame and its companions
+    "mu_lj_mumu_absCosTheta": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta",
+                                  label=r"$|\cos\theta^*|$ (leading $\mu\mu$ pair, pair rest frame)"),
+                "absCosTheta"),
+        ],
+    ),
+    "mu_lj_mumu_ptRatio": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(50, 0, 1, name="ptRatio",
+                                  label=r"$p_T^{sub}/p_T^{lead}$ (leading $\mu\mu$ pair)"),
+                "ptRatio"),
+        ],
+    ),
+    "mu_lj_mumu_mass": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(200, 0, 20, name="mumu_mass", label=r"$m_{\mu\mu}$ [GeV]"),
+                "mass"),
+        ],
+    ),
+    "mu_lj_mumu_dR": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(50, 0, 0.5, name="mumu_dR",
+                                  label=r"$\Delta R(\mu^{lead}, \mu^{sub})$"),
+                "dR"),
+        ],
+    ),
+    "mu_lj_mumu_ptRatio_vs_absCosTheta": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="ptRatio",
+                                  label=r"$p_T^{sub}/p_T^{lead}$"),
+                "ptRatio"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_pt": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_LJPT_BINS, name="lj_pt",
+                                   label=r"$\mu$-type LJ $p_T$ [GeV]"),
+                "ljPt"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_mass": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="mumu_mass",
+                                   label=r"$m_{\mu\mu}$ [GeV]"),
+                "mass"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_dR": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_DR_BINS, name="mumu_dR",
+                                   label=r"$\Delta R(\mu^{lead}, \mu^{sub})$"),
+                "dR"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_iso": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_ISO_BINS, name="lj_iso",
+                                   label=r"$\mu$-type LJ isolation"),
+                "iso"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_minDxy": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_DXY_BINS, name="minDxy",
+                                   label=r"min $|d_{xy}|$ of the two muons (w.r.t. PV) [cm]"),
+                "minDxy"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_maxDxy": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_DXY_BINS, name="maxDxy",
+                                   label=r"max $|d_{xy}|$ of the two muons (w.r.t. PV) [cm]"),
+                "maxDxy"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_dxySpread": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_SPREAD_BINS, name="dxySpread",
+                                   label=r"$|\Delta d_{xy}|$ of the two muons (w.r.t. PV) [cm]"),
+                "dxySpread"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_dzSpread": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_SPREAD_BINS, name="dzSpread",
+                                   label=r"$|\Delta d_z|$ of the two muons (w.r.t. PV) [cm]"),
+                "dzSpread"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_nDsa": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.IntCategory([0, 1, 2], name="nDsa",
+                                      label="Number of DSA muons in the pair"),
+                "nDsa"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_leadMuPt": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MUPT_BINS, name="leadMuPt",
+                                   label=r"Leading $\mu$ $p_T$ [GeV]"),
+                "leadPt"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_subMuPt": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MUPT_BINS, name="subMuPt",
+                                   label=r"Subleading $\mu$ $p_T$ [GeV]"),
+                "subPt"),
+        ],
+    ),
+    "mu_lj_mumu_ptRatio_vs_pt": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="ptRatio",
+                                  label=r"$p_T^{sub}/p_T^{lead}$"),
+                "ptRatio"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_LJPT_BINS, name="lj_pt",
+                                   label=r"$\mu$-type LJ $p_T$ [GeV]"),
+                "ljPt"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_vxySpread_mu": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_SPREAD_BINS, name="vxySpread_mu",
+                                   label=r"LJ vxySpread$_\mu$ [cm]"),
+                "vxySpreadMu"),
+        ],
+    ),
+    "mu_lj_mumu_absCosTheta_vs_dzSpread_mu": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_SPREAD_BINS, name="dzSpread_mu",
+                                   label=r"LJ dzSpread$_\mu$ [cm]"),
+                "dzSpreadMu"),
+        ],
+    ),
 }
