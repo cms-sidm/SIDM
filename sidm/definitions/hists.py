@@ -18,6 +18,7 @@ from sidm.tools import histogram as h
 from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs
 from sidm.definitions.objects import derived_objs, withMass
 from sidm.tools.corrections import Corrections
+from sidm.definitions.cuts import obj_cut_defs
 # always reload local modules to pick up changes during development
 importlib.reload(h)
 
@@ -178,6 +179,50 @@ def daughters_dR(objs, mask, obj_name):
     """dR between the two daughters of each dark photon (one entry per dark photon)."""
     children = decayed_daughter_pairs(objs, mask, obj_name).children
     return children[:, :, 0].delta_r(children[:, :, 1])
+
+# LJ-source DSA cuts (sidm/configs/selections.yaml, dsaMuons_ljsource_cuts) minus the
+# cross-cleaning step, which is the cut that removes DSA muons sharing a PF muon
+dsa_ljsource_id_cuts = ("pT > 10 GeV", "|eta| < 2.4", "displaced ID", "eta-phi_veto")
+
+def matched_dsa(objs):
+    """Return the DSA muons that DO have a PF-muon partner, and that partner's pT.
+
+    The LJ-source selection cross-cleans DSA muons against PF muons, so by the time
+    histograms are filled these muons are already gone from objs["dsaMuons"]. They are
+    recovered here from objs["dsaMuonsRaw"], the uncut copy of the collection: the LJ-source
+    DSA cuts are applied except the cross-cleaning, and a muon is kept when the nearest
+    selected PF muon lies within dR < 0.2.
+
+    Returns (dsa, pf_pt), both jagged per event so event weights broadcast over them the
+    same way they do for any other object-level histogram. The result is cached in objs,
+    which the processor rebuilds for every channel, so the match is evaluated once per
+    channel rather than once per axis.
+    """
+    cached = objs.get("_matched_dsa")
+    if cached is not None:
+        return cached
+    dsa = objs["dsaMuonsRaw"]
+    for cut in dsa_ljsource_id_cuts:
+        dsa = dsa[obj_cut_defs["dsaMuons"][cut](objs, dsa)]
+    pf, dr = dsa.nearest(objs["muons"], return_metric=True)
+    has_pf = ak.fill_none(dr, np.inf) < 0.2
+    result = (dsa[has_pf], ak.fill_none(pf.pt, 0.0)[has_pf])
+    objs["_matched_dsa"] = result
+    return result
+
+def dsa_pf_response(objs):
+    """Return pT(DSA) / pT(matched PF muon) for the DSA muons kept by matched_dsa."""
+    dsa, pf_pt = matched_dsa(objs)
+    return dsa.pt / pf_pt
+
+# Histograms that read mu_ljs.vtx_chi2 or objs["dsaMuonsRaw"]. SidmProcessor loads dsaMuonsRaw
+# and the dimuon-vertex tables, and computes vtx_chi2, only when a requested histogram is listed
+# here or a requested channel cuts on vtx_chi2. tests/test_vtx_chi2_inputs.py checks the list.
+vtx_chi2_or_raw_dsa_hists = {
+    "mu_lj_vtx_chi2", "mu_lj_vtx_chi2_log",
+    "dsaPfMatch_ptPf_ptDsa", "dsaPfMatch_response_relPtErr", "dsaPfMatch_response_abseta",
+    "dsaPfMatch_response_nHits",
+}
 
 
 # helpers for the corrections study (sidm/studies/corrections). The weight
@@ -4878,6 +4923,18 @@ hist_defs = {
     "mu_lj_vyzSpread_pf": obj_attr("mu_ljs", "vyzSpread_pf", xmax=50, nbins=100),
     "mu_lj_vzxSpread_pf": obj_attr("mu_ljs", "vzxSpread_pf", xmax=50, nbins=100),
     "mu_lj_v3dSpread_pf": obj_attr("mu_ljs", "v3dSpread_pf", xmax=50, nbins=100),
+    "mu_lj_vtx_chi2": obj_attr("mu_ljs", "vtx_chi2", nbins=52, xmin=-2, xmax=50),  # xmin=-2 keeps the -1 no-vertex sentinel in its own unit-width bin
+    # log-x companion for threshold scans: PatMuonVertex normChi2 spans ~8
+    # decades, so much of the PF-PF population overflows the linear axis. Bin
+    # [-1.5, -0.5] holds the -1 no-vertex sentinel; [-0.5, 1e-3) holds ~0 fits
+    "mu_lj_vtx_chi2_log": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([-1.5, -0.5] + list(np.logspace(-3, 8, 45)),
+                                      name="mu_lj_vtx_chi2_log",
+                                      label="mu-type LJ best dimuon-vertex normChi2"),
+                   lambda objs, mask: objs["mu_ljs"].vtx_chi2),
+        ],
+    ),
     "egm_lj_dxySpread_ele": obj_attr("egm_ljs", "dxySpread_ele", xmax=100, nbins=200),
     "egm_lj_dzSpread_ele": obj_attr("egm_ljs", "dzSpread_ele", xmax=100, nbins=200),
     "mu_lj_vxSpread_mu": obj_attr("mu_ljs", "vxSpread_mu", xmax=100, nbins=200),
@@ -4889,6 +4946,96 @@ hist_defs = {
     "mu_lj_vyzSpread_mu": obj_attr("mu_ljs", "vyzSpread_mu", xmax=100, nbins=200),
     "mu_lj_vzxSpread_mu": obj_attr("mu_ljs", "vzxSpread_mu", xmax=100, nbins=200),
     "mu_lj_v3dSpread_mu": obj_attr("mu_ljs", "v3dSpread_mu", xmax=100, nbins=200),
+    # pT-sliced DSA-muon distributions for the cosmic-tail check: cosmics pile up at
+    # phi ~ +-pi/2, have large |dxy| and large pT uncertainty; collision muons do not
+    "mu_lj_dsaMuon_pt_phi": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(25, 0, 500, name="mu_lj_dsaMuon_pt", label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Regular(16, -math.pi, math.pi, name="mu_lj_dsaMuon_phi", label=r"DSA $\mu$ $\phi$"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.phi),
+        ],
+    ),
+    "mu_lj_dsaMuon_pt_absdxy": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(25, 0, 500, name="mu_lj_dsaMuon_pt", label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Regular(40, 0, 100, name="mu_lj_dsaMuon_absdxy", label=r"DSA $\mu$ |dxy| (cm)"),
+                   lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.dxy)),
+        ],
+    ),
+    "mu_lj_dsaMuon_pt_relPtErr": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(25, 0, 500, name="mu_lj_dsaMuon_pt", label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Regular(40, 0, 2, name="mu_lj_dsaMuon_relPtErr", label=r"DSA $\mu$ $\sigma(p_T)/p_T$"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.ptErr / objs["mu_ljs"].dsaMuons.pt),
+        ],
+    ),
+    "mu_lj_dsaMuon_pt_abseta": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(25, 0, 500, name="mu_lj_dsaMuon_pt", label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Regular(24, 0, 2.4, name="mu_lj_dsaMuon_abseta", label=r"DSA $\mu$ $|\eta|$"),
+                   lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.eta)),
+        ],
+    ),
+    # muon-system hit count: a cosmic crosses the whole detector and leaves hits in many
+    # chambers, while a mismeasured collision muon typically leaves few
+    "mu_lj_dsaMuon_pt_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(25, 0, 500, name="mu_lj_dsaMuon_pt", label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Regular(12, 0, 60, name="mu_lj_dsaMuon_nHits", label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (objs["mu_ljs"].dsaMuons.trkNumDTHits
+                                       + objs["mu_ljs"].dsaMuons.trkNumCSCHits)),
+        ],
+    ),
+    # DSA muons that DO have a PF-muon partner: the population the LJ-source cross-cleaning
+    # discards. pT(DSA)/pT(PF) compares the vertex-unconstrained standalone momentum with the
+    # tracker-constrained momentum of the same muon, so it measures the standalone pT scale
+    # and the size of its mismeasurement tail.
+    "dsaPfMatch_ptPf_ptDsa": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaPfMatch_ptPf", label=r"Matched PF $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa(objs)[1]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaPfMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa(objs)[0].pt),
+        ],
+    ),
+    "dsaPfMatch_response_relPtErr": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable(np.logspace(-1, 2, 41), name="dsaPfMatch_response",
+                                      label=r"DSA $\mu$ $p_T$ / PF $\mu$ $p_T$"),
+                   lambda objs, mask: dsa_pf_response(objs)),
+            h.Axis(hist.axis.Regular(20, 0, 2, name="dsaPfMatch_relPtErr",
+                                     label=r"DSA $\mu$ $\sigma(p_T)/p_T$"),
+                   lambda objs, mask: matched_dsa(objs)[0].ptErr / matched_dsa(objs)[0].pt),
+        ],
+    ),
+    "dsaPfMatch_response_abseta": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable(np.logspace(-1, 2, 41), name="dsaPfMatch_response",
+                                      label=r"DSA $\mu$ $p_T$ / PF $\mu$ $p_T$"),
+                   lambda objs, mask: dsa_pf_response(objs)),
+            h.Axis(hist.axis.Regular(24, 0, 2.4, name="dsaPfMatch_abseta",
+                                     label=r"DSA $\mu$ $|\eta|$"),
+                   lambda objs, mask: abs(matched_dsa(objs)[0].eta)),
+        ],
+    ),
+    "dsaPfMatch_response_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable(np.logspace(-1, 2, 41), name="dsaPfMatch_response",
+                                      label=r"DSA $\mu$ $p_T$ / PF $\mu$ $p_T$"),
+                   lambda objs, mask: dsa_pf_response(objs)),
+            h.Axis(hist.axis.Regular(12, 0, 60, name="dsaPfMatch_nHits",
+                                     label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (matched_dsa(objs)[0].trkNumDTHits
+                                       + matched_dsa(objs)[0].trkNumCSCHits)),
+        ],
+    ),
     "dsaMu_pfMu_dR_closest": h.Histogram(
         [
             h.Axis(hist.axis.Regular(200, 0, 1, name="dsaMu_pfMu_dR_closest"),
