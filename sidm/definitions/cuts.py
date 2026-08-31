@@ -89,6 +89,10 @@ obj_cut_defs = {
         "dzSpread_pf > 10": lambda objs: objs["mu_ljs"].dzSpread_pf > 10,
         "vxySpread_pf > 10": lambda objs: objs["mu_ljs"].vxySpread_pf > 10,
         "vzSpread_pf <= 10": lambda objs: objs["mu_ljs"].vzSpread_pf <= 10,
+        # best within-LJ dimuon-vertex normChi2; -1 = no such vertex, NaN = the
+        # input carries no vertex tables. See sidm/tools/lj_vertex_chi2.py.
+        "0 <= vtx_chi2 < 5": lambda objs: (objs["mu_ljs"].vtx_chi2 >= 0) & (objs["mu_ljs"].vtx_chi2 < 5),
+        "no vtx or vtx_chi2 >= 5": lambda objs: (objs["mu_ljs"].vtx_chi2 < 0) | (objs["mu_ljs"].vtx_chi2 >= 5),
 
         "inverse_spread" : lambda objs: ((objs["mu_ljs"].dzSpread_pf > 10)
                                          |(objs["mu_ljs"].dxySpread_pf > 10)
