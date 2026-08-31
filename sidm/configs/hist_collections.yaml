@@ -1123,6 +1123,26 @@ cosmic_veto_extra: &cosmic_veto_extra
   - "dsaMu_pfMu_dR_closest"
   - "dsaMu_pfMu_pt_diff"
 
+# vertexChi2 study: the mu-LJ vtx_chi2 distributions and the mu-LJ DSA-muon pT x (phi, |dxy|,
+# sigma(pT)/pT, |eta|, nHits) histograms of the >= 200 GeV tail. The study's run notebooks
+# request it together with cosmic_veto.
+mu_lj_vtx_chi2_dsa_pt: &mu_lj_vtx_chi2_dsa_pt
+  - "mu_lj_vtx_chi2"
+  - "mu_lj_vtx_chi2_log"
+  - "mu_lj_dsaMuon_pt_phi"
+  - "mu_lj_dsaMuon_pt_absdxy"
+  - "mu_lj_dsaMuon_pt_relPtErr"
+  - "mu_lj_dsaMuon_pt_abseta"
+  - "mu_lj_dsaMuon_pt_nHits"
+
+# DSA-vs-PF pT response for the DSA muons that have a PF-muon partner, i.e. exactly the
+# muons the LJ-source cross-cleaning removes
+dsa_pf_response: &dsa_pf_response
+  - "dsaPfMatch_ptPf_ptDsa"
+  - "dsaPfMatch_response_relPtErr"
+  - "dsaPfMatch_response_abseta"
+  - "dsaPfMatch_response_nHits"
+
 cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - *cosAlpha
   - "egm_lj_pt"

@@ -59,6 +59,10 @@ preLj_objs["electrons"]  = lambda evts: evts.Electron
 preLj_objs["photons"]    = lambda evts: evts.Photon
 preLj_objs["muons"]      = lambda evts: evts.Muon
 preLj_objs["dsaMuons"]   = lambda evts: evts.DSAMuon
+# uncut copy of the DSA muon collection. No selection lists it under obj_cuts, so it survives
+# the LJ-source cross-cleaning that removes DSA muons sharing a PF muon, and histograms can
+# still reach that discarded population at fill time.
+preLj_objs["dsaMuonsRaw"] = lambda evts: evts.DSAMuon
 preLj_objs["weight"]     = lambda evts: evts.genWeight
 preLj_objs["gens"]       = lambda evts: evts.GenPart
 preLj_objs["genMus"]     = lambda evts: pid(preLj_objs["gens"](evts), 13)
@@ -70,6 +74,13 @@ preLj_objs["rho_PFIso"]  = lambda evts: evts.fixedGridRhoFastjetAll
 preLj_objs["jets"]       = lambda evts: evts.Jet
 preLj_objs["flags"]       = lambda evts: evts.Flag
 preLj_objs["bjets"]      = lambda evts: evts.Jet
+# dimuon-vertex tables. They carry vx/vy/vxy but no pt/px/py, so the
+# processor's automatic beamspot-dxy step skips them (it requires pt)
+preLj_objs["dsaMuonVertex"]    = lambda evts: evts.DSAMuonVertex
+preLj_objs["patMuonVertex"]    = lambda evts: evts.PatMuonVertex
+preLj_objs["patDsaMuonVertex"] = lambda evts: evts.PatDSAMuonVertex
+# loaded only when a requested channel or histogram needs them (see SidmProcessor.__init__)
+on_demand_preLj_objs = ("dsaMuonsRaw", "dsaMuonVertex", "patMuonVertex", "patDsaMuonVertex")
 # define objects whose that will be added to objs by the sidm_processor after LJs are clustered
 # and LJ cuts are applied. postLj_obj cuts can be applied to these
 postLj_objs = {}
