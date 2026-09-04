@@ -398,6 +398,7 @@ evt_cut_defs = {
     "pv_ndof >=4" : lambda objs :  ak.flatten(objs["pvs"].ndof) >=4.0,
     "pv_z <= 24" : lambda objs :  ak.flatten(objs["pvs"].z) <= 24,
     "inv(lj1, lj2) <= 100": lambda objs : (objs["ljs"][:,:2].sum().mass) <= 100,
+    "all cos_alpha(dsa, dsa) > -0.9" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.9, axis =1),
     "all cos_alpha(dsa, dsa) > -0.95" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.95, axis =1),
     "all cos_alpha(mu, mu) > -0.95" : lambda objs : ak.all(cosAlpha(objs["muons"]) > -0.95, axis =1),
     "any cos_alpha(dsa, dsa) <= -0.95" : lambda objs : ak.any(cosAlpha(objs["dsaMuons"]) <=-0.95, axis =1),
