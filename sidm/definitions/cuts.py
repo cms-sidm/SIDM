@@ -5,7 +5,7 @@ import awkward as ak
 import numpy as np
 # local
 from sidm.definitions.objects import derived_objs
-from sidm.tools.utilities import dR, lxy, rho, check_bits, returnBitMapTArrayPhoton, dR_outer, cosAlpha, nearest_lj_index
+from sidm.tools.utilities import dR, lxy, rho, check_bits, returnBitMapTArrayPhoton, dR_outer, cosAlpha, nearest_lj_index, get_pairs
 
 obj_cut_defs = {
     "pvs": {
@@ -289,13 +289,6 @@ obj_cut_defs = {
         ),
         "all + charge": lambda objs, dsa: ak.all((dsa.good_matched_muons.numMatch < 1) | (dsa.charge[:,:,None] != dsa.good_matched_muons.charge) | (dR_outer(dsa[:,:,None], dsa.good_matched_muons) > 0.1) | (dsa.good_matched_muons.numMatch/(dsa.nSegments[:,:,None]) < 0.34), axis=2),
     },
-    "dsaMuonPairs":{
-        "back_to_back_pairs": lambda objs: (lambda v1, v2: np.cos(v1.deltaangle(v2)))
-                                         (*ak.unzip(objs["dsaMuonPairs"])) <= -0.95,
-        "parallel_pairs": lambda objs: (lambda v1, v2: np.cos(v1.deltaangle(v2)))
-                                         (*ak.unzip(objs["dsaMuonPairs"])) >= 0.95,
-        "lj_index_diff = 0": lambda objs: (lambda v1, v2, objs: abs(nearest_lj_index(v1, objs)  - nearest_lj_index(v2, objs)))(*ak.unzip(objs["dsaMuonPairs"]), objs["ljs"]) == 0,
-}
 }
 
 def _gen_filter_count(leps, flag_bits, status=None):
@@ -409,8 +402,8 @@ evt_cut_defs = {
     "all cos_alpha(dsa, dsa) > -0.95" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.95, axis =1),
     "all cos_alpha(mu, mu) > -0.95" : lambda objs : ak.all(cosAlpha(objs["muons"]) > -0.95, axis =1),
     "any cos_alpha(dsa, dsa) <= -0.95" : lambda objs : ak.any(cosAlpha(objs["dsaMuons"]) <=-0.95, axis =1),
-    "1 back_to_back_dsa": lambda objs: (lambda v1, v2: ak.sum(np.cos(v1.deltaangle(v2)) <= -0.95, axis=1))(*ak.unzip(objs["dsaMuonPairs"]))  == 1,
-    "2 back_to_back_dsa": lambda objs: (lambda v1, v2: ak.sum(np.cos(v1.deltaangle(v2)) <= -0.95, axis=1))(*ak.unzip(objs["dsaMuonPairs"]))  == 2,
+    "1 back_to_back_dsa": lambda objs: (lambda v1, v2: ak.sum(np.cos(v1.deltaangle(v2)) <= -0.95, axis=1))(*ak.unzip(get_pairs(objs["dsaMuons"]))) == 1,
+    "2 back_to_back_dsa": lambda objs: (lambda v1, v2: ak.sum(np.cos(v1.deltaangle(v2)) <= -0.95, axis=1))(*ak.unzip(get_pairs(objs["dsaMuons"]))) == 2,
     "pass two missing triggers": lambda objs: (
     (
         objs["hlt"].DoubleL2Mu23NoVtx_2Cha_NoL2Matched

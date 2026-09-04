@@ -37,8 +37,6 @@ backToBackDSA_ljIndex0_2BackToBackDSA: &backToBackDSA_ljIndex0_2BackToBackDSA
       - "|eta| < 2.4"
     mu_ljs:
       - "Mu >= 2"
-    dsaMuonPairs:
-      - "lj_index_diff = 0"
   evt_cuts:
     - *evt_baseNoLj
     - "pass flags"
