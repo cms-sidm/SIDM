@@ -1321,13 +1321,6 @@ def plot_data_mc(
 
     return fig, ax_main, ax_ratio
 
-def cosAlpha(muons): 
-    """could work for any object, find cosAlpha between objects"""
-    pairs = ak.combinations(muons, 2, axis=1)
-    v1, v2 = ak.unzip(pairs)
-    cos_alpha = np.cos(v1.deltaangle(v2))
-    return cos_alpha
-
 def get_pairs(obj):
     """make pairs of object"""
     pairs = ak.combinations(obj, 2, axis=1)
