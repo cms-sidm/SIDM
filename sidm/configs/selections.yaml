@@ -1589,6 +1589,7 @@ ttjets_2j2btag: &ttjets_2j2btag
       - "|eta| < 2.4"
       - "dR(jets, mu) > 0.4"
     bjets:
+      - "btagDeepFlavB_tight"
       - "pT > 30 GeV"
       - "|eta| < 2.4"
       - "tightID"
@@ -1616,6 +1617,7 @@ ttjets_4j2btag: &ttjets_4j2btag
       - "|eta| < 2.4"
       - "dR(jets, mu) > 0.4"
     bjets:
+      - "btagDeepFlavB_tight"
       - "pT > 30 GeV"
       - "|eta| < 2.4"
       - "tightID"

@@ -198,6 +198,7 @@ obj_cut_defs = {
         "dR(jets, mu) > 0.4": lambda objs: dR(objs["jets"], objs["muons"]) > 0.4,
     },
     "bjets":{
+        "btagDeepFlavB_tight": lambda objs: objs["bjets"].btagDeepFlavB >= 0.7100,
         "tightID": lambda objs: objs["bjets"].jetId >= 6,
         "|eta| < 2.4": lambda objs: abs(objs["bjets"].eta) < 2.4,
         "pT > 30 GeV": lambda objs: objs["bjets"].pt > 30,
