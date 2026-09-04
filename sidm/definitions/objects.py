@@ -83,6 +83,8 @@ postLj_objs["pfmu_ljs"]     = lambda objs: noDsa(objs["mu_ljs"])
 postLj_objs["dsamu_ljs"]    = lambda objs: noPf(objs["mu_ljs"])
 postLj_objs["electron_ljs"] = lambda objs: noPhoton(objs["egm_ljs"])
 postLj_objs["photon_ljs"]   = lambda objs: noE(objs["egm_ljs"])
+postLj_objs["dsaMuonPairs"] = lambda objs: get_pairs(objs["dsaMuons"])
+postLj_objs["muonPairs"] = lambda objs: get_pairs(objs["muons"])
 postLj_objs["allMuons"] = lambda objs: ak.concatenate([ ak.with_name(objs["muons"],"PtEtaPhiMLorentzVector"),ak.with_name(objs["dsaMuons"],"PtEtaPhiMLorentzVector")],axis=1)
 # Adding the following here since I want the cuts on genMus and genEs to be applied
 postLj_objs_MC["genMus_fromA"] = lambda objs: fromPid(objs["genMus"], 32)
