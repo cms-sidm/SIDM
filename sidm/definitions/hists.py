@@ -4717,8 +4717,10 @@ hist_defs = {
         h.Axis(
             hist.axis.Regular(200, 0, 200, name="muon_bjet_inv_mass",
             label=r"Invariant Mass ($\mu_{0}$, bjet)"),
-            lambda objs, mask: ((objs["muons"][:, 0] +
-                    objs["muons"][:, 0].nearest(objs["bjets"], threshold=0.4)).mass),),
+            lambda objs, mask: ak.fill_none(
+                (objs["muons"][mask][:, 0]
+                 + objs["muons"][mask][:, 0].nearest(objs["bjets"][mask],
+                                                     threshold=0.4)).mass, np.nan),),
     ],
     evt_mask=lambda objs:
         (ak.num(objs["bjets"]) > 0) &
@@ -4728,7 +4730,8 @@ hist_defs = {
     [
         h.Axis(
             hist.axis.Regular(200, 0, 200, name="muon_bjet_min_inv_mass",label=r"min Invariant Mass ($\mu_{0}$, bjet)"),
-            lambda objs, mask: ak.min((objs["muons"][:, 0] + objs["bjets"]).mass,axis=1),),
+            lambda objs, mask: ak.min(
+                (objs["muons"][mask][:, 0] + objs["bjets"][mask]).mass, axis=1),),
     ],
     evt_mask=lambda objs: (ak.num(objs["bjets"]) > 0) &(ak.num(objs["muons"]) > 0),
    ),
