@@ -90,9 +90,12 @@ obj_cut_defs = {
         "vxySpread_pf > 10": lambda objs: objs["mu_ljs"].vxySpread_pf > 10,
         "vzSpread_pf <= 10": lambda objs: objs["mu_ljs"].vzSpread_pf <= 10,
 
+        # NOTE: the fourth OR term used to repeat vxySpread_mu > 50 verbatim. It is
+        # dropped here because a term OR'd with itself is a no-op; if a longitudinal
+        # counterpart was intended (vzSpread_mu > 50, to mirror vzSpread_pf > 10),
+        # add it back explicitly.
         "inverse_spread" : lambda objs: ((objs["mu_ljs"].vzSpread_pf > 10)
                                          |(objs["mu_ljs"].vxySpread_pf > 10)
-                                         |(objs["mu_ljs"].vxySpread_mu > 50)
                                          |(objs["mu_ljs"].vxySpread_mu > 50) )
     },
     "genMus":{
