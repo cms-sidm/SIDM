@@ -703,8 +703,8 @@ def sum_hist(samples_list, folder_name):
             summed_out = accumulate ([hists, summed_out])
     return summed_out
 
-def cosAlpha(objs):
-    pairs = ak.combinations(objs, 2, axis=1)
+def cosAlpha(objs, axis=1):
+    pairs = ak.combinations(objs, 2, axis=axis)
     v1, v2 = ak.unzip(pairs)
     return np.cos(v1.deltaangle(v2))
 

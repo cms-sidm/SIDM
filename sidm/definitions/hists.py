@@ -1204,7 +1204,7 @@ hist_defs = {
     "mu_lj_dsaMuon_cosAlpha": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, -1, 1, name=r"$\mu$- type LJ DSA $\mu$ cos $\alpha$"),
-                   lambda objs, mask: cosAlpha(objs["mu_ljs"].dsaMuons)),
+                   lambda objs, mask: cosAlpha(objs["mu_ljs"].dsaMuons, axis=2)),
         ],
     ),
     "mu_lj_muon_dxy_lowRange": h.Histogram(
