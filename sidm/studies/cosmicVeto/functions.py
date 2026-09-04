@@ -88,16 +88,23 @@ def get_signal_label(signal):
     label  = f"{label}, {mass}, {zd_mass}, {closest_lxy}cm"
     return (label)
 
-def isM (histogram):
-    values =  histogram.values()
+def isM(histogram):
+    """Return a copy of histogram with negative bin contents made positive.
+
+    NOTE: negative bins are physical -- they come from negative MC event
+    weights -- so flipping their sign biases the background upwards. Prefer
+    leaving them alone, or clipping to zero, unless the plotting backend
+    genuinely cannot take them.
+    """
+    values = histogram.values().copy()
     isMinus = values < 0
-    if ak.any(isMinus):
-        print("found negative values. set them to postive")
-        hist_corrected = histogram.copy()
-        values[isMinus] = abs(values[isMinus])
-        hist_corrected.values()[...] = values
-        return hist_corrected
-    return(histogram) 
+    if not np.any(isMinus):
+        return histogram
+    print("found negative values, setting them positive")
+    values[isMinus] = abs(values[isMinus])
+    hist_corrected = histogram.copy()
+    hist_corrected.values()[...] = values
+    return hist_corrected
 
 ##plots data/MC for all the histograms provided in a list
 def plot_DataMC(histogram_list, channel_name,
