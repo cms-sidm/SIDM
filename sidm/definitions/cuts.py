@@ -390,7 +390,10 @@ evt_cut_defs = {
     "= 2 LJs": lambda objs: ak.num(objs["ljs"]) == 2,
     "= 1 muLJs and = 1 egmLJs": lambda objs: (ak.num(objs["mu_ljs"]) == 1) & (ak.num(objs["egm_ljs"]) == 1),
     "= 2 muLJs": lambda objs: (ak.num(objs["mu_ljs"]) == 2) & (ak.num(objs["egm_ljs"]) == 0),
-    "60 <= inv(Mu_0, Mu_1) <= 120": lambda objs : ((objs["muons"][:,:2].sum().mass) <= 120) &  ((objs["muons"][:,:2].sum().mass) >= 60),
+    "60 <= inv(Mu_0, Mu_1) <= 120": lambda objs : (
+        (ak.num(objs["muons"]) >= 2)
+        & ((objs["muons"][:, :2].sum().mass) <= 120)
+        & ((objs["muons"][:, :2].sum().mass) >= 60)),
     "n_mu == 2": lambda objs : ak.num(objs["muons"]) == 2,
     "n_dsa >= 2": lambda objs : ak.num(objs["dsaMuons"]) >= 2,
     "n_bjet == 2": lambda objs : ak.num(objs["bjets"]) == 2,
@@ -400,7 +403,8 @@ evt_cut_defs = {
     "dPhi(Mu_0, Mu_1) > 2.4": lambda objs: ak.fill_none(abs((ak.pad_none(objs["muons"], 2)[:,0].delta_phi(ak.pad_none(objs["muons"], 2)[:,1]))) > 2.4, False),
     "pv_ndof >=4" : lambda objs :  ak.flatten(objs["pvs"].ndof) >=4.0,
     "pv_z <= 24" : lambda objs :  abs(ak.flatten(objs["pvs"].z)) <= 24,
-    "inv(lj1, lj2) <= 100": lambda objs : (objs["ljs"][:,:2].sum().mass) <= 100,
+    "inv(lj1, lj2) <= 100": lambda objs : (
+        (ak.num(objs["ljs"]) >= 2) & ((objs["ljs"][:, :2].sum().mass) <= 100)),
     "all cos_alpha(dsa, dsa) > -0.9" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.9, axis =1),
     "all cos_alpha(dsa, dsa) > -0.95" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.95, axis =1),
     "all cos_alpha(mu, mu) > -0.95" : lambda objs : ak.all(cosAlpha(objs["muons"]) > -0.95, axis =1),
