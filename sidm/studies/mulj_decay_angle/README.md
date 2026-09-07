@@ -23,10 +23,22 @@ one of them can be carried to another.
 | `mulj_decay_angle.ipynb` | the study itself; committed with its outputs |
 | `_build_mulj_notebook.py` | writes `mulj_decay_angle.ipynb` |
 | `_mulj_lib.py` | all loading, normalisation, statistics and drawing; one function per figure |
+| `check_gen_boost_precision.py` | an offline check of one unselected 4mu file per bound-state mass at m_Zd = 0.25 GeV, read over xrootd: the generated \|cos(theta*)\| with the processor's single-precision boost, in double precision and without a boost; its numbers are quoted in section b and caveat 9 |
 | `figures/` | vector PDFs of every figure, written by the study notebook; untracked |
 
 Read them in that order: `00_produce_inputs.ipynb` produces one `.coffea` per sample, and
 `mulj_decay_angle.ipynb` reads a directory of them.
+
+The study notebook runs a to j, and three campaigns are behind it.
+
+| sections | what they measure | inputs |
+| --- | --- | --- |
+| a - h | one muon lepton jet: the decay angle of its two hardest muons, what it correlates with, what a cut on it would buy, the caveats and the verdict | `INPUT_DIR`, the first campaign |
+| i | the two muon lepton jets of a four-muon event together: whether their angles are correlated, and whether the angle still separates inside a mass window | `lib.configure_pair(...)`, a second campaign |
+| j | the lepton-jet pair as a decay-plane system: the signed decay angle, the electron pair of an electromagnetic lepton jet, the azimuthal angle between the two decay planes, the transverse balance and the missing momentum | `lib.configure_planes(...)`, `LjAnglePlanes_Run2018_v1` |
+
+Sections i and j each set their own input directory in their own configuration cell, so
+changing `INPUT_DIR` does not move them.
 
 Both notebooks are generated. Edit the builder or the library, regenerate, re-execute; hand
 edits to a `.ipynb` put it out of step with its source.
@@ -213,6 +225,67 @@ Figures are written to `figures/` as vector PDFs. That directory is untracked, a
 repository ignores PDFs; the rendered figures a reviewer sees are the ones committed
 inside the notebook.
 
+### 4. The lepton-jet pair inputs (section i only)
+
+Section i reads a second, separate set of merged outputs, produced by a later campaign that
+filled two event-level histograms: `mulj_pair_absCosTheta0_vs_absCosTheta1`, one entry per
+event holding two qualifying muon lepton jets, and `mulj_pair_absCosTheta_vs_mjj`, one entry
+per qualifying lepton jet against the muon-lepton-jet-pair mass of its event. Its channels
+are `4mu`, `4mu_sr`, `4mu_noMuPtCut` and the four-muon validation region, and collision
+data was written in that validation region only. The directory is set
+in the section's own configuration cell, independently of `INPUT_DIR`:
+
+```python
+lib.configure_pair("/uscms_data/d3/murtazas/mulj_pair_merged")
+# or root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/murtazas/mulj_pair_angle
+```
+
+### 5. The decay-plane inputs (section j only)
+
+Section j reads a third set of merged outputs, from the campaign `LjAnglePlanes_Run2018_v1`,
+submitted on 2026-09-02 as 7,096 jobs over 154 samples and merged on 2026-09-05. It adds three
+groups of histograms to the ones above:
+
+* the **signed** decay angle of a muon lepton jet, `mu_lj_mumu_cosTheta` and
+  `mu_lj_mumu_cosTheta_vs_mass`, where the sign is set by the negatively charged muon;
+* the same quantities for the two leading **electrons** of an electromagnetic lepton jet,
+  `egm_lj_ee_absCosTheta`, `egm_lj_ee_cosTheta`, `egm_lj_ee_ptRatio`, `egm_lj_ee_mass`,
+  `egm_lj_ee_dR` and the four planes among them;
+* the **event-level decay-plane observables** of the two leading qualifying lepton jets of
+  either type, `lj_pair_cosThetaA0_vs_cosThetaA1`, `lj_pair_absCosThetaA_vs_mjj`,
+  `lj_pair_Phi`, `lj_pair_planeAngle`, `lj_pair_planeAngle_vs_mjj`, `lj_pair_mjj`,
+  `lj_pair_type`, `lj_pair_hasCharge`, `lj_pair_ptAsym`, `lj_pair_ptVecSum`, `lj_pair_met`,
+  `lj_pair_metCorr` and `lj_pair_metCorr_vs_ptVecSum`, together with their generator-level
+  counterparts `gen_pair_Phi`, `gen_pair_planeAngle` and `gen_pair_cosThetaA0_vs_cosThetaA1`
+  on the signal samples.
+
+Its collections are `lj_decay_angle` and `lj_pair_decay_planes` everywhere, plus
+`lj_pair_decay_planes_gen` on the two signal categories. Its channels are the four signal
+channels `4mu`, `4mu_sr`, `2mu2e`, `2mu2e_sr` and five control and validation regions:
+
+| region | what it selects |
+| --- | --- |
+| `data_control_region_1muLj_spread_cosAlpha_mu_veto` | exactly one lepton jet, of muon type, with the spread cleaning and the opening-angle veto |
+| `data_control_region_1egmLj_cosmic_veto` | exactly one lepton jet, of electromagnetic type, with the cosmic veto |
+| `cr_2lj_invDisplaced_spread_cosAlpha_mu_veto` | two or more lepton jets of either type, the displacement requirement inverted on all of them, with the spread cleaning and the opening-angle veto; no requirement on the mass of the lepton-jet pair or on the azimuthal separation of the two jets, so it is the widest two-lepton-jet fake sample |
+| `test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto` | the same for two muon lepton jets, with a muon-lepton-jet-pair mass of at least 150 GeV and an azimuthal separation of at least 2, which the four-muon channel does not require |
+| `test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto` | the same for one muon and one electromagnetic lepton jet, with the same pair-mass and separation requirements |
+
+**Collision data was written in those five regions only**, and `lib.planes_counts` raises rather
+than returning anything if a data sample is passed with any other channel, so a blinding mistake
+cannot reach a figure.
+
+The signal grid is the 4Mu and 2Mu2E points at m_XX = 100, 500 and 1000 GeV, every lifetime;
+the search uses bound-state masses of 200 GeV and above, so section j leads every number with
+500 and 1000 GeV and says where 200 to 250 GeV is not covered.
+
+Point the section at its inputs in its own configuration cell:
+
+```python
+lib.configure_planes("/uscms_data/d3/murtazas/lj_angle_planes_merged")
+# or root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/murtazas/lj_angle_planes
+```
+
 ## Caveats
 
 These apply to every reading of the figures and are repeated in the notebook.
@@ -222,10 +295,11 @@ These apply to every reading of the figures and are repeated in the notebook.
    the two-muon-two-electron final state loses the region near an absolute cosine of one,
    because both muons that fire the dimuon trigger have to come from the single muon
    lepton jet and the sub-leading muon of a wide-angle pair falls below threshold. The
-   generator-level distribution in the same channel shows the same shape, which is how the
-   sculpting is identified as acceptance rather than physics. The study compares signal
-   and fake shapes under an identical selection; it is not a measurement of the angular
-   distribution of the decay, which would need the efficiency corrected for.
+   generator-level distribution in the same channel shows the same shape at m_Zd = 1.2 and
+   5.0 GeV, which is how the sculpting is identified as acceptance rather than physics; at
+   m_Zd = 0.25 GeV the generated histogram is not a sound reference (caveat 9). The study
+   compares signal and fake shapes under an identical selection; it is not a measurement of
+   the angular distribution of the decay, which would need the efficiency corrected for.
 2. **The inverted-displacement validation regions contain no displaced-standalone muons.**
    The vector builder sets the pixel-hit count of a displaced-standalone track to zero, so
    the inverted displacement requirement can only be met by a particle-flow muon with more
@@ -262,9 +336,23 @@ These apply to every reading of the figures and are repeated in the notebook.
    missing value with zero, so "no matched jet" and "isolation exactly zero" land in the
    same bin and in the first isolation slice.
 8. **One warning to watch for in the campaign logs.** "Unable to apply event cuts to
-   evt_weights. Skipping." was seen once per validation-region channel on data before a
-   duplicate muon-momentum line was removed from the selection. If it reappears, the
-   simulation cutflows should not be trusted until it is understood.
+   evt_weights. Skipping." means an event cut was not applied to the event weights. Where it
+   appears, the cutflows of that channel should not be trusted until it is understood.
+9. **Numerical precision.** The generated histograms build the generator-level momenta from
+   the GenPart px, py and pz branches, which are full single precision (the pt, eta, phi and
+   mass branches keep 8 mantissa bits, and of those only the dark photon's mass is read), and
+   every boost is computed in single precision. At m_Zd = 0.25 GeV and m_XX = 500 or
+   1000 GeV the dark photon's Lorentz factor is 1,000 to 2,000 and the boost into its rest
+   frame pushes the generated |cos(theta*)| towards one, so that histogram is not a reference
+   there; the reconstructed angle at that mass carries the same arithmetic. The plane angle,
+   and every generated reference at m_Zd = 1.2 and 5.0 GeV, are unaffected. The notebook's
+   section b gives a toy that sizes this point by point. The overflow bin of each angle
+   histogram holds the entries this arithmetic places outside the axis: a few in a hundred
+   thousand in data, at most 0.2 percent of the simulated entries at m_Zd = 1.2 and 5.0 GeV,
+   and 2 to 18 percent at m_Zd = 0.25 GeV with m_XX = 500 and 1000 GeV, where the generated
+   ones are cosines the single-precision boost returns as not a number (an offline check of one
+   unselected file per point, `check_gen_boost_precision.py`). Section b prints these overflow
+   fractions from the stored histograms. Every figure is built from the in-range bins.
 
 ## Figure conventions
 
