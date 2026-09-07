@@ -5,6 +5,16 @@ Compares a per-lepton-jet dimuon-vertex-fit cosmic veto (`mu_ljs.vtx_chi2`) agai
 background stack and the v10 signal grid, and characterizes the >= 200 GeV DSA-muon tail
 that survives either veto.
 
+A follow-up (section 10 of the write-up) folds the DSA momentum-mismeasurement rate measured
+on an independent control sample onto the lepton jets' own low-pT DSA spectrum, at full-2018
+statistics (68/68 chunks, 59.83/fb) and with the control matched by segment rather than by
+`dR`. It does not validate: the MC self-closure fails by a factor 2.45 in the low-hit-count
+slice, and the 100-200 GeV sideband is over-predicted there at 7 to 11 standard deviations,
+unchanged by the control redefinition. No hit-count cut is adopted, and beam halo is not
+supported as the origin of the low-hit-count tail. The residual DSA-muon tail above 200 GeV
+remains what sections 5-8 establish - a momentum-mismeasurement population the data must set
+the rate for, not a topology cut and not this transfer factor.
+
 **Start here: [`vertexChi2CosmicVetoStudy.ipynb`](vertexChi2CosmicVetoStudy.ipynb).** It is the
 write-up and reads only the `.coffea` outputs of the run notebooks below; it runs no
 processor of its own.
@@ -43,7 +53,11 @@ Per-sample outputs already on disk are skipped, so a run can be resumed.
 | `runMCTail2018.ipynb` | The MC counterpart of the tail check, same two hist collections, Before and Spread + cosAlpha only: the eight samples that carry the >= 200 GeV DSA tail (DYJetsToLL_M50 and QCD_Pt80To120 through QCD_Pt800To1000). | `vtxTailMC2_2018` (8 samples) |
 | `runSignalVtx.ipynb` | The full v10 signal grid, 180 samples (90 4Mu, 90 2Mu2E), through `base_ljDisplacementIso`, `+ cosAlpha`, `+ Spread veto` and `+ vertex veto`. Hist collection `cosmic_veto` as it stood before the 2D nHits and \|eta\| histograms were added, so those are absent from these outputs. | `vtxChi2_signal_2018` (180 samples) |
 | `runSignalVtxNhits.ipynb` | A 26-sample subset of the same grid (13 4Mu, 13 2Mu2E, mirrored mass and lifetime points), re-run after `mu_lj_dsaMuon_pt_nHits` and `mu_lj_dsaMuon_pt_abseta` joined the `cosmic_veto` collection. Used only for the signal cost of an nHits cut. | `vtxChi2_signal_2018_nhits` (26 samples) |
-| `vertexChi2CosmicVetoStudy.ipynb` | The write-up. Loads all six output directories above and produces every number and figure of the study. | reads only; writes nothing |
+| `runDataFull2018.ipynb` | All 68 2018A-D `DoubleMuon` skims through the five cosmic-veto channels, dR-matched DSA-to-PF response only (`dsa_pf_response`). Feeds section 10s dR-matched comparison numbers. | `vtxResp_2018Full` (68 samples) |
+| `runMCRespFull.ipynb` | The MC counterpart of `runDataFull2018.ipynb`: the same eight background samples used from section 5 on, dR-matched response only. | `vtxRespMC_2018` (8 samples) |
+| `runDataSegMatch2018.ipynb` | All 68 2018A-D `DoubleMuon` skims again, this time with `dsa_response_segmatch` (control muons matched by the segment-based cross-cleaning the analysis actually uses, not `dR`) and `dsa_tail_diag` (beamspot displacement, DT/CSC hit split, phi x \|eta\|). The primary input to section 10. | `vtxResp2_2018Full` (68 samples) |
+| `runMCRespSegMatch2018.ipynb` | The MC counterpart of `runDataSegMatch2018.ipynb`, same eight background samples, segment-matched response and halo diagnostics. | `vtxRespMC2_2018` (8 samples) |
+| `vertexChi2CosmicVetoStudy.ipynb` | The write-up. Loads all ten output directories above and produces every number and figure of the study. | reads only; writes nothing |
 
 ## Provenance sidecars
 
@@ -87,6 +101,14 @@ VOMS proxy readable by the Condor schedd and `replace_xcache=True` in `make_file
 the location YAMLs carry `root://xcache//` URLs that only resolve on coffea-casa.
 The proxy path (`X509_USER_PROXY`) and the veto-list path (`SKIP_JSON`) in the run notebooks
 are the author's; whoever reruns them sets their own.
+
+Section 10 of the write-up (the transfer-factor fold) needs four more runs, independent of
+1-7 above and of each other: `runDataFull2018.ipynb` + `runMCRespFull.ipynb` (the dR-matched
+comparison) and `runDataSegMatch2018.ipynb` + `runMCRespSegMatch2018.ipynb` (the
+segment-matched control, the primary input). All four read the full 68-chunk 2018 sample, not
+2018C alone. The fold itself runs outside this repository, on their `.coffea` outputs, and
+writes JSON records that the write-up re-reads; the write-up also re-opens the segment-matched
+`.coffea` files directly for the section-10 figures.
 
 ## A note on the two MC sets
 
