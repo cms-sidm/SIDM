@@ -14,7 +14,7 @@ import awkward as ak
 import numpy as np
 # local
 from sidm.tools import histogram as h
-from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs
+from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs, dR_outer
 from sidm.definitions.objects import derived_objs, withMass
 from sidm.definitions.cuts import obj_cut_defs
 # always reload local modules to pick up changes during development
@@ -213,13 +213,94 @@ def dsa_pf_response(objs):
     dsa, pf_pt = matched_dsa(objs)
     return dsa.pt / pf_pt
 
+
+def _seg_match_removes(dsa, pf):
+    """Per (DSA muon, candidate PF partner) pair: True where the LJ-source cross-cleaning
+    treats the PF muon as the same physical muon and therefore drops the DSA track.
+
+    This is the exact complement of the dsaMuons cut named "all" in sidm/definitions/cuts.py,
+    which keeps a DSA muon when EVERY entry of its good_matched_muons list satisfies
+
+        A = (numMatch < 1) | (dR_outer > 0.1) | (numMatch / nSegments < 0.34)
+        B = (numMatch < 1) | (numMatch / nSegments < 1)
+
+    so a single partner failing (A & B) removes the muon. numMatch is the number of muon-system
+    segments the DSA track shares with that PF muon (LLPNano branch muonMatchN); nSegments is the
+    DSA track's own segment count; dR_outer compares the two outer-track directions.
+    """
+    frac = pf.numMatch / dsa.nSegments[:, :, None]
+    return (pf.numMatch >= 1) & (
+        ((dR_outer(dsa[:, :, None], pf) <= 0.1) & (frac >= 0.34)) | (frac >= 1)
+    )
+
+
+def matched_dsa_seg(objs):
+    """Return the DSA muons the LJ-source cross-cleaning removes, and their PF partner's pT.
+
+    Same intent as matched_dsa, but the partner is the PF muon the DSA track was actually
+    cross-cleaned against -- the segment-based match the selection itself uses -- rather than
+    the nearest PF muon within dR < 0.2. Concretely: start from objs["dsaMuonsRaw"] (the uncut
+    copy of the collection), apply the LJ-source DSA ID cuts except the cross-cleaning, and keep
+    the muons for which at least one entry of good_matched_muons satisfies _seg_match_removes.
+    good_matched_muons is the nested list of PF partners the processor attaches to the raw
+    collection, already filtered by the channel's own PF-muon cuts, so "partner" here means a
+    SELECTED PF muon in exactly the sense the selection means it.
+
+    When more than one partner would remove the muon, the one with the most shared segments is
+    reported (ak.argmax, so a tie falls to the lowest muonMatchN slot, i.e. the order the
+    LLPNano producer wrote the matches). The cross-cleaning itself needs only one such partner
+    and never picks among them, so this tie-break is a choice made here, not one it makes. Two
+    further quantities are returned so that choice can be bounded offline rather than assumed:
+    the number of partners that would each independently remove the muon (1 for an unambiguous
+    match), and the pT of the FEWEST-shared-segment qualifying partner, which is the opposite
+    extreme of the same choice. Filling the migration matrix with each in turn brackets the
+    response; the multiplicity axis says what fraction of the sample the bracket applies to.
+
+    Returns (dsa, pf_pt, n_partners, pf_pt_fewest), all jagged per event, and caches the result
+    in objs the way matched_dsa does: the processor rebuilds objs for every channel, so the
+    match is evaluated once per channel rather than once per axis.
+    """
+    cached = objs.get("_matched_dsa_seg")
+    if cached is not None:
+        return cached
+    dsa = objs["dsaMuonsRaw"]
+    for cut in dsa_ljsource_id_cuts:
+        dsa = dsa[obj_cut_defs["dsaMuons"][cut](objs, dsa)]
+    pf = dsa.good_matched_muons
+    removes = _seg_match_removes(dsa, pf)
+    has_pf = ak.fill_none(ak.any(removes, axis=2), False)
+    # rank only among the partners that would remove the muon; -1 keeps the others out of the max
+    rank = ak.where(removes, pf.numMatch, -1)
+    idx = ak.argmax(rank, axis=2, keepdims=True)
+    pf_pt = ak.fill_none(ak.firsts(pf[idx].pt, axis=2), 0.0)
+    # the opposite tie-break: fewest shared segments among the partners that would remove the
+    # muon. Non-qualifying partners are pushed above any real numMatch so argmin cannot pick one.
+    rem = ak.fill_none(removes, False)
+    rank_fewest = ak.where(rem, pf.numMatch, 2**30)
+    idx_fewest = ak.argmin(rank_fewest, axis=2, keepdims=True)
+    pf_pt_fewest = ak.fill_none(ak.firsts(pf[idx_fewest].pt, axis=2), 0.0)
+    n_partners = ak.fill_none(ak.sum(rem, axis=2), 0)
+    result = (dsa[has_pf], pf_pt[has_pf], n_partners[has_pf], pf_pt_fewest[has_pf])
+    objs["_matched_dsa_seg"] = result
+    return result
+
+
+def dsa_seg_response(objs):
+    """Return pT(DSA) / pT(segment-matched PF muon) for the muons kept by matched_dsa_seg."""
+    dsa, pf_pt = matched_dsa_seg(objs)[:2]
+    return dsa.pt / pf_pt
+
 # Histograms that read mu_ljs.vtx_chi2 or objs["dsaMuonsRaw"]. SidmProcessor loads dsaMuonsRaw
 # and the dimuon-vertex tables, and computes vtx_chi2, only when a requested histogram is listed
 # here or a requested channel cuts on vtx_chi2. tests/test_vtx_chi2_inputs.py checks the list.
 vtx_chi2_or_raw_dsa_hists = {
     "mu_lj_vtx_chi2", "mu_lj_vtx_chi2_log",
     "dsaPfMatch_ptPf_ptDsa", "dsaPfMatch_response_relPtErr", "dsaPfMatch_response_abseta",
-    "dsaPfMatch_response_nHits",
+    "dsaPfMatch_response_nHits", "dsaPfMatch_ptPf_ptDsa_abseta", "dsaPfMatch_ptPf_ptDsa_nHits",
+    "dsaSegMatch_ptPf_ptDsa", "dsaSegMatch_ptPf_ptDsa_abseta", "dsaSegMatch_ptPf_ptDsa_nHits",
+    "dsaSegMatch_response_abseta", "dsaSegMatch_response_nHits", "dsaSegMatch_response_relPtErr",
+    "dsaSegMatch_ptPf_ptDsa_nPartners", "dsaSegMatch_ptPfFewest_ptDsa",
+    "dsaSegMatch_ptDsa_absdxyBS_nHits", "dsaSegMatch_ptDsa_nDTHits_nHits",
 }
 
 hist_defs = {
@@ -4866,6 +4947,37 @@ hist_defs = {
                                        + objs["mu_ljs"].dsaMuons.trkNumCSCHits)),
         ],
     ),
+    # Coarse pT x (phi | |eta|) x nHits cubes: the cosmic excess sits at phi ~ +-pi/2 and
+    # at high hit multiplicity, so the nHits axis separates the cosmic and collision
+    # populations inside the same pT-phi / pT-|eta| map instead of across two figures
+    "mu_lj_dsaMuon_pt_phi_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="mu_lj_dsaMuon_pt",
+                                      label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Regular(16, -math.pi, math.pi, name="mu_lj_dsaMuon_phi",
+                                     label=r"DSA $\mu$ $\phi$"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.phi),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="mu_lj_dsaMuon_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (objs["mu_ljs"].dsaMuons.trkNumDTHits
+                                       + objs["mu_ljs"].dsaMuons.trkNumCSCHits)),
+        ],
+    ),
+    "mu_lj_dsaMuon_pt_abseta_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="mu_lj_dsaMuon_pt",
+                                      label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="mu_lj_dsaMuon_abseta",
+                                      label=r"DSA $\mu$ $|\eta|$"),
+                   lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.eta)),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="mu_lj_dsaMuon_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (objs["mu_ljs"].dsaMuons.trkNumDTHits
+                                       + objs["mu_ljs"].dsaMuons.trkNumCSCHits)),
+        ],
+    ),
     # DSA muons that DO have a PF-muon partner: the population the LJ-source cross-cleaning
     # discards. pT(DSA)/pT(PF) compares the vertex-unconstrained standalone momentum with the
     # tracker-constrained momentum of the same muon, so it measures the standalone pT scale
@@ -4909,6 +5021,225 @@ hist_defs = {
                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
                    lambda objs, mask: (matched_dsa(objs)[0].trkNumDTHits
                                        + matched_dsa(objs)[0].trkNumCSCHits)),
+        ],
+    ),
+    # Full pT(PF) x pT(DSA) migration matrix, sliced in the two quantities the standalone
+    # pT resolution depends on: |eta| (barrel / overlap / endcap) and the number of
+    # muon-system hits available to the standalone fit. Same pT binning as
+    # dsaPfMatch_ptPf_ptDsa, so that hist is the projection of these over the third axis.
+    "dsaPfMatch_ptPf_ptDsa_abseta": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaPfMatch_ptPf", label=r"Matched PF $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa(objs)[1]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaPfMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa(objs)[0].pt),
+            h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="dsaPfMatch_abseta",
+                                      label=r"DSA $\mu$ $|\eta|$"),
+                   lambda objs, mask: abs(matched_dsa(objs)[0].eta)),
+        ],
+    ),
+    "dsaPfMatch_ptPf_ptDsa_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaPfMatch_ptPf", label=r"Matched PF $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa(objs)[1]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaPfMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa(objs)[0].pt),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="dsaPfMatch_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (matched_dsa(objs)[0].trkNumDTHits
+                                       + matched_dsa(objs)[0].trkNumCSCHits)),
+        ],
+    ),
+    # ------------------------------------------------------------------------------------
+    # Segment-matched DSA control sample. Mirrors the dsaPfMatch_* set axis for axis, but the
+    # PF partner is the one the cross-cleaning itself matched (shared muon-system segments)
+    # rather than the nearest PF muon in dR, so the control muons are exactly the population
+    # the LJ-source selection discards.
+    "dsaSegMatch_ptPf_ptDsa": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptPf",
+                                      label=r"Segment-matched PF $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[1]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].pt),
+        ],
+    ),
+    "dsaSegMatch_ptPf_ptDsa_abseta": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptPf",
+                                      label=r"Segment-matched PF $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[1]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].pt),
+            h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="dsaSegMatch_abseta",
+                                      label=r"DSA $\mu$ $|\eta|$"),
+                   lambda objs, mask: abs(matched_dsa_seg(objs)[0].eta)),
+        ],
+    ),
+    "dsaSegMatch_ptPf_ptDsa_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptPf",
+                                      label=r"Segment-matched PF $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[1]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].pt),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="dsaSegMatch_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (matched_dsa_seg(objs)[0].trkNumDTHits
+                                       + matched_dsa_seg(objs)[0].trkNumCSCHits)),
+        ],
+    ),
+    "dsaSegMatch_response_abseta": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable(np.logspace(-1, 2, 41), name="dsaSegMatch_response",
+                                      label=r"$p_T$(DSA) / $p_T$(PF)"),
+                   lambda objs, mask: dsa_seg_response(objs)),
+            h.Axis(hist.axis.Regular(24, 0, 2.4, name="dsaSegMatch_abseta",
+                                     label=r"DSA $\mu$ $|\eta|$"),
+                   lambda objs, mask: abs(matched_dsa_seg(objs)[0].eta)),
+        ],
+    ),
+    "dsaSegMatch_response_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable(np.logspace(-1, 2, 41), name="dsaSegMatch_response",
+                                      label=r"$p_T$(DSA) / $p_T$(PF)"),
+                   lambda objs, mask: dsa_seg_response(objs)),
+            h.Axis(hist.axis.Regular(12, 0, 60, name="dsaSegMatch_nHits",
+                                     label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (matched_dsa_seg(objs)[0].trkNumDTHits
+                                       + matched_dsa_seg(objs)[0].trkNumCSCHits)),
+        ],
+    ),
+    # Same axes as dsaPfMatch_response_relPtErr, so the fake-match exposure test
+    # P(relPtErr < 0.3 | response > 2) can be repeated on the segment-matched control sample and
+    # compared directly with the dR-matched one it is meant to replace.
+    "dsaSegMatch_response_relPtErr": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable(np.logspace(-1, 2, 41), name="dsaSegMatch_response",
+                                      label=r"$p_T$(DSA) / $p_T$(PF)"),
+                   lambda objs, mask: dsa_seg_response(objs)),
+            h.Axis(hist.axis.Regular(20, 0, 2, name="dsaSegMatch_relPtErr",
+                                     label=r"DSA $\mu$ $\sigma(p_T)/p_T$"),
+                   lambda objs, mask: (matched_dsa_seg(objs)[0].ptErr
+                                       / matched_dsa_seg(objs)[0].pt)),
+        ],
+    ),
+    # The cross-cleaning is an existential condition -- one qualifying PF partner removes the
+    # DSA track -- so when several qualify it names none of them and the pT that goes in the
+    # denominator is a choice. These two histograms make that choice measurable instead of
+    # assumed: the multiplicity axis isolates the ambiguous muons, and the second matrix repeats
+    # the migration with the opposite extreme (fewest shared segments) so the fold can be run
+    # both ways and the spread quoted.
+    "dsaSegMatch_ptPf_ptDsa_nPartners": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptPf",
+                                      label=r"Segment-matched PF $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[1]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].pt),
+            h.Axis(hist.axis.Regular(5, 0.5, 5.5, name="dsaSegMatch_nPartners",
+                                     label=r"N(PF partners that remove the DSA track)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[2]),
+        ],
+    ),
+    "dsaSegMatch_ptPfFewest_ptDsa": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptPfFewest",
+                                      label=r"Fewest-segment PF partner $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[3]),
+            h.Axis(hist.axis.Variable([0, 10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300, 500],
+                                      name="dsaSegMatch_ptDsa", label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].pt),
+        ],
+    ),
+    # The two halo-sensitive variables on the control muons, binned exactly as they are for the
+    # LJ DSA muons below, so the two populations can be compared bin for bin.
+    "dsaSegMatch_ptDsa_absdxyBS_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="dsaSegMatch_ptDsa",
+                                      label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].pt),
+            h.Axis(hist.axis.Variable([0, 0.1, 0.5, 2, 10, 50, 200], name="dsaSegMatch_absdxyBS",
+                                      label=r"DSA $\mu$ |dxy| to beamspot (cm)"),
+                   lambda objs, mask: abs(matched_dsa_seg(objs)[0].dxyBS)),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="dsaSegMatch_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (matched_dsa_seg(objs)[0].trkNumDTHits
+                                       + matched_dsa_seg(objs)[0].trkNumCSCHits)),
+        ],
+    ),
+    "dsaSegMatch_ptDsa_nDTHits_nHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="dsaSegMatch_ptDsa",
+                                      label=r"DSA $\mu$ $p_T$ (GeV)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].pt),
+            h.Axis(hist.axis.Variable([0, 1, 6, 12, 24, 60], name="dsaSegMatch_nDTHits",
+                                      label=r"DSA $\mu$ N(DT hits)"),
+                   lambda objs, mask: matched_dsa_seg(objs)[0].trkNumDTHits),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="dsaSegMatch_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (matched_dsa_seg(objs)[0].trkNumDTHits
+                                       + matched_dsa_seg(objs)[0].trkNumCSCHits)),
+        ],
+    ),
+    # ------------------------------------------------------------------------------------
+    # Beam-halo diagnostics for the mu-LJ DSA muons. Halo muons travel parallel to the beam,
+    # so they are displaced from the beamspot, sit in the endcap, cross CSCs but few or no DTs,
+    # and pile up at horizontal phi. The first axis pair (pT, nHits) is common to all three so
+    # each can be read in the same >= 200 GeV, low-hit corner where the excess sits.
+    "mu_lj_dsaMuon_pt_nHits_absdxyBS": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="mu_lj_dsaMuon_pt",
+                                      label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="mu_lj_dsaMuon_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (objs["mu_ljs"].dsaMuons.trkNumDTHits
+                                       + objs["mu_ljs"].dsaMuons.trkNumCSCHits)),
+            h.Axis(hist.axis.Variable([0, 0.1, 0.5, 2, 10, 50, 200], name="mu_lj_dsaMuon_absdxyBS",
+                                      label=r"DSA $\mu$ |dxy| to beamspot (cm)"),
+                   lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.dxyBS)),
+        ],
+    ),
+    # trkNumDTHits bin 0 ([0, 1)) is the CSC-only population: beam halo leaves no DT hits.
+    "mu_lj_dsaMuon_pt_nHits_nDTHits": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="mu_lj_dsaMuon_pt",
+                                      label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Variable([0, 20, 30, 60], name="mu_lj_dsaMuon_nHits",
+                                      label=r"DSA $\mu$ N(DT + CSC hits)"),
+                   lambda objs, mask: (objs["mu_ljs"].dsaMuons.trkNumDTHits
+                                       + objs["mu_ljs"].dsaMuons.trkNumCSCHits)),
+            h.Axis(hist.axis.Variable([0, 1, 6, 12, 24, 60], name="mu_lj_dsaMuon_nDTHits",
+                                      label=r"DSA $\mu$ N(DT hits)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.trkNumDTHits),
+        ],
+    ),
+    "mu_lj_dsaMuon_pt_phi_abseta": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="mu_lj_dsaMuon_pt",
+                                      label=r"$\mu$- type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.pt),
+            h.Axis(hist.axis.Regular(16, -math.pi, math.pi, name="mu_lj_dsaMuon_phi",
+                                     label=r"DSA $\mu$ $\phi$"),
+                   lambda objs, mask: objs["mu_ljs"].dsaMuons.phi),
+            h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="mu_lj_dsaMuon_abseta",
+                                      label=r"DSA $\mu$ $|\eta|$"),
+                   lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.eta)),
         ],
     ),
     "dsaMu_pfMu_dR_closest": h.Histogram(

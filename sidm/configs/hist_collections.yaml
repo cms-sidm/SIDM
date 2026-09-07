@@ -1134,6 +1134,8 @@ mu_lj_vtx_chi2_dsa_pt: &mu_lj_vtx_chi2_dsa_pt
   - "mu_lj_dsaMuon_pt_relPtErr"
   - "mu_lj_dsaMuon_pt_abseta"
   - "mu_lj_dsaMuon_pt_nHits"
+  - "mu_lj_dsaMuon_pt_phi_nHits"
+  - "mu_lj_dsaMuon_pt_abseta_nHits"
 
 # DSA-vs-PF pT response for the DSA muons that have a PF-muon partner, i.e. exactly the
 # muons the LJ-source cross-cleaning removes
@@ -1142,6 +1144,32 @@ dsa_pf_response: &dsa_pf_response
   - "dsaPfMatch_response_relPtErr"
   - "dsaPfMatch_response_abseta"
   - "dsaPfMatch_response_nHits"
+
+# 3D pT(PF) x pT(DSA) migration matrices, sliced in |eta| and in muon-system hit count
+dsa_response_matrix: &dsa_response_matrix
+  - "dsaPfMatch_ptPf_ptDsa_abseta"
+  - "dsaPfMatch_ptPf_ptDsa_nHits"
+
+# pT(PF) x pT(DSA) migration measured on the control sample built with the analysis's own
+# segment-based cross-cleaning match, not a dR match
+dsa_response_segmatch: &dsa_response_segmatch
+  - "dsaSegMatch_ptPf_ptDsa"
+  - "dsaSegMatch_ptPf_ptDsa_abseta"
+  - "dsaSegMatch_ptPf_ptDsa_nHits"
+  - "dsaSegMatch_response_abseta"
+  - "dsaSegMatch_response_nHits"
+  - "dsaSegMatch_response_relPtErr"
+  - "dsaSegMatch_ptPf_ptDsa_nPartners"
+  - "dsaSegMatch_ptPfFewest_ptDsa"
+  - "dsaSegMatch_ptDsa_absdxyBS_nHits"
+  - "dsaSegMatch_ptDsa_nDTHits_nHits"
+
+# Beam-halo diagnostics for the mu-LJ DSA muons: beamspot displacement, the DT/CSC hit split
+# (halo is CSC-only), and the phi x |eta| map of the high-pT tail
+dsa_tail_diag: &dsa_tail_diag
+  - "mu_lj_dsaMuon_pt_nHits_absdxyBS"
+  - "mu_lj_dsaMuon_pt_nHits_nDTHits"
+  - "mu_lj_dsaMuon_pt_phi_abseta"
 
 cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - *cosAlpha

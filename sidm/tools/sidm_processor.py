@@ -197,6 +197,11 @@ class SidmProcessor(processor.ProcessorABC):
                 # remove None entries from matched PF or DSA muons before applying cuts
                 sel_objs["dsaMuons"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuons"].matched_muons), "muons")
                 sel_objs["muons"]["good_matched_dsa_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["muons"].matched_dsa_muons), "dsaMuons")
+                # Same list on the uncut DSA copy. dsaMuons loses the cross-cleaned muons a few
+                # lines below, so this is the only place a histogram can still ask which PF muon
+                # a discarded DSA track was matched against (sidm.definitions.hists.matched_dsa_seg).
+                if "dsaMuonsRaw" in sel_objs:
+                    sel_objs["dsaMuonsRaw"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuonsRaw"].matched_muons), "muons")
 
                 # apply pre-LJ object selection
                 sel_objs = obj_selection.apply_obj_cuts(sel_objs)
