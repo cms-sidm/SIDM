@@ -192,90 +192,480 @@ MULJ_PAIR_DXY_BINS = [0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 5, 50, 1000]
 MULJ_PAIR_SPREAD_BINS = [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 1000]
 MULJ_PAIR_MUPT_BINS = [0, 10, 15, 20, 23, 26, 30, 40, 60, 100, 200, 1000]
 MULJ_PAIR_DR_BINS = [0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.2, 0.3, 0.5]
+MULJ_PAIR_MJJ_BINS = [0, 80, 130, 150, 200, 250, 300, 380, 500, 600, 780, 1000, 1000000]
 
 
-def mulj_leading_mumu_pair(objs, mask):
-    """Kinematics of the two leading-pT muons of each muon-type lepton jet.
+# electron mass (GeV), the counterpart of MU_MASS for the electron constituents of egamma-type
+# lepton jets, so both LJ types get four-vectors built with a fixed lepton mass hypothesis
+E_MASS = 0.000511
 
-    One record is returned per mu-type LJ holding at least two constituent muons, so every field
-    shares the same (events x LJs) structure and any combination of them can fill the axes of one
-    histogram. Muon four-vectors are built with the PDG muon mass for both PF and DSA muons.
 
-    Impact parameters are read from the PV-referenced branches (dxyPVSigned, dzPV), which are
-    present for both PF and DSA muons. The plain dxy/dz branches must not be used here: they
-    are referenced to the first primary vertex for PF muons but to the beamspot for DSA
-    muons, so a mixed PF-DSA pair would pick up a spurious offset of order |PV_z| in dz and
-    of order the beamspot transverse position in dxy.
+def _fixed_mass_p4(obj, mass):
+    """Four-vector of obj built with a fixed mass hypothesis."""
+    return ak.zip(
+        {"pt": obj.pt, "eta": obj.eta, "phi": obj.phi, "mass": ak.full_like(obj.pt, mass)},
+        with_name="PtEtaPhiMLorentzVector"
+    )
 
-    Fields:
-      absCosTheta -- |cos(theta*)| of the leading muon in the pair rest frame, measured from the
-                     pair's lab flight direction
-      ptRatio     -- lab-frame pT(sublead)/pT(lead), in (0, 1]
-      mass        -- invariant mass of the pair
-      dR          -- dR between the two muons
-      iso         -- isolation of the parent LJ
-      minDxy/maxDxy -- smaller/larger |dxy| of the two muons, w.r.t. the PV [cm]
-      dxySpread/dzSpread -- |dxy(lead) - dxy(sub)| / |dz(lead) - dz(sub)| w.r.t. the PV [cm]
-      vxySpreadMu/dzSpreadMu -- the parent LJ's vxySpread_mu / dzSpread_mu, i.e. the max
-                     over all constituent-muon pairs of the transverse / longitudinal
-                     vertex separation, the variables the cosmic spread veto cuts on [cm]
-      nDsa        -- number of DSA muons among the two (0 = PF-PF, 1 = PF-DSA, 2 = DSA-DSA)
-      leadPt/subPt -- lab pT of the two muons
-      ljPt        -- pT of the parent LJ
+
+def _dot3(a, b):
+    """Scalar product of the spatial parts of a and b."""
+    return a.x*b.x + a.y*b.y + a.z*b.z
+
+
+def _cross3(a, b):
+    """Cross product of the spatial parts of a and b, returned as a plain x/y/z record."""
+    return ak.zip({"x": a.y*b.z - a.z*b.y,
+                   "y": a.z*b.x - a.x*b.z,
+                   "z": a.x*b.y - a.y*b.x})
+
+
+def _unit3(a):
+    """a's spatial part rescaled to unit length, as a plain x/y/z record."""
+    norm = np.sqrt(_dot3(a, a))
+    return ak.zip({"x": a.x/norm, "y": a.y/norm, "z": a.z/norm})
+
+
+def _cos_angle3(a, b):
+    """Cosine of the angle between the spatial parts of a and b."""
+    return _dot3(a, b) / np.sqrt(_dot3(a, a)*_dot3(b, b))
+
+
+def _lj_dilepton_kinematics(objs, mask, kind):
+    """Four-vectors of the two leading-pT leptons of every qualifying lepton jet.
+
+    kind "mu"  -- muon-type LJs holding at least two constituent muons (PF and/or DSA), whose
+                  four-vectors are built with the PDG muon mass because the merged PF+DSA
+                  collection carries no consistent mass field
+    kind "egm" -- egamma-type LJs holding at least two constituent electrons
+
+    The reference lepton returned alongside the pair is the one whose direction signs every
+    decay angle: the negatively charged constituent when the two leptons carry opposite
+    reconstructed charges, otherwise the leading-pT one. |cos(theta*)| does not depend on that
+    choice, because the two leptons are back to back in the pair rest frame; the sign does.
     """
-    ljs = objs["mu_ljs"][mask]
-    ljs = ljs[ljs.muon_n >= 2]
-    muons = ljs.muons
-    muons = muons[ak.argsort(muons.pt, axis=-1, ascending=False)]
-    lead = muons[:, :, 0]
-    sub = muons[:, :, 1]
+    if kind == "mu":
+        ljs = objs["mu_ljs"][mask]
+        ljs = ljs[ljs.muon_n >= 2]
+        leps = ljs.muons
+        lep_mass = MU_MASS
+    elif kind == "egm":
+        ljs = objs["egm_ljs"][mask]
+        ljs = ljs[ljs.electron_n >= 2]
+        leps = ljs.electrons
+        lep_mass = E_MASS
+    else:
+        raise ValueError(f"unknown lepton-jet kind '{kind}'")
 
-    lead_p4 = ak.zip(
-        {"pt": lead.pt, "eta": lead.eta, "phi": lead.phi,
-         "mass": ak.full_like(lead.pt, MU_MASS)},
-        with_name="PtEtaPhiMLorentzVector"
-    )
-    sub_p4 = ak.zip(
-        {"pt": sub.pt, "eta": sub.eta, "phi": sub.phi,
-         "mass": ak.full_like(sub.pt, MU_MASS)},
-        with_name="PtEtaPhiMLorentzVector"
-    )
+    leps = leps[ak.argsort(leps.pt, axis=-1, ascending=False)]
+    lead = leps[:, :, 0]
+    sub = leps[:, :, 1]
+
+    lead_p4 = _fixed_mass_p4(lead, lep_mass)
+    sub_p4 = _fixed_mass_p4(sub, lep_mass)
     pair = lead_p4 + sub_p4
     pair_p4 = ak.zip(
         {"pt": pair.pt, "eta": pair.eta, "phi": pair.phi, "mass": pair.mass},
         with_name="PtEtaPhiMLorentzVector"
     )
-    boosted_lead = boost_to_frame(lead, pair_p4, mass=MU_MASS)
 
-    # the merged PF+DSA muon collection keeps only the fields common to both, so it carries no
-    # type flag; tag DSA muons by matching their pT against the LJ's DSA-only collection
-    dsa_pt = ljs.dsaMuons.pt
-    n_dsa = (ak.values_astype(ak.any(lead.pt[:, :, None] == dsa_pt, axis=-1), np.int32)
-             + ak.values_astype(ak.any(sub.pt[:, :, None] == dsa_pt, axis=-1), np.int32))
+    if "charge" in lead.fields:
+        has_charge = (lead.charge*sub.charge) < 0
+        take_sub = has_charge & (lead.charge > 0)
+    else:
+        # no usable charge: fall back to the leading lepton, with the right jagged structure
+        has_charge = lead.pt < 0
+        take_sub = has_charge
+    ref_p4 = ak.zip(
+        {"pt": ak.where(take_sub, sub.pt, lead.pt),
+         "eta": ak.where(take_sub, sub.eta, lead.eta),
+         "phi": ak.where(take_sub, sub.phi, lead.phi),
+         "mass": ak.full_like(lead.pt, lep_mass)},
+        with_name="PtEtaPhiMLorentzVector"
+    )
+    return ljs, lead, sub, lead_p4, sub_p4, pair_p4, ref_p4, has_charge
 
-    return ak.zip(
-        {
-            "absCosTheta": abs(np.cos(boosted_lead.deltaangle(pair_p4))),
-            "ptRatio": sub.pt/lead.pt,
-            "mass": pair.mass,
-            "dR": lead_p4.delta_r(sub_p4),
-            "iso": ljs.isolation,
+
+def lj_leading_dilepton_pair(objs, mask, kind):
+    """Kinematics of the two leading-pT leptons of each qualifying lepton jet.
+
+    One record is returned per qualifying LJ (see _lj_dilepton_kinematics for what qualifies),
+    so every field shares the same (events x LJs) structure and any combination of them can fill
+    the axes of one histogram.
+
+    Fields common to both LJ types:
+      cosTheta    -- cos(theta*) of the reference lepton in the pair rest frame, measured from
+                     the pair's lab flight direction; signed
+      absCosTheta -- |cos(theta*)|, which is the same for either lepton of the pair
+      ptRatio     -- lab-frame pT(sublead)/pT(lead), in (0, 1]
+      mass        -- invariant mass of the pair
+      dR          -- dR between the two leptons
+      hasCharge   -- 1 when the two leptons carry opposite reconstructed charges, so that
+                     cosTheta is signed by the negative lepton, else 0
+      iso         -- isolation of the parent LJ
+      leadPt/subPt -- lab pT of the two leptons
+      ljPt        -- pT of the parent LJ
+
+    Muon-type LJs additionally carry the impact-parameter and DSA fields below. Impact
+    parameters are read from the PV-referenced branches (dxyPVSigned, dzPV), which are present
+    for both PF and DSA muons. The plain dxy/dz branches must not be used here: they are
+    referenced to the first primary vertex for PF muons but to the beamspot for DSA muons, so a
+    mixed PF-DSA pair would pick up a spurious offset of order |PV_z| in dz and of order the
+    beamspot transverse position in dxy.
+
+      minDxy/maxDxy -- smaller/larger |dxy| of the two muons, w.r.t. the PV [cm]
+      dxySpread/dzSpread -- |dxy(lead) - dxy(sub)| / |dz(lead) - dz(sub)| w.r.t. the PV [cm]
+      vxySpreadMu/dzSpreadMu -- the parent LJ's vxySpread_mu / dzSpread_mu, i.e. the max over
+                     all constituent-muon pairs of the transverse / longitudinal vertex
+                     separation, the variables the cosmic spread veto cuts on [cm]
+      nDsa        -- number of DSA muons among the two (0 = PF-PF, 1 = PF-DSA, 2 = DSA-DSA)
+    """
+    ljs, lead, sub, lead_p4, sub_p4, pair_p4, ref_p4, has_charge = \
+        _lj_dilepton_kinematics(objs, mask, kind)
+
+    boosted_lead = lead_p4.boost(-pair_p4.boostvec)
+    boosted_ref = ref_p4.boost(-pair_p4.boostvec)
+
+    fields = {
+        "cosTheta": np.cos(boosted_ref.deltaangle(pair_p4)),
+        "absCosTheta": abs(np.cos(boosted_lead.deltaangle(pair_p4))),
+        "ptRatio": sub.pt/lead.pt,
+        "mass": pair_p4.mass,
+        "dR": lead_p4.delta_r(sub_p4),
+        "hasCharge": ak.values_astype(has_charge, np.int32),
+        "iso": ljs.isolation,
+        "leadPt": lead.pt,
+        "subPt": sub.pt,
+        "ljPt": ljs.pt,
+    }
+
+    if kind == "mu":
+        # the merged PF+DSA muon collection keeps only the fields common to both, so it carries
+        # no type flag; tag DSA muons by matching their pT against the LJ's DSA-only collection
+        dsa_pt = ljs.dsaMuons.pt
+        n_dsa = (ak.values_astype(ak.any(lead.pt[:, :, None] == dsa_pt, axis=-1), np.int32)
+                 + ak.values_astype(ak.any(sub.pt[:, :, None] == dsa_pt, axis=-1), np.int32))
+        fields.update({
             "minDxy": np.minimum(abs(lead.dxyPVSigned), abs(sub.dxyPVSigned)),
             "maxDxy": np.maximum(abs(lead.dxyPVSigned), abs(sub.dxyPVSigned)),
             "dxySpread": abs(lead.dxyPVSigned - sub.dxyPVSigned),
             "dzSpread": abs(lead.dzPV - sub.dzPV),
             "nDsa": n_dsa,
-            "leadPt": lead.pt,
-            "subPt": sub.pt,
-            "ljPt": ljs.pt,
             "vxySpreadMu": ljs.vxySpread_mu,
             "dzSpreadMu": ljs.dzSpread_mu,
-        }
-    )
+        })
+
+    return ak.zip(fields)
+
+
+def mulj_leading_mumu_pair(objs, mask):
+    """Kinematics of the two leading-pT muons of each muon-type lepton jet.
+
+    A thin wrapper around lj_leading_dilepton_pair, kept because a number of histograms fill
+    from it by name. See that function for the field list.
+    """
+    return lj_leading_dilepton_pair(objs, mask, "mu")
+
 
 def mulj_pair_axis(axis, field):
     """Bundle a hist axis with the matching field of mulj_leading_mumu_pair"""
     return h.Axis(axis, lambda objs, mask, field=field: mulj_leading_mumu_pair(objs, mask)[field])
+
+
+def egmlj_pair_axis(axis, field):
+    """Bundle a hist axis with the matching field of the egamma-type LJ electron pair"""
+    return h.Axis(axis,
+                  lambda objs, mask, field=field:
+                  lj_leading_dilepton_pair(objs, mask, "egm")[field])
+
+
+def mulj_pair_evt_mask(objs):
+    """Events holding at least two mu-type LJs with two or more constituent muons.
+
+    These are the events in which a decay angle can be measured for both mu-LJs, i.e. the
+    events that fill the mu-LJ event-level pair histograms below.
+    """
+    ljs = objs["mu_ljs"]
+    return ak.num(ljs[ljs.muon_n >= 2], axis=1) >= 2
+
+
+def mulj_pair_ordered(objs, mask):
+    """mulj_leading_mumu_pair records, explicitly pT-ordered by parent LJ within each event.
+
+    The LJ collection is already pT-ordered when it is built and the muon_n >= 2 requirement
+    only removes entries, so this sort is a no-op in practice; it is applied anyway so the
+    [:, 0] / [:, 1] indexing below does not silently depend on that.
+    """
+    pairs = mulj_leading_mumu_pair(objs, mask)
+    return pairs[ak.argsort(pairs.ljPt, axis=-1, ascending=False)]
+
+
+def mulj_pair_absCosTheta_axis(axis, idx):
+    """Bundle a hist axis with |cos(theta*)| of the idx-th pT-ordered qualifying mu-LJ.
+
+    One value per event, so two such axes can be combined into an event-level 2D histogram.
+    Only meaningful under mulj_pair_evt_mask, which guarantees the index exists.
+    """
+    return h.Axis(axis, lambda objs, mask, idx=idx: mulj_pair_ordered(objs, mask).absCosTheta[:, idx])
+
+
+def mulj_pair_mjj(objs, mask):
+    """The event's muLJ-muLJ invariant mass, broadcast to the per-LJ pair structure.
+
+    The mass is built from the two leading mu-type LJs exactly as the "muLJ-muLJ invariant
+    mass" event cuts build it, so the windows of this axis line up with those cuts. Every
+    qualifying mu-LJ of an event therefore fills with the same mjj value.
+    """
+    mjj = objs["mu_ljs"][mask][:, :2].sum().mass
+    return ak.broadcast_arrays(mjj, mulj_leading_mumu_pair(objs, mask).absCosTheta)[0]
+
+
+# ---------------------------------------------------------------------------------------------
+# Two-lepton-jet decay-plane observables.
+#
+# A qualifying LJ is a mu-type LJ with at least two constituent muons or an egamma-type LJ with
+# at least two constituent electrons; each contributes the four-vector of its two leading-pT
+# leptons ("the pair") and one reference lepton. In an event with at least two qualifying LJs
+# the two leading-pT ones, LJ_0 and LJ_1, define
+#
+#   P_A  = P_0 + P_1                         the parent candidate, mass mjj
+#   A frame                                  the rest frame of P_A, in which P_0 and P_1 are
+#                                            back to back
+#   cosThetaA_i                              the helicity angle: the reference lepton boosted
+#                                            from the A frame into its own pair's rest frame,
+#                                            measured from that pair's direction in the A frame
+#   n_i  = unit(P_i x l_i)                   the normal of each decay plane, in the A frame
+#   Phi  = atan2((n_0 x n_1).unit(P_0), n_0.n_1)    signed azimuthal angle between the planes
+#   planeAngle = arccos(|n_0.n_1|)           the same angle taken between unoriented planes,
+#                                            in [0, pi/2], with cos(2 Phi) = 2 (n_0.n_1)^2 - 1
+#
+# Phi and planeAngle are invariant under swapping which lepton of a pair defines the plane, so
+# the 0-/0+ parent discriminant they carry does not need the lepton charges; only the sign of
+# cosThetaA_i and the cos(Phi) (rather than cos(2 Phi)) term do.
+# ---------------------------------------------------------------------------------------------
+
+def lj_pair_evt_mask(objs):
+    """Events holding at least two qualifying lepton jets of either type."""
+    mu_ljs = objs["mu_ljs"]
+    egm_ljs = objs["egm_ljs"]
+    n_mu = ak.num(mu_ljs[mu_ljs.muon_n >= 2], axis=1)
+    n_egm = ak.num(egm_ljs[egm_ljs.electron_n >= 2], axis=1)
+    return (n_mu + n_egm) >= 2
+
+
+def lj_pair_qualifying(objs, mask):
+    """Both LJ types' qualifying lepton pairs in one pT-ordered per-event collection.
+
+    kind is 0 for a mu-type and 1 for an egamma-type LJ, so the sum of the two leading LJs'
+    kinds labels the event as mu+mu (0), mu+egm (1) or egm+egm (2).
+    """
+    recs = []
+    for kind, code in (("mu", 0), ("egm", 1)):
+        ljs, _lead, _sub, _lead_p4, _sub_p4, pair_p4, ref_p4, has_charge = \
+            _lj_dilepton_kinematics(objs, mask, kind)
+        if kind == "mu":
+            # ljs.dsaMuons is the DSA collection the LJ builder kept, i.e. after the "all"
+            # dsaMuons object cut, which vetoes DSA tracks segment-matched to a PF muon. Those
+            # are exactly the muons PF MET does not already account for.
+            dsa = ljs.dsaMuons
+            dsa_px = ak.sum(dsa.pt*np.cos(dsa.phi), axis=-1)
+            dsa_py = ak.sum(dsa.pt*np.sin(dsa.phi), axis=-1)
+        else:
+            dsa_px = ak.zeros_like(ljs.pt)
+            dsa_py = ak.zeros_like(ljs.pt)
+        recs.append(ak.zip({
+            "dsaPx": dsa_px,
+            "dsaPy": dsa_py,
+            "pairPt": pair_p4.pt,
+            "pairEta": pair_p4.eta,
+            "pairPhi": pair_p4.phi,
+            "pairMass": pair_p4.mass,
+            "refPt": ref_p4.pt,
+            "refEta": ref_p4.eta,
+            "refPhi": ref_p4.phi,
+            "refMass": ref_p4.mass,
+            "ljPt": ljs.pt,
+            "kind": ak.values_astype(ak.full_like(ljs.pt, code), np.int32),
+            "hasCharge": ak.values_astype(has_charge, np.int32),
+        }))
+    both = ak.concatenate(recs, axis=1)
+    return both[ak.argsort(both.ljPt, axis=-1, ascending=False)]
+
+
+def _a_frame_observables(recs):
+    """The A-frame angular observables of the two leading entries of recs.
+
+    recs must be a pT-ordered per-event collection carrying the pair and reference-lepton
+    four-vector components produced by lj_pair_qualifying (or its gen-level counterpart), with
+    at least two entries per event; the caller's event mask is what guarantees that.
+    """
+    def _p4(rec, prefix):
+        return ak.zip({"pt": rec[prefix + "Pt"], "eta": rec[prefix + "Eta"],
+                       "phi": rec[prefix + "Phi"], "mass": rec[prefix + "Mass"]},
+                      with_name="PtEtaPhiMLorentzVector")
+
+    rec0, rec1 = recs[:, 0], recs[:, 1]
+    p0, p1 = _p4(rec0, "pair"), _p4(rec1, "pair")
+    l0, l1 = _p4(rec0, "ref"), _p4(rec1, "ref")
+
+    parent = p0 + p1
+    parent_p4 = ak.zip(
+        {"pt": parent.pt, "eta": parent.eta, "phi": parent.phi, "mass": parent.mass},
+        with_name="PtEtaPhiMLorentzVector"
+    )
+    to_a = -parent_p4.boostvec
+    p0a, p1a = p0.boost(to_a), p1.boost(to_a)
+    l0a, l1a = l0.boost(to_a), l1.boost(to_a)
+
+    # helicity angles: each reference lepton taken one boost further, into its own pair's rest
+    # frame, and measured from that pair's direction in the A frame
+    cos_theta_0 = _cos_angle3(l0a.boost(-p0a.boostvec), p0a)
+    cos_theta_1 = _cos_angle3(l1a.boost(-p1a.boostvec), p1a)
+
+    # decay-plane normals; the two pairs are back to back in the A frame, so unit(P_0) is the
+    # natural axis for the sign of the azimuthal angle between the planes
+    n0 = _unit3(_cross3(p0a, l0a))
+    n1 = _unit3(_cross3(p1a, l1a))
+    n_dot = _dot3(n0, n1)
+    phi = np.arctan2(_dot3(_cross3(n0, n1), _unit3(p0a)), n_dot)
+    abs_n_dot = abs(n_dot)
+    plane_angle = np.arccos(ak.where(abs_n_dot > 1.0, ak.ones_like(abs_n_dot), abs_n_dot))
+
+    return ak.zip({
+        "mjj": parent_p4.mass,
+        "ptAsym": abs(p0.pt - p1.pt)/(p0.pt + p1.pt),
+        "ptVecSum": parent_p4.pt,
+        "cosThetaA0": cos_theta_0,
+        "cosThetaA1": cos_theta_1,
+        "absCosThetaA0": abs(cos_theta_0),
+        "absCosThetaA1": abs(cos_theta_1),
+        "Phi": phi,
+        "planeAngle": plane_angle,
+        "pairType": rec0.kind + rec1.kind,
+        "nHasCharge": rec0.hasCharge + rec1.hasCharge,
+    })
+
+
+def lj_pair_a_frame(objs, mask):
+    """Reconstructed A-frame observables of the two leading qualifying lepton jets."""
+    return _a_frame_observables(lj_pair_qualifying(objs, mask))
+
+
+def lj_pair_met_observables(objs, mask):
+    """MET of the events that fill the two-LJ decay-plane histograms, raw and DSA-corrected.
+
+    PF MET is built from the particle-flow candidates, which do not include the standalone (DSA)
+    muons that the muon-type LJs may be made of, so a signal-like event with DSA muons carries
+    fake missing momentum of the size of their pT. metCorr subtracts the DSA constituents of the
+    two leading qualifying LJs back out of the MET vector; the DSA set used is the overlap
+    removed one the LJ builder keeps, so a DSA track matched to a PF muon is never subtracted
+    twice.
+
+    Fields:
+      met     -- PF MET pT [GeV]
+      metCorr -- |MET vector - sum of the two LJs' DSA-muon pT vectors| [GeV]
+    """
+    recs = lj_pair_qualifying(objs, mask)
+    rec0, rec1 = recs[:, 0], recs[:, 1]
+    met = objs["met"][mask]
+    met_x = met.pt*np.cos(met.phi)
+    met_y = met.pt*np.sin(met.phi)
+    corr_x = met_x - (rec0.dsaPx + rec1.dsaPx)
+    corr_y = met_y - (rec0.dsaPy + rec1.dsaPy)
+    return ak.zip({
+        "met": met.pt,
+        "metCorr": np.sqrt(corr_x*corr_x + corr_y*corr_y),
+    })
+
+
+def lj_pair_met_axis(axis, field):
+    """Bundle a hist axis with one field of lj_pair_met_observables."""
+    return h.Axis(axis, lambda objs, mask, f=field: lj_pair_met_observables(objs, mask)[f])
+
+
+def gen_pair_evt_mask(objs):
+    """Signal events whose two dark photons each have a negatively charged daughter lepton."""
+    gen_as = objs["genAs"]
+    children = gen_as.children
+    return ((ak.num(gen_as, axis=1) >= 2)
+            & ak.all(ak.num(children[children.pdgId > 0], axis=2) >= 1, axis=1))
+
+
+def gen_pair_qualifying(objs, mask):
+    """The gen-level counterpart of lj_pair_qualifying: the two dark photons and, for each, its
+    negatively charged daughter lepton.
+
+    Lepton pdgIds are positive for the negatively charged states (11 = e-, 13 = mu-). A dark
+    photon occasionally lists more than one daughter of a given sign, from documentation copies
+    in the gen chain; the leading-pT one is taken so exactly one reference lepton is defined per
+    dark photon. Daughter masses are set from the pdgId rather than read from the record, whose
+    electron mass is not filled consistently.
+    """
+    gen_as = objs["genAs"][mask]
+    gen_as = gen_as[ak.argsort(gen_as.pt, axis=-1, ascending=False)]
+    children = gen_as.children
+    neg = children[children.pdgId > 0]
+    neg = neg[ak.argsort(neg.pt, axis=-1, ascending=False)][:, :, 0]
+    is_mu = abs(neg.pdgId) == 13
+    lep_mass = ak.where(is_mu, ak.full_like(neg.pt, MU_MASS), ak.full_like(neg.pt, E_MASS))
+    return ak.zip({
+        "pairPt": gen_as.pt,
+        "pairEta": gen_as.eta,
+        "pairPhi": gen_as.phi,
+        "pairMass": gen_as.mass,
+        "refPt": neg.pt,
+        "refEta": neg.eta,
+        "refPhi": neg.phi,
+        "refMass": lep_mass,
+        "ljPt": gen_as.pt,
+        "kind": ak.values_astype(~is_mu, np.int32),
+        "hasCharge": ak.values_astype(ak.ones_like(neg.pt), np.int32),
+    })
+
+
+def gen_pair_a_frame(objs, mask):
+    """Truth-level A-frame observables, in the rest frame of the two dark photons' sum."""
+    return _a_frame_observables(gen_pair_qualifying(objs, mask))
+
+
+def _stack_two(v0, v1):
+    """One length-2 list per event holding v0 then v1.
+
+    The list dimension is made variable length because the histogram machinery broadcasts the
+    event weights against the last axis, which a fixed-length (regular) dimension does not
+    accept. np.newaxis rather than ak.unflatten, so a channel with no passing events still
+    produces an empty array of the right type instead of raising.
+    """
+    return ak.from_regular(ak.concatenate([v0[:, np.newaxis], v1[:, np.newaxis]], axis=1), axis=1)
+
+
+def lj_pair_axis(axis, field, gen=False):
+    """Bundle a hist axis with one per-event field of the A-frame observables."""
+    source = gen_pair_a_frame if gen else lj_pair_a_frame
+    return h.Axis(axis, lambda objs, mask, f=field, s=source: s(objs, mask)[f])
+
+
+def lj_pair_perlj_axis(axis, field0, field1, gen=False):
+    """Bundle a hist axis with a per-LJ field of the A-frame observables.
+
+    Two entries per event, LJ_0 then LJ_1, so such an axis can be paired with an event-level
+    quantity broadcast by lj_pair_broadcast_axis.
+    """
+    source = gen_pair_a_frame if gen else lj_pair_a_frame
+    def fill(objs, mask, f0=field0, f1=field1, s=source):
+        vals = s(objs, mask)
+        return _stack_two(vals[f0], vals[f1])
+    return h.Axis(axis, fill)
+
+
+def lj_pair_broadcast_axis(axis, field, gen=False):
+    """Bundle a hist axis with one per-event field of the A-frame observables, duplicated onto
+    both leading LJs so it can be paired with a lj_pair_perlj_axis."""
+    source = gen_pair_a_frame if gen else lj_pair_a_frame
+    def fill(objs, mask, f=field, s=source):
+        vals = s(objs, mask)[f]
+        return _stack_two(vals, vals)
+    return h.Axis(axis, fill)
 
 hist_defs = {
     # pv
@@ -5797,5 +6187,303 @@ hist_defs = {
                                    label=r"LJ dzSpread$_\mu$ [cm]"),
                 "dzSpreadMu"),
         ],
+    ),
+
+    # event-level pairing of the two muon-LJ decay angles
+    "mulj_pair_absCosTheta0_vs_absCosTheta1": h.Histogram(
+        [
+            mulj_pair_absCosTheta_axis(
+                hist.axis.Regular(10, 0, 1, name="cosTheta0",
+                                  label=r"$|\cos\theta^*|$ (leading $\mu$-LJ)"),
+                0),
+            mulj_pair_absCosTheta_axis(
+                hist.axis.Regular(10, 0, 1, name="cosTheta1",
+                                  label=r"$|\cos\theta^*|$ (subleading $\mu$-LJ)"),
+                1),
+        ],
+        evt_mask=mulj_pair_evt_mask,
+    ),
+    "mulj_pair_absCosTheta_vs_mjj": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(5, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            h.Axis(
+                hist.axis.Variable(MULJ_PAIR_MJJ_BINS, name="mjj",
+                                   label=r"$m(\mu\mathrm{LJ}, \mu\mathrm{LJ})$ [GeV]"),
+                mulj_pair_mjj),
+        ],
+        evt_mask=mulj_pair_evt_mask,
+    ),
+    # signed decay angle of the muon-LJ leading pair
+    "mu_lj_mumu_cosTheta": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosTheta",
+                                  label=r"$\cos\theta^*$ (leading $\mu\mu$ pair, pair rest frame)"),
+                "cosTheta"),
+        ],
+    ),
+    "mu_lj_mumu_cosTheta_vs_mass": h.Histogram(
+        [
+            mulj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosTheta", label=r"$\cos\theta^*$"),
+                "cosTheta"),
+            mulj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="mumu_mass",
+                                   label=r"$m_{\mu\mu}$ [GeV]"),
+                "mass"),
+        ],
+    ),
+
+    # the same decay angle and its companions for the leading electron pair of egamma-type LJs
+    "egm_lj_ee_absCosTheta": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta",
+                                  label=r"$|\cos\theta^*|$ (leading $ee$ pair, pair rest frame)"),
+                "absCosTheta"),
+        ],
+    ),
+    "egm_lj_ee_cosTheta": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosTheta",
+                                  label=r"$\cos\theta^*$ (leading $ee$ pair, pair rest frame)"),
+                "cosTheta"),
+        ],
+    ),
+    "egm_lj_ee_ptRatio": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(50, 0, 1, name="ptRatio",
+                                  label=r"$p_T^{sub}/p_T^{lead}$ (leading $ee$ pair)"),
+                "ptRatio"),
+        ],
+    ),
+    "egm_lj_ee_mass": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(200, 0, 20, name="ee_mass", label=r"$m_{ee}$ [GeV]"),
+                "mass"),
+        ],
+    ),
+    "egm_lj_ee_dR": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(50, 0, 0.5, name="ee_dR",
+                                  label=r"$\Delta R(e^{lead}, e^{sub})$"),
+                "dR"),
+        ],
+    ),
+    "egm_lj_ee_cosTheta_vs_mass": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosTheta", label=r"$\cos\theta^*$"),
+                "cosTheta"),
+            egmlj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="ee_mass",
+                                   label=r"$m_{ee}$ [GeV]"),
+                "mass"),
+        ],
+    ),
+    "egm_lj_ee_absCosTheta_vs_mass": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            egmlj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="ee_mass",
+                                   label=r"$m_{ee}$ [GeV]"),
+                "mass"),
+        ],
+    ),
+    "egm_lj_ee_ptRatio_vs_absCosTheta": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            egmlj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="ptRatio", label=r"$p_T^{sub}/p_T^{lead}$"),
+                "ptRatio"),
+        ],
+    ),
+    "egm_lj_ee_absCosTheta_vs_pt": h.Histogram(
+        [
+            egmlj_pair_axis(
+                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
+                "absCosTheta"),
+            egmlj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_LJPT_BINS, name="lj_pt",
+                                   label=r"$e\gamma$-type LJ $p_T$ [GeV]"),
+                "ljPt"),
+        ],
+    ),
+
+    # event-level decay-plane observables of the two leading qualifying LJs (either type)
+    "lj_pair_cosThetaA0_vs_cosThetaA1": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosThetaA0",
+                                  label=r"$\cos\theta_A$ (leading LJ)"),
+                "cosThetaA0"),
+            lj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosThetaA1",
+                                  label=r"$\cos\theta_A$ (subleading LJ)"),
+                "cosThetaA1"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_absCosThetaA_vs_mjj": h.Histogram(
+        [
+            lj_pair_perlj_axis(
+                hist.axis.Regular(5, 0, 1, name="cosThetaA", label=r"$|\cos\theta_A|$"),
+                "absCosThetaA0", "absCosThetaA1"),
+            lj_pair_broadcast_axis(
+                hist.axis.Variable(MULJ_PAIR_MJJ_BINS, name="mjj",
+                                   label=r"$m(\mathrm{LJ}, \mathrm{LJ})$ [GeV]"),
+                "mjj"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_Phi": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(24, -math.pi, math.pi, name="Phi",
+                                  label=r"$\Phi$ between the two LJ decay planes"),
+                "Phi"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_planeAngle": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(18, 0, math.pi/2, name="planeAngle",
+                                  label=r"Angle between the two LJ decay planes"),
+                "planeAngle"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_planeAngle_vs_mjj": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(6, 0, math.pi/2, name="planeAngle",
+                                  label=r"Angle between the two LJ decay planes"),
+                "planeAngle"),
+            lj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MJJ_BINS, name="mjj",
+                                   label=r"$m(\mathrm{LJ}, \mathrm{LJ})$ [GeV]"),
+                "mjj"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_mjj": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Variable(MULJ_PAIR_MJJ_BINS, name="mjj",
+                                   label=r"$m(\mathrm{LJ}, \mathrm{LJ})$ [GeV]"),
+                "mjj"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_type": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.IntCategory([0, 1, 2], name="pairType",
+                                      label=r"LJ pair type (0 $\mu\mu$, 1 $\mu e\gamma$, 2 $e\gamma e\gamma$)"),
+                "pairType"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_hasCharge": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.IntCategory([0, 1, 2], name="nHasCharge",
+                                      label="Number of LJ pairs with opposite-sign leptons"),
+                "nHasCharge"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+
+    "lj_pair_ptAsym": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(20, 0, 1, name="ptAsym",
+                                  label=r"$|p_T^0 - p_T^1| / (p_T^0 + p_T^1)$ of the two LJ pairs"),
+                "ptAsym"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_ptVecSum": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(40, 0, 400, name="ptVecSum",
+                                  label=r"$p_T$ of the two LJ pairs' vector sum [GeV]"),
+                "ptVecSum"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_met": h.Histogram(
+        [
+            lj_pair_met_axis(
+                hist.axis.Regular(40, 0, 400, name="met", label=r"PF $p_T^{miss}$ [GeV]"),
+                "met"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_metCorr": h.Histogram(
+        [
+            lj_pair_met_axis(
+                hist.axis.Regular(40, 0, 400, name="metCorr",
+                                  label=r"DSA-corrected $p_T^{miss}$ [GeV]"),
+                "metCorr"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+    "lj_pair_metCorr_vs_ptVecSum": h.Histogram(
+        [
+            lj_pair_met_axis(
+                hist.axis.Regular(20, 0, 400, name="metCorr",
+                                  label=r"DSA-corrected $p_T^{miss}$ [GeV]"),
+                "metCorr"),
+            lj_pair_axis(
+                hist.axis.Regular(20, 0, 400, name="ptVecSum",
+                                  label=r"$p_T$ of the two LJ pairs' vector sum [GeV]"),
+                "ptVecSum"),
+        ],
+        evt_mask=lj_pair_evt_mask,
+    ),
+
+    # the same decay-plane observables built from the gen record (signal only)
+    "gen_pair_Phi": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(24, -math.pi, math.pi, name="Phi",
+                                  label=r"Gen $\Phi$ between the two $Z_d$ decay planes"),
+                "Phi", gen=True),
+        ],
+        evt_mask=gen_pair_evt_mask,
+    ),
+    "gen_pair_planeAngle": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(18, 0, math.pi/2, name="planeAngle",
+                                  label=r"Gen angle between the two $Z_d$ decay planes"),
+                "planeAngle", gen=True),
+        ],
+        evt_mask=gen_pair_evt_mask,
+    ),
+    "gen_pair_cosThetaA0_vs_cosThetaA1": h.Histogram(
+        [
+            lj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosThetaA0",
+                                  label=r"Gen $\cos\theta_A$ (leading $Z_d$)"),
+                "cosThetaA0", gen=True),
+            lj_pair_axis(
+                hist.axis.Regular(20, -1, 1, name="cosThetaA1",
+                                  label=r"Gen $\cos\theta_A$ (subleading $Z_d$)"),
+                "cosThetaA1", gen=True),
+        ],
+        evt_mask=gen_pair_evt_mask,
     ),
 }
