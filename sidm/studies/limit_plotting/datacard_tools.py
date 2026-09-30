@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import math
 import re
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 
 import getpass
@@ -44,14 +44,75 @@ from sidm import BASE_DIR
 # Sample locations and channel definitions
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
+class Channel:
+    """One counting bin: an SR selection plus the histogram to count it with.
+
+    ``hist_name`` is a histogram filled once per selected event in this
+    channel, so summing it over its observable axis gives the event yield.
+    ``signal_prefix`` is the signal-sample name prefix whose final state this
+    channel targets.
+    """
+
+    name: str            # datacard bin name
+    selection: str       # `channel` axis value in the coffea histograms
+    hist_name: str       # histogram filled once per event in this channel
+    signal_prefix: str   # "2Mu2E" or "4Mu"
+
+
+def _channels(sr_2mu2e, sr_4mu):
+    """Build the two SR channels from one campaign's ``channel``-axis strings.
+
+    Only the selection string changes from campaign to campaign: the histogram
+    a channel is counted with and the final state it targets are properties of
+    the analysis rather than of the production, so a campaign supplies just the
+    two strings and the rest is filled in here.  Keeping this a function rather
+    than spelling both ``Channel``s out per campaign means a new production is
+    one line in ``CAMPAIGNS``, and that the datacard bin names -- which end up
+    in every card, CSV and figure -- cannot drift between campaigns.
+    """
+    return {
+        "SR_2mu2e": Channel(
+            name="SR_2mu2e",
+            selection=sr_2mu2e,
+            hist_name="abcd_2mu2e_mulj_pt",
+            signal_prefix="2Mu2E",
+        ),
+        "SR_4mu": Channel(
+            name="SR_4mu",
+            selection=sr_4mu,
+            hist_name="abcd_4mu_mulj0_pt",
+            signal_prefix="4Mu",
+        ),
+    }
+
+
+@dataclass(frozen=True)
 class Campaign:
-    """One production campaign: a set of merged coffea outputs to analyse."""
+    """One production campaign: a set of merged coffea outputs to analyse.
+
+    ``channels`` carries the ``channel``-axis strings that campaign's merge was
+    produced with.  They are *not* stable across productions -- the selections
+    get renamed as cuts are added -- so they belong to the campaign rather than
+    to the module, and the default is the pair the first two campaigns used.
+    """
 
     name: str
     bkg_dir: str
     signal_dir: str
     data_dir: str
     note: str = ""
+    # dict() so a campaign cannot mutate another's channels through a shared
+    # default; the Channels themselves are frozen.
+    channels: dict = field(
+        default_factory=lambda: dict(_LEGACY_CHANNELS))
+
+
+# The `channel`-axis strings both of the first two campaigns were produced
+# with, and therefore the default for a Campaign that does not say otherwise.
+_LEGACY_CHANNELS = _channels(
+    sr_2mu2e="test_SR_2mu2e_spread_cosAlpha_mu_veto",
+    sr_4mu="test_SR_4mu_spread_cosAlpha_mu_veto",
+)
 
 
 _EOS = "/eos/uscms/store/user/dlee3/sidm_condor"
@@ -70,6 +131,49 @@ CAMPAIGNS = {
         signal_dir=f"{_EOS}/ABCD_golden_hotspot_iso025_v1/ABCD_golden_hotspot_iso025_v1_signal_merged_samples_v1",
         data_dir=f"{_EOS}/ABCD_golden_hotspot_iso025_v1/ABCD_golden_hotspot_iso025_v1_data_merged_samples_v1",
         note="adds the eta-phi hotspot veto and 0.25 isolation; metadata['is_data'] is populated",
+    ),
+    "muIso_dPhi_eHEM_skimv1_v1": Campaign(
+        name="muIso_dPhi_eHEM_skimv1_v1",
+        bkg_dir=f"{_EOS}/ABCD_muIso_dPhi_eHEM_skimv1_v1/ABCD_muIso_dPhi_eHEM_skimv1_v1_bkg_merged_samples_v1",
+        signal_dir=f"{_EOS}/ABCD_muIso_dPhi_eHEM_skimv1_v1/ABCD_muIso_dPhi_eHEM_skimv1_v1_signal_merged_samples_v1",
+        data_dir=f"{_EOS}/ABCD_muIso_dPhi_eHEM_skimv1_v1/ABCD_muIso_dPhi_eHEM_skimv1_v1_data_merged_samples_v1",
+        # The ABCD plane itself changed: it is now mu-LJ isolation vs
+        # |dPhi(LJ0,LJ1)| rather than the two lepton-jet isolations.  That is
+        # why the muLJ-egmLJ / muLJ-muLJ dPhi >= 2 event cut is *gone* -- dPhi
+        # is an axis of the plane now, not a cut -- and why an isolation cut on
+        # the other lepton jet had to be added in its place, since that
+        # isolation is no longer an axis.  Region A is still index 0 and the
+        # closure relation is still A = B*C/D, so nothing downstream changes.
+        note="ABCD plane is mu-LJ isolation vs |dPhi(LJ0,LJ1)|, not iso vs iso: "
+             "the muLJ-egmLJ / muLJ-muLJ dPhi >= 2 event cut is dropped (dPhi is "
+             "now a plane axis) and an isolation cut on the other lepton jet "
+             "replaces it (leading egmLJ iso < 0.25 in 2mu2e, subleading muLJ "
+             "iso < 0.25 in 4mu); adds a full-era HEM electron veto and a "
+             "'pass flags' event cut; vxySpread renamed dxySpread; run over the "
+             "v1 skim.  Six channels on the axis, not ten -- the invMass VR the "
+             "shape study pairs with the SR is not in this production.  Signal "
+             "grid extended to 180 points (m_bound 100 and 150 GeV added), of "
+             "which only the original 120 have a theory cross section.",
+        channels=_channels(
+            sr_2mu2e="abcd_muIso_dPhi_SR_2mu2e_dxySpread_cosAlpha_mu_veto_eHEM",
+            sr_4mu="abcd_muIso_dPhi_SR_4mu_dxySpread_cosAlpha_mu_veto_eHEM",
+        ),
+    ),
+    "sixd_inclusive_v1": Campaign(
+        name="sixd_inclusive_v1",
+        bkg_dir=f"{_EOS}/ABCD_6D_inclusive_eHEM_skimv1/"
+                f"ABCD_6D_inclusive_eHEM_skimv1_v1_bkg_merged_samples_v1",
+        signal_dir=f"{_EOS}/ABCD_6D_inclusive_eHEM_skimv1/"
+                   f"ABCD_6D_inclusive_eHEM_skimv1_v1_signal_merged_samples_v1",
+        data_dir=f"{_EOS}/ABCD_6D_inclusive_eHEM_skimv1/"
+                 f"ABCD_6D_inclusive_eHEM_skimv1_v1_data_merged_samples_v1",
+        channels=_channels("abcd6d_inclusive_2mu2e_dxySpread_cosAlpha_mu_veto_eHEM",
+                           "abcd6d_inclusive_4mu_dxySpread_cosAlpha_mu_veto_eHEM"),
+        note="6D inclusive: every ABCD variable is an axis (iso0, iso1, disp0, "
+             "disp1, abs_dphi, ljlj_mass) rather than a pre-binned abcd_region, "
+             "so regions are sliced by shape_tools and m_ljlj can be the fit "
+             "observable. No abcd_region axis at all -- the counting and ABCD "
+             "helpers keyed on it do not apply; use shape_tools.collect_6d instead.",
     ),
 }
 
@@ -90,11 +194,16 @@ def use_campaign(name):
     (``campaigns/<name>/...``) so two campaigns can be compared side by side
     without one overwriting the other.
     """
-    global CAMPAIGN, BKG_DIR, SIGNAL_DIR, DATA_DIR
+    global CAMPAIGN, BKG_DIR, SIGNAL_DIR, DATA_DIR, CHANNELS
     if name not in CAMPAIGNS:
         raise KeyError(f"unknown campaign {name!r}; known: {sorted(CAMPAIGNS)}")
     CAMPAIGN = CAMPAIGNS[name]
     BKG_DIR, SIGNAL_DIR, DATA_DIR = CAMPAIGN.bkg_dir, CAMPAIGN.signal_dir, CAMPAIGN.data_dir
+    # The `channel`-axis strings are renamed from production to production, so
+    # they move with the campaign.  A stale CHANNELS would not raise: the
+    # selection would simply be absent from the axis and region_yields() would
+    # return None for every sample, i.e. an empty run rather than a wrong one.
+    CHANNELS = CAMPAIGN.channels
     return CAMPAIGN
 
 
@@ -109,44 +218,20 @@ def campaign_outdir(study_dir=None, campaign=None):
 SIGNAL_REF_XS_PB = 0.001
 LUMI_PB = 59830.0  # 2018, from configs/run_periods.yaml
 
-# The ABCD plane is built from the two lepton-jet isolation variables (the
-# `abcd_iso_base` hist collection).  Region A is the doubly-isolated corner,
-# i.e. the signal region; D is the corner diagonally opposite it, so the
-# closure relation is A = B*C/D.
+# Which two variables span the ABCD plane is a property of the production, not
+# of this module: the first two campaigns used the two lepton-jet isolations
+# (the `abcd_iso_base` hist collection), muIso_dPhi_eHEM_skimv1_v1 uses the
+# mu-LJ isolation against |dPhi(LJ0,LJ1)|.  What is common to all of them, and
+# all this module needs, is the numbering: region A is index 0 and is the
+# signal region, D is the corner diagonally opposite it, and the closure
+# relation is A = B*C/D.
 SR_ABCD_REGION = 0
 ABCD_REGIONS = {0: "A", 1: "B", 2: "C", 3: "D"}
 
 
-@dataclass(frozen=True)
-class Channel:
-    """One counting bin: an SR selection plus the histogram to count it with.
-
-    ``hist_name`` is a histogram filled once per selected event in this
-    channel, so summing it over its observable axis gives the event yield.
-    ``signal_prefix`` is the signal-sample name prefix whose final state this
-    channel targets.
-    """
-
-    name: str            # datacard bin name
-    selection: str       # `channel` axis value in the coffea histograms
-    hist_name: str       # histogram filled once per event in this channel
-    signal_prefix: str   # "2Mu2E" or "4Mu"
-
-
-CHANNELS = {
-    "SR_2mu2e": Channel(
-        name="SR_2mu2e",
-        selection="test_SR_2mu2e_spread_cosAlpha_mu_veto",
-        hist_name="abcd_2mu2e_mulj_pt",
-        signal_prefix="2Mu2E",
-    ),
-    "SR_4mu": Channel(
-        name="SR_4mu",
-        selection="test_SR_4mu_spread_cosAlpha_mu_veto",
-        hist_name="abcd_4mu_mulj0_pt",
-        signal_prefix="4Mu",
-    ),
-}
+# The active campaign's channels.  Module-level, like BKG_DIR and friends, so
+# every existing call site keeps working; use_campaign() repoints it.
+CHANNELS = CAMPAIGN.channels
 
 # Backgrounds are merged into these groups so no datacard process is empty and
 # the card stays readable.  Anything unmatched falls through to "other".
@@ -1450,6 +1535,14 @@ def write_combined_datacards(signal_yields, bkg_grouped, outdir, channels=None,
 #
 # Verified: with cr_cut == a_cut == 0.25 this reproduces the abcd_region yields
 # exactly, in every region, for signal and background.
+#
+# These two histograms exist only in the campaigns whose plane is iso vs iso.
+# muIso_dPhi_eHEM_skimv1_v1 spans its plane with mu-LJ isolation against
+# |dPhi(LJ0,LJ1)| and stores `abcd_corr_*_iso_vs_abs_dphi` instead, so this
+# re-derivation does not apply there: the lookup below misses and
+# region_yields_from_plane returns None rather than guessing at a plane it was
+# not written for.  The pre-binned abcd_region axis -- which is what the
+# datacards actually use -- is unaffected either way.
 ISO_PLANE = {
     "SR_2mu2e": {"hist": "mulj_egmlj_iso", "axes": ("mu_lj_iso", "egm_lj_iso")},
     "SR_4mu": {"hist": "mulj_mulj_iso", "axes": ("mu_lj0_iso", "mu_lj1_iso")},
@@ -1546,4 +1639,148 @@ def collect_plane_yields(directory, channels=None, a_cut=DEFAULT_A_CUT, cr_cut=N
                 if y is not None:
                     per_channel[ch_name] = y
             out[sample] = per_channel
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# The isolation-vs-dPhi ABCD plane
+# --------------------------------------------------------------------------- #
+# The `muIso_dPhi_eHEM_skimv1_v1` production moved the second isolation into the
+# event selection, which collapses the pre-binned `abcd_region` axis onto the
+# isolated half-plane -- regions C and D come out exactly zero, so no ABCD card
+# can be built from it (see NOTES.md, 2026-09-16).  That production instead
+# ships a 2D isolation-vs-|dPhi| histogram, and dropping the dPhi cut from the
+# SR is what makes |dPhi| usable as the second ABCD axis.  This is the plane the
+# `abcd_region` axis should be repointed at upstream; until then the regions are
+# re-derived here.
+#
+# The sense of the two axes differs, which is the one thing to be careful about:
+# signal is *low* isolation but *high* |dPhi| (back-to-back lepton jets), so the
+# signal region is the low-iso/high-dPhi corner and D is diagonally opposite it.
+DPHI_PLANE = {
+    "SR_2mu2e": {"hist": "abcd_corr_2mu2e_mu_iso_vs_abs_dphi",
+                 "axes": ("2mu2e_mu_iso", "2mu2e_abs_dphi")},
+    "SR_4mu": {"hist": "abcd_corr_4mu_mu0_iso_vs_abs_dphi",
+               "axes": ("4mu_mu0_iso", "4mu_abs_dphi")},
+}
+DEFAULT_DPHI_CUT = 2.0
+
+
+def _nearest_bin_index(axis, value, tol_bins=0.5):
+    """Index of the bin edge nearest ``value``, with the snap reported.
+
+    Unlike ``_bin_index`` this does not require the cut to land exactly on an
+    edge.  The |dPhi| axis is 32 bins over 0..pi, so the natural cut at 2.0 sits
+    between edges (1.9635 and 2.0617) and has to be snapped to one of them.
+    Returns ``(index, effective_value)`` so callers can report the boundary that
+    was actually used rather than the one that was asked for.
+    """
+    edges = axis.edges
+    width = edges[1] - edges[0]
+    idx = int(round((value - edges[0]) / width))
+    idx = max(0, min(idx, axis.size))
+    if abs(edges[idx] - value) > tol_bins * width:
+        raise ValueError(
+            f"{value} is more than {tol_bins} bins from any edge of "
+            f"{axis.name} (nearest {edges[idx]:g}, width {width:g})")
+    return idx, float(edges[idx])
+
+
+def dphi_plane_boundaries(sample_out, channel, iso_cut=DEFAULT_A_CUT,
+                          dphi_cut=DEFAULT_DPHI_CUT):
+    """The boundaries actually used, after snapping to bin edges.
+
+    Returns ``{"iso": value, "dphi": value}`` or ``None`` if this sample has no
+    plane for the channel.  Worth recording in a sidecar: the requested dPhi cut
+    is generally not the one applied.
+    """
+    spec = DPHI_PLANE.get(getattr(channel, "name", channel))
+    if spec is None:
+        return None
+    h = sample_out["hists"].get(spec["hist"])
+    if h is None or channel.selection not in list(h.axes["channel"]):
+        return None
+    sliced = h[{"channel": channel.selection}]
+    _, iso_eff = _nearest_bin_index(sliced.axes[0], iso_cut)
+    _, dphi_eff = _nearest_bin_index(sliced.axes[1], dphi_cut)
+    return {"iso": iso_eff, "dphi": dphi_eff}
+
+
+def region_yields_from_dphi_plane(sample_out, channel, iso_cut=DEFAULT_A_CUT,
+                                  dphi_cut=DEFAULT_DPHI_CUT, sample_name="",
+                                  allow_data_sr=False):
+    """ABCD yields re-derived from the isolation-vs-|dPhi| plane.
+
+    Region convention, with the closure relation still ``A = B*C/D``::
+
+        A: iso <  iso_cut  and  |dPhi| >= dphi_cut     (signal region)
+        B: iso >= iso_cut  and  |dPhi| >= dphi_cut
+        C: iso <  iso_cut  and  |dPhi| <  dphi_cut
+        D: iso >= iso_cut  and  |dPhi| <  dphi_cut
+
+    Note the asymmetry against ``region_yields_from_plane``: there both axes are
+    signal-like when low, here only the isolation is.
+
+    Returns ``{region_index: Yield}``; region A is withheld unless the sample is
+    established simulation, exactly as ``region_yields`` does.
+    """
+    spec = DPHI_PLANE.get(getattr(channel, "name", channel))
+    if spec is None:
+        return None
+    h = sample_out["hists"].get(spec["hist"])
+    if h is None or channel.selection not in list(h.axes["channel"]):
+        return None
+
+    sliced = h[{"channel": channel.selection}]
+    view = sliced.view(flow=True)
+    values, variances = view["value"], view["variance"]
+    ax_iso, ax_dphi = sliced.axes[0], sliced.axes[1]
+    i_iso, _ = _nearest_bin_index(ax_iso, iso_cut)
+    i_dphi, _ = _nearest_bin_index(ax_dphi, dphi_cut)
+
+    # Index 0 is underflow and size+1 overflow, so in-range bin i is at i+1.
+    # Underflow goes with the low side and overflow with the high side on both
+    # axes, so every event is counted exactly once and the four regions sum to
+    # the channel total.
+    iso_low, iso_high = slice(0, i_iso + 1), slice(i_iso + 1, ax_iso.size + 2)
+    dphi_low, dphi_high = slice(0, i_dphi + 1), slice(i_dphi + 1, ax_dphi.size + 2)
+    quadrants = {
+        0: (iso_low, dphi_high),    # A: isolated and back-to-back
+        1: (iso_high, dphi_high),   # B
+        2: (iso_low, dphi_low),     # C
+        3: (iso_high, dphi_low),    # D
+    }
+
+    blind_sr = not allow_data_sr and not is_simulation(sample_name, sample_out)
+    out = {}
+    for region, (s_iso, s_dphi) in quadrants.items():
+        if region == SR_ABCD_REGION and blind_sr:
+            continue
+        out[region] = Yield(float(values[s_iso, s_dphi].sum()),
+                            float(variances[s_iso, s_dphi].sum()))
+    return out
+
+
+def collect_dphi_plane_yields(directory, channels=None, iso_cut=DEFAULT_A_CUT,
+                              dphi_cut=DEFAULT_DPHI_CUT, progress=None,
+                              allow_data_sr=False):
+    """``collect_yields`` equivalent for the isolation-vs-|dPhi| plane."""
+    channels = channels or CHANNELS
+    files = sorted(Path(directory).glob("*.coffea"))
+    if not files:
+        raise FileNotFoundError(f"no .coffea files under {directory}")
+    out = {}
+    for i, path in enumerate(files):
+        if progress is not None:
+            progress(i, len(files), path.name)
+        for sample, sample_out in read_coffea(path).items():
+            per_channel = {}
+            for ch_name, channel in channels.items():
+                y = region_yields_from_dphi_plane(
+                    sample_out, channel, iso_cut, dphi_cut,
+                    sample_name=sample, allow_data_sr=allow_data_sr)
+                if y is not None:
+                    per_channel[ch_name] = y
+            if per_channel:
+                out[sample] = per_channel
     return out

@@ -81,7 +81,7 @@ COMBINE_VERSION_SEEN = set()
 # datacard_<method>_<channel>_<signal>.txt, or datacard_comb_<signal>.txt for the
 # combined cards, which span both channels and so carry no channel in the name.
 CARD_NAME = re.compile(
-    r"^datacard_(?:(?P<method>abcd)_)?(?P<channel>SR_\w+?)_"
+    r"^datacard_(?:(?P<method>abcd|shape)_)?(?P<channel>SR_\w+?)_"
     r"(?P<signal>(?:2Mu2E|4Mu)_[\dp]+GeV_[\dp]+GeV_[\dp]+mm)$"
 )
 COMBINED_CARD_NAME = re.compile(
@@ -114,7 +114,7 @@ def parse_card_name(stem):
         m = combined
     else:
         info = {"channel": m["channel"], "signal": m["signal"],
-                "method": "abcd" if m["method"] else "counting"}
+                "method": m["method"] or "counting"}
     s = SIGNAL_NAME.match(m["signal"])
     if s:
         num = lambda x: float(x.replace("p", "."))
@@ -154,7 +154,18 @@ def read_rates(card):
     of the ``_A`` bin rather than summed over all four.
     """
     obs_bins, observations, proc_bins, process_ids, rates = None, None, None, None, None
+    header = {}
     for line in Path(card).read_text().splitlines():
+        # The RooParametricHist shape cards have no yields in the rate column --
+        # the signal rate is -1 (taken from its shape) and the background rate
+        # is 1 (its normalisation lives in the workspace) -- so the writer
+        # records the signal region levels in the header for this to read.
+        if line.startswith("#") and "_rate_A" in line:
+            key, _, value = line.lstrip("# ").partition("=")
+            try:
+                header[key.strip()] = float(value)
+            except ValueError:
+                pass
         fields = line.split()
         if not fields:
             continue
@@ -170,6 +181,9 @@ def read_rates(card):
             process_ids = [int(f) for f in rest]
         elif head == "rate":
             rates = [float(f) for f in rest]
+
+    if "signal_rate_A" in header:
+        return header["signal_rate_A"], header.get("background_rate_A", 0.0)
 
     if process_ids is None or rates is None or len(process_ids) != len(rates):
         return None, None
