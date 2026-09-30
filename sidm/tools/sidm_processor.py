@@ -357,6 +357,10 @@ class SidmProcessor(processor.ProcessorABC):
         if type_id == 8:
             forms["trkNumPixelHits"] = 0*shape
             forms["trkNumTrkLayers"] = 0*shape
+        if type_id == 3:
+            forms["vx"] = forms["innerVx"]
+            forms["vy"] = forms["innerVy"]
+            forms["vz"] = forms["innerVz"]
         if type_id == 4:
             forms["lostHits"] = 999*shape
         return vector.zip(forms)
@@ -416,7 +420,7 @@ class SidmProcessor(processor.ProcessorABC):
 
         objs["dsaMuons"]["mass"] = ak.full_like(objs["dsaMuons"].pt, 0.105712890625)
 
-        safe_pf_fields = list(objs["muons"].fields)
+        safe_pf_fields = list(objs["muons"].fields) + ["vx", "vy", "vz"]
         safe_dsa_fields = list(objs["dsaMuons"].fields) +  ["trkNumPixelHits","trkNumTrkLayers" ]
 
         for field in unsafe_fields:
@@ -425,7 +429,7 @@ class SidmProcessor(processor.ProcessorABC):
             if field in safe_dsa_fields:
                 safe_dsa_fields.remove(field)
 
-        extra_muon_fields =  ["trkNumPixelHits","trkNumTrkLayers" ]
+        extra_muon_fields =  ["trkNumPixelHits","trkNumTrkLayers", "vx", "vy", "vz" ]
         muon_fields = list(set(safe_pf_fields).intersection(safe_dsa_fields)) + extra_muon_fields
        
 
@@ -456,6 +460,69 @@ class SidmProcessor(processor.ProcessorABC):
         # c) and then take the maximum dR per LJ, leaving us with a single value per LJ
         ljs["dRSpread"] = ak.max(ak.flatten(
             ljs["constituents"].metric_table(ljs["constituents"], axis=2), axis=-1), axis=-1)
+        ljs["vxSpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.vx_diff), axis=-1), axis=-1), 0)
+        ljs["vySpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.vy_diff), axis=-1), axis=-1), 0)
+        ljs["vzSpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.vz_diff), axis=-1), axis=-1), 0)
+        ljs["dxySpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.dxy_diff), axis=-1), axis=-1), 0)
+        ljs["dzSpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.dz_diff), axis=-1), axis=-1), 0)
+        ljs["vxySpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.vxy_diff), axis=-1), axis=-1), 0)
+        ljs["vyzSpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.vyz_diff), axis=-1), axis=-1), 0)
+        ljs["vzxSpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.vzx_diff), axis=-1), axis=-1), 0)
+        ljs["v3dSpread_dsa"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["dsaMuons"].metric_table(ljs["dsaMuons"], axis=2, metric = utilities.v3d_diff), axis=-1), axis=-1), 0)
+        
+        ljs["vxSpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.vx_diff), axis=-1), axis=-1), 0)
+        ljs["vySpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.vy_diff), axis=-1), axis=-1), 0)
+        ljs["vzSpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.vz_diff), axis=-1), axis=-1), 0)
+        ljs["dxySpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.dxy_diff), axis=-1), axis=-1), 0)
+        ljs["dzSpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.dz_diff), axis=-1), axis=-1), 0)
+        ljs["vxySpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.vxy_diff), axis=-1), axis=-1), 0)
+        ljs["vyzSpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.vyz_diff), axis=-1), axis=-1), 0)
+        ljs["vzxSpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.vzx_diff), axis=-1), axis=-1), 0)
+        ljs["v3dSpread_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.v3d_diff), axis=-1), axis=-1), 0)
+        ljs["dzVzdiff_pf"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["pfMuons"].metric_table(ljs["pfMuons"], axis=2, metric = utilities.vz_diff_minus_dz_diff), axis=-1), axis=-1), 0)
+
+        ljs["dxySpread_ele"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["electrons"].metric_table(ljs["electrons"], axis=2, metric = utilities.dxy_diff), axis=-1), axis=-1), 0)
+        ljs["dzSpread_ele"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["electrons"].metric_table(ljs["electrons"], axis=2, metric = utilities.dz_diff), axis=-1), axis=-1), 0)
+
+        ljs["vxSpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.vx_diff), axis=-1), axis=-1), 0)
+        ljs["vySpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.vy_diff), axis=-1), axis=-1), 0)
+        ljs["vzSpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.vz_diff), axis=-1), axis=-1), 0)
+        ljs["dxySpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.dxy_diff), axis=-1), axis=-1), 0)
+        ljs["dzSpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.dz_diff), axis=-1), axis=-1), 0)
+        ljs["vxySpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.vxy_diff), axis=-1), axis=-1), 0)
+        ljs["vyzSpread_mu"] =ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.vyz_diff), axis=-1), axis=-1), 0)
+        ljs["vzxSpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.vzx_diff), axis=-1), axis=-1), 0)
+        ljs["v3dSpread_mu"] =  ak.fill_none(ak.max(ak.flatten(
+            ljs["muons"].metric_table(ljs["muons"], axis=2, metric = utilities.v3d_diff), axis=-1), axis=-1), 0)
 
         # LJ isolation
         ljs["matched_jet"] = ljs.nearest(objs["jets"], threshold=0.4)       
@@ -467,6 +534,7 @@ class SidmProcessor(processor.ProcessorABC):
 
         # pt order the new LJs
         ljs = self.order(ljs)
+        ljs = ak.with_field(ljs, ak.local_index(ljs.pt), "idx")
 
         # return the new LJ collection
         return ljs

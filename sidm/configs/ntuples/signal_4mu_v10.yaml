@@ -755,8 +755,8 @@ llpNanoAOD_v2:
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-50.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-51.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-6.root
-      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-7.root # LZMAError: Corrupt input data 
-      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-8.root # LZMAError: Corrupt input data 
+      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-7.root # LZMAError: Corrupt input data
+      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-8.root # LZMAError: Corrupt input data
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3_part-9.root
       path: CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-200_v3/LLPnanoAODv2/
     4Mu_100GeV_5p0GeV_400mm:
@@ -776,7 +776,7 @@ llpNanoAOD_v2:
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-2.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-20.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-21.root
-      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-22.root # LZMAError: Corrupt input data 
+      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-22.root # LZMAError: Corrupt input data
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-23.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-24.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-25.root
@@ -788,7 +788,7 @@ llpNanoAOD_v2:
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-30.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-31.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-32.root
-      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-33.root # LZMAError: Corrupt input data 
+      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-33.root # LZMAError: Corrupt input data
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-34.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-35.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-5p0_ctau-400_v3_part-36.root
@@ -4432,6 +4432,7 @@ llpNanoAOD_v2:
       path: CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p002_v3/LLPnanoAODv2/
     4Mu_1000GeV_0p25GeV_0p02mm:
       files:
+      # - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3.root #KilledWorker exception (likely a segfault or out-of-memory issue)
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3_part-0.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3_part-1.root
       - CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-1000_MDp-0p25_ctau-0p02_v3_part-10.root

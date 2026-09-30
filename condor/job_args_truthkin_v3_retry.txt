@@ -1,0 +1,9 @@
+4Mu_200GeV_0p25GeV_1p0mm 3 filelists/4Mu_200GeV_0p25GeV_1p0mm_3.txt
+4Mu_200GeV_0p25GeV_1p0mm 10 filelists/4Mu_200GeV_0p25GeV_1p0mm_10.txt
+4Mu_500GeV_0p25GeV_0p04mm 5 filelists/4Mu_500GeV_0p25GeV_0p04mm_5.txt
+4Mu_500GeV_5p0GeV_8p0mm 8 filelists/4Mu_500GeV_5p0GeV_8p0mm_8.txt
+4Mu_800GeV_1p2GeV_0p12mm 2 filelists/4Mu_800GeV_1p2GeV_0p12mm_2.txt
+2Mu2E_500GeV_0p25GeV_0p04mm 5 filelists/2Mu2E_500GeV_0p25GeV_0p04mm_5.txt
+2Mu2E_500GeV_1p2GeV_1p9mm 5 filelists/2Mu2E_500GeV_1p2GeV_1p9mm_5.txt
+2Mu2E_500GeV_5p0GeV_0p08mm 7 filelists/2Mu2E_500GeV_5p0GeV_0p08mm_7.txt
+2Mu2E_800GeV_5p0GeV_0p05mm 6 filelists/2Mu2E_800GeV_5p0GeV_0p05mm_6.txt

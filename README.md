@@ -240,7 +240,7 @@ output = runner.run(fileset, treename="Events", processor_instance=p)
 cluster.close()
 ```
 
-Under the hood: workers are HTCondor jobs that run inside the `coffea-dask-almalinux9:2025.5.0.rc2-py3.11` apptainer image on the LPC pool; the notebook itself stays in `sidm_venv` outside the apptainer. The key convenience over coffea-casa: your local `sidm/` tree (including uncommitted edits) is shipped to each worker via `UploadDirectory`, so there is no commit/push-to-GitHub roundtrip (and no branch to pin) during iteration — re-run `make_lpc_client()` after editing anything under `sidm/` to refresh the workers.
+Under the hood: workers are HTCondor jobs that run inside the `coffea-dask-almalinux9:2025.5.0.rc2-py3.11` apptainer image on the LPC pool; the notebook itself stays in `sidm_venv` outside the apptainer. The key convenience over coffea-casa: your local `sidm/` code (including uncommitted edits) is shipped to each worker via `UploadDirectory`, so there is no commit/push-to-GitHub roundtrip (and no branch to pin) during iteration — re-run `make_lpc_client()` after editing anything under `sidm/` to refresh the workers. Only the importable tree travels: `sidm/tools`, `sidm/definitions`, `sidm/scripts`, `sidm/configs` and `sidm/data`. Notebooks and their committed outputs (`sidm/studies`, `sidm/test_notebooks`) are excluded, because the scheduler runs inside the notebook process and re-sends the payload to every worker: shipping `sidm/studies` has OOM-killed kernels on shared interactive nodes. **Code that runs inside a dask task must live in one of the uploaded directories, not next to a notebook in `sidm/studies/`.**
 
 The required Python packages (`htcondor<25`, `lpcjobqueue`) were installed as part of step 3, so no extra setup is needed. A runnable end-to-end example lives at [sidm/test_notebooks/lpc_dask_example.ipynb](sidm/test_notebooks/lpc_dask_example.ipynb).
 
@@ -277,7 +277,7 @@ The working redirector **flips between facilities**: on LPC use `root://cmseos.f
 
 Most notebooks in `sidm/studies/` were written for coffea-casa. Three swaps move them to LPC:
 
-1. **Drop the `importlib.reload(scaleout)` line.** That was a workaround for editing `sidm/tools/scaleout.py` between runs. With `make_lpc_client()` your local `sidm/` tree is uploaded to workers automatically, so there is no source to edit.
+1. **Drop the `importlib.reload(scaleout)` line.** That was a workaround for editing `sidm/tools/scaleout.py` between runs. With `make_lpc_client()` your local `sidm/` code is uploaded to workers automatically, so there is no source to edit. Note that helper modules sitting beside a notebook in `sidm/studies/` are **not** uploaded; if a dask task needs one, move it under `sidm/tools/` or `sidm/definitions/` first.
 
 2. **Replace the client constructor.** Where the notebook has:
    ```python
@@ -480,4 +480,4 @@ stale.
    ```
 4. Pass it to the Runner: `executor=processor.DaskExecutor(client=client)`.
 
-**On LPC** (spinning up an HTCondor-backed cluster from the notebook itself), see [section 7 above](#7-scaling-jobs-from-a-notebook-with-dask--htcondor) — `scaleout.make_lpc_client(...)` returns a ready `(cluster, client)` pair and uploads your local `sidm/` tree to workers automatically, so no edit-the-source step is needed.
+**On LPC** (spinning up an HTCondor-backed cluster from the notebook itself), see [section 7 above](#7-scaling-jobs-from-a-notebook-with-dask--htcondor) — `scaleout.make_lpc_client(...)` returns a ready `(cluster, client)` pair and uploads your local `sidm/` code to workers automatically, so no edit-the-source step is needed. What travels is the importable tree only (`tools`, `definitions`, `scripts`, `configs`, `data`); see [section 7](#7-scaling-jobs-from-a-notebook-with-dask--htcondor).

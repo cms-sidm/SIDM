@@ -1,6 +1,7 @@
 """Define all commonly used objects"""
 
 import awkward as ak
+import numpy as np
 from sidm.tools.utilities import matched, get_pairs
 
 # define helper functions
@@ -67,8 +68,8 @@ preLj_objs["genAs_toMu"] = lambda evts: toPid(preLj_objs["genAs"](evts), 13)
 preLj_objs["genAs_toE"]  = lambda evts: toPid(preLj_objs["genAs"](evts), 11)
 preLj_objs["rho_PFIso"]  = lambda evts: evts.fixedGridRhoFastjetAll
 preLj_objs["jets"]       = lambda evts: evts.Jet
-preLj_objs["flags"]      = lambda evts: evts.Flag
-
+preLj_objs["flags"]       = lambda evts: evts.Flag
+preLj_objs["bjets"]      = lambda evts: evts.Jet
 # define objects whose that will be added to objs by the sidm_processor after LJs are clustered
 # and LJ cuts are applied. postLj_obj cuts can be applied to these
 postLj_objs = {}
@@ -79,8 +80,7 @@ postLj_objs["pfmu_ljs"]     = lambda objs: noDsa(objs["mu_ljs"])
 postLj_objs["dsamu_ljs"]    = lambda objs: noPf(objs["mu_ljs"])
 postLj_objs["electron_ljs"] = lambda objs: noPhoton(objs["egm_ljs"])
 postLj_objs["photon_ljs"]   = lambda objs: noE(objs["egm_ljs"])
-postLj_objs["dsaMuonPairs"] = lambda objs: get_pairs(objs["dsaMuons"])
-postLj_objs["muonPairs"] = lambda objs: get_pairs(objs["muons"])
+postLj_objs["allMuons"] = lambda objs: ak.concatenate([ ak.with_name(objs["muons"],"PtEtaPhiMLorentzVector"),ak.with_name(objs["dsaMuons"],"PtEtaPhiMLorentzVector")],axis=1)
 # Adding the following here since I want the cuts on genMus and genEs to be applied
 postLj_objs_MC["genMus_fromA"] = lambda objs: fromPid(objs["genMus"], 32)
 postLj_objs_MC["genEs_fromA"]  = lambda objs: fromPid(objs["genEs"],  32)
@@ -97,6 +97,9 @@ derived_objs["genAs_toMu_matched_muLj"] = lambda objs, r: matched(objs["genAs_to
 derived_objs["genAs_matched_egmLj"]     = lambda objs, r: matched(objs["genAs"], objs["egm_ljs"], r)
 derived_objs["genAs_toE_matched_egmLj"] = lambda objs, r: matched(objs["genAs_toE"], objs["egm_ljs"], r)
 derived_objs["mu_lj_matched_genAs_toMu"]   = lambda objs, r: matched(objs["mu_ljs"], objs["genAs_toMu"], r)
+derived_objs["back_to_back_dsa_pairs"]   = lambda objs: (lambda pairs, v1, v2: pairs[np.cos(v1.deltaangle(v2)) <= -0.99])(get_pairs(objs["dsaMuons"]),*ak.unzip(get_pairs(objs["dsaMuons"])))
+derived_objs["parallel_dsa_pairs"]   = lambda objs: (lambda pairs, v1, v2: pairs[np.cos(v1.deltaangle(v2)) >= 0.99])(get_pairs(objs["dsaMuons"]),*ak.unzip(get_pairs(objs["dsaMuons"])))
+
 # Gen-level objects that depend on PIDs not present in all samples (signal-only).
 # Defined as derived_objs so they're only evaluated when explicitly referenced by a histogram or cut.
 # Derive from objs["gens"] (uncut) rather than objs["genMus"]/objs["genEs"] (which are channel-filtered

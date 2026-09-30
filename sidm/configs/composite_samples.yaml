@@ -4,6 +4,10 @@ DYJetsToMuMu:
   - DYJetsToMuMu_M10to50
   - DYJetsToMuMu_M50
 
+DYJetsToLL:
+  - DYJetsToLL_M10to50
+  - DYJetsToLL_M50
+
 QCD:
   - QCD_Pt15To20
   - QCD_Pt20To30

@@ -58,6 +58,13 @@ def mass_label(key):
     return f"{ch}   m($\\Phi$)={mass_gev(bs):g}, m(A)={mass_gev(dp):g} GeV"
 
 
+def mass_label_2line(key):
+    """Two-line variant of mass_label, for panels where the one-line form is too wide."""
+    ch, bs, dp = key
+    return (f"{ch},  m($\\Phi$) = {mass_gev(bs):g} GeV\n"
+            f"m(A) = {mass_gev(dp):g} GeV")
+
+
 def proper_density(output, sample, channel=CHANNEL):
     """Proper-lxyz dN/dx, effective counts (value**2/variance), and the histogram-mean cτ."""
     h = output[sample]["hists"]["genAs_lxyz_proper"][{"channel": channel}]
@@ -252,17 +259,24 @@ def insulated_core_fit(output, sample, x_insul, channel=CHANNEL):
     return dict(ctau=ctau, ctau_err=ctau_err, n=n, lever_nats=lever_nats)
 
 
-def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
+def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3,
+                  keys=None, legend_fontsize=9.5, legend_title_fontsize=10.5,
+                  cms_fontsize=13, tag_fontsize=12, two_line_tag=False):
     """One panel per mass point (cτ scan overlaid) showing every signal sample's
     proper-lxyz dN/dx with its fit + ±1σ band; cτ_fit ± error annotated per curve.
 
-    kind: "core_slope" or "acceptance". Returns the Figure."""
+    kind: "core_slope" or "acceptance". keys optionally restricts (and orders) the
+    mass points drawn, so a channel's 18 points can be split across page-sized
+    figures; the font sizes are exposed for the same reason -- a figure scaled to
+    the width of an analysis-note page needs larger in-panel text the more panels
+    it holds. Returns the Figure."""
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mticker
     import mplhep as hep
 
-    keys = sorted([k for k in groups if k[0] == phys_channel],
-                  key=lambda k: (mass_gev(k[1]), mass_gev(k[2])))
+    if keys is None:
+        keys = sorted([k for k in groups if k[0] == phys_channel],
+                      key=lambda k: (mass_gev(k[1]), mass_gev(k[2])))
     nrows = math.ceil(len(keys) / ncols)
     fig, axes = plt.subplots(nrows, ncols, figsize=(7.6 * ncols, 5.8 * nrows), squeeze=False)
     fig.set_dpi(78)
@@ -300,11 +314,13 @@ def plot_fit_grid(output, groups, phys_channel, kind, channel=CHANNEL, ncols=3):
             axis.set_minor_formatter(mticker.NullFormatter())
         ax.set_xlabel("Proper decay length  $x = \\ell_{xyz}/\\beta\\gamma$  [cm]")
         ax.set_ylabel("dN/dx  [cm$^{-1}$]")
-        ax.legend(title="cτ:  nom → fit ± err  [cm]", fontsize=9.5,
-                  title_fontsize=10.5, loc="lower left", framealpha=0.9)
-        hep.cms.label(ax=ax, data=False, fontsize=13)
-        ax.text(0.97, 0.95, mass_label(key), transform=ax.transAxes,
-                ha="right", va="top", fontsize=12)
+        ax.legend(title="cτ:  nom → fit ± err  [cm]", fontsize=legend_fontsize,
+                  title_fontsize=legend_title_fontsize, loc="lower left",
+                  frameon=True, facecolor="white", edgecolor="none", framealpha=0.9)
+        hep.cms.label(ax=ax, data=False, fontsize=cms_fontsize)
+        tag = mass_label_2line(key) if two_line_tag else mass_label(key)
+        ax.text(0.97, 0.95, tag, transform=ax.transAxes,
+                ha="right", va="top", fontsize=tag_fontsize)
 
     for idx in range(len(keys), nrows * ncols):
         axes[idx // ncols][idx % ncols].set_visible(False)

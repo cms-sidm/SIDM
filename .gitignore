@@ -16,6 +16,8 @@ condor/job_args_smoke.txt
 condor/filelists/
 condor/filelists_smoke/
 condor/filelists_retry/
+condor/filelists_cond/
+condor/filelists_selfcon/
 condor/submit_smoke.sub
 condor/smoke_samples.txt
 condor/logs/

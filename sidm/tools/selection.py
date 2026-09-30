@@ -32,6 +32,18 @@ class Selection:
             try:
                 mask = evt_cut_defs[cut](sel_objs)
             except Exception as e:
+                # An I/O failure means an unreadable chunk, not an unevaluable cut.
+                if isinstance(e, OSError) or "I/O operation" in str(e):
+                    raise
+                # A collection absent from this sample (a gen-level cut on data)
+                # means the cut does not apply here, not that it is broken;
+                # report it the way JaggedSelection.apply_obj_cuts already does
+                # for object cuts on a missing collection.
+                if (isinstance(e, KeyError) and e.args and isinstance(e.args[0], str)
+                        and e.args[0] != cut and e.args[0] not in sel_objs):
+                    print(f"Warning: {e.args[0]} not found in sample. "
+                          f"The following cuts will not be applied: ['{cut}']")
+                    continue
                 print(f"Warning: Unable to evaluate {cut} Skipping.",e)
                 # Skip this cut entirely. Event cuts were once collected and
                 # applied together as a single AND after the loop, where falling
@@ -47,8 +59,11 @@ class Selection:
                     sel_objs[name] = obj[mask]
                     if name == "evt_weights":
                         self.cutflow.add_row(cut, ak.count(sel_objs[name]), ak.sum(sel_objs[name]))
-                except:
-                    print(f"Warning: Unable to apply event cuts to {name}. Skipping.")
+                except Exception as e:
+                    if isinstance(e, OSError) or "I/O operation" in str(e):
+                        raise
+                    print(f"Warning: Unable to apply event cuts to {name}. Skipping. "
+                          f"({type(e).__name__}: {e})")
 
         return sel_objs
 
@@ -87,6 +102,8 @@ class JaggedSelection:
                     else:
                         sel_objs[obj] = sel_objs[obj][obj_cut_defs[obj][cut](sel_objs)]
                 except Exception as e:
+                    if isinstance(e, OSError) or "I/O operation" in str(e):
+                        raise
                     print(f"Warning: Unable to apply {cut} for {obj}. Skipping. Error message: {e}")
                     traceback.print_exc()
         return sel_objs

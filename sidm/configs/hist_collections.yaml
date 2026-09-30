@@ -63,6 +63,7 @@ muon_base: &muon_base
   - "muon_n"
   - "muon_pt"
   - "muon_dxy"
+  - "muon_dz"
   - "muon_eta_phi"
   - "muon_absD0"
   - "muon_absD0_lowRange"
@@ -73,6 +74,16 @@ muon_base: &muon_base
   - "muon_dxy_XXLowRange"
   - "muon_dxy_XLowRange"
   - "muon_dxy_lowRange"
+  - "muon_muon_invmass"
+  - "muon_muon_invmass_highRange"
+  - "muon_innerVz"
+  - "muon_innerVy"
+  - "muon_innerVz"
+  - "muon_dz"
+  - "muon_dz_innerVz"
+  - "mu_lj_dzVzdiff_pf"
+  - "muon_dz_innerVz_diff"
+  - "mu_lj_pfN_dsaN"
 
 dsaMuon_base: &dsaMuon_base
   - "dsaMuon_n"
@@ -84,7 +95,8 @@ dsaMuon_base: &dsaMuon_base
   - "dsaMuon_absD0_lowRange"
   - "dsaMuon_numOverlapSegments_matchedMuons"
   - "dsaMuon_numOverlapSegments_goodMatchedMuons"
-  - "dsaMu_dsaMu_cosAlpha"
+  - "dsaMu_dsaMu_dR"
+  - "dsaMu_dsaMu_invmass"
 
 lj_base: &lj_base
   - "lj_n"
@@ -171,6 +183,8 @@ mu_lj_base: &mu_lj_base
   - "mu_lj_pfMu_trkNumPixelHits"
   - "mu_lj_pfMu_trkNumTrkLayers"
   - "mu_lj_muon_eta_phi"
+  - "mu_lj_dsaMuon_dz"
+  - "mu_lj_dsaMuon_cosAlpha"
 
 egm_lj_base: &egm_lj_base
   - "egm_lj_n"
@@ -206,7 +220,7 @@ egm_lj_base: &egm_lj_base
   - "egm_lj_electron_min_dxy_XXXXLowRange"
   - "egm_lj_electron_max_dxy_XXXXLowRange"
   - "egm_lj_electron_lostHits"
-
+  - "egm_lj_electron_eta_phi"
 electron_lj_base: &electron_lj_base
   - "electron_lj_dR"
   - "electron_lj_dR_lowRange"
@@ -383,7 +397,7 @@ genE_base: &genE_base
   - "genE0_dxy_lowRange"
   - "genE1_dxy_lowRange"
   - "genE_matched_electron_status"
-  
+
 genMu_base: &genMu_base
   - "genMu_n"
   - "genMu_pt"
@@ -431,6 +445,7 @@ genMu_base: &genMu_base
   - "genMu_matched_lj_muon_dxy"
   - "genMu_matched_lj_muon_dxy_lowRange"
   - "genMu_matched_lj_muon_dxy_XLowRange"
+  - "genMu_vz"
 
 genA_base: &genA_base
   - "genAs_n"
@@ -601,37 +616,6 @@ gen_base: &gen_base
   - *genA_toE_base
   - "gen_abspid"
 
-base: &base
-  - *pv_base
-  - *electron_base
-  - *photon_base
-  - *muon_base
-  - *dsaMuon_base
-  - *lj_base
-  - *mu_lj_base
-  - *egm_lj_base
-  - *electron_lj_base
-  - *photon_lj_base
-  - *muon_lj_base
-  - *dsaMuon_lj_base
-  - *lj_lj_base
-  - *abcd_base
-  - *electron_photon_base
-  - *isolation_base
-
-base_plus_gen: &base_plus_gen
-  - *base
-  - *gen_base
-
-base_plus_gen_resolution: &base_plus_gen_resolution
-  - *base
-  - *gen_base
-  - *genA_ratio
-  - *genA_lj_2d
-  - *lepton_genLepton_base
-  - *lepton_genLepton_genA_base
-  
-
 muon_displacement: &muon_displacement
   - "mu_lj_pfMuon_dxy_XLowRange"
   - "mu_lj_pfMuon_max_dxy_XLowRange"
@@ -690,7 +674,7 @@ muon_displacement: &muon_displacement
   - "leading_pf_mu_lj_pfMu_max_trkNumTrkLayers"
   - "leading_pf_dsa_mu_lj_pfMu_max_trkNumTrkLayers"
   - "leading_mu_lj_pf_muon_min_dxy"
-  
+
 electron_displacement: &electron_displacement
   - "egm_lj_electron_dxy_XXXLowRange"
   - "egm_lj_electron_max_dxy_XXXLowRange"
@@ -710,7 +694,7 @@ electron_displacement: &electron_displacement
   - "leading_e_lj_electron_min_lostHits"
   - "leading_eg_lj_electron_min_lostHits"
   - "leading_egm_lj_electron_min_dxy"
-  
+
 lj_displacement: &lj_displacement
   - "mulj_egmlj_invmass"
   - "mulj_egmlj_invmass_pixelHits_lostHits"
@@ -745,7 +729,7 @@ lj_displacement: &lj_displacement
   - "mulj_eg_lj_invmass_lostHits"
   - "mu_lj_n"
   - "egm_lj_n"
-  
+
 dxy_significance: &dxy_significance
   - "mu_lj_pfMuon_dxy_signi"
   - "mu_lj_dsaMuon_dxy_signi"
@@ -841,4 +825,334 @@ trig_base: &trig_base
   - "all_muon0_pt_vs_all_muon1_pt"
   - "mu_lj_sum_pt_score"
 
+# Gen-truth subset of genE_base + genMu_base: only hists that read generator
+# objects, so gen-only channels do not fill meaningless reco histograms
+# joint displacement-collimation response of the mu-mu dark photon: the
+# efficiency of one variable in bins of the other needs their joint
+# distribution, which no other collection carries
+# gen-matched companion to the reco self-consistency pair-mass figure: each
+# dark photon paired with its own nearest LJ, to separate resolution from the
+# small combinatoric chance of picking a spurious extra LJ
+selfconsistency_matched: &selfconsistency_matched
+  - "genA_matched_lj_lj_invmass"
+  - "genA_matched_mulj_egmlj_invmass"
 
+trigger_conditioned: &trigger_conditioned
+  - "genA_toMu_lxy_vs_daughters_dR"
+  - "genA_toMu_daughters_dR_vs_pt"
+  - "genAs_toMu_lxy"
+  - "genA_toMu_daughters_dR_logx"
+
+anatomy_extra: &anatomy_extra
+  - "genA_toMu_daughters_dR"
+  - "genA_toMu_daughters_dR_logx"
+  - "genA_toMu_daughters_dR_vs_pt"
+  - "genA_toE_daughters_dR"
+  - "genA_toE_daughters_dR_logx"
+  - "genA_toE_daughters_dR_vs_pt"
+  - "gen4Mu_invmass"
+  - "gen2Mu2E_invmass"
+  - "muon0_pt"
+  - "muon1_pt"
+  - "dsaMuon0_pt"
+  - "dsaMuon1_pt"
+  - "mulj_egmlj_invmass"
+
+gen_truth: &gen_truth
+  - "genE_n"
+  - "genE_pt"
+  - "genE_pt_highRange"
+  - "genE_dxy"
+  - "genE_dxy_lowRange"
+  - "genE_dxy_XLowRange"
+  - "genE_dxy_XXLowRange"
+  - "genE0_pt"
+  - "genE1_pt"
+  - "genE0_pt_highRange"
+  - "genE1_pt_highRange"
+  - "genE_eta_phi"
+  - "genE_parent_absPdgId"
+  - "genE_genE_dR"
+  - "genE_genE_dR_lowRange"
+  - "genE_genE_dR_XLowRange"
+  - "genE_genE_dR_XXLowRange"
+  - "genE_genE_dEta"
+  - "genE_genE_dPhi"
+  - "genE_genE_dPt"
+  - "genE_genE_pt"
+  - "genE0_dxy"
+  - "genE1_dxy"
+  - "genE0_dxy_lowRange"
+  - "genE1_dxy_lowRange"
+  - "genMu_n"
+  - "genMu_pt"
+  - "genMu_pt_highRange"
+  - "genMu_dxy"
+  - "genMu_dxy_lowRange"
+  - "genMu_dxy_XLowRange"
+  - "genMu_dxy_XXLowRange"
+  - "genMu0_pt"
+  - "genMu1_pt"
+  - "genMu0_pt_highRange"
+  - "genMu1_pt_highRange"
+  - "genMu_eta_phi"
+  - "genMu_parent_absPdgId"
+  - "genMu_genMu_dR"
+  - "genMu_genMu_dR_lowRange"
+  - "genMu_genMu_dR_XLowRange"
+  - "genMu_genMu_dR_XXLowRange"
+  - "genMu_genMu_dEta"
+  - "genMu_genMu_dPhi"
+  - "genMu_genMu_pt"
+  - "genMu0_pt_MuMudR"
+  - "genMu0_pt_MuMudR_XLowRange"
+  - "genMu0_pt_MuMudR_XXLowRange"
+  - "genMu0_pt_highRange_MuMudR"
+  - "genMu0_pt_highRange_MuMudR_XLowRange"
+  - "genMu0_pt_highRange_MuMudR_XXLowRange"
+  - "genMu1_pt_MuMudR"
+  - "genMu1_pt_MuMudR_XLowRange"
+  - "genMu1_pt_MuMudR_XXLowRange"
+  - "genMu1_pt_highRange_MuMudR"
+  - "genMu1_pt_highRange_MuMudR_XLowRange"
+  - "genMu1_pt_highRange_MuMudR_XXLowRange"
+  - "genMu0_dxy"
+  - "genMu1_dxy"
+  - "genMu0_dxy_lowRange"
+  - "genMu1_dxy_lowRange"
+  - "genMus_fromA_pt"
+  - "genEs_fromA_pt"
+  - "genMus_fromA_dxy"
+  - "genMus_fromA_dxy_lowRange"
+  - "genMus_fromA_dxy_XLowRange"
+  - "genMus_fromA_dxy_XXLowRange"
+  - "genEs_fromA_dxy"
+  - "genEs_fromA_dxy_lowRange"
+  - "genEs_fromA_dxy_XLowRange"
+  - "genEs_fromA_dxy_XXLowRange"
+
+ttjets_base: &ttjets_base
+  - "jet_n"
+  - "bjet_n"
+  - "muon_n"
+  - "muon_muon_dphi"
+  - "muon_muon_invmass"
+  - "muon_muon_invmass_highRange"
+  - "met_pt"
+  - "muon_bjet_inv_mass"
+  - "muon_bjet_min_inv_mass"
+
+base: &base
+  - *pv_base
+  - *electron_base
+  - *photon_base
+  - *muon_base
+  - *dsaMuon_base
+  - *lj_base
+  - *mu_lj_base
+  - *egm_lj_base
+  - *electron_lj_base
+  - *photon_lj_base
+  - *muon_lj_base
+  - *dsaMuon_lj_base
+  - *lj_lj_base
+  - *abcd_base
+  - *electron_photon_base
+  - *isolation_base
+  # - *displacement_base
+  # - *data_base
+  # - *ttjets_base
+
+base_plus_gen: &base_plus_gen
+  - *base
+  - *gen_base
+
+base_plus_gen_resolution: &base_plus_gen_resolution
+  - *base
+  - *gen_base
+  - *genA_ratio
+  - *genA_lj_2d
+  - *lepton_genLepton_base
+  - *lepton_genLepton_genA_base
+
+dsaPair_1D: &dsaPair_1D
+  - "dsa_pair_vx_diff"
+  - "dsa_pair_vy_diff"
+  - "dsa_pair_vz_diff"
+  - "dsa_pair_dxy_diff"
+  - "dsa_pair_dz_diff"
+  - "dsa_pair_eta_diff"
+  - "dsa_pair_phi_diff"
+  - "dsa_pair_charge_diff"
+  - "N_back_to_back_N_parellel_dsa"
+  - "back_to_back_dsa_pair_vx_diff"
+  - "parallel_dsa_pair_vx_diff"
+  - "back_to_back_dsa_pair_vy_diff"
+  - "parallel_dsa_pair_vy_diff"
+  - "back_to_back_dsa_pair_vz_diff"
+  - "parallel_dsa_pair_vz_diff"
+  - "back_to_back_dsa_pair_dxy_diff"
+  - "parallel_dsa_pair_dxy_diff"
+  - "back_to_back_dsa_pair_dz_diff"
+  - "parallel_dsa_pair_dz_diff"
+  - "back_to_back_dsa_pair_eta_diff"
+  - "parallel_dsa_pair_eta_diff"
+  - "back_to_back_dsa_pair_phi_diff"
+  - "parallel_dsa_pair_phi_diff"
+  - "back_to_back_dsa_pair_charge_diff"
+  - "parallel_dsa_pair_charge_diff"
+  - "dsa_pair_3d_distance"
+  - "back_to_back_dsa_pair_3d_distance"
+  - "parallel_dsa_pair_3d_distance"
+  - "dsa_pair_xz_distance"
+  - "back_to_back_dsa_pair_xz_distance"
+  - "parallel_dsa_pair_xz_distance"
+  - "dsa_pair_nearest_lj_index_diff"
+  - "back_to_back_dsa_pair_nearest_lj_index_diff"
+  - "parallel_dsa_pair_nearest_lj_index_diff"
+  - "dsa_pair_xy_distance"
+  - "back_to_back_dsa_pair_xy_distance"
+  - "parallel_dsa_pair_xy_distance"
+  - "dsa_pair_yz_distance"
+  - "back_to_back_dsa_pair_yz_distance"
+  - "parallel_dsa_pair_yz_distance"
+  - "egm_lj_dxySpread_ele"
+  - "egm_lj_dzSpread_ele"
+  - "dsa_pair_pt"
+  - "back_to_back_dsa_pair_pt"
+  - "parallel_dsa_pair_pt"
+
+dsaPair_2D: &dsaPair_2D
+  - "dsa_pair_vx"
+  - "back_to_back_dsa_pair_vx"
+  - "parallel_dsa_pair_vx"
+  - "dsa_pair_vy"
+  - "back_to_back_dsa_pair_vy"
+  - "parallel_dsa_pair_vy"
+  - "dsa_pair_vz"
+  - "back_to_back_dsa_pair_vz"
+  - "parallel_dsa_pair_vz"
+  - "dsa_pair_dxy"
+  - "back_to_back_dsa_pair_dxy"
+  - "parallel_dsa_pair_dxy"
+  - "dsa_pair_dz"
+  - "back_to_back_dsa_pair_dz"
+  - "parallel_dsa_pair_dz"
+  - "dsa_pair_eta"
+  - "back_to_back_dsa_pair_eta"
+  - "parallel_dsa_pair_eta"
+  - "dsa_pair_phi"
+  - "back_to_back_dsa_pair_phi"
+  - "parallel_dsa_pair_phi"
+  - "dsa_pair_charge"
+  - "back_to_back_dsa_pair_charge"
+  - "parallel_dsa_pair_charge"
+
+gen2D: &gen2D
+  - "genMu_leading_vs_subleading_phi"
+  - "genMu_leading_vs_subleading_eta"
+  - "genMu_leading_vs_subleading_vx"
+  - "genMu_leading_vs_subleading_vy"
+  - "genMu_leading_vs_subleading_vz"
+  - "genMu_leading_vs_subleading_dxy"
+  - "genE_leading_vs_subleading_vx"
+  - "genE_leading_vs_subleading_vy"
+  - "genE_leading_vs_subleading_vz"
+  - "genE_leading_vs_subleading_dxy"
+
+number: &number
+  - "N_dsa_pairs"
+  - "N_back_to_back_dsa"
+  - "N_parallel_dsa"
+
+mu_ljSpread_mu: &mu_ljSpread_mu
+  - "mu_lj_vxSpread_mu"
+  - "mu_lj_vySpread_mu"
+  - "mu_lj_vzSpread_mu"
+  - "mu_lj_dxySpread_mu"
+  - "mu_lj_dzSpread_mu"
+  - "mu_lj_vxySpread_mu"
+  - "mu_lj_vyzSpread_mu"
+  - "mu_lj_vzxSpread_mu"
+  - "mu_lj_v3dSpread_mu"
+
+mu_ljSpread_dsa: &mu_ljSpread_dsa
+  - "mu_lj_vxySpread_dsa"
+  - "mu_lj_vyzSpread_dsa"
+  - "mu_lj_vzxSpread_dsa"
+  - "mu_lj_v3dSpread_dsa"
+  - "mu_lj_vxSpread_dsa"
+  - "mu_lj_vySpread_dsa"
+  - "mu_lj_vzSpread_dsa"
+  - "mu_lj_dxySpread_dsa"
+  - "mu_lj_dzSpread_dsa"
+
+mu_ljSpread_pf: &mu_ljSpread_pf
+  - "mu_lj_vxySpread_pf"
+  - "mu_lj_vyzSpread_pf"
+  - "mu_lj_vzxSpread_pf"
+  - "mu_lj_v3dSpread_pf"
+  - "mu_lj_vxSpread_pf"
+  - "mu_lj_vySpread_pf"
+  - "mu_lj_vzSpread_pf"
+  - "mu_lj_dxySpread_pf"
+  - "mu_lj_dzSpread_pf"
+  - 'mu_lj_pfMu_vzSpread_dzSpread'
+
+cosAlpha: &cosAlpha
+  - "cosAlpha_dsa"
+  - "cosAlpha_pf"
+  - "cosAlpha_mu"
+  - "min_cosAlpha_mu"
+  - "min_cosAlpha_pf"
+  - "min_cosAlpha_dsa"
+
+deltaR_cosmic: &deltaR_cosmic
+  - "dsaMu_dsaMu_deltaR_cosmic"
+  - "muon_muon_deltaR_cosmic"
+  - "Allmuon_Allmuon_deltaR_cosmic"
+
+pf_dz_vz: &pf_dz_vz
+  - "muon_Vz_PVz_diff"
+  - "muon_dxy_by_dxyErr"
+  - "muon_Vz_PVz_diff"
+  - "muon_dz_by_dzErr"
+  - "muon_ptErr_by_pt"
+
+cosmic_veto_extra: &cosmic_veto_extra
+  - "dsaMu_pfMu_dR_closest"
+  - "dsaMu_pfMu_pt_diff"
+
+cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
+  - *cosAlpha
+  - "egm_lj_pt"
+  - "mu_lj_pt"
+  - "mu_lj_muonN"
+  - "mu_lj_pfMu_n"
+  - "mu_lj_dsaMu_n"
+  - "mu_lj_muon_pt"
+  - "mu_lj_pfMuon_pt"
+  - "mu_lj_dsaMuon_pt"
+  - "electron_eta_phi"
+  - "muon_eta_phi"
+  - "dsaMuon_eta_phi"
+  - "photon_eta_phi"
+  - "lj_eta_phi"
+  - "electron_pt"
+  - "muon_pt"
+  - "dsaMuon_pt"
+  - "photon_pt"
+  - "mu_lj_dzSpread_mu"
+  - "mu_lj_vxySpread_mu"
+  - "mu_lj_dzSpread_pf"
+  - "mu_lj_vxySpread_pf"
+  - "mu_lj_dxySpread_pf"
+  - "mu_lj_dxySpread_mu"
+  - "muon_n"
+  - "electron_n"
+  - "dsaMuon_n"
+  - "photon_n"
+  - "muon_muon_invmass"
+  - "muon_muon_invmass_highRange"
+  - "mulj_egmlj_invmass"
+  - "lj_lj_invmass"
