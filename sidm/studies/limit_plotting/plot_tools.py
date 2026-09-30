@@ -34,8 +34,10 @@ import csv
 import re
 from pathlib import Path
 
+import hist
 import matplotlib
 import matplotlib.pyplot as plt
+import mplhep as hep
 import numpy as np
 import yaml
 
@@ -63,6 +65,44 @@ SERIES_STYLES = [("#444444", "o", "-"), ("#4c72b0", "s", "-"),
 def style_for(i):
     """``(colour, marker, linestyle)`` for the i-th series in a comparison."""
     return SERIES_STYLES[i % len(SERIES_STYLES)]
+
+
+# Run 2 (2018) conditions, for the mplhep CMS label on every figure.
+LUMI_FB = 59.83
+COM_TEV = 13
+
+
+def cms_label(ax, lumi=LUMI_FB, com=COM_TEV, title_pad=22, **kwargs):
+    """The standard CMS Simulation label with the Run 2 luminosity.
+
+    Everything here is simulation, so ``data=False`` -- which is what makes
+    mplhep write "Simulation" under "CMS" rather than "Preliminary".  On a
+    multi-panel figure the label belongs on the top-left axes only, as CMS
+    style requires; an array of axes is accepted and reduced to its first
+    element, since ``subplots(squeeze=False)`` hands back a 2-D array and
+    mplhep needs a single Axes.
+    """
+    group = np.atleast_1d(np.asarray(ax, dtype=object)).ravel()
+    # mplhep writes the label just above the axes box, which is exactly where a
+    # panel title already sits.  Push the titles up so the two do not overprint
+    # -- and push *every* panel's title, not only the labelled one, so a row of
+    # column headings stays on one line.
+    for a in group:
+        if a.get_title():
+            a.set_title(a.get_title(), pad=title_pad,
+                        fontsize=a.title.get_fontsize())
+    return hep.cms.label(ax=group[0], data=False, lumi=lumi, com=com, **kwargs)
+
+
+def to_hist(edges, sumw, sumw2=None):
+    """A weighted ``hist.Hist`` from the arrays a ``Shape`` carries."""
+    h = hist.Hist(hist.axis.Variable(np.asarray(edges, dtype=float), name="x"),
+                  storage=hist.storage.Weight())
+    view = h.view()
+    view["value"] = np.asarray(sumw, dtype=float)
+    view["variance"] = (np.asarray(sumw2, dtype=float) if sumw2 is not None
+                        else np.asarray(sumw, dtype=float))
+    return h
 
 
 def stamp(fig, text):
@@ -332,6 +372,7 @@ def brazil_grid(rows, fs, outdir, campaign, theory=None, name=None, title=""):
         fig.legend(handles, labels, frameon=False, ncol=4, loc="lower center",
                    bbox_to_anchor=(0.5, -0.04))
         fig.suptitle(title or f"{fs}: expected 95% CL limit (MC only, blinded)")
+        cms_label(axes, fontsize=11)
         return save(fig, outdir, name or f"brazil_grid_{fs}", campaign)
 
 
@@ -369,6 +410,7 @@ def limit_vs_mass(rows, fs, outdir, campaign, theory=None, name=None, title=""):
         ax.set_title(title or fs)
         ax.grid(alpha=0.25, which="both")
         ax.legend(frameon=False, ncol=2, fontsize=9)
+        cms_label(ax)
         return save(fig, outdir, name or f"limit_vs_mass_{fs}", campaign)
 
 
@@ -420,6 +462,7 @@ def exclusion_map(rows, fs, outdir, campaign, name=None, title=""):
         n_excl = int(np.nansum(grid < 1))
         fig.suptitle(title or f"{fs}: expected exclusion "
                               f"(outlined: below 1, {n_excl} cells)")
+        cms_label(axes, fontsize=11)
         return save(fig, outdir, name or f"exclusion_map_{fs}", campaign)
 
 
@@ -448,6 +491,7 @@ def kinetic_mixing(rows, outdir, campaign, name="eps2_vs_mdp", title=""):
         fig.colorbar(sc, ax=axes[0].tolist(), label=r"expected limit on $\sigma$ [fb]")
         fig.suptitle(title or r"Kinetic mixing plane "
                               r"($\epsilon=\sqrt{80/m_{Z_D}c\tau}\times10^{-6}$)")
+        cms_label(axes, fontsize=11)
         return save(fig, outdir, name, campaign)
 
 
@@ -512,6 +556,7 @@ def compare_vs_lxy(sets, fs, outdir, campaign, theory=None, name=None, title="",
         fig.legend(handles, labels, frameon=False, ncol=3, loc="lower center",
                    bbox_to_anchor=(0.5, -0.13), fontsize=9)
         fig.suptitle(title or f"{fs}: dotted is the model cross section")
+        cms_label(axes, fontsize=11)
         return save(fig, outdir, name or f"compare_vs_lxy_{fs}", campaign)
 
 
@@ -543,6 +588,7 @@ def compare_vs_mass(sets, outdir, campaign, theory=None, name="compare_vs_mass",
             ax.grid(alpha=0.25, which="both")
         axes[0][0].legend(frameon=False, fontsize=9)
         fig.suptitle(title or "Best expected limit per bound state mass")
+        cms_label(axes, fontsize=12)
         return save(fig, outdir, name, campaign)
 
 
@@ -593,6 +639,7 @@ def compare_ratio(sets, reference, outdir, campaign, against="lxy",
         axes[0][0].set_ylabel(f"limit / {reference} limit")
         axes[0][0].legend(frameon=False, fontsize=8)
         fig.suptitle(title or f"Relative to {reference} (below 1 = stronger)")
+        cms_label(axes, fontsize=12)
         return save(fig, outdir, name or f"compare_ratio_vs_{against}", campaign)
 
 
@@ -624,6 +671,7 @@ def compare_scatter(sets, x_label, y_label, outdir, campaign,
         ax.set_title(title or f"Above the line: {y_label} is weaker")
         ax.grid(alpha=0.25, which="both")
         ax.legend(frameon=False, fontsize=9)
+        cms_label(ax)
         return save(fig, outdir, name, campaign)
 
 
@@ -664,6 +712,7 @@ def compare_exclusion(sets, outdir, campaign, name="compare_exclusion",
             ax.set_xticklabels(labels, rotation=18, ha="right", fontsize=9)
         ax.set_ylabel("points expected to be excluded")
         ax.set_title(title or "Expected exclusion")
+        cms_label(ax)
         return save(fig, outdir, name, campaign)
 
 
@@ -690,59 +739,63 @@ def region_arrays(grouped, channel, n_regions=4):
 
 def region_distributions(grouped, channel, outdir, campaign, signal=None,
                          label=r"$m_{LJLJ}$ [GeV]", name=None, title=""):
-    """The observable in all four regions, stacked by process, with n_eff labels.
+    """The observable in all four ABCD regions, stacked by process group.
 
-    ``signal`` is an optional ``{region: Shape}`` to overlay.  Log scale, so a
-    bin with no simulated background simply draws nothing -- which is exactly
-    the thing worth seeing.
+    Built from ``hist.Hist`` objects and drawn with ``mplhep.histplot``, so the
+    stacking, the error band and the CMS label all follow the standard
+    conventions.  ``signal`` is an optional ``{region: Shape}`` to overlay.
+
+    Log scale, so a bin with no simulated background simply draws nothing --
+    which is the thing worth seeing, and is left to the eye rather than
+    annotated on the figure.
     """
     with plt.rc_context(GRID_RC):
-        fig, axes = plt.subplots(1, 4, figsize=(16, 3.9), constrained_layout=True)
+        fig, axes = plt.subplots(1, 4, figsize=(16, 4.0), sharey=True,
+                                 constrained_layout=True)
         for ax, region in zip(axes, range(4)):
-            edges, bottom, w2 = None, None, None
+            stack, labels, colours, total = [], [], [], None
             for group in sorted(grouped):
                 shape = grouped[group].get(channel, {}).get(region)
-                if shape is None:
+                if shape is None or shape.sumw.sum() <= 0:
                     continue
-                if edges is None:
-                    edges = shape.edges
-                    bottom = np.zeros(shape.nbins)
-                    w2 = np.zeros(shape.nbins)
-                centres = 0.5 * (edges[:-1] + edges[1:])
-                ax.bar(centres, shape.sumw, width=np.diff(edges), bottom=bottom,
-                       label=group, color=GROUP_COLOURS.get(group, "0.6"),
-                       edgecolor="white", linewidth=0.4)
-                bottom = bottom + shape.sumw
-                w2 = w2 + shape.sumw2
-            if edges is None:
+                h = to_hist(shape.edges, shape.sumw, shape.sumw2)
+                stack.append(h)
+                labels.append(group)
+                colours.append(GROUP_COLOURS.get(group, "0.6"))
+                total = h if total is None else total + h
+            if total is None:
                 ax.set_visible(False)
                 continue
-            centres = 0.5 * (edges[:-1] + edges[1:])
-            ax.errorbar(centres, bottom, yerr=np.sqrt(w2), fmt="none",
-                        ecolor="0.25", elinewidth=1.2, capsize=2)
+
+            hep.histplot(stack, ax=ax, stack=True, histtype="fill",
+                         label=labels, color=colours,
+                         edgecolor="white", linewidth=0.4)
+            hep.histplot(total, ax=ax, histtype="errorbar", yerr=True,
+                         color="0.25", elinewidth=1.2, capsize=2,
+                         markersize=0, label=None)
+
             sig = (signal or {}).get(region)
+            top = float(total.view()["value"].max())
             if sig is not None and sig.sumw.sum() > 0:
-                _step(ax, edges, sig.sumw, color="crimson", lw=1.8, label="signal")
+                hep.histplot(to_hist(sig.edges, sig.sumw), ax=ax, yerr=False,
+                             histtype="step", color="crimson", linewidth=1.8,
+                             label="signal")
+                top = max(top, float(sig.sumw.max()))
+
             ax.set_yscale("log")
-            top = max(bottom.max(), (sig.sumw.max() if sig is not None else 0), 1e-2)
-            ax.set_ylim(1e-3, top * 10 ** 2.2)
-            with np.errstate(divide="ignore", invalid="ignore"):
-                n_eff = np.where(w2 > 0, bottom ** 2 / w2, 0.0)
-            for x, n, b in zip(centres, n_eff, bottom):
-                ax.text(x, top * 10 ** 1.45, f"{n:.0f}", ha="center", va="center",
-                        fontsize=9, color="0.3" if b > 0 else "crimson")
-            if any(bottom <= 0):
-                ax.text(0.5, 0.955, f"{int((bottom <= 0).sum())}/{len(bottom)} bins "
-                        f"with no simulated background", transform=ax.transAxes,
-                        ha="center", va="top", fontsize=8.5, color="crimson")
+            ax.set_ylim(1e-3, max(top, 1e-2) * 10 ** 2.0)
             ax.set_xlabel(label)
-            ax.set_title(f"{REGION_NAMES[region]}"
-                         + ("  (signal region)" if region == 0 else ""))
-            if ax is axes[0]:
-                ax.set_ylabel("events")
-        axes[0].legend(frameon=False, fontsize=8, loc="lower left")
-        fig.suptitle(title or f"{channel}: the four ABCD regions "
-                              f"(bin labels: effective simulated events)", y=1.05)
+            ax.set_ylabel("events" if ax is axes[0] else "")
+            name_r = (f"region {REGION_NAMES[region]}"
+                      + ("  (signal region)" if region == 0 else ""))
+            handles, labels_ = (ax.get_legend_handles_labels() if region == 0
+                                else ([], []))
+            ax.legend(handles, labels_, title=name_r, frameon=False,
+                      fontsize=9, title_fontsize=11, loc="upper right",
+                      ncol=2, alignment="right")
+        cms_label(axes, fontsize=13)
+        if title:
+            fig.suptitle(title, y=1.06)
         return save(fig, outdir, name or f"regions_{channel}", campaign)
 
 
@@ -822,6 +875,7 @@ def closure_panel(grouped, channel, outdir, campaign, subtitle="",
             fig.text(0.5, -0.02, subtitle, ha="center", va="top", fontsize=9,
                      family="monospace")
         fig.suptitle(title or f"{channel} -- per-bin closure, background MC", y=1.03)
+        cms_label([ax, ax_top], fontsize=11)
         return save(fig, outdir, name or f"closure_{channel}", campaign)
 
 
@@ -868,6 +922,7 @@ def shape_factorisation(grouped, channel, outdir, campaign,
         ax.legend(frameon=False, fontsize=9)
         ax.grid(alpha=0.25, which="both")
         fig.suptitle(title or f"{channel} -- does the shape factorise?", y=1.04)
+        cms_label(axes, fontsize=12)
         return save(fig, outdir, name or f"factorisation_{channel}", campaign)
 
 
@@ -934,6 +989,7 @@ def closure_ratio_overlay(variants, channel, outdir, campaign,
         ax.set_title(title or f"{channel}: is the bias a constant factor?")
         ax.grid(alpha=0.25, which="both")
         ax.legend(frameon=False, fontsize=8)
+        cms_label(ax)
         save(fig, outdir, name or f"closure_ratio_{channel}", campaign)
     return rows
 
@@ -991,5 +1047,6 @@ def compare_region_shapes(variants, channel, region, outdir, campaign,
         rax.grid(alpha=0.25, which="both")
         fig.suptitle(title or f"{channel}, region {REGION_NAMES[region]}: "
                               f"shape vs selection", y=1.03)
+        cms_label(ax)
         save(fig, outdir, name or f"shape_variants_{channel}", campaign)
     return stats
