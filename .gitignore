@@ -188,3 +188,21 @@ condor/census_expected*.json
 condor/submit_census_*.sub
 condor/sidm_code.tar.gz
 condor/logs/
+
+# --- limit_plotting study -------------------------------------------------
+# Outputs are per-campaign under campaigns/<name>/ and are all regenerable, so
+# only a few examples plus the results tables and provenance sidecars are kept.
+sidm/studies/limit_plotting/plots/
+sidm/studies/limit_plotting/slides/
+sidm/studies/limit_plotting/PR_DESCRIPTION.md
+sidm/studies/limit_plotting/campaigns/*/sr_yields.pkl
+sidm/studies/limit_plotting/campaigns/*/datacards*/*
+sidm/studies/limit_plotting/campaigns/*/limits*/limits.json
+sidm/studies/limit_plotting/reference_limits/*
+!sidm/studies/limit_plotting/reference_limits/README.md
+# keep: the results tables, the provenance sidecars, and one example card per set
+!sidm/studies/limit_plotting/campaigns/*/limits*/limits.csv
+!sidm/studies/limit_plotting/campaigns/*/limits*/limits.meta.yaml
+!sidm/studies/limit_plotting/campaigns/*/datacards*/datacards.meta.yaml
+!sidm/studies/limit_plotting/campaigns/*/datacards/datacard_SR_4mu_4Mu_800GeV_5p0GeV_5p0mm.txt
+!sidm/studies/limit_plotting/campaigns/*/datacards_abcd/datacard_abcd_SR_4mu_4Mu_800GeV_5p0GeV_5p0mm.txt
