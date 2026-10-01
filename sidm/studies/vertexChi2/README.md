@@ -45,6 +45,17 @@ copies both to `root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/
 `sidm_path` is derived from the working directory, so run them from this directory.
 Per-sample outputs already on disk are skipped, so a run can be resumed.
 
+Every run notebook passes `selections_cfg="configs/selections_vertexChi2_as_run.yaml"` to
+`SidmProcessor` and to `write_run_metadata`. That argument was added after the notebooks were
+executed, when these channels were still defined in `sidm/configs/selections.yaml`; the
+stored outputs of the notebooks are those of the original runs. With it, the notebooks rerun
+on main with the selections they were run with. Rerunning three stored outputs this way
+(`DoubleMuon_2018D_22` of `vtxResp2_2018Full`, `2Mu2E_200GeV_0p25GeV_10p0mm` of
+`vtxChi2_signal_2018` and `ZZ` of `vtxChi2_vs_spread_2018C`) reproduced the data and signal
+histograms and cutflows bit for bit; for the simulated ZZ background the raw counts are identical
+and the weighted sums agree to single-precision rounding (largest relative difference 2.5e-7),
+consistent with a different order of summation.
+
 | notebook | what it runs | `run_tag` / output directory |
 |---|---|---|
 | `runDataBg2018.ipynb` | 2018C `DoubleMuon` plus the background stack (TTJets, DYJetsToLL M10to50 and M50, DYJetsToMuMu M10to50, eleven QCD `Pt` bins, WW/WZ/ZZ) through six channels: Before, the `vxySpread` and `dxySpread` variants of the Spread veto with cosAlpha, the vertex veto with and without cosAlpha, and the vertex-inverted cosmic region. Hist collection `cosmic_veto`. | `vtxChi2_vs_spread_2018C` (19 samples) |
