@@ -1,0 +1,503 @@
+# Channels of the vertexChi2 study (sidm/studies/vertexChi2), frozen as they were run.
+#
+# Every channel the study's run notebooks requested, under the names stored in its
+# histograms and cutflows, with the cut lists written out in full (no anchors) in the
+# order SidmProcessor.build_cuts applies them. Generated from sidm/configs/selections.yaml
+# at commit 26c6d1c of the fork murtaza-safdari/SIDM, branch vertex-cosmic-veto-data2018
+# (kept for provenance); the definitions of these channels did not change between defc8a0
+# and 26c6d1c on that branch.
+#
+# Production:
+# - vtxChi2_vs_spread_2018C, vtxCosmic_2018C, vtxTail2_2018C, vtxTailMC2_2018,
+#   vtxChi2_signal_2018, vtxChi2_signal_2018_nhits: run 2026-08-25 to 2026-08-31 from a
+#   commit that was not recorded (their .meta.yaml sidecars were written afterwards and
+#   have sidm_commit: null).
+# - vtxResp_2018Full, vtxRespMC_2018, vtxResp2_2018Full, vtxRespMC2_2018: run 2026-08-31
+#   to 2026-09-05; their sidecars record commit f6e23f1.
+#
+# These selections predate the cosmic-veto baseline merged to main in PR #56. Channels of
+# the same name in sidm/configs/selections.yaml (cr_1egmOr1mu_lj, cosmic_muons,
+# base_ljDisplacementIso) select different events; there,
+# cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu_dxy applies the same cuts in a different order
+# and lists "all cosAlpha(mu, mu) > -0.99" twice.
+#
+# One cut is renamed: cosmic_muons was run with the mu_ljs cut "inverse_spread" as defined
+# at the time (vz/vxy spreads); main has since redefined that name (dz/dxy spreads). The
+# production-time definition is kept in sidm/definitions/cuts.py as
+# "inverse_spread (vz/vxy, as run)" and used here. The run-time sidecars list it as
+# "inverse_spread"; it is an object cut, so it does not appear in the cutflows.
+#
+# Load with SidmProcessor(..., selections_cfg="configs/selections_vertexChi2_as_run.yaml").
+
+cr_1egmOr1mu_lj:
+  obj_cuts:
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - pass flags
+  - = 1 muLj or 1 egmLJ
+
+cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu:
+  obj_cuts:
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - dzSpread_mu <= 50
+    - vxySpread_mu <= 50
+    - dzSpread_pf <= 10
+    - vxySpread_pf <= 10
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - pass flags
+  - = 1 muLj or 1 egmLJ
+  - all cosAlpha(mu, mu) > -0.99
+
+cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu_dxy:
+  obj_cuts:
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - dzSpread_mu <= 50
+    - dxySpread_mu <= 50
+    - dzSpread_pf <= 10
+    - dxySpread_pf <= 10
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - pass flags
+  - = 1 muLj or 1 egmLJ
+  - all cosAlpha(mu, mu) > -0.99
+
+cr_1egmOr1mu_lj_vtxChi2_CosMu:
+  obj_cuts:
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - 0 <= vtx_chi2 < 5
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - pass flags
+  - = 1 muLj or 1 egmLJ
+  - all cosAlpha(mu, mu) > -0.99
+
+cr_1egmOr1mu_lj_vtxChi2:
+  obj_cuts:
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - 0 <= vtx_chi2 < 5
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - pass flags
+  - = 1 muLj or 1 egmLJ
+
+cosmic_muons:
+  obj_cuts:
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    - lj_iso < 0.2
+    mu_ljs:
+    - Mu >= 2
+    - inverse_spread (vz/vxy, as run)
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - pass flags
+  - = 1 muLj or 1 egmLJ
+  - any cosAlpha(mu, mu) <= -0.99
+
+cosmic_muons_vtxChi2:
+  obj_cuts:
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    - lj_iso < 0.2
+    mu_ljs:
+    - Mu >= 2
+    - no vtx or vtx_chi2 >= 5
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - pass flags
+  - = 1 muLj or 1 egmLJ
+  - any cosAlpha(mu, mu) <= -0.99
+
+base_ljDisplacementIso:
+  obj_cuts:
+    genMus:
+    - status 1
+    genEs:
+    - status 1
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - mu_lj_iso < 0.1
+    - displaced
+    egm_ljs:
+    - egm_lj_iso < 0.2
+    - displaced
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+
+base_ljDisplacementIso_cosAlpha:
+  obj_cuts:
+    genMus:
+    - status 1
+    genEs:
+    - status 1
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - mu_lj_iso < 0.1
+    - displaced
+    egm_ljs:
+    - egm_lj_iso < 0.2
+    - displaced
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - all cosAlpha(mu, mu) > -0.99
+
+base_ljDisplacementIso_cosAlpha_ljSpread:
+  obj_cuts:
+    genMus:
+    - status 1
+    genEs:
+    - status 1
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - mu_lj_iso < 0.1
+    - displaced
+    - dzSpread_mu <= 50
+    - vxySpread_mu <= 50
+    - dzSpread_pf <= 10
+    - vxySpread_pf <= 10
+    egm_ljs:
+    - egm_lj_iso < 0.2
+    - displaced
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - all cosAlpha(mu, mu) > -0.99
+
+base_ljDisplacementIso_cosAlpha_vtxChi2:
+  obj_cuts:
+    genMus:
+    - status 1
+    genEs:
+    - status 1
+    electrons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - MVANonIsoWPL
+    - eta-phi_veto
+    muons:
+    - looseID
+    - pT > 5 GeV
+    - '|eta| < 2.4'
+    - eta-phi_veto
+    photons:
+    - pT > 20 GeV
+    - '|eta| < 2.5'
+    - Custom Cutbased
+    - pixelSeed
+    - Photon DR Veto 0p025
+    - eta-phi_veto
+    dsaMuons:
+    - pT > 10 GeV
+    - '|eta| < 2.4'
+    - displaced ID
+    - all
+    - eta-phi_veto
+  postLj_obj_cuts:
+    ljs:
+    - pT > 30 GeV
+    - '|eta| < 2.4'
+    mu_ljs:
+    - Mu >= 2
+    - mu_lj_iso < 0.1
+    - displaced
+    - 0 <= vtx_chi2 < 5
+    egm_ljs:
+    - egm_lj_iso < 0.2
+    - displaced
+  evt_cuts:
+  - pass triggers
+  - PV filter
+  - '>=2 muons (pf or dsa) pT > 26 GeV'
+  - all cosAlpha(mu, mu) > -0.99

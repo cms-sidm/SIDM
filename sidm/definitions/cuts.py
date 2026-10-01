@@ -93,6 +93,10 @@ obj_cut_defs = {
         # input carries no vertex tables. See sidm/tools/lj_vertex_chi2.py.
         "0 <= vtx_chi2 < 5": lambda objs: (objs["mu_ljs"].vtx_chi2 >= 0) & (objs["mu_ljs"].vtx_chi2 < 5),
         "no vtx or vtx_chi2 >= 5": lambda objs: (objs["mu_ljs"].vtx_chi2 < 0) | (objs["mu_ljs"].vtx_chi2 >= 5),
+        # The inverse_spread definition the vertexChi2 study ran (selections_vertexChi2_as_run.yaml).
+        # It uses the vz/vxy spreads, not dz/dxy; the muon vxy term appears twice, and there is no
+        # longitudinal muon-spread term.
+        "inverse_spread (vz/vxy, as run)": lambda objs: (objs["mu_ljs"].vzSpread_pf > 10) | (objs["mu_ljs"].vxySpread_pf > 10) | (objs["mu_ljs"].vxySpread_mu > 50) | (objs["mu_ljs"].vxySpread_mu > 50),
 
         "inverse_spread" : lambda objs: ((objs["mu_ljs"].dzSpread_pf > 10)
                                          |(objs["mu_ljs"].dxySpread_pf > 10)
