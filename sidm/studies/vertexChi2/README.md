@@ -19,6 +19,51 @@ the rate for, not a topology cut and not this transfer factor.
 write-up and reads only the `.coffea` outputs of the run notebooks below; it runs no
 processor of its own.
 
+## Selections used in this study
+
+Every channel of this study is defined in
+[`sidm/configs/selections_vertexChi2_as_run.yaml`](../../configs/selections_vertexChi2_as_run.yaml),
+with each cut list written out in full; the write-up renders it as a table in its section
+"Selections used in this study". The outputs were produced between 2026-08-25 and 2026-09-05
+on the branch `vertex-cosmic-veto-data2018`, before the cosmic-veto baseline of PR #56 was
+merged into `main`. The 2018C, background and signal runs did not record their commit (their
+sidecars were written afterwards and carry `sidm_commit: null`); the four full-2018 response
+runs record commit `f6e23f1`, from a working tree that already contained the histogram
+collections committed in `5aa6988`. The channel definitions were the same for all of them:
+`selections.yaml` did not change on that branch between `defc8a0` and its tip `26c6d1c`, and
+the definitions recorded in the sidecars of all ten output directories agree with it.
+
+The study compares cosmic-veto options, so it needs a baseline with no cosmic veto at all and
+each veto applied on its own to that same baseline. On `main` the baseline itself has changed,
+so `main`'s channels cannot provide the no-veto reference, and the channels are kept here as
+they were run. How the as-run baseline differs from `main` today:
+
+- Unchanged: the eta-phi veto on all four LJ sources (electrons, photons, PF muons, DSA muons)
+  and the event cut `>=2 muons (pf or dsa) pT > 26 GeV`.
+- As run, the base event cuts do not contain `all cosAlpha(mu, mu) > -0.99`; only the channels
+  that use it as part of a veto apply it. On `main` it is in the base event cuts, so `main`'s
+  `cr_1egmOr1mu_lj` and `base_ljDisplacementIso` include it, and `main`'s `cosmic_muons`
+  requires both it and its inverse `any cosAlpha(mu, mu) <= -0.99`.
+- As run, the muon LJs of `base_ljDisplacementIso` carry no spread cuts. On `main` they require
+  `dzSpread_mu <= 50`, `dxySpread_mu <= 50`, `dzSpread_pf <= 10` and `dxySpread_pf <= 10`.
+  `cr_1egmOr1mu_lj` has no spread cuts in either version.
+- The Spread veto as run (`cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu`,
+  `base_ljDisplacementIso_cosAlpha_ljSpread`) cuts on the transverse spread of the muon vertex
+  positions, `vxySpread`, where `main`'s spread cuts use the impact-parameter spread
+  `dxySpread`. The longitudinal cuts are on `dzSpread` in both. The `dxySpread` version was
+  also run, as `cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu_dxy`.
+- `inverse_spread`, the mu-LJ cut that defines the spread-inverted cosmic region
+  `cosmic_muons`, was at production time the OR of `vzSpread_pf > 10`, `vxySpread_pf > 10` and
+  `vxySpread_mu > 50`, the last term written twice. `main` has since redefined that name as the
+  OR of `dzSpread_pf > 10`, `dxySpread_pf > 10`, `dxySpread_mu > 50` and `dzSpread_mu > 50`.
+  The production-time definition is kept in `sidm/definitions/cuts.py` under the name
+  `inverse_spread (vz/vxy, as run)`, which the as-run file uses; the run-time sidecars list it
+  as `inverse_spread`. It is an object cut, so it is not a cutflow row.
+- Four of the channel names also exist in `main`'s `selections.yaml`. `cr_1egmOr1mu_lj`,
+  `cosmic_muons` and `base_ljDisplacementIso` select different events there;
+  `cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu_dxy` applies the same cuts there in a different
+  order. The other channels exist only in the as-run file.
+
 ## Two cosmic-enriched regions, and why they are never interchangeable
 
 The study uses two different cosmic-enriched selections. They are named apart everywhere — in
@@ -27,7 +72,7 @@ the difference decides what one of the results is conditional on.
 
 | name used throughout | channel | mu-LJ cuts | uses `vtx_chi2`? |
 |---|---|---|---|
-| **spread-inverted cosmic region** | `cosmic_muons` | `lj_iso < 0.2`, `inverse_spread`, cosAlpha event cut inverted | no |
+| **spread-inverted cosmic region** | `cosmic_muons` | `lj_iso < 0.2`, `inverse_spread` (production-time definition, see above), cosAlpha event cut inverted | no |
 | **vertex-inverted cosmic region** | `cosmic_muons_vtxChi2` | `lj_iso < 0.2`, `no vtx or vtx_chi2 >= 5`, cosAlpha event cut inverted | yes |
 
 The spread-inverted region is what makes the section-2b comparison a test of `vtx_chi2` rather
