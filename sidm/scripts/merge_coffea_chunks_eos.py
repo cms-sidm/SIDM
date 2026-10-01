@@ -214,6 +214,11 @@ def main():
         help="Comma-separated selection names (e.g. 'base'). Saved into sidecar.",
     )
     parser.add_argument(
+        "--selections-cfg",
+        default="configs/selections.yaml",
+        help="Selections file the chunks were run with, relative to sidm/. Saved into sidecar.",
+    )
+    parser.add_argument(
         "--hist-collections",
         default=None,
         help="Comma-separated hist-collection names (e.g. 'muon_base'). Saved into sidecar.",
@@ -335,6 +340,7 @@ def main():
                 unweighted_hist=args.unweighted_hist,
                 extra={"n_chunks": len(local_paths)},
                 sidm_root=_REPO_ROOT,
+                selections_cfg=args.selections_cfg,
             )
             print(f"Wrote sidecar: {sidecar}")
             xrdcp_to_eos(sidecar, output_eos_dir)
