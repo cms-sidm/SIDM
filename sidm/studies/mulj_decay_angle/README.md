@@ -74,25 +74,29 @@ of displaced-standalone muons in the pair is recorded so that population can be 
 
 ## Regions
 
-| region | what it selects |
-| --- | --- |
-| `data_control_region_1muLj` | exactly one muon-type lepton jet, no cleaning cuts; the largest and least biased fake sample, and the only region that spans the full range of displacement and both muon types |
-| `data_control_region_1muLj_cosmic_veto` | the same with the cosmic-muon veto applied |
-| `data_control_region_1muLj_spread_cosAlpha_mu_veto` | the same with the lepton-jet impact-parameter spread cuts and the muon-pair opening-angle veto applied |
-| `test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto` | the two-lepton-jet selection with one muon and one electromagnetic lepton jet, the displacement requirement inverted on every lepton jet, plus the spread and opening-angle cleaning |
-| `test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto` | the two-muon-lepton-jet selection with the displacement requirement inverted on every lepton jet, plus the same cleaning |
-| `4mu` | the four-muon signal channel: two muon-type lepton jets, full selection. **Simulation only, never data** |
-| `2mu2e` | the two-muon-two-electron signal channel: one muon and one electromagnetic lepton jet, full selection. **Simulation only, never data** |
+| channel | named in the notebook | what it selects |
+| --- | --- | --- |
+| `data_control_region_1muLj` | uncut single-lepton-jet control region | exactly one lepton jet, a muon lepton jet, no cleaning cuts; the largest and least biased fake sample, the only region that spans the full range of displacement, and the one with the most pairs containing displaced-standalone muons in number |
+| `data_control_region_1muLj_cosmic_veto` | cosmic-veto single-lepton-jet control region | the same with the cosmic-muon veto applied |
+| `data_control_region_1muLj_spread_cosAlpha_mu_veto` | cleaned single-lepton-jet control region | the same with the lepton-jet impact-parameter spread cuts and the muon-pair opening-angle veto applied |
+| `test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto` | two-muon-two-electron validation region | the two-lepton-jet selection with one muon and one electromagnetic lepton jet, the displacement requirement inverted on every lepton jet, plus the spread and opening-angle cleaning |
+| `test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto` | four-muon validation region | the two-muon-lepton-jet selection with the displacement requirement inverted on every muon lepton jet, plus the same cleaning |
+| `4mu` | four-muon channel | the inclusive four-muon channel: two muon-type lepton jets and two muons above 26 GeV, with no isolation, displacement or separation requirement (`4mu_sr` adds those). **Simulation only, never data** |
+| `2mu2e` | two-muon-two-electron channel | the inclusive two-muon-two-electron channel: one muon and one electromagnetic lepton jet, likewise. **Simulation only, never data** |
 
 The last two rows are where the signal efficiencies of the cut scan are measured, and they
 are the only place the signal shape is seen under its own selection.  Data is never read in
 them; nothing in this study looks at the signal region in data.
 
 The two validation regions are orthogonal to the signal region by construction: the signal
-region requires every lepton jet to be displaced and these require the exact negation. In
-both, the muon lepton jet under study is prompt by construction, which is why the
-dependence of the angle on displacement is measured in the uncut single-lepton-jet control
-region instead.
+region requires every lepton jet to be displaced and these require the exact negation. For a
+muon lepton jet the negation is that at least one of its muons has more than two pixel hits.
+A displaced-standalone muon is given zero pixel hits, so that muon is always a particle-flow
+muon, but the requirement does not exclude displaced-standalone muons from the lepton jet,
+nor from the two leading muons the angle is computed from: 29 percent of the data pairs in
+the four-muon validation region and 10 percent in the two-muon-two-electron one contain one
+(caveat 2). The dependence of the angle on displacement is measured in the uncut
+single-lepton-jet control region, which has no requirement on displacement.
 
 Simulation is also processed in the signal-region variants of those two channels and in
 variants without the muon momentum cut, which are kept for cross-checks and are not drawn
@@ -300,12 +304,26 @@ These apply to every reading of the figures and are repeated in the notebook.
    m_Zd = 0.25 GeV the generated histogram is not a sound reference (caveat 9). The study
    compares signal and fake shapes under an identical selection; it is not a measurement of
    the angular distribution of the decay, which would need the efficiency corrected for.
-2. **The inverted-displacement validation regions contain no displaced-standalone muons.**
-   The vector builder sets the pixel-hit count of a displaced-standalone track to zero, so
-   the inverted displacement requirement can only be met by a particle-flow muon with more
-   than two pixel hits. Pairs containing displaced-standalone muons are therefore studied
-   in the uncut single-lepton-jet control region only, and every figure that shows one of
-   those regions says so on the figure.
+2. **The inverted-displacement requirement does not exclude displaced-standalone muons.**
+   In the two validation regions and the two-lepton-jet control region every muon lepton
+   jet must contain at least one muon with more than two pixel hits. The vector builder
+   sets the pixel-hit count of a displaced-standalone track to zero, so that muon is a
+   particle-flow muon, but the two leading muons the angle is computed from can include
+   displaced-standalone ones. In data the pairs split 71, 29 and 0.2 percent into
+   particle-flow, mixed and displaced-standalone pairs in the four-muon validation region,
+   90, 10 and 0.2 percent in the two-muon-two-electron one, 59, 41 and below 0.1 percent in
+   the two-lepton-jet control region, and 93, 6.5 and 0.8 percent in the uncut
+   single-lepton-jet control region; the notebook prints the table in section a, with the
+   fraction of each class above |cos(theta*)| = 0.4. The region dependence found in
+   sections e and h is not created by composition. Within particle-flow pairs alone the
+   fraction above 0.4 runs from 0.12 in the cleaned single-lepton-jet control region to
+   0.59 and 0.62 in the four-muon validation region and the two-lepton-jet control region,
+   while mixed pairs stay between 0.13 and 0.27 in every region. Any single number quoted
+   for an inverted-displacement region is therefore an average over two populations with
+   unlike shapes. Section e separates pairs by the number of displaced-standalone muons in
+   the single-lepton-jet control regions; the table in section a gives the fraction above
+   0.4 for each class in every region. Every figure that shows a validation region states
+   its requirement in the region label.
 3. **Impact parameters do not all share a reference.** The angle helper uses
    primary-vertex referenced transverse and longitudinal impact parameters for both muon
    types. The lepton-jet spread quantities, kept exactly as the cleaning cuts define them,

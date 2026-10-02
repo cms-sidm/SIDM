@@ -151,8 +151,8 @@ REGION_SHORT = {
     "data_control_region_1muLj": "1 $\\mu$-LJ CR\nno cleaning",
     "data_control_region_1muLj_cosmic_veto": "1 $\\mu$-LJ CR\ncosmic veto",
     "data_control_region_1muLj_spread_cosAlpha_mu_veto": "1 $\\mu$-LJ CR\nspread + $\\cos\\alpha$ veto",
-    "test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto": "2$\\mu$2e VR, inv. displaced\nPF-muon tagged",
-    "test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto": "4$\\mu$ VR, inv. displaced\nPF-muon tagged",
+    "test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto": "2$\\mu$2e VR, inv. displaced\n$\\geq$1 $\\mu$ with >2 pixel hits",
+    "test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto": "4$\\mu$ VR, inv. displaced\n$\\geq$1 $\\mu$ with >2 pixel hits",
 }
 
 #: single-line names for tables and prints.
@@ -164,9 +164,12 @@ REGION_LABEL = {
     "test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto": "4mu inverted-displacement VR",
 }
 
-#: regions whose inverted-displacement requirement can only be satisfied by a PF muon, so
-#: that pairs containing displaced-standalone muons are absent by construction.
-PF_TAGGED_REGIONS = {
+#: the two inverted-displacement validation regions.  Their requirement asks each muon
+#: lepton jet for at least one constituent muon with more than two pixel hits.  A
+#: displaced-standalone muon is given zero pixel hits, so that muon is always a PF muon,
+#: but the two leading muons the angle is computed from can still include
+#: displaced-standalone ones.
+VALIDATION_REGIONS = {
     "test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto",
     "test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto",
 }
@@ -1984,7 +1987,7 @@ OBSERVABLES = {
 }
 
 #: regions whose simulated statistics need the coarser binning.
-LOW_STAT_REGIONS = frozenset(PF_TAGGED_REGIONS)
+LOW_STAT_REGIONS = frozenset(VALIDATION_REGIONS)
 
 
 def fig_region_shapes(observable="absCosTheta", m_zd_values=(0.25, 1.2, 5.0),
@@ -2519,7 +2522,7 @@ def validation_region_rejection(thresholds=(0.2, 0.4, 0.6, 0.8), direction="abov
               + " | ".join(f"{t:>7.2f}" for t in thresholds))
     print(header)
     print("    " + "-" * (len(header) - 4))
-    for region in sorted(PF_TAGGED_REGIONS):
+    for region in sorted(VALIDATION_REGIONS):
         histogram = get_hist(observed, "mu_lj_mumu_absCosTheta", region, quiet=True) \
             if observed else None
         if histogram is None or total_entries(histogram) < MIN_DENOMINATOR:
@@ -2569,6 +2572,230 @@ def inventory(regions=None):
         table[name] = counts
         print(f"{name:<{width}}" + "".join(f"{c:>24.0f}" for c in counts))
     return table
+
+
+# ======================================================================================
+# displaced-standalone muons in the data pairs of each region
+# ======================================================================================
+
+#: the regions the composition table covers, in order, with the campaign whose merged
+#: outputs each is read from.  The two-lepton-jet control region was written by the
+#: decay-plane campaign only.
+COMPOSITION_REGIONS = [
+    (UNCUT_CR, "decay angle"),
+    (CLEANED_CR, "decay angle"),
+    ("cr_2lj_invDisplaced_spread_cosAlpha_mu_veto", "decay planes"),
+    ("test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto", "decay angle"),
+    ("test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto", "decay angle"),
+]
+
+_COMPOSITION_LABEL = {
+    UNCUT_CR: "1 mu-LJ CR, no cleaning",
+    CLEANED_CR: "1 mu-LJ CR, spread + cos-alpha",
+    "cr_2lj_invDisplaced_spread_cosAlpha_mu_veto": "2-LJ inv.-displaced CR",
+    "test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto": "2mu2e inv.-displaced VR",
+    "test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto": "4mu inv.-displaced VR",
+}
+
+_PAIR_CLASS = {0: "PF-PF", 1: "PF-DSA", 2: "DSA-DSA"}
+
+_COMPOSITION_HIST = "mu_lj_mumu_absCosTheta_vs_nDsa"
+
+
+def _composition_counts(region, campaign):
+    """Data counts of the decay angle against the number of displaced-standalone muons in
+    the pair, and the angle's bin edges, in one control or validation region.
+
+    In-range bins only.  Returns (None, None) when the region holds no data pairs; a
+    region that is neither a control nor a validation region raises before anything is
+    read.
+    """
+    if region not in set(REGIONS) | set(PLANES_DATA_CHANNELS):
+        raise ValueError(f"{region!r} is not a control or validation region; "
+                         "collision data is not read there")
+    if campaign == "decay planes":
+        counts = planes_counts(planes_data_samples(), _COMPOSITION_HIST, region)
+        edges = planes_edges(_COMPOSITION_HIST, "cosTheta")
+    else:
+        histogram = get_hist(data_samples(), _COMPOSITION_HIST, region, quiet=True)
+        counts = None if histogram is None else raw_counts(histogram)
+        edges = None if histogram is None else histogram.axes["cosTheta"].edges
+    if counts is None or edges is None or float(np.sum(counts)) == 0.0:
+        return None, None
+    return np.asarray(counts, dtype=float), np.asarray(edges, dtype=float)
+
+
+def dsa_composition_table(threshold=0.4):
+    """Data pairs of each control and validation region split by the number of
+    displaced-standalone muons in the pair, and the fraction of each class with
+    |cos theta*| above `threshold`, with its binomial uncertainty sqrt(p (1 - p) / n).
+
+    Collision data only, read from the stored histogram of the angle against that number;
+    in-range bins only, as everywhere else in this study.  Every region read here is a
+    control or validation region; anything else raises.
+    """
+    rows = []
+    print("  data muon pairs by number of displaced-standalone (DSA) muons in the pair; "
+          f"f = fraction with |cos theta*| > {threshold}")
+    header = (f"    {'region':<32} | {'pair':<7} | {'pairs':>9} | {'share':>6} | "
+              f"{'f':>6} | {'+-':>6}")
+    print(header)
+    print("    " + "-" * (len(header) - 4))
+    for region, campaign in COMPOSITION_REGIONS:
+        counts, edges = _composition_counts(region, campaign)
+        if counts is None:
+            note(f"DSA composition: no data pairs in {_COMPOSITION_LABEL[region]}")
+            continue
+        above = edges[:-1] >= threshold - 1e-9
+        total = float(counts.sum())
+        for n_dsa, label in _PAIR_CLASS.items():
+            n = float(counts[:, n_dsa].sum())
+            row = {"region": region, "class": label, "pairs": n, "share": n / total}
+            first = _COMPOSITION_LABEL[region] if n_dsa == 0 else ""
+            if n > 0:
+                p = float(counts[above, n_dsa].sum()) / n
+                row.update(fraction=p, error=float(np.sqrt(p * (1.0 - p) / n)))
+                flag = "" if n >= MIN_DENOMINATOR else "   (fewer than 20 pairs)"
+                print(f"    {first:<32} | {label:<7} | {n:>9,.0f} | {n / total:>6.3f} | "
+                      f"{p:>6.3f} | {row['error']:>6.3f}{flag}")
+            else:
+                print(f"    {first:<32} | {label:<7} | {n:>9,.0f} | {0.0:>6.3f} | "
+                      f"{'--':>6} | {'--':>6}")
+            rows.append(row)
+    return rows
+
+
+#: the regions the composition bound is computed in: the two whose particle-flow and
+#: mixed pairs have unlike shapes in the composition table.
+COMPOSITION_BOUND_REGIONS = [
+    ("test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto", "decay angle"),
+    ("cr_2lj_invDisplaced_spread_cosAlpha_mu_veto", "decay planes"),
+]
+
+
+def _shared_type_excess(above, total):
+    """sum_k p_k f_k^2 / (sum_k p_k f_k)^2 - 1 from per-type counts above a threshold and
+    in total, along the last axis; types with no pairs drop out."""
+    above = np.asarray(above, dtype=float)
+    total = np.asarray(total, dtype=float)
+    squares = np.divide(above ** 2, total, out=np.zeros_like(above), where=total > 0)
+    return total.sum(axis=-1) * squares.sum(axis=-1) / above.sum(axis=-1) ** 2 - 1.0
+
+
+def composition_excess_bound(thresholds=(0.4, 0.8), observed=None, replicas=2000,
+                             seed=20261001):
+    """The largest excess over the squared per-jet fraction that the mixture of pair types
+    alone can make.
+
+    Let p_k be the share of muon pairs of type k (particle-flow, mixed, two
+    displaced-standalone) and f_k the fraction of them above a threshold.  If the two muon
+    lepton jets of an event always carried the same pair type and were independent within
+    it, the fraction of events with both above the threshold would be sum_k p_k f_k^2,
+    against the squared per-jet fraction (sum_k p_k f_k)^2.  The ratio minus one is the
+    excess this composition makes with no angular correlation at fixed type; jets that
+    share their type less often make less, so for these shares it is an upper bound.
+
+    p_k and f_k are per-jet quantities, from the stored data histogram of the angle against
+    the number of displaced-standalone muons in the pair over every qualifying muon lepton
+    jet of the region, in-range bins; each threshold is moved to the nearest bin edge, which
+    is printed.  The uncertainty is the standard deviation over replicas that resample
+    events, not jets: the histogram does not record which two jets share an event, so each
+    replica draws half as many events as there are jets from the type-by-side table and gives
+    both jets of an event the same cell.  That is the limit of complete correlation within an
+    event; independent jets would give a spread smaller by a factor of about sqrt(2).
+    `observed`, the rows `pair_factorisation_table` returns, puts the
+    excess measured in the four-muon validation region beside the bound; no other region
+    has a measured one.
+    """
+    measured = {round(row["threshold"], 6): row for row in (observed or [])}
+    rows = []
+    print("excess over the squared per-jet fraction that the mixture of pair types alone makes")
+    print("if both muon LJs of an event always share a pair type and are independent within it")
+    print("2018 data; shares p and fractions f per pair type PF-PF / PF-DSA / DSA-DSA; percent")
+    header = (f"    {'region':<24} | {'cut at':>6} | {'p':^17} | {'f':^17} | "
+              f"{'bound':>12} | {'observed incl.':>14} | {'observed ord.':>14}")
+    print(header)
+    print("    " + "-" * (len(header) - 4))
+    for region, campaign in COMPOSITION_BOUND_REGIONS:
+        counts, edges = _composition_counts(region, campaign)
+        if counts is None:
+            note(f"composition bound: no data pairs in {_COMPOSITION_LABEL[region]}")
+            continue
+        total = counts.sum(axis=0)
+        for threshold in thresholds:
+            index = int(np.argmin(np.abs(edges - threshold)))
+            above = counts[index:, :].sum(axis=0)
+            bound = float(_shared_type_excess(above, total))
+            cells = np.concatenate([above, total - above])
+            events = int(round(cells.sum() / 2.0))
+            draws = 2 * np.random.default_rng(seed).multinomial(
+                events, cells / cells.sum(), size=replicas)
+            sigma = float(np.std(_shared_type_excess(draws[:, :3], draws[:, :3] + draws[:, 3:]),
+                                 ddof=1))
+            shares = total / total.sum()
+            fractions = np.divide(above, total, out=np.full_like(above, np.nan),
+                                  where=total > 0)
+            row = {"region": region, "threshold": threshold, "edge": float(edges[index]),
+                   "shares": shares, "fractions": fractions, "bound": bound, "sigma": sigma}
+            seen = measured.get(round(threshold, 6)) if region == PAIR_VR else None
+            if seen is not None:
+                row.update(observed_inclusive=seen["ratio_inclusive"] - 1.0,
+                           sigma_inclusive=seen["sigma_inclusive"],
+                           observed_ordered=seen["ratio_ordered"] - 1.0,
+                           sigma_ordered=seen["sigma_ordered"])
+                incl = (f"{100 * row['observed_inclusive']:5.1f} +- "
+                        f"{100 * row['sigma_inclusive']:4.1f}")
+                ordered = (f"{100 * row['observed_ordered']:5.1f} +- "
+                           f"{100 * row['sigma_ordered']:4.1f}")
+            else:
+                incl = ordered = "not measured"
+            label = _COMPOSITION_LABEL[region] if threshold == thresholds[0] else ""
+            print(f"    {label:<24} | {row['edge']:>6.2f} | "
+                  + " ".join(f"{value:5.3f}" for value in shares) + " | "
+                  + " ".join(f"{value:5.3f}" for value in fractions)
+                  + f" | {100 * bound:5.1f} +- {100 * sigma:4.1f} | {incl:>14} | {ordered:>14}")
+            rows.append(row)
+    return rows
+
+
+def pair_type_separation(threshold=0.4, m_xx=500.0, m_zd=1.2,
+                         region="cr_2lj_invDisplaced_spread_cosAlpha_mu_veto"):
+    """Signal efficiency over root fake efficiency of a threshold on the decay angle,
+    against all the data pairs of a region and against each pair type alone.
+
+    The signal efficiency is that of the four-muon point (m_xx, m_zd) in its own channel,
+    read as `planes_mu_separation_table` reads it, so the all-pairs row reproduces that
+    table's entry; the fake fractions come from the data histogram of the angle against
+    the number of displaced-standalone muons in the pair.
+    """
+    samples = planes_points("4Mu").get((m_xx, m_zd))
+    signal = None if not samples else planes_counts(samples, PLANES_MU_HIST, "4mu")
+    counts, edges = _composition_counts(region, dict(COMPOSITION_REGIONS)[region])
+    if signal is None or counts is None:
+        note(f"pair-type separation: no input for 4Mu {m_xx:.0f}/{m_zd} or "
+             f"{_COMPOSITION_LABEL[region]}")
+        return []
+    eff_s = kept_fraction(signal.sum(axis=1), threshold)
+    index = int(np.argmin(np.abs(edges - threshold)))
+    print(f"signal 4mu, m_XX = {m_xx:.0f} GeV, m_Zd = {m_zd} GeV: "
+          f"eff(|cos theta*| > {eff_s['edge']:.2f}) = {eff_s['fraction']:.4f}")
+    print(f"against the data pairs of the {_COMPOSITION_LABEL[region]}, "
+          f"cut at {edges[index]:.2f}")
+    print(f"    {'fake pairs':<10} | {'pairs':>9} | {'eff_b':>6} | {'eff_s/sqrt(eff_b)':>17}")
+    rows = []
+    for label, column in [("all", slice(None))] + [(name, n_dsa)
+                                                   for n_dsa, name in _PAIR_CLASS.items()]:
+        selected = counts[:, column]
+        n = float(selected.sum())
+        if n <= 0:
+            continue
+        eff_b = float(selected[index:].sum()) / n
+        gain = eff_s["fraction"] / np.sqrt(eff_b) if eff_b > 0 else float("nan")
+        flag = "" if n >= MIN_DENOMINATOR else "   (fewer than 20 pairs)"
+        print(f"    {label:<10} | {n:>9,.0f} | {eff_b:6.3f} | {gain:17.3f}{flag}")
+        rows.append({"pairs": label, "n": n, "eff_s": eff_s["fraction"], "eff_b": eff_b,
+                     "gain": gain})
+    return rows
 
 
 # ======================================================================================
