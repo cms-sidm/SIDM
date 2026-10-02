@@ -2575,6 +2575,193 @@ def inventory(regions=None):
 
 
 # ======================================================================================
+# the channel definitions the inputs were produced with
+# ======================================================================================
+
+#: the channel definitions every campaign of this study ran with, fully expanded and under
+#: the names stored in the histograms' channel axis.
+AS_RUN_SELECTIONS = os.path.join(_CONFIG_DIR, "selections_mulj_decay_angle_as_run.yaml")
+
+#: the analysis-wide channel definitions of the checkout this module is read from.
+REFERENCE_SELECTIONS = os.path.join(_CONFIG_DIR, "selections.yaml")
+
+#: how the tables below group the channels.
+SELECTION_GROUPS = [
+    ("signal-like (simulation only)",
+     ["4mu", "4mu_sr", "4mu_noMuPtCut", "2mu2e", "2mu2e_sr", "2mu2e_noMuPtCut"]),
+    ("control",
+     ["data_control_region_1muLj", "data_control_region_1muLj_cosmic_veto",
+      "data_control_region_1muLj_spread_cosAlpha_mu_veto",
+      "data_control_region_1egmLj_cosmic_veto",
+      "cr_2lj_invDisplaced_spread_cosAlpha_mu_veto"]),
+    ("validation",
+     ["test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto",
+      "test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto"]),
+]
+
+#: generator-level collections; their cuts select truth particles, not reconstructed
+#: objects, and are left out of the tables.
+_GEN_OBJECTS = ("genMus", "genEs", "genAs")
+
+_OBJECT_KEYS = ("obj_cuts", "preLj_obj_cuts")
+_LJ_KEYS = ("postLj_obj_cuts",)
+
+
+def _flatten_cuts(cuts):
+    """A cut list flattened the way the processor flattens it: dictionaries contribute
+    their values, nested lists are expanded in order."""
+    flat = []
+    for item in (cuts.values() if isinstance(cuts, dict) else (cuts or [])):
+        if isinstance(item, (dict, list)):
+            flat.extend(_flatten_cuts(item))
+        else:
+            flat.append(item)
+    return flat
+
+
+def load_channel_definitions(path):
+    """Every channel of a selections file as `{name: {"obj": {...}, "lj": {...}, "evt": [...]}}`.
+
+    YAML anchors and merge keys are resolved by the loader and the cut lists are
+    flattened, so two channels compare equal exactly when the processor would apply the
+    same cuts in the same order.
+    """
+    with open(path, encoding="utf-8") as handle:
+        raw = yaml.safe_load(handle)
+    channels = {}
+    for name, definition in raw.items():
+        if not isinstance(definition, dict):
+            continue
+        entry = {"obj": {}, "lj": {}, "evt": _flatten_cuts(definition.get("evt_cuts") or [])}
+        for slot, keys in (("obj", _OBJECT_KEYS), ("lj", _LJ_KEYS)):
+            for key in keys:
+                for obj, cuts in (definition.get(key) or {}).items():
+                    entry[slot].setdefault(obj, []).extend(_flatten_cuts(cuts))
+        channels[name] = entry
+    return channels
+
+
+def _md(text):
+    """Escape the characters a markdown table cell cannot hold as they are."""
+    return str(text).replace("|", "\\|")
+
+
+def _cell(per_object):
+    """One table cell from `{object: [cuts]}`; objects without cuts are left out."""
+    parts = [f"{obj}: " + ", ".join(_md(c) for c in cuts)
+             for obj, cuts in per_object.items() if cuts]
+    return "<br>".join(parts) if parts else "none beyond the baseline"
+
+
+def _grouped_channels(channels):
+    """The channels of `channels` in table order, with any not in a group appended."""
+    grouped, seen = [], set()
+    for title, names in SELECTION_GROUPS:
+        present = [n for n in names if n in channels]
+        seen.update(present)
+        grouped.append((title, present))
+    rest = [n for n in channels if n not in seen]
+    if rest:
+        grouped.append(("other", rest))
+    return grouped
+
+
+def selections_table(path=AS_RUN_SELECTIONS):
+    """A markdown table of the channel definitions in `path`.
+
+    The first row is the baseline every channel shares; each channel row lists only the
+    cuts it adds to it, in the order they are applied.  Generator-level selections are left
+    out.
+    """
+    channels = load_channel_definitions(path)
+    names = list(channels)
+
+    def common(slot, obj):
+        lists = [channels[n][slot].get(obj, []) for n in names]
+        return [c for c in lists[0] if all(c in other for other in lists[1:])]
+
+    base = {}
+    for slot in ("obj", "lj"):
+        objects = []
+        for n in names:
+            objects += [o for o in channels[n][slot] if o not in objects and o not in _GEN_OBJECTS]
+        base[slot] = {o: common(slot, o) for o in objects}
+    base_evt = [c for c in channels[names[0]]["evt"]
+                if all(c in channels[n]["evt"] for n in names)]
+
+    lines = ["| channel | object cuts | lepton-jet cuts | event cuts |",
+             "| --- | --- | --- | --- |",
+             f"| **baseline, every channel** | {_cell(base['obj'])} | {_cell(base['lj'])} | "
+             f"{', '.join(_md(c) for c in base_evt)} |"]
+    for title, members in _grouped_channels(channels):
+        if not members:
+            continue
+        lines.append(f"| ***{title}*** | | | |")
+        for name in members:
+            entry = channels[name]
+            extra = {}
+            for slot in ("obj", "lj"):
+                extra[slot] = {o: [c for c in cuts if c not in base[slot].get(o, [])]
+                               for o, cuts in entry[slot].items() if o not in _GEN_OBJECTS}
+            evt = [c for c in entry["evt"] if c not in base_evt]
+            lines.append(f"| `{name}` | {_cell(extra['obj'])} | {_cell(extra['lj'])} | "
+                         f"{', '.join(_md(c) for c in evt) or 'none beyond the baseline'} |")
+    return "\n".join(lines)
+
+
+#: the parts of the cosmic-veto baseline the analysis-wide definitions adopted after these
+#: channels were produced, as (label, test on a loaded channel).
+_BASELINE_FEATURES = [
+    ("eta-phi veto",
+     lambda ch: any("eta-phi" in c for cuts in ch["obj"].values() for c in cuts)),
+    (">=2 muons (pf or dsa) pT > 26 GeV",
+     lambda ch: ">=2 muons (pf or dsa) pT > 26 GeV" in ch["evt"]),
+    ("all cosAlpha(mu, mu) > -0.99",
+     lambda ch: "all cosAlpha(mu, mu) > -0.99" in ch["evt"]),
+]
+
+
+def _spread_cuts(channel):
+    """The muon lepton-jet spread variables a channel cuts on, as a short string."""
+    cuts = [c.split()[0] for c in channel["lj"].get("mu_ljs", []) if "Spread" in c]
+    return ", ".join(cuts) if cuts else "none"
+
+
+def selections_vs_reference(path=AS_RUN_SELECTIONS, reference=REFERENCE_SELECTIONS):
+    """A markdown table comparing each channel of `path` with the channel of the same name
+    in `reference`: whether it exists there, whether it is defined identically, and which
+    of the later baseline cuts each version contains, as "as run / reference" in each cell.
+    """
+    ours = load_channel_definitions(path)
+    theirs = load_channel_definitions(reference)
+    head = (["channel", "in reference", "identical"]
+            + [_md(label) for label, _ in _BASELINE_FEATURES] + ["muon-LJ spread cuts"])
+    lines = ["| " + " | ".join(head) + " |", "|" + " --- |" * len(head)]
+
+    def yes(flag):
+        return "yes" if flag else "no"
+
+    for title, members in _grouped_channels(ours):
+        if not members:
+            continue
+        lines.append(f"| ***{title}*** |" + " |" * (len(head) - 1))
+        for name in members:
+            mine, other = ours[name], theirs.get(name)
+            row = [f"`{name}`", yes(other is not None)]
+            if other is None:
+                row.append("--")
+                row += [f"{yes(test(mine))} / --" for _, test in _BASELINE_FEATURES]
+                row.append(f"{_spread_cuts(mine)} / --")
+            else:
+                row.append(yes(mine == other))
+                row += [f"{yes(test(mine))} / {yes(test(other))}"
+                        for _, test in _BASELINE_FEATURES]
+                row.append(f"{_spread_cuts(mine)} / {_spread_cuts(other)}")
+            lines.append("| " + " | ".join(row) + " |")
+    return "\n".join(lines)
+
+
+# ======================================================================================
 # displaced-standalone muons in the data pairs of each region
 # ======================================================================================
 
