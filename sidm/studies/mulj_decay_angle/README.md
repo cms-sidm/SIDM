@@ -14,6 +14,10 @@ worth using in the selection or in the background estimate, and consistently eno
 the regions, the mediator masses and the dark-photon masses that the separation measured in
 one of them can be carried to another.
 
+The inputs were produced with the channel definitions kept in
+`sidm/configs/selections_mulj_decay_angle_as_run.yaml`, which are not main's; "Selections used
+in this study" below gives the differences and how the file is tied to the inputs.
+
 ## Contents
 
 | file | what it is |
@@ -24,6 +28,7 @@ one of them can be carried to another.
 | `_build_mulj_notebook.py` | writes `mulj_decay_angle.ipynb` |
 | `_mulj_lib.py` | all loading, normalisation, statistics and drawing; one function per figure |
 | `check_gen_boost_precision.py` | an offline check of one unselected 4mu file per bound-state mass at m_Zd = 0.25 GeV, read over xrootd: the generated \|cos(theta*)\| with the processor's single-precision boost, in double precision and without a boost; its numbers are quoted in section b and caveat 9 |
+| `../../configs/selections_mulj_decay_angle_as_run.yaml` | the channel definitions the three campaigns ran, passed to the processor by the submit files and by `00_produce_inputs.ipynb` |
 | `figures/` | vector PDFs of every figure, written by the study notebook; untracked |
 
 Read them in that order: `00_produce_inputs.ipynb` produces one `.coffea` per sample, and
@@ -102,6 +107,92 @@ Simulation is also processed in the signal-region variants of those two channels
 variants without the muon momentum cut, which are kept for cross-checks and are not drawn
 in any figure here.
 
+## Selections used in this study
+
+The inputs come from three Condor campaigns on 2018 data and simulation, run from the branch
+`mulj-decay-angle-dev`:
+
+| campaign | ran | merged outputs | read by |
+| --- | --- | --- | --- |
+| `MuljDecayAngle_Run2018_v1` | 2026-08-28 to 2026-08-31 | `mulj_merged` | sections a to h |
+| `MuljPairAngle_Run2018_v1` | 2026-08-31 to 2026-09-01 | `mulj_pair_merged` | section i |
+| `LjAnglePlanes_Run2018_v1` | 2026-09-02 to 2026-09-05 | `lj_angle_planes_merged` | section j |
+
+All three ran the channel definitions of `sidm/configs/selections.yaml` at commit `61224901`
+of that branch. Those definitions are kept in
+`sidm/configs/selections_mulj_decay_angle_as_run.yaml`, with every YAML anchor resolved, every
+cut list in the order it is applied, and every channel under the name stored in the
+histograms. Load it with
+
+```python
+SidmProcessor(channels, collections,
+              selections_cfg="configs/selections_mulj_decay_angle_as_run.yaml")
+```
+
+or pass `--selections-cfg configs/selections_mulj_decay_angle_as_run.yaml` to
+`condor/run_sidm_chunk.py`, which `condor/run_job.sh` forwards as its ninth argument. The
+study's submit files and `00_produce_inputs.ipynb` already do. Without it the processor reads
+`configs/selections.yaml`, whose channels of the same names select different events.
+
+Three pieces of evidence tie the file to the inputs. The jobs ran from a working copy with
+uncommitted changes, and commit `61224901` was made on 2026-09-07, after all three campaigns
+had run. The metadata file written next to each merged output (152, 101 and 154 such files)
+records a definition for every channel, and every recorded definition agrees with the as-run
+file; those definitions are read from the checkout that did the merging, not from the jobs,
+and the commit recorded there is likewise the merging checkout's. For the third campaign the
+code shipped to the jobs was kept and is identical, file by file, to commit `61224901`; the
+code shipped to the first two campaigns was not kept. The strongest evidence is a rerun:
+stored Condor outputs of all three campaigns (signal chunks of each, data chunks of the first
+and third) rerun from this branch with the as-run file reproduce the stored histograms and
+cutflows bin for bin.
+
+The merged outputs are on EOS under `/store/group/lpcmetx/SIDM/coffea_outputs/murtazas/`, in
+`mulj_decay_angle`, `mulj_pair_angle` and `lj_angle_planes` for the three campaigns in that
+order, and the unmerged chunks under `/store/user/murtazas/sidm_condor/<campaign>`. The local
+directories in the table are copies of the first.
+
+**How these differ from the analysis-wide definitions.** `sidm/configs/selections.yaml` on
+main (commit `5bb94cd`) changed the base cuts every channel inherits (PR #56) after these
+campaigns ran:
+
+* main applies an eta-phi veto to electrons, photons, muons and displaced-standalone muons;
+  none of the channels here has it;
+* main has `>=2 muons (pf or dsa) pT > 26 GeV` and `all cosAlpha(mu, mu) > -0.99` among its
+  base event cuts. Here the 26 GeV requirement is in `4mu`, `4mu_sr`, `2mu2e`, `2mu2e_sr` and
+  the four spread-veto regions, and absent from the two `_noMuPtCut` variants, the uncut and
+  cosmic-veto single-lepton-jet control regions and the electromagnetic-lepton-jet
+  control region; the opening-angle veto is in the four spread-veto regions only;
+* main cuts on `dzSpread` and `dxySpread` in the muon-lepton-jet cuts of its signal channels.
+  None of the signal-like channels here has a spread cut; the four spread-veto regions cut on
+  `dzSpread` and `vxySpread`, with main's thresholds (50 for all muons, 10 for particle-flow
+  muons).
+
+The four spread-veto regions, `data_control_region_1muLj_spread_cosAlpha_mu_veto`,
+`cr_2lj_invDisplaced_spread_cosAlpha_mu_veto` and the two `test_VR_*` regions, are not defined
+on main at all. The notebook renders, when it runs, the table below and a channel-by-channel
+comparison with the checkout's `configs/selections.yaml`. The table lists what each channel
+adds to the cuts every channel shares; generator-level particle selections are left out.
+
+| channel | object cuts | lepton-jet cuts | event cuts |
+| --- | --- | --- | --- |
+| **baseline, every channel** | electrons: pT > 10 GeV, \|eta\| < 2.4, MVANonIsoWPL<br>muons: looseID, pT > 5 GeV, \|eta\| < 2.4<br>photons: pT > 20 GeV, \|eta\| < 2.5, Custom Cutbased, pixelSeed, Photon DR Veto 0p025<br>dsaMuons: pT > 10 GeV, \|eta\| < 2.4, displaced ID, all | ljs: pT > 30 GeV, \|eta\| < 2.4 | pass triggers, PV filter |
+| ***signal-like (simulation only)*** | | | |
+| `4mu` | none beyond the baseline | mu_ljs: Mu >= 2 | >=2 LJs, >=2 muons (pf or dsa) pT > 26 GeV, 4mu |
+| `4mu_sr` | none beyond the baseline | mu_ljs: Mu >= 2, mu_lj_iso < 0.1, displaced<br>egm_ljs: egm_lj_iso < 0.2, displaced | >=2 LJs, >=2 muons (pf or dsa) pT > 26 GeV, LJ-LJ dPhi > 2, 4mu |
+| `4mu_noMuPtCut` | none beyond the baseline | mu_ljs: Mu >= 2 | >=2 LJs, 4mu |
+| `2mu2e` | none beyond the baseline | mu_ljs: Mu >= 2 | >=2 LJs, >=2 muons (pf or dsa) pT > 26 GeV, 2mu2e |
+| `2mu2e_sr` | none beyond the baseline | mu_ljs: Mu >= 2, mu_lj_iso < 0.1, displaced<br>egm_ljs: egm_lj_iso < 0.2, displaced | >=2 LJs, >=2 muons (pf or dsa) pT > 26 GeV, LJ-LJ dPhi > 2, 2mu2e |
+| `2mu2e_noMuPtCut` | none beyond the baseline | mu_ljs: Mu >= 2 | >=2 LJs, 2mu2e |
+| ***control*** | | | |
+| `data_control_region_1muLj` | none beyond the baseline | mu_ljs: Mu >= 2 | pass flags, = 1 LJs, = 1 muLJs |
+| `data_control_region_1muLj_cosmic_veto` | dsaMuons: \|dxy\| <= 40, \|dz\| <= 60 | mu_ljs: Mu >= 2 | pass flags, = 1 LJs, = 1 muLJs, all cos_alpha(dsa, dsa) > -0.9 |
+| `data_control_region_1muLj_spread_cosAlpha_mu_veto` | none beyond the baseline | mu_ljs: Mu >= 2, dzSpread_mu <= 50, vxySpread_mu <= 50, dzSpread_pf <= 10, vxySpread_pf <= 10 | pass flags, >=2 muons (pf or dsa) pT > 26 GeV, = 1 LJs, = 1 muLJs, all cosAlpha(mu, mu) > -0.99 |
+| `data_control_region_1egmLj_cosmic_veto` | dsaMuons: \|dxy\| <= 40, \|dz\| <= 60 | none beyond the baseline | pass flags, = 1 LJs, = 1 egmLJs, all cos_alpha(dsa, dsa) > -0.9 |
+| `cr_2lj_invDisplaced_spread_cosAlpha_mu_veto` | none beyond the baseline | mu_ljs: Mu >= 2, inverse displaced, dzSpread_mu <= 50, vxySpread_mu <= 50, dzSpread_pf <= 10, vxySpread_pf <= 10<br>egm_ljs: inverse displaced | >=2 LJs, >=2 muons (pf or dsa) pT > 26 GeV, all cosAlpha(mu, mu) > -0.99 |
+| ***validation*** | | | |
+| `test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto` | none beyond the baseline | mu_ljs: Mu >= 2, inverse displaced, dzSpread_mu <= 50, vxySpread_mu <= 50, dzSpread_pf <= 10, vxySpread_pf <= 10 | >=2 LJs, >=2 muons (pf or dsa) pT > 26 GeV, >=2 mu_ljs, muLJ-muLJ dPhi >= 2, muLJ-muLJ invariant mass >= 150 GeV, all cosAlpha(mu, mu) > -0.99 |
+| `test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto` | none beyond the baseline | mu_ljs: Mu >= 2, inverse displaced, dzSpread_mu <= 50, vxySpread_mu <= 50, dzSpread_pf <= 10, vxySpread_pf <= 10<br>egm_ljs: inverse displaced | >=2 LJs, >=2 muons (pf or dsa) pT > 26 GeV, >=1 mu_ljs, >=1 egm_ljs, muLJ-egmLJ dPhi >= 2, muLJ-egmLJ invariant mass >= 150 GeV, all cosAlpha(mu, mu) > -0.99 |
+
 ## Reproducing the inputs
 
 `00_produce_inputs.ipynb` is the executable version of this section. It runs two files of
@@ -120,7 +211,7 @@ committed generator, one call per category; each writes one file list per chunk 
 `--outdir` and one line per chunk to `--job-args`.
 
 ```bash
-cd /uscms_data/d3/murtazas/SIDM-wt-muljangle
+cd <repository root>
 source /uscms_data/d3/murtazas/SIDM/sidm_venv/bin/activate
 
 python condor/make_job_args.py --samples-file condor/mulj_signal_4mu_samples.txt \
@@ -156,7 +247,8 @@ condor_submit submit_mulj_data.sub      # 4,278 jobs
 ```
 
 Each submit file is `condor/submit.sub` with its `job_args` and `filelists` paths pointed
-at one category, and carries the channel list and the histogram collections as arguments.
+at one category, and carries the channel list, the histogram collections and the as-run
+selections file as arguments.
 The sample lists, the three submit files, the job-argument generator and the merge script
 are all in the repository; only the generated file lists and job-argument files are not,
 which is why the step above regenerates them. A drained queue is not success: read the
@@ -185,14 +277,20 @@ python sidm/scripts/merge_coffea_chunks_eos.py \
   --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/murtazas/mulj_decay_angle \
   --unweighted-hist \
   --filelists-dir condor/filelists_mulj_data \
-  --hist-collections mulj_decay_angle,mulj_decay_angle_gen
+  --hist-collections mulj_decay_angle,mulj_decay_angle_gen \
+  --selections-cfg configs/selections_mulj_decay_angle_as_run.yaml \
+  --selections data_control_region_1muLj,data_control_region_1muLj_cosmic_veto,\
+data_control_region_1muLj_spread_cosAlpha_mu_veto,test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto,\
+test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto,4mu,2mu2e,4mu_sr,2mu2e_sr,4mu_noMuPtCut,2mu2e_noMuPtCut
 ```
 
 One merged `<sample>.coffea` comes out per sample, which is exactly what the notebook
 expects. `--filelists-dir` only feeds the metadata sidecar, so run the merge once per
 category if a complete sidecar is wanted for each. The chunk metadata already records that
 the run was unweighted; `--unweighted-hist` is kept for outputs whose metadata predates
-that key, and passing it is harmless.
+that key, and passing it is harmless. The channel names and `--selections-cfg` only feed
+the sidecar, which then records the definitions the chunks were run with rather than those
+of `configs/selections.yaml`.
 
 ### 3. Run the notebook
 
@@ -208,7 +306,7 @@ LUMI_FB = 59.8
 Then rebuild and execute:
 
 ```bash
-cd /uscms_data/d3/murtazas/SIDM-wt-muljangle
+cd <repository root>
 source /uscms_data/d3/murtazas/SIDM/sidm_venv/bin/activate
 export PYTHONPATH=$PWD
 cd sidm/studies/mulj_decay_angle
@@ -290,6 +388,28 @@ lib.configure_planes("/uscms_data/d3/murtazas/lj_angle_planes_merged")
 # or root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/murtazas/lj_angle_planes
 ```
 
+### 6. Rerunning the second and third campaigns
+
+They are built and submitted as in step 1, one `make_job_args.py` call per row with the same
+location configs (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`, `backgrounds.yaml` with
+`--dataset skimmed_llpNanoAOD_v2`, and `data_skimmed.yaml`), `--outdir condor/filelists_<name>`
+and `--job-args condor/job_args_<name>.txt`, where `<name>` is the submit file's name without
+`submit_`. Every submit file passes the as-run selections file.
+
+| submit file | sample list | samples | files per job | jobs | channels | collections |
+| --- | --- | --- | --- | --- | --- | --- |
+| `submit_muljpair_signal.sub` | `mulj_signal_4mu_samples.txt` | 33 | 10 | 199 | `4mu`, `4mu_sr`, `4mu_noMuPtCut`, four-muon validation region | `mulj_decay_angle_pair` |
+| `submit_muljpair_data.sub` | `mulj_data_samples.txt` | 68 | 60 | 2,156 | four-muon validation region | `mulj_decay_angle_pair` |
+| `submit_ljangle_signal4mu.sub` | `mulj_signal_4mu_samples.txt` | 33 | 10 | 199 | `4mu`, `4mu_sr`, `2mu2e`, `2mu2e_sr` and the five regions of step 5 | `lj_decay_angle`, `lj_pair_decay_planes`, `lj_pair_decay_planes_gen` |
+| `submit_ljangle_signal2mu2e.sub` | `lj_signal_2mu2e_samples.txt` | 33 | 10 | 163 | as above | as above |
+| `submit_ljangle_bkg.sub` | `lj_bkg_samples.txt` | 20 | 20 | 3,520 | as above | `lj_decay_angle`, `lj_pair_decay_planes` |
+| `submit_ljangle_data.sub` | `mulj_data_samples.txt` | 68 | 40 | 3,214 | the five regions of step 5 only | `lj_decay_angle`, `lj_pair_decay_planes` |
+
+The first two rows write to `/store/user/murtazas/sidm_condor/MuljPairAngle_Run2018_v1`, the
+other four to `LjAnglePlanes_Run2018_v1/{signal4mu,signal2mu2e,bkg,data}` next to it. Merge as
+in step 2, with that campaign's chunk directories, collections and channels, into the merged
+directories named under "Selections used in this study".
+
 ## Caveats
 
 These apply to every reading of the figures and are repeated in the notebook.
@@ -332,9 +452,10 @@ These apply to every reading of the figures and are repeated in the notebook.
    displaced-standalone muon's own impact parameter rather than a separation between two
    vertices. Do not call it a vertex separation, and slice by the number of
    displaced-standalone muons where the distinction matters.
-4. **Yields will not match other checkouts exactly.** Other working copies of these regions
-   apply a tighter displaced-standalone cross-cleaning and an eta-phi veto that is not
-   applied here.
+4. **These are the as-run definitions, not main's.** Every channel here is defined by
+   `selections_mulj_decay_angle_as_run.yaml`. Main's channels of the same names add an
+   eta-phi veto and the base-cut and spread-cut differences listed under "Selections used in
+   this study", and under them the shapes would change as well as the yields.
 5. **Histograms are raw counts; cutflows are not.** The campaign ran with unweighted
    histograms, so nothing in them carries a cross-section or generator weight, while the
    cutflows in the same files are luminosity times cross-section scaled. Never combine the
