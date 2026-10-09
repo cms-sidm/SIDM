@@ -2,6 +2,30 @@
 SIDM analysis at coffea-casa.  
 Inspired by github.com/phylsix/Firefighter and/or github.com/phylsix/FireROOT
 
+## Read the configured cuts
+
+`sidm/scripts/print_cuts.py` resolves YAML anchors/merges and flattens inherited
+cut lists, preserving their order and repeated cuts. It requires only PyYAML
+(`python3 -m pip install PyYAML`), with no Coffea installation or event inputs.
+From the repository root:
+
+```bash
+python3 sidm/scripts/print_cuts.py                         # all selections
+python3 sidm/scripts/print_cuts.py --list                  # selection names
+python3 sidm/scripts/print_cuts.py -s 4mu_sr               # one selection
+python3 sidm/scripts/print_cuts.py -s '*_sr'               # matching selections
+python3 sidm/scripts/print_cuts.py -s 4mu -s 2mu2e         # several selections
+python3 sidm/scripts/print_cuts.py > cuts.txt              # save the full report
+python3 sidm/scripts/print_cuts.py path/to/selections.yaml --json
+```
+
+The default config is located relative to the script, so the script also works
+from another directory. Output separates object, LJ/post-LJ, and event cuts.
+These are the configured cut labels; their Python implementations live in
+`sidm/definitions/cuts.py`. The script does not evaluate cut functions or prove
+that a runtime cut succeeded. YAMLs for sample lists, cross sections, and
+histograms do not contain selection cuts and are reported as such.
+
 ## Getting started
 - Fork this repository ([here's a nice guide to follow](https://gist.github.com/Chaser324/ce0505fbed06b947d962))
 - Log in to coffea.casa as described [here](https://coffea-casa.readthedocs.io/en/latest/cc_user.html#cms-authz-authentication-instance)
