@@ -334,9 +334,14 @@ class SidmProcessor(processor.ProcessorABC):
         breaks pickling. So we strip behavior and record/array names and store plain
         data. numpy arrays and Python lists are wrapped directly; a bare scalar
         becomes a length-1 array.
+
+        A branch that returns an input column unchanged (e.g. a NanoAOD weight)
+        returns a virtual array that still reads from the ROOT file. A
+        multiprocess executor pickles the output after the file is closed, so
+        the array is materialized here, while the file is still open.
         """
         if isinstance(value, ak.Array):
-            arr = value
+            arr = ak.materialize(value)
         else:
             try:
                 arr = ak.Array(value)
