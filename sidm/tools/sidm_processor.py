@@ -213,24 +213,39 @@ class SidmProcessor(processor.ProcessorABC):
         else:
             evt_weights = ak.broadcast_arrays(1.0, self.obj_defs["met"](events))[0]
 
+        # The lepton jets depend only on the pre-LJ object cuts and lj_reco, so
+        # channels that share both (e.g. base, 2mu2e and 4mu) reuse one
+        # clustering, which is most of the processing time.
+        lj_cache = {}
+
         # loop through lj reco choices and channels, treating each lj+channel pair as a unique Selection
         for channel, cuts in ch_cuts.items():
             obj_selection = selection.JaggedSelection(cuts["obj"], self.verbose)
             nested_selection = selection.NestedSelection(cuts["obj"], self.verbose)
 
             for lj_reco in self.lj_reco_choices:
-                sel_objs = objs.copy()
+                cache_key = (repr(cuts["obj"]), lj_reco)
+                if cache_key in lj_cache:
+                    sel_objs = lj_cache[cache_key].copy()
+                else:
+                    sel_objs = objs.copy()
 
-                # apply selections on matched_muons within the DSA muons and matched_dsa_muons within the PF muons
-                # remove None entries from matched PF or DSA muons before applying cuts
-                sel_objs["dsaMuons"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuons"].matched_muons), "muons")
-                sel_objs["muons"]["good_matched_dsa_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["muons"].matched_dsa_muons), "dsaMuons")
+                    # apply selections on matched_muons within the DSA muons and matched_dsa_muons within the PF muons
+                    # remove None entries from matched PF or DSA muons before applying cuts
+                    sel_objs["dsaMuons"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuons"].matched_muons), "muons")
+                    sel_objs["muons"]["good_matched_dsa_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["muons"].matched_dsa_muons), "dsaMuons")
 
-                # apply pre-LJ object selection
-                sel_objs = obj_selection.apply_obj_cuts(sel_objs)
+                    # apply pre-LJ object selection
+                    sel_objs = obj_selection.apply_obj_cuts(sel_objs)
 
-                # reconstruct lepton jets
-                sel_objs["ljs"] = self.build_lepton_jets(sel_objs, float(lj_reco))
+                    # reconstruct lepton jets
+                    sel_objs["ljs"] = self.build_lepton_jets(sel_objs, float(lj_reco))
+
+                    # the two lines above set fields of objs["muons"] and
+                    # objs["dsaMuons"] in place for each channel, so cache
+                    # snapshots that later channels cannot change
+                    lj_cache[cache_key] = {**sel_objs, "muons": copy.copy(sel_objs["muons"]),
+                                           "dsaMuons": copy.copy(sel_objs["dsaMuons"])}
 
                 # apply obj selection to ljs
                 lj_selection = selection.JaggedSelection(cuts["lj"], self.verbose)
@@ -465,7 +480,12 @@ class SidmProcessor(processor.ProcessorABC):
 
     def make_constituent(self, consts, type_ids, name, fields):
         """Return array of particles of given type_ids, name, and only specified fields"""
-        relevant_consts = consts[ak.any((consts.part_type == x for x in type_ids), axis=0)] # dask profile implies this may be a bottleneck
+        # OR of one mask per type: ak.any over a generator of masks gives the
+        # same result but builds it event by event in python
+        is_relevant = consts.part_type == type_ids[0]
+        for type_id in type_ids[1:]:
+            is_relevant = is_relevant | (consts.part_type == type_id)
+        relevant_consts = consts[is_relevant]
         forms = {f: relevant_consts.__getattr__(f) for f in fields}
         return ak.zip(forms, with_name=name, behavior=nanoaod.behavior)
 
