@@ -6,6 +6,7 @@ hist.Hists storage is weight unless otherwise specified.
 """
 
 # python
+import functools
 import math
 import importlib
 # columnar analysis
@@ -16,6 +17,7 @@ import numpy as np
 from sidm.tools import histogram as h
 from sidm.tools.utilities import dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs
 from sidm.definitions.objects import derived_objs, withMass
+from sidm.tools.corrections import Corrections
 # always reload local modules to pick up changes during development
 importlib.reload(h)
 
@@ -171,6 +173,129 @@ def daughters_dR(objs, mask, obj_name):
     """dR between the two daughters of each dark photon (one entry per dark photon)."""
     children = decayed_daughter_pairs(objs, mask, obj_name).children
     return children[:, :, 0].delta_r(children[:, :, 1])
+
+
+# helpers for the corrections study (sidm/studies/corrections). The weight
+# factors, the working points of the object SFs and the year are added to objs
+# by SidmProcessor when it runs with corrections.
+@functools.lru_cache(maxsize=None)
+def corrections_for(year):
+    """Corrections for one year, to evaluate SFs and jet corrections in fill functions"""
+    return Corrections(year, names=[])
+
+def lj_constituents(objs, collection, correction=None):
+    """Constituents of the lepton jets, one list per event
+
+    With a correction name, the lists are empty in channels that do not apply
+    that object correction, so its SF histograms are only filled where it is used.
+    """
+    constituents = ak.flatten(objs["ljs"][collection], axis=2)
+    if correction is not None and correction not in objs["object_corrections"]:
+        constituents = constituents[:, :0]
+    return constituents
+
+def lj_constituent_sf(objs, collection, correction, which="nominal"):
+    """SF of each lepton-jet constituent, at the working point the channel selects"""
+    constituents = lj_constituents(objs, collection, correction)
+    if correction not in objs["object_corrections"]:
+        return constituents.pt
+    return corrections_for(objs["year"]).object_sf(
+        correction, constituents, objs["object_corrections"][correction], which)
+
+def lj_pfmuon_nearest_muon_dr(objs):
+    """dR from each lepton-jet PF muon to the nearest other muon (PF or DSA) of its lepton jet
+
+    9.9 for a muon without a partner.
+    """
+    ljs = objs["ljs"]
+    dr = ljs.pfMuons.metric_table(ljs.muons, axis=2)
+    dr = ak.where(dr < 1e-6, 9.9, dr)
+    return ak.flatten(ak.fill_none(ak.min(dr, axis=-1), 9.9), axis=2)
+
+def lj_photon_nearest_gen_dr(objs, gens):
+    """dR from each lepton-jet photon to the nearest of gens, 9.9 if there is none"""
+    photons = lj_constituents(objs, "photons")
+    return ak.fill_none(ak.min(photons.metric_table(gens), axis=-1), 9.9)
+
+def egm_energy_variations(objs, collection):
+    """The four NanoAOD energy variations of each lepton-jet electron or photon, concatenated"""
+    constituents = lj_constituents(objs, collection)
+    return ak.concatenate([constituents[v] for v in EGM_ENERGY_VARIATIONS], axis=1)
+
+def egm_energy_variation_index(objs, collection):
+    """Index into EGM_ENERGY_VARIATIONS for each entry of egm_energy_variations"""
+    pt = lj_constituents(objs, collection).pt
+    return ak.concatenate([ak.values_astype(ak.zeros_like(pt), np.int32) + i
+                           for i in range(len(EGM_ENERGY_VARIATIONS))], axis=1)
+
+EGM_ENERGY_VARIATIONS = ("dEscaleUp", "dEscaleDown", "dEsigmaUp", "dEsigmaDown")
+
+def lj_with_matched_jet(objs):
+    ljs = objs["ljs"]
+    return ljs[~ak.is_none(ljs.matched_jet, axis=1)]
+
+def lj_isolation_variant(objs, variant):
+    """Lepton-jet isolation with the matched jet energy corrected another way
+
+    The isolation is proportional to the energy of the matched jet, so each
+    variant scales it: "raw" undoes the JEC, "jes_up" and "jes_down" shift the
+    jet by its total JES uncertainty, and "jer" applies the JER smearing that
+    NanoAOD does not. "analysis" is the isolation the selection uses.
+    """
+    ljs = objs["ljs"]
+    if variant == "analysis":
+        return ljs.isolation
+    jet = ljs.matched_jet
+    counts = ak.num(ljs, axis=1)
+
+    def flat(values, fill):
+        return np.asarray(ak.flatten(ak.fill_none(values, fill), axis=None))
+
+    has_jet = flat(~ak.is_none(jet, axis=1), False)
+    pt, eta = flat(jet.pt, 0.0)[has_jet], flat(jet.eta, 0.0)[has_jet]
+    corr = corrections_for(objs["year"])
+    factor = np.ones(len(has_jet))
+    if variant == "raw":
+        factor[has_jet] = 1 - flat(jet.rawFactor, 0.0)[has_jet]
+    elif variant in ("jes_up", "jes_down"):
+        entry = corr.entry("jet_energy")
+        unc = corr.correction(entry["file"], entry["jes_uncertainty"]).evaluate(eta, pt)
+        factor[has_jet] = 1 + unc if variant == "jes_up" else 1 - unc
+    elif variant == "jer":
+        gen = jet.matched_gen
+        rho = np.repeat(np.asarray(objs["rho_PFIso"]), counts)
+        event = np.repeat(np.asarray(objs["event_number"]), counts)
+        factor[has_jet] = corr.jer_smearing_values(
+            pt, eta, flat(gen.pt, -1.0)[has_jet], flat(jet.delta_r(gen), np.inf)[has_jet],
+            rho[has_jet], event[has_jet])
+    else:
+        raise ValueError(f"unknown isolation variant {variant!r}")
+    return ljs.isolation * ak.unflatten(factor, counts)
+
+def lj_passes_isolation(objs, iso):
+    """The SR isolation requirement: below 0.1 for muon-type, 0.2 for egamma-type lepton jets"""
+    return iso < ak.where(objs["ljs"].muon_n > 0, 0.1, 0.2)
+
+def lj_isolation_hist(variant):
+    return h.Histogram([
+        h.Axis(hist.axis.Boolean(name="is_mu", label="muon-type lepton jet"),
+               lambda objs, mask: objs["ljs"].muon_n > 0),
+        h.Axis(hist.axis.Regular(50, 0, 0.5, name="iso", label=f"lepton-jet isolation ({variant})"),
+               lambda objs, mask: lj_isolation_variant(objs, variant)),
+    ])
+
+def lj_isolation_flip_hist(variant):
+    return h.Histogram([
+        h.Axis(hist.axis.Boolean(name="is_mu", label="muon-type lepton jet"),
+               lambda objs, mask: objs["ljs"].muon_n > 0),
+        h.Axis(hist.axis.Boolean(name="pass_analysis", label="passes the isolation cut"),
+               lambda objs, mask: lj_passes_isolation(objs, objs["ljs"].isolation)),
+        h.Axis(hist.axis.Boolean(name="pass_variant", label=f"passes it with the {variant} isolation"),
+               lambda objs, mask: lj_passes_isolation(objs, lj_isolation_variant(objs, variant))),
+    ])
+
+def log_axis(nbins, xmin, xmax, name, label):
+    return hist.axis.Regular(nbins, xmin, xmax, transform=hist.axis.transform.log, name=name, label=label)
 
 hist_defs = {
     # pv
@@ -5495,4 +5620,143 @@ hist_defs = {
         ],
     ),
 
+    # corrections study (sidm/studies/corrections). Filled with the event
+    # weights; with syst_hists=True every weight category is on the syst axis.
+    # weight_* hists need SidmProcessor(corrections=...), *_sf hists the
+    # corresponding object correction (applied or monitored).
+    "pileup_nTrueInt": h.Histogram([
+        # nTrueInt is integer in UL simulation: bins centred on the integers, since on
+        # 0-100 floating-point rounding puts 29, 57 and 58 in the bin below
+        h.Axis(hist.axis.Regular(100, -0.5, 99.5, name="nTrueInt", label="true number of interactions"),
+               lambda objs, mask: objs["pileup"].nTrueInt),
+    ]),
+    "pv_npvsGood": h.Histogram([
+        h.Axis(hist.axis.Regular(80, 0, 80, name="npvsGood", label="good primary vertices"),
+               lambda objs, mask: objs["pvs"].npvsGood),
+    ]),
+    "weight_pileup": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 2, name="w", label="pileup weight"),
+               lambda objs, mask: objs["weight_factors"].pileup),
+    ]),
+    "weight_pileup_halfwidth": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0, 0.25, name="w", label="pileup weight (up - down) / (2 nominal)"),
+               lambda objs, mask: (objs["weight_factors"].pileupUp - objs["weight_factors"].pileupDown)
+                                  / (2 * objs["weight_factors"].pileup)),
+    ]),
+    "weight_l1_prefiring": h.Histogram([
+        # bins centred on multiples of 0.001, so a weight of exactly one is in range
+        h.Axis(hist.axis.Regular(60, 0.9405, 1.0005, name="w", label="L1 prefiring weight"),
+               lambda objs, mask: objs["weight_factors"].l1_prefiring),
+    ]),
+    "weight_muon_id": h.Histogram([
+        h.Axis(hist.axis.Regular(120, 0.95, 1.01, name="w", label="muon ID SF, product over the event"),
+               lambda objs, mask: objs["weight_factors"].muon_id),
+    ]),
+    "weight_electron_reco": h.Histogram([
+        h.Axis(hist.axis.Regular(150, 0.9, 1.05, name="w", label="electron reconstruction SF, product over the event"),
+               lambda objs, mask: objs["weight_factors"].electron_reco),
+    ]),
+    "weight_photon_pixel_veto": h.Histogram([
+        h.Axis(hist.axis.Regular(110, 0.5, 1.05, name="w", label="photon pixel-veto SF, product over the event"),
+               lambda objs, mask: objs["weight_factors"].photon_pixel_veto),
+    ]),
+    "lj_pfMuon_muon_id_sf": h.Histogram([
+        h.Axis(hist.axis.Variable([5, 10, 15, 20, 30, 50, 100, 500], name="pt", label=r"lepton-jet PF muon $p_T$ (GeV)"),
+               lambda objs, mask: lj_constituents(objs, "pfMuons", "muon_id").pt),
+        h.Axis(hist.axis.Regular(80, 0.97, 1.01, name="sf", label="muon ID SF"),
+               lambda objs, mask: lj_constituent_sf(objs, "pfMuons", "muon_id")),
+    ]),
+    "lj_electron_electron_reco_sf": h.Histogram([
+        h.Axis(hist.axis.Variable([10, 15, 20, 30, 50, 100, 500], name="pt", label=r"lepton-jet electron $p_T$ (GeV)"),
+               lambda objs, mask: lj_constituents(objs, "electrons", "electron_reco").pt),
+        h.Axis(hist.axis.Regular(50, 0.95, 1.05, name="sf", label="electron reconstruction SF"),
+               lambda objs, mask: lj_constituent_sf(objs, "electrons", "electron_reco")),
+    ]),
+    "lj_photon_photon_pixel_veto_sf": h.Histogram([
+        h.Axis(hist.axis.Boolean(name="barrel", label="supercluster in the barrel"),
+               lambda objs, mask: lj_constituents(objs, "photons", "photon_pixel_veto").isScEtaEB),
+        h.Axis(hist.axis.Regular(60, 0.85, 1.0, name="sf", label="photon pixel-veto SF"),
+               lambda objs, mask: lj_constituent_sf(objs, "photons", "photon_pixel_veto")),
+    ]),
+    "lj_electron_eCorr": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0.6, 1.6, name="eCorr", label="lepton-jet electron eCorr"),
+               lambda objs, mask: lj_constituents(objs, "electrons").eCorr),
+    ]),
+    "lj_photon_eCorr": h.Histogram([
+        h.Axis(hist.axis.Regular(100, 0.6, 1.6, name="eCorr", label="lepton-jet photon eCorr"),
+               lambda objs, mask: lj_constituents(objs, "photons").eCorr),
+    ]),
+    "lj_electron_energy_variations": h.Histogram([
+        h.Axis(hist.axis.Integer(0, 4, name="variation", label="dEscaleUp, dEscaleDown, dEsigmaUp, dEsigmaDown"),
+               lambda objs, mask: egm_energy_variation_index(objs, "electrons")),
+        h.Axis(hist.axis.Boolean(name="nonzero", label="variation is non-zero"),
+               lambda objs, mask: egm_energy_variations(objs, "electrons") != 0),
+    ]),
+    "lj_photon_energy_variations": h.Histogram([
+        h.Axis(hist.axis.Integer(0, 4, name="variation", label="dEscaleUp, dEscaleDown, dEsigmaUp, dEsigmaDown"),
+               lambda objs, mask: egm_energy_variation_index(objs, "photons")),
+        h.Axis(hist.axis.Boolean(name="nonzero", label="variation is non-zero"),
+               lambda objs, mask: egm_energy_variations(objs, "photons") != 0),
+    ]),
+    "lj_pfMuon_absdxy_log": h.Histogram([
+        h.Axis(log_axis(50, 1e-4, 50, "dxy", r"lepton-jet PF muon $|d_{xy}|$ (cm)"),
+               lambda objs, mask: abs(lj_constituents(objs, "pfMuons").dxy)),
+    ]),
+    "lj_pfMuon_pixelHits": h.Histogram([
+        h.Axis(hist.axis.Integer(0, 8, name="pixel", label="lepton-jet PF muon pixel hits"),
+               lambda objs, mask: ak.values_astype(lj_constituents(objs, "pfMuons").trkNumPixelHits, np.int64)),
+    ]),
+    "lj_pfMuon_nearest_muon_dR": h.Histogram([
+        h.Axis(log_axis(50, 1e-3, 10, "dr", r"$\Delta R$(lepton-jet PF muon, nearest muon)"),
+               lambda objs, mask: lj_pfmuon_nearest_muon_dr(objs)),
+    ]),
+    "lj_pfMuon_tnp_phase_space": h.Histogram([
+        h.Axis(hist.axis.Boolean(name="displaced", label=r"$|d_{xy}|$ > 0.2 cm"),
+               lambda objs, mask: abs(lj_constituents(objs, "pfMuons").dxy) > 0.2),
+        h.Axis(hist.axis.Boolean(name="few_pixel_hits", label="at most 2 pixel hits"),
+               lambda objs, mask: lj_constituents(objs, "pfMuons").trkNumPixelHits <= 2),
+        h.Axis(hist.axis.Boolean(name="close_muon", label=r"another muon within $\Delta R$ < 0.3"),
+               lambda objs, mask: lj_pfmuon_nearest_muon_dr(objs) < 0.3),
+    ]),
+    "lj_muon_composition": h.Histogram([
+        h.Axis(hist.axis.Integer(0, 5, name="pf", label="PF muons in the lepton jet"),
+               lambda objs, mask: ak.values_astype(objs["ljs"].pfMu_n, np.int64)),
+        h.Axis(hist.axis.Integer(0, 5, name="dsa", label="DSA muons in the lepton jet"),
+               lambda objs, mask: ak.values_astype(objs["ljs"].dsaMu_n, np.int64)),
+    ]),
+    "lj_electron_id": h.Histogram([
+        h.Axis(hist.axis.Boolean(name="wp90", label="passes mvaFall17V2noIso_WP90"),
+               lambda objs, mask: lj_constituents(objs, "electrons").mvaFall17V2noIso_WP90),
+        h.Axis(hist.axis.Boolean(name="wp80", label="passes mvaFall17V2noIso_WP80"),
+               lambda objs, mask: lj_constituents(objs, "electrons").mvaFall17V2noIso_WP80),
+        h.Axis(hist.axis.Boolean(name="missing_hits", label="at least one missing inner hit"),
+               lambda objs, mask: lj_constituents(objs, "electrons").lostHits >= 1),
+    ]),
+    "lj_photon_genE_dR": h.Histogram([
+        h.Axis(log_axis(50, 1e-3, 10, "dr", r"$\Delta R$(lepton-jet photon, nearest gen electron)"),
+               lambda objs, mask: lj_photon_nearest_gen_dr(objs, objs["genEs"])),
+    ]),
+    "lj_photon_genPhoton_dR": h.Histogram([
+        h.Axis(log_axis(50, 1e-3, 10, "dr", r"$\Delta R$(lepton-jet photon, nearest gen photon)"),
+               lambda objs, mask: lj_photon_nearest_gen_dr(objs, derived_objs["genPhotons"](objs))),
+    ]),
+    "lj_has_matched_jet": h.Histogram([
+        h.Axis(hist.axis.Boolean(name="has_jet", label="lepton jet has a matched jet"),
+               lambda objs, mask: ~ak.is_none(objs["ljs"].matched_jet, axis=1)),
+    ]),
+    "lj_matched_jet_lepfrac_jec": h.Histogram([
+        h.Axis(hist.axis.Regular(40, 0, 1, name="lepfrac", label="lepton fraction of the matched jet"),
+               lambda objs, mask: lj_with_matched_jet(objs).lepton_fraction),
+        h.Axis(hist.axis.Regular(100, 0.4, 1.4, name="jec", label="JEC factor of the matched jet"),
+               lambda objs, mask: 1 / (1 - lj_with_matched_jet(objs).matched_jet.rawFactor)),
+    ]),
+    "lj_isolation_analysis": lj_isolation_hist("analysis"),
+    "lj_isolation_raw": lj_isolation_hist("raw"),
+    "lj_isolation_jes_up": lj_isolation_hist("jes_up"),
+    "lj_isolation_jes_down": lj_isolation_hist("jes_down"),
+    "lj_isolation_jer": lj_isolation_hist("jer"),
+    "lj_isolation_raw_flips": lj_isolation_flip_hist("raw"),
+    "lj_isolation_jes_up_flips": lj_isolation_flip_hist("jes_up"),
+    "lj_isolation_jes_down_flips": lj_isolation_flip_hist("jes_down"),
+    "lj_isolation_jer_flips": lj_isolation_flip_hist("jer"),
 }

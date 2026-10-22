@@ -1,5 +1,7 @@
 awkward==2.8.2
 coffea==2025.5.0rc2
+# imported directly by sidm/tools/corrections.py; same pin as condor/constraints.txt
+correctionlib==2.9.0
 fastjet==3.4.3.1
 hist==2.8.0
 # llvmlite/numba arrive transitively via coffea. Condor workers build their venv

@@ -341,6 +341,21 @@ I suggest the following workflow for performing a physics study:
 2. After defining your new cut in `cuts.py`, add it's name to an existing selection in [selections.yaml](https://github.com/btcardwell/SIDM/blob/4e6685669067429e8492d4dcfc87f463c86b96d7/analysis/configs/selections.yaml). Alternatively, you can also create an entirely new selection. Note that object-level and event-level cuts must be listed separately within a selection, and object-level cuts are further organized by object type. As with histogram collections, any selections that include the selection to which you added your cut will also include your cut.
 3. That's it! Running `sidm_processor` while specifying the proper selection will now apply your new cut.
 
+### How to apply the standard corrections (correctionlib)
+
+`SidmProcessor(..., corrections=True)` applies the standard CMS corrections to simulation, read with [correctionlib](https://cms-nanoaod.github.io/correctionlib/) from dated CVMFS snapshots pinned in [`sidm/configs/corrections.yaml`](sidm/configs/corrections.yaml): pileup reweighting, the L1 prefiring weight, the PF-muon ID SF and the electron reconstruction SF. A list of names selects a subset or adds others, e.g. `corrections=["pileup", "photon_pixel_veto"]`. Data is never corrected, and the lumi*xs normalization still uses the plain genWeight sum.
+
+```python
+p = sidm_processor.SidmProcessor(["2mu2e_sr"], ["lj_lj_base"], corrections=True, syst_hists=True)
+...
+output[sample]["cutflow"]["2mu2e_sr"].variation_yields()   # {"nominal": ..., "pileupUp": ..., ...}
+output[sample]["hists"]["lj_lj_absdphi"][{"syst": "muon_idDown"}]
+```
+
+Every cutflow row then also carries the weighted count of each weight category: `nominal`, `uncorrected` (genWeight only), `only_<name>` (genWeight times one correction), and the up/down variations; `monitor_corrections=[...]` adds `with_<name>` categories for corrections that are evaluated but not applied. `syst_hists=True` adds a `syst` axis with the same categories to every histogram (14 with the default list, so 14 times the memory: use it with small collections). The default, `corrections=None`, leaves the output exactly as it was. On Condor, pass `default` or a comma-separated list as the optional 7th argument of `condor/run_job.sh`, and `syst` as the 8th to get weighted histograms with the `syst` axis (see [`condor/README.md`](condor/README.md)). What each correction does, where the standard corrections stop describing lepton-jet objects, and how much they move the signal yields is in [`sidm/studies/corrections/README.md`](sidm/studies/corrections/README.md), with a tutorial notebook and notebooks that read the merged outputs of a Condor campaign over every signal point and background.
+
+Under `cmsenv` the PyPI correctionlib wheel does not import (`undefined symbol: __cxa_call_terminate`, CMSSW's own `libcorrectionlib.so` shadows the wheel's). `sidm/tools/corrections.py` works around it, so the processor runs anyway; for a plain `import correctionlib` in a CMSSW-based kernel, build it once with `bash sidm/scripts/install_correctionlib_cmssw.sh`. The LCG_107 venv above is not affected.
+
 ### Error bars on plots
 
 `utilities.plot` follows one convention for error bars:

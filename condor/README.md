@@ -217,6 +217,15 @@ This creates multiple Condor jobs per signal point. The chunks are merged afterw
 
 ---
 
+### Even job lengths
+
+Events per file vary a lot between samples (from a few in the low-pT QCD skims to ~18k in
+`DYJetsToMuMu_M50`). `--files-per-job-map` takes a YAML of `{sample: files per job}` that
+overrides `--files-per-job` for the samples it lists; `condor/files_per_job_corrections.yaml`
+is the one the corrections campaign uses (about 100k events per job).
+
+---
+
 ## 7. Path fixes (no longer needed)
 
 Earlier revisions of this guide had two manual `sed` workarounds in this section: one to strip a `condor/filelists/` double-prefix from `job_args.txt`, and one to rewrite `root://xcache//` to `root://cmseos.fnal.gov//` in every filelist. Both are now fixed at source:
@@ -326,6 +335,20 @@ x509userproxy = $ENV(X509_USER_PROXY)
 
 queue sample, chunk, filelist from job_args.txt
 ```
+
+`run_job.sh` takes optional arguments after the output directory, in this order:
+
+| # | argument | default | meaning |
+|---|---|---|---|
+| 5 | channels | `base` | comma-separated selections from `selections.yaml` |
+| 6 | hist collections | `muon_base` | comma-separated collections from `hist_collections.yaml` |
+| 7 | corrections | empty | standard corrections for simulation: `default`, or names from `sidm/configs/corrections.yaml` |
+| 8 | hist mode | `unweighted` | `unweighted` (unit weights, as before), `weighted`, or `syst` (weighted, plus a `syst` axis with every weight category; needs corrections) |
+| 9 | monitored corrections | empty | corrections evaluated but not applied, e.g. `photon_pixel_veto` |
+
+With the defaults the job runs exactly as before. See [`sidm/studies/corrections/README.md`](../sidm/studies/corrections/README.md) for the corrections and the weight categories.
+
+`run_sidm_chunk.py` reads each sample's `skim_factor`, `is_data` and `year` from the location YAML its files come from (it matches the files against every YAML in `sidm/configs/ntuples/`), so the skimmed backgrounds are normalized with their skim factor. Earlier versions set `skim_factor = 1` for every sample, which overestimates a skimmed sample's yields by 1/skim_factor. The analysis is blinded, so a chunk whose files are collision data (an `is_data` sample, a `data*.yaml` location or a `/SIDM/Data/` path) stops before reading anything unless `--allow-data` is passed; `run_job.sh` never passes it.
 
 `$ENV(USER)` is expanded at submit time, so the same file works for any LPC user. The only thing to edit between runs is the trailing "run tag" — for signals use:
 
@@ -581,6 +604,16 @@ Chunks stay in `/store/user/$USER/sidm_condor/...`. Merged outputs go to `/store
 cd /uscms_data/d3/$USER/SIDM
 source sidm_venv/bin/activate
 ```
+
+> **Fixed 2026-10-01:** `combine_normalized_chunks` looked for each sample's metadata at the top
+> level of a chunk file, but `run_sidm_chunk.py` saves what `Runner.run` returns,
+> `{"out": {sample: ...}, "processed": ..., "exception": ...}`. The re-weighting below was
+> therefore skipped, and every merged weighted cutflow (and weighted histogram) came out
+> multiplied by the number of chunks of its sample. Raw counts and unweighted histograms were
+> right. Re-merge earlier outputs (the chunks are enough, nothing needs reprocessing). The
+> merge also accumulates one chunk at a time now, so samples with thousands of chunks fit in
+> memory, and it copies every chunk fresh from EOS unless `--keep-local` is given (a local
+> copy left by an earlier run would otherwise be merged in place of a resubmitted chunk).
 
 ### How the merge normalizes — important
 

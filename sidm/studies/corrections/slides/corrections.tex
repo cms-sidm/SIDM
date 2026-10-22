@@ -1,0 +1,767 @@
+% SIDM standard corrections with correctionlib: summary deck.
+% Build with:  pdflatex -interaction=nonstopmode corrections.tex   (run twice)
+% Figures are read from figures/, written by the four notebooks in ../
+% (00_correctionlib_tutorial, 01_standard_corrections, 02_applicability,
+% 03_impact_on_results). Like the PDFs elsewhere in the repo they are gitignored,
+% so run the notebooks before building the deck.
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{default}
+\usecolortheme{seahorse}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamerfont{frametitle}{size=\large}
+\setbeamertemplate{itemize items}[circle]
+
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage[T1]{fontenc}
+
+\graphicspath{{figures/}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\definecolor{codebg}{HTML}{F2F2F2}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B03A2E}
+\definecolor{good}{HTML}{1E7B34}
+\newcommand{\code}[1]{{\small\colorbox{codebg}{\texttt{#1}}}}
+\newcommand{\lxy}{$L_{xy}$}
+\newcommand{\mzd}{$m_{Z_d}$}
+\newcommand{\mphi}{$m_{\Phi}$}
+\newcommand{\ctau}{$c\tau$}
+\newcommand{\yes}{\textcolor{good}{\textbf{yes}}}
+\newcommand{\no}{\textcolor{warn}{\textbf{no}}}
+
+\title{\textbf{Standard corrections with correctionlib}}
+\subtitle{Framework, a Condor campaign over all signal and background simulation, where the standard corrections stop applying to lepton jets, and the effect on the SR yields}
+\author{SIDM analysis}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+  \begin{center}
+    \small
+    \code{sidm/studies/corrections/} \quad branch \code{correctionsLib}
+  \end{center}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{What this is}
+  The goal: \emph{implement correctionlib, make sure we apply all the standard object
+  corrections correctly, and identify where the standard corrections do not apply to our
+  objects}, as the first step towards real systematics.
+
+  \vspace{0.1em}
+  \small
+  \begin{enumerate}
+    \item \textbf{Framework}: \code{SidmProcessor(..., corrections=True)} applies the standard
+          corrections to simulation, with every weight category (uncorrected, one correction at
+          a time, up/down) in every cutflow and, optionally, every histogram.
+    \item \textbf{Campaign}: every v10 signal point and every skimmed background through Condor,
+          with dedicated histograms; merged outputs on EOS for the whole group.
+    \item \textbf{Applicability}: for each requirement of the selection, which correction covers
+          it and how well it describes lepton-jet objects, over the whole grid.
+    \item \textbf{Impact}: what the corrections and their uncertainties do to the SR yields,
+          as lnN nuisances for every signal point.
+  \end{enumerate}
+
+  \vspace{0.2em}
+  {\small\textcolor{accent}{\textbf{Simulation only.}} The analysis is blinded: no collision data
+  is used, and the Condor jobs refuse data unless told otherwise. The data/MC checks that
+  normally come with these corrections are open items for the group.}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{correctionlib in one slide}
+  \begin{itemize}
+    \item A JSON schema in which a correction is a small tree of nodes (\code{binning},
+          \code{category}, \code{formula}, \code{transform}, \code{hashprng}), and a fast C++
+          evaluator with Python bindings. Every POG publishes its Run~2 UL and Run~3 corrections
+          this way.
+    \item CMS files: \code{/cvmfs/cms-griddata.cern.ch/cat/metadata/}, which replaced the
+          deprecated \code{jsonpog-integration} tree. We \textbf{pin dated snapshots} in
+          \code{corrections.yaml}, never \code{latest}.
+  \end{itemize}
+
+  \vspace{0.2em}
+  {\footnotesize
+  \begin{block}{Things that bite (tutorial, notebook 00)}
+    \begin{itemize}
+      \item Each \code{binning} has a \code{flow} (\code{clamp}, \code{error} or a value): the Z-based
+            muon SFs raise below 15 GeV, so we use J/$\psi$ SFs below 20 GeV and Z SFs above.
+      \item Each POG names its variations differently (\code{systup}, \code{sfup}, \code{up}): the
+            names live in the config, not in analysis code.
+      \item String inputs must be scalars, so the photon pixel-veto SF is evaluated per region.
+    \end{itemize}
+  \end{block}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{How the framework applies the corrections}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \scriptsize
+      \begin{itemize}
+        \item \code{corrections.yaml}: file, correction, pinned snapshot, variation names and
+              a validity note for each correction.
+        \item \code{Corrections}: loads each JSON once per process, evaluates event and object
+              corrections, records file checksums.
+        \item \code{EventWeights}: the weight as a product of named factors with up/down shifts;
+              each category is a product, so a zero factor cannot give NaN.
+        \item \textbf{Object SFs follow the selection}: an SF is tied to the cut it corrects
+              (\code{looseID} $\to$ Loose ID SF on the lepton-jet PF muons, \code{tightID} $\to$ Tight).
+        \item \textbf{Monitored corrections} are evaluated, not applied, e.g.\ the pixel veto.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      {\scriptsize
+      \begin{block}{Weight categories (cutflows, \texttt{syst} axis)}
+        \begin{tabular}{@{}p{2.3cm}p{3.4cm}@{}}
+          \texttt{nominal} & all applied corrections \\
+          \texttt{uncorrected} & genWeight only \\
+          \texttt{only\_<name>} & genWeight $\times$ one correction \\
+          \texttt{<name>Up/Down} & one correction shifted \\
+          \texttt{with\_<name>} & plus a monitored one (and its Up/Down) \\
+        \end{tabular}
+      \end{block}}
+      {\scriptsize
+      \begin{itemize}
+        \item Normalisation from the plain genWeight sum; data never corrected.
+        \item \code{corrections=None} (default): \textbf{identical to \texttt{main}}.
+        \item Fill functions see the factors: histograms of the corrections themselves.
+      \end{itemize}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{The corrections and their status}
+  \vspace{0.3em}
+  {\scriptsize
+  \begin{tabular}{@{}l c l L{3.6cm}@{}}
+    \toprule
+    name & default & source (snapshot) & validity for our objects \\
+    \midrule
+    \texttt{pileup} & \yes & LUM \texttt{puWeights} (2021-09-10) & standard \\
+    \texttt{l1\_prefiring} & \yes & NanoAOD \texttt{L1PreFiringWeight} & standard; muons only in 2018 \\
+    \texttt{muon\_id} & \yes & MUO \texttt{muon\_JPsi/Z} (2024-07-02) & approximate: prompt, isolated muons \\
+    \texttt{electron\_reco} & \yes & EGM \texttt{electron}, Reco (2024-07-02) & approximate: prompt electrons \\
+    \texttt{photon\_pixel\_veto} & monitored & EGM \texttt{photon}, PixVeto (2024-07-02) & not applicable: electron pairs \\
+    \texttt{electron\_id}, \texttt{photon\_id} & \no & EGM Loose (2024-07-02) & not our working points \\
+    \midrule
+    \texttt{jet\_energy} & helper & JME \texttt{jet\_jerc}, \texttt{jer\_smear} & JEC check, JES, JER \\
+    \texttt{jet\_veto} & helper & JME \texttt{jetvetomaps} & standard \\
+    \texttt{btag} & helper & BTV \texttt{btagging} (2025-08-19) & needs MC efficiencies \\
+    \bottomrule
+  \end{tabular}}
+
+  \vspace{0.6em}
+  {\small Already in NanoAODv9 and \textbf{not} applied again: the JEC (\code{Summer19UL18\_V5},
+  the current tag) and the electron and photon energy scale and smearing.}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{The Condor campaign}
+  \begin{columns}[T]
+    \begin{column}{0.53\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item \textbf{Samples}: all 180 v10 signal points (8.8k files, 25.7M events) and all 20
+              skimmed backgrounds: DY$\to\mu\mu$, DY$\to\ell\ell$, 12 QCD bins, $t\bar t$, WW, WZ, ZZ
+              (70k files, $\sim$250M events). \textbf{Simulation only.}
+        \item \textbf{Processor}: channels \code{base}, \code{2mu2e}, \code{4mu}, the two SRs and the
+              Z$\to\mu\mu$ CR; collection \code{corrections\_study} (new, \code{hists.py});
+              default corrections, pixel veto monitored, \code{syst} axis.
+        \item \textbf{Jobs}: 2,955, sized to $\sim$100k events each; six resubmission rounds
+              with \code{sidm/scripts/corrections\_campaign.py} (status, retry, skipped files,
+              merge).
+        \item \textbf{Bad inputs}: 13 corrupt 4Mu files (branches that do not decompress) dropped;
+              4 empty files. Lists in \code{campaign/}.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      {\tiny
+      \begin{block}{Outputs, readable by everyone}
+        \texttt{/store/user/scampbel/sidm\_coffea\_outputs/}\\
+        \texttt{\ \ corrections\_v1/<sample>.coffea, .meta.yaml}\\[0.4em]
+        \texttt{from sidm.studies.corrections \textbackslash}\\
+        \texttt{\ \ \ \ import corrections\_study as study}\\
+        \texttt{out = study.load(}\\
+        \texttt{\ \ \ \ ["4Mu\_500GeV\_1p2GeV\_1p9mm"])}
+      \end{block}}
+      {\footnotesize
+      \begin{itemize}
+        \item The notebooks read these: no processor run needed to look at the results.
+        \item \code{lpcmetx} group area: no write access for this account yet.
+      \end{itemize}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Framework changes made for the campaign}
+  \footnotesize
+  \begin{itemize}
+    \item \code{SidmProcessor}: \code{corrections=}, \code{syst\_hists=}, \code{monitor\_corrections=};
+          with the defaults the output is identical to \texttt{main}.
+    \item \code{run\_sidm\_chunk.py}: metadata (\code{skim\_factor}, \code{is\_data}, year) from the
+          location YAML; \textbf{refuses collision data} unless \code{-{}-allow-data}.
+    \item \code{run\_job.sh}: optional arguments for weighted / \code{syst} histograms and monitored
+          corrections; defaults unchanged.
+    \item \code{merge\_coffea\_chunks\_eos.py}: normalisation bug fixed (next slides); streams the
+          chunks (1,000 chunks no longer need 16 GB); \code{-{}-samples}.
+    \item \code{make\_job\_args.py}: files per job per sample; \code{submit\_corrections.sub}: holds and
+          restarts a job running over 12 hours.
+  \end{itemize}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Validation of the machinery}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item \code{test\_corrections.py}: \textbf{49/49} checks, with synthetic corrections and
+              the pinned POG files.
+        \item \code{corrections=None} reproduces \texttt{main} exactly on a signal and a DY file:
+              cutflows, 187 histograms bin by bin, metadata, warnings.
+        \item \textbf{Closure}: the weights the processor applies, rebuilt from the NanoAOD
+              branches and the correction files, agree exactly (notebook 00).
+        \item \textbf{Consistency}: in every sample, channel and category of the campaign, histogram
+              integrals equal cutflow yields to $10^{-15}$.
+        \item \textbf{JEC already in NanoAOD}: recomputed from the raw $p_T$, it agrees with NanoAOD
+              within the stored float precision.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \centering
+      \includegraphics[height=0.70\textheight,width=\textwidth,keepaspectratio]{tutorial_jec_closure.pdf}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Pileup reweighting}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.58\textheight,width=\textwidth,keepaspectratio]{standard_pileup_weights.pdf}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.58\textheight,width=\textwidth,keepaspectratio]{standard_pileup_vertices.pdf}
+    \end{column}
+  \end{columns}
+  {\footnotesize
+  \begin{itemize}
+    \item LUM POG weight: 2018 golden-JSON profile (69.2 mb) over the simulated one; up/down move
+          the cross section by $\pm$4.6\%. The UL18 profile is already close to 2018: the sums of
+          weights move by less than 0.1\% for every signal point and DY.
+    \item Good primary vertices in DY (Z CR, 42M events): mean 24.04 $\to$ 24.38 (up 25.41, down
+          23.36). The data/MC check of this distribution is left for the group (blinded).
+  \end{itemize}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{L1 prefiring}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \centering
+      \includegraphics[height=0.78\textheight,width=\textwidth,keepaspectratio]{standard_prefiring.pdf}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \small
+      \begin{itemize}
+        \item Written into NanoAOD (\code{L1PreFiringWeight\_Nom/Up/Dn}). In 2018 the ECAL part
+              is exactly one: only muons contribute.
+        \item The weight is a product over the muons, so 4Mu loses the most:
+              \textbf{0.84\%} of the selected events on average, against 0.56\% for 2Mu2E and
+              0.64\% for DY.
+        \item Computed for PF muons only: a lepton jet of DSA muons alone does not enter it.
+        \item The largest default correction on the SR yields (slide \ref{sl:shifts}).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{PF-muon Loose ID scale factor}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.62\textheight,width=\textwidth,keepaspectratio]{tutorial_muon_sf_vs_pt.pdf}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.62\textheight,width=\textwidth,keepaspectratio]{standard_muon_sf.pdf}
+    \end{column}
+  \end{columns}
+  \vspace{0.2em}
+  {\small
+  \begin{itemize}
+    \item J/$\psi$-based SFs below 20 GeV, Z-based above. 0.4\% of the lepton-jet PF muons are
+          below 20 GeV in 2Mu2E and 11.8\% in 4Mu (500 GeV, 1.9 mm); mean SF 0.999.
+    \item The SF is close to one, but it was measured on prompt, isolated muons (slides
+          \ref{sl:muons}--\ref{sl:coverage}).
+  \end{itemize}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Electron reconstruction and photon pixel-veto SFs}
+  \centering
+  \includegraphics[height=0.52\textheight,width=\textwidth,keepaspectratio]{standard_egamma_sf.pdf}
+
+  \vspace{0.2em}
+  \raggedright
+  {\small
+  \begin{itemize}
+    \item Electron reconstruction SF at the supercluster $\eta$, RecoBelow20/RecoAbove20: mean
+          0.997 for lepton-jet electrons. Below 20 GeV it carries a 6\% uncertainty per electron.
+    \item Photon pixel veto: 0.96 in the barrel and 0.88 in the endcap \textbf{per photon}. It
+          would be the largest correction in the event weight, for objects it was not measured
+          on, so it is \textbf{monitored, not applied}.
+  \end{itemize}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Corrections that are already in NanoAODv9}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.56\textheight,width=\textwidth,keepaspectratio]{tutorial_jec_vs_pt.pdf}
+
+      {\small JEC factor of the AK4 jets: some low-$p_T$ jets are scaled \emph{down} to about 0.4
+      of their raw energy (pileup offset). Relevant for the lepton-jet isolation.}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.56\textheight,width=\textwidth,keepaspectratio]{standard_ecorr.pdf}
+
+      {\small EGM scale and smearing are in: \code{eCorr} of lepton-jet electrons has mean 1.009,
+      RMS 0.056. \textcolor{warn}{The scale variations \code{dEscaleUp/Down} are zero for every
+      object in these ntuples}; the smearing variations are filled (98.5\%).}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Where the SFs stop applying: PF muons}\label{sl:muons}
+  \centering
+  \includegraphics[width=\textwidth,height=0.50\textheight,keepaspectratio]{applicability_muons.pdf}
+
+  \vspace{0.1em}
+  {\scriptsize
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    \ctau{} = 0.019 / 1.9 / 19 mm & $|d_{xy}|>0.2$ cm & $\le 2$ pixel hits & muon within $\Delta R<0.3$ & any \\
+    \midrule
+    4Mu, 500 GeV & 0.3 / 14 / 28\% & 6 / 74 / 85\% & 98 / 91 / 87\% & 98 / 99 / 99\% \\
+    2Mu2E, 500 GeV & 0.2 / 10 / 20\% & 7 / 74 / 83\% & 100 / 99 / 97\% & 100 / 100 / 98\% \\
+    DY, Z $\to\mu\mu$ CR & 0.0\% & 6.5\% & 0.2\% & 6.7\% \\
+    \bottomrule
+  \end{tabular}}
+
+  \vspace{0.3em}
+  \raggedright
+  {\small The Muon POG measured prompt muons with a full pixel track and no muon nearby. Almost
+  every lepton-jet muon has a partner within the isolation cone, at every lifetime.}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{PF muons outside the tag-and-probe phase space, over the grid}
+  \centering
+  \includegraphics[width=\textwidth,height=0.70\textheight,keepaspectratio]{applicability_muons_grid.pdf}
+
+  \raggedright
+  {\small \textbf{79--100\%} of the lepton-jet PF muons at every signal point (7\% for DY). The
+  lowest are 4Mu at short lifetimes: \mphi{} = 100 GeV with \mzd{} = 5 GeV, and
+  \mphi{} = 800--1000 GeV with \mzd{} = 0.25 GeV.}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Where the SFs stop applying: DSA muons and electrons}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \centering
+      \includegraphics[width=\textwidth,height=0.50\textheight,keepaspectratio]{applicability_dsa_grid.pdf}
+
+      \raggedright
+      {\small \textbf{DSA muons} have no standard correction at all. Muon-type lepton jets with a
+      DSA muon: 1--23\% for a median \lxy{} below 5 cm, 24--66\% between 5 and 50 cm, 48--88\%
+      beyond.}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \textbf{Electrons}: our ID, \code{mvaFall17V2noIso\_WPL}, has no SF (EGM stops at
+      wp90noiso).
+
+      \vspace{0.3em}
+      {\footnotesize
+      \begin{tabular}{@{}lccc@{}}
+        \toprule
+        2Mu2E, 500 GeV & wp90 & wp80 & lost hits $\ge$1 \\
+        \midrule
+        0.019 mm & 57\% & 41\% & 6\% \\
+        1.9 mm & 31\% & 20\% & 67\% \\
+        19 mm & 24\% & 15\% & 68\% \\
+        \bottomrule
+      \end{tabular}}
+
+      \vspace{0.4em}
+      {\small wp90 keeps 15--87\% over the grid: a different population. The SR asks for
+      displaced electrons, whose GSF tracking efficiency the reco SF does not cover.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Where the SFs stop applying: photons are electron pairs}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \centering
+      \includegraphics[height=0.78\textheight,width=\textwidth,keepaspectratio]{applicability_photon_gen_match.pdf}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      {\scriptsize
+      \begin{tabular}{@{}lcc@{}}
+        \toprule
+        2Mu2E, 500 GeV & gen $e$ within 0.1 & $\gamma$ per $e$ in LJs \\
+        \midrule
+        0.019 mm & 54\% & 0.02 \\
+        1.9 mm & 98\% & 1.7 \\
+        19 mm & 98\% & 4.9 \\
+        \bottomrule
+      \end{tabular}}
+
+      \vspace{0.6em}
+      {\small
+      \begin{itemize}
+        \item The more displaced the dark photon, the more often its $e^+e^-$ pair is
+              reconstructed as a single photon; 97--100\% matched to a generator electron for a
+              median \lxy{} of 5--50 cm, over the grid.
+        \item The photon ID and pixel-veto SFs were measured with real photons; our custom
+              photon ID has no SF anyway.
+        \item Hence \code{photon\_pixel\_veto} stays out of the default set.
+      \end{itemize}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Where the corrections stop applying: lepton-jet isolation}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.55\textheight,width=\textwidth,keepaspectratio]{applicability_jec_lepton_fraction.pdf}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \centering
+      \includegraphics[height=0.55\textheight,width=\textwidth,keepaspectratio]{applicability_isolation.pdf}
+    \end{column}
+  \end{columns}
+  {\small
+  \begin{itemize}
+    \item $I = (E_{\rm jet}/E_{\rm LJ})(1-f_{\rm lep})$ uses the \textbf{JEC-corrected} jet energy.
+          89\% of the matched jets are $>$90\% leptons (46--98\% over the grid), and the JEC scales
+          them up by $\sim$7\%.
+    \item Lepton jets whose SR isolation decision changes (benchmark): raw jet energy 0.3--1.1\%,
+          JER smearing 0.1--1.0\%, JES $\pm1\sigma$ 0.1--0.4\%.
+  \end{itemize}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Isolation decisions that depend on the jet energy, over the grid}
+  \centering
+  \includegraphics[width=\textwidth,height=0.70\textheight,keepaspectratio]{applicability_isolation_grid.pdf}
+
+  \raggedright
+  {\small Raw instead of corrected jet energy: 0.1--2.6\% of lepton jets change their isolation
+  decision, most at low \mphi{}. JER smearing: up to 1.3\%; JES: up to 1.2\%. Propagating JES and
+  JER properly needs a rerun of the selection per variation.}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Coverage: every requirement and what corrects it}\label{sl:coverage}
+  \vspace{0.3em}
+  {\scriptsize
+  \begin{tabular}{@{}L{3.9cm}L{4.0cm}L{5.1cm}@{}}
+    \toprule
+    requirement & standard correction & status \\
+    \midrule
+    pileup profile & LUM pileup weights & \textcolor{good}{standard, applied} \\
+    L1 prefiring & NanoAOD prefiring weight & \textcolor{good}{standard, applied}; DSA-only lepton jets not included \\
+    displaced-dimuon triggers & none & \textcolor{warn}{missing}: measure in data \\
+    PF muon \texttt{looseID} & MUO Loose ID (J/$\psi$ below 20 GeV, Z above) & \textcolor{accent}{approximate, applied} \\
+    displaced PF muon tracking & none & \textcolor{warn}{missing} \\
+    DSA \texttt{displacedID}, PF-DSA cleaning & none & \textcolor{warn}{missing} \\
+    electron reconstruction & EGM Reco SF & \textcolor{accent}{approximate, applied} \\
+    electron \texttt{mvaFall17V2noIso\_WPL} & none & \textcolor{warn}{missing} \\
+    photon custom ID & none & \textcolor{warn}{missing} \\
+    photon pixel-seed veto & EGM PixVeto SF & \textcolor{warn}{not applicable}, monitored only \\
+    lepton-jet isolation (matched jets) & JEC in NanoAOD; JES, JER tools & \textcolor{accent}{open}: definition, then a rerun per variation \\
+    $t\bar t$ CR b-tagging & BTV DeepJet fixed-WP SF & \textcolor{good}{standard}, tool ready; needs MC efficiencies \\
+    electron and photon energy & in NanoAOD & \textcolor{good}{standard}; scale variations empty \\
+    muon momentum scale & Rochester (not in correctionlib) & \textcolor{accent}{open}, small \\
+    \bottomrule
+  \end{tabular}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Effect on the SR signal yields: 2Mu2E}\label{sl:shifts}
+  \centering
+  \includegraphics[width=\textwidth,height=0.77\textheight,keepaspectratio]{impact_yield_shifts_2Mu2E.pdf}
+
+  {\footnotesize Default \textbf{$-$2.2 to $+$0.7\%} (median $-$0.7\%); the pixel veto (not applied) would add up to $-$5.6\%.}
+\end{frame}
+
+\begin{frame}{Effect on the SR signal yields: 4Mu}
+  \centering
+  \includegraphics[width=\textwidth,height=0.77\textheight,keepaspectratio]{impact_yield_shifts_4Mu.pdf}
+
+  {\footnotesize Default \textbf{$-$1.8 to $+$0.2\%} (median $-$1.4\%), mostly prefiring and, at low
+  mass, the muon ID SF.}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Uncertainties from the corrections: 2Mu2E}
+  \centering
+  \includegraphics[width=\textwidth,height=0.77\textheight,keepaspectratio]{impact_uncertainties_2Mu2E.pdf}
+
+  {\footnotesize Default set in quadrature \textbf{0.15--4.3\%} (median 0.6\%), largest from the electron SF at \mphi{} = 100 GeV.}
+\end{frame}
+
+\begin{frame}{Uncertainties from the corrections: 4Mu}
+  \centering
+  \includegraphics[width=\textwidth,height=0.77\textheight,keepaspectratio]{impact_uncertainties_4Mu.pdf}
+
+  {\footnotesize In quadrature \textbf{0.2--3.0\%} (median 0.6\%); the largest from pileup and the
+  muon ID SF at \mphi{} = 100 GeV.}
+\end{frame}
+
+\begin{frame}{The same in numbers}
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \textbf{Change of the SR yield}\\[0.3em]
+      {\footnotesize
+      \begin{tabular}{@{}lcc@{}}
+        \toprule
+        & 2Mu2E & 4Mu \\
+        \midrule
+        \textbf{all default} & \textbf{$-$2.2 to $+$0.7\%} & \textbf{$-$1.8 to $+$0.2\%} \\
+        L1 prefiring & $-$0.7 to $-$0.1\% & $-$1.2 to $-$0.4\% \\
+        muon ID & $-$0.2 to $-$0.05\% & $-$1.0 to $-$0.2\% \\
+        electron reco & $-$1.3 to $+$1.8\% & 0 \\
+        pileup & $-$0.3 to $+$1.0\% & $-$0.2 to $+$1.0\% \\
+        pixel veto$^*$ & $-$5.6 to $-$0.05\% & $-$0.2 to 0\% \\
+        \bottomrule
+      \end{tabular}}
+
+      {\scriptsize $^*$monitored, not applied. All 180 points, \texttt{2mu2e\_sr} and
+      \texttt{4mu\_sr}, full samples.}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \textbf{Uncertainty (half-width of up/down)}\\[0.3em]
+      {\footnotesize
+      \begin{tabular}{@{}lcc@{}}
+        \toprule
+        & 2Mu2E & 4Mu \\
+        \midrule
+        pileup & 0.0--2.1\% & 0.0--2.9\% \\
+        L1 prefiring & 0.04--0.16\% & 0.10--0.29\% \\
+        muon ID & 0.01--0.19\% & 0.11--1.7\% \\
+        electron reco & 0.05--4.2\% & 0 \\
+        \textbf{in quadrature} & \textbf{0.15--4.3\%} & \textbf{0.2--3.0\%} \\
+        \bottomrule
+      \end{tabular}}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5em}
+  {\footnotesize
+  \begin{itemize}
+    \item With the background fixed, the expected limits move by the same fraction, mostly $\sim$1\%.
+    \item The extremes are all at \mphi{} = 100 GeV: soft electrons (the reco SF below 20 GeV can be
+          above one, 6\% uncertainty) and soft muons (J/$\psi$-based SFs).
+    \item For the datacards: one lnN per correction, correlated across channels and points;
+          values per point in \code{tables/sr\_correction\_nuisances.csv}.
+  \end{itemize}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Effect on the simulated backgrounds}
+  \centering
+  \includegraphics[width=\textwidth,height=0.74\textheight,keepaspectratio]{impact_backgrounds.pdf}
+
+  \raggedright
+  {\footnotesize Change of each background's yield with the default corrections; error bars: their
+  uncertainty, up/down half-widths in quadrature. The two DY samples overlap and are never added.}
+\end{frame}
+
+\begin{frame}{The simulated backgrounds in numbers}
+  \vspace{0.3em}
+  {\footnotesize
+  \begin{tabular}{@{}lcccc@{}}
+    \toprule
+    & \texttt{base} & \texttt{2mu2e\_sr} & \texttt{4mu\_sr} & SR yields, 2Mu2E / 4Mu \\
+    \midrule
+    DY$\to\mu\mu$ & $-0.9\pm0.2$\% & $-1.8\pm0.7$\% & $+1.2\pm8.6$\% & 824 / 390 \\
+    DY$\to\ell\ell$ & $-0.9\pm0.2$\% & $+0.2\pm5.3$\% & $+1.6\pm10$\% & 586 / 438 \\
+    QCD & $-0.8\pm0.5$\% & $-1.7\pm0.6$\% & $-0.6\pm4.1$\% & 17400 / 14100 \\
+    $t\bar t$ & $-1.0\pm0.2$\% & $-1.9\pm0.8$\% & $-0.5\pm4.7$\% & 1100 / 173 \\
+    diboson & $-1.0\pm0.2$\% & $-0.8\pm2.4$\% & $-2.9\pm3.0$\% & 17 / 3.5 \\
+    \midrule
+    total, with DY$\to\mu\mu$ & $-0.9\pm0.2$\% & $-1.7\pm0.6$\% & $-0.5\pm4.3$\% & 19300 / 14600 \\
+    total, with DY$\to\ell\ell$ & $-0.9\pm0.2$\% & $-1.6\pm0.5$\% & $-0.5\pm4.3$\% & 19100 / 14700 \\
+    \bottomrule
+  \end{tabular}}
+
+  \vspace{0.5em}
+  {\footnotesize
+  \begin{itemize}
+    \item Change $\pm$ the default corrections' uncertainty; yields for 59.8 fb$^{-1}$.
+    \item At \code{base} the prefiring weight takes 0.6--0.7\% from every group and the muon ID SF
+          0.2--0.3\%; pileup and the electron SF almost nothing. The electron SF adds $-$0.6 to
+          $-$0.8\% in the 2Mu2E channels.
+    \item The large 4Mu variations come from a few simulated events with large weights (QCD bins
+          with large cross sections, DY generator weights): statistics of the weights.
+    \item QCD is nine tenths of the SR background. The SR yields are before the isolation and
+          displacement requirements take effect (slide \ref{sl:sr}).
+  \end{itemize}}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{A distribution with its variations}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \centering
+      \includegraphics[height=0.80\textheight,width=\textwidth,keepaspectratio]{impact_mass_syst.pdf}
+    \end{column}
+    \begin{column}{0.53\textwidth}
+      \small
+      \begin{itemize}
+        \item Every histogram carries the \code{syst} axis: here the corrected/uncorrected ratio
+              of the 4Mu benchmark with the correction uncertainty as a band.
+        \item 17 categories per histogram with the pixel veto monitored: use it with small
+              histogram collections.
+        \item DY$\to\mu\mu$ and DY$\to\ell\ell$ overlap and are never added; which one the
+              analysis uses is open, so the totals are given with each.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Found along the way: normalisation}
+  \scriptsize
+  \begin{itemize}
+    \item \textbf{The Condor merge inflated weighted yields by the number of chunks.}
+          \code{merge\_coffea\_chunks\_eos.py} looked for each sample's metadata at the top of the
+          chunk file, but chunks are saved as \code{\{"out": \{sample: ...\}, "processed": ...\}}: the
+          per-chunk re-weighting was skipped. Four copies of one chunk merged to 4.000$\times$ its
+          yields. Raw counts and unweighted hists were right. \textbf{Fixed; re-merge existing
+          outputs} (the chunks are enough).
+    \item \textbf{Skimmed backgrounds on Condor were normalised without their skim factor}
+          (\code{run\_sidm\_chunk.py} set it to 1): yields $\times$1/skim factor, e.g.\ 150$\times$ for
+          \code{DYJetsToLL\_M10to50}. Fixed: read from the location YAML.
+    \item \textbf{One \code{DYJetsToMuMu\_M50} event has genWeight $1.45\times10^{14}$} (LHE weight too;
+          the others $\sim$2400): 99.8\% of the sample's sum of weights, so its normalisation is
+          $\sim$630$\times$ too small. It fails the trigger, so removing it from the normalisation is
+          exact: \code{corrections\_study.load} does that. No other such event in the campaign.
+  \end{itemize}
+  \vspace{0.3em}
+  \begin{block}{To check}
+    \footnotesize Any merged Condor output, and anything normalised with
+    \code{DYJetsToMuMu\_M50}, e.g.\ the \code{*Merged*} directories in \code{sidm\_condor/}.
+  \end{block}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Found along the way: selection and inputs (not changed)}\label{sl:sr}
+  \begin{itemize}
+    \item \textbf{SR definition}: \code{2mu2e\_sr}/\code{4mu\_sr} cut on isolation and displacement
+          through \code{mu\_ljs}/\code{egm\_ljs}, but the category cuts count \code{ljs}, which those
+          cuts do not slim. On this branch the SR differs from \code{2mu2e}/\code{4mu} only by the
+          $\Delta\phi$ cut. The limit notebooks use the ABCD selections instead.
+    \item \textbf{Unwrapped $\Delta\phi$}: \code{lj\_lj\_absdphi} and the ABCD-plane histograms
+          built on it fill \code{abs(phi1 - phi0)}, from 0 to $2\pi$. A cut such as
+          $|\Delta\phi|>2$ on that axis also keeps pairs whose true $|\Delta\phi|$ is below 2.
+    \item \textbf{Corrupt signal files}: 13 4Mu files with branches that do not decompress
+          (\code{event}, \code{GenJet\_eta}, \ldots), not seen by the census, which does not read those
+          branches.
+    \item \textbf{EGM energy-scale variations} are zero in these ntuples (simulation).
+    \item \textbf{Integers on bin edges}: a \code{Regular} axis with edges on the integers puts some
+          integer values one bin low by rounding (29, 57, 58 on 100 bins over 0--100; 58 in
+          \code{pv\_n}). \code{pileup\_nTrueInt} is now centred on the integers.
+  \end{itemize}
+\end{frame}
+
+% ===========================================================================
+\begin{frame}{Open items}
+  In rough order of importance for the limits:
+  \begin{enumerate}
+    \small
+    \item \textbf{Trigger efficiency} for the displaced-dimuon triggers: no POG SF; measure it
+          (orthogonal triggers, cosmic-seeded paths) and enter it as our own correction.
+    \item \textbf{DSA muon} identification and reconstruction efficiency (cosmics,
+          standalone-track tag-and-probe).
+    \item \textbf{Displaced and close-by PF muons and electrons}: the applied SFs are
+          provisional; their per mille uncertainties describe prompt, isolated objects.
+    \item \textbf{Electron WPL ID, photon ID and pixel veto} for lepton-jet objects.
+    \item \textbf{Lepton-jet isolation}: raw or corrected jet energy; then JES/JER as shape
+          systematics (a rerun of the selection per variation).
+    \item \textbf{Data/MC validation} of the applied corrections, once the group decides which
+          regions can be looked at.
+    \item EGM energy-scale uncertainty; b-tag efficiencies for the $t\bar t$ CR; Rochester.
+    \item \textbf{Datacards}: one lnN per correction in \code{datacard\_tools.py} from the table;
+          \textbf{Run 3}: per-year blocks in \code{corrections.yaml}; a genWeight check in the census.
+  \end{enumerate}
+\end{frame}
+
+% ===========================================================================
+\appendix
+\begin{frame}{Backup: correctionlib under cmsenv}
+  The PyPI wheel cannot be imported under \code{cmsenv} (CMSSW\_17 and the CMSSW\_14 used by Condor):
+
+  \vspace{0.2em}
+  {\scriptsize\texttt{ImportError: .../correctionlib/\_core...so: undefined symbol: \_\_cxa\_call\_terminate}}
+
+  \vspace{0.4em}
+  \small
+  \begin{itemize}
+    \item The wheel's core finds its bundled \code{libcorrectionlib.so} through a RUNPATH; cmsenv
+          puts CMSSW's own, older copy on \code{LD\_LIBRARY\_PATH}, which the loader searches first.
+    \item \code{sidm/scripts/install\_correctionlib\_cmssw.sh} rebuilds correctionlib 2.9.0 into
+          \code{.python\_userbase} with CMSSW's compiler, zlib and an RPATH: a plain
+          \code{import correctionlib} works in the CMSSW\_17 kernel (done).
+    \item \code{corrections.import\_correctionlib()} binds the core to its own library first,
+          which is what makes the Condor jobs work with the stock wheel.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Backup: what changed in the repository}
+  {\tiny
+  \begin{tabular}{@{}p{5.8cm}p{7.5cm}@{}}
+    \toprule
+    file & change \\
+    \midrule
+    \texttt{sidm/configs/corrections.yaml} & \textbf{new}: per-year corrections, pinned snapshots, validity notes \\
+    \texttt{sidm/tools/corrections.py} & \textbf{new}: \texttt{Corrections}, \texttt{EventWeights} (with the weight categories), jet and b-tag helpers \\
+    \texttt{sidm/tools/test\_corrections.py} & \textbf{new}: 49 standalone checks \\
+    \texttt{sidm/tools/sidm\_processor.py} & \texttt{corrections=}, \texttt{syst\_hists=}, \texttt{monitor\_corrections=} \\
+    \texttt{sidm/tools/selection.py}, \texttt{cutflow.py}, \texttt{histogram.py} & categories in every cutflow row and on the \texttt{syst} axis \\
+    \texttt{sidm/definitions/hists.py}, \texttt{objects.py}, \texttt{hist\_collections.yaml} & \texttt{corrections\_study} histograms and collections \\
+    \texttt{sidm/tools/metadata.py}, \texttt{merge\_coffea\_chunks\_eos.py} & provenance in the sidecars; \textbf{merge normalisation fix}, streaming \\
+    \texttt{sidm/scripts/corrections\_campaign.py} & \textbf{new}: campaign status, retry, skipped files, merge \\
+    \texttt{condor/run\_sidm\_chunk.py}, \texttt{run\_job.sh}, \texttt{make\_job\_args.py} & YAML metadata (skim factor), data guard, new arguments \\
+    \texttt{condor/submit\_corrections.sub} and job lists & \textbf{new}: the campaign \\
+    \texttt{requirements.txt}, \texttt{install\_correctionlib\_cmssw.sh} & \texttt{correctionlib==2.9.0}; build for the CMSSW\_17 kernel \\
+    \texttt{sidm/studies/corrections/} & \textbf{new}: README, four notebooks, tables, campaign records, these slides \\
+    \bottomrule
+  \end{tabular}}
+\end{frame}
+
+\end{document}

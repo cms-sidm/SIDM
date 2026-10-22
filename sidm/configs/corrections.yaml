@@ -1,0 +1,190 @@
+# Config for the standard CMS corrections applied by sidm/tools/corrections.py
+#
+# The JSON files come from the CMS analysis-corrections area on CVMFS
+# (https://cms-analysis-corrections.docs.cern.ch/), which replaced
+# jsonpog-integration. Every path is pinned to a dated snapshot rather than
+# `latest`, so a result can be reproduced after a POG publishes new numbers.
+# To move to a newer snapshot, change the date here and say why in
+# sidm/studies/corrections/README.md.
+#
+# A relative `file` resolves against `json_root`. A file under `sidm/` resolves
+# against the repository instead, for corrections we derive ourselves.
+#
+# Two kinds of entries are applied by SidmProcessor(corrections=...):
+#   kind: event   one factor per event, from event-level inputs
+#   kind: object  product of per-object SFs over the lepton-jet constituents in
+#                 `collection`, applied only in channels whose `cut_object`
+#                 cuts include the cut named in `working_points`
+# Entries of kind `tool` are not applied by the processor; they configure the
+# jet and b-tagging helpers in sidm/tools/corrections.py.
+#
+# `validity` records whether the correction was measured for objects like ours:
+#   standard     measured for objects like ours; apply as is
+#   approximate  the best available POG number, measured on prompt, isolated
+#                objects; our objects are often displaced or collimated
+# The notes say where each correction stops applying. See
+# sidm/studies/corrections/README.md for the full list, including the
+# selections that have no standard correction at all.
+
+json_root: /cvmfs/cms-griddata.cern.ch/cat/metadata
+
+# What `SidmProcessor(corrections=True)` applies. photon_pixel_veto is left
+# out on purpose: in signal the lepton-jet "photons" are e+e- pairs, for which a
+# SF measured with real photons does not hold, and at 0.96 (barrel) to 0.88
+# (endcap) per object it would be the largest correction applied. Ask for it by
+# name to see its effect (sidm/studies/corrections/03_impact_on_results.ipynb).
+default:
+  - pileup
+  - l1_prefiring
+  - muon_id
+  - electron_reco
+
+'2018':
+  campaign: Run2-2018-UL-NanoAODv9
+
+  pileup:
+    kind: event
+    file: LUM/Run2-2018-UL-NanoAODv9/2021-09-10/puWeights.json.gz
+    correction: Collisions18_UltraLegacy_goldenJSON
+    inputs: [Pileup_nTrueInt]
+    variations: {nominal: nominal, up: up, down: down}
+    validity: standard
+    note: >-
+      Reweights the simulated number of true interactions to the 2018 golden
+      JSON profile (69.2 mb minimum-bias cross section, +-4.6% for up/down).
+      Depends only on the pileup profile, so it applies to every MC sample.
+
+  l1_prefiring:
+    kind: event
+    # Written into NanoAOD by PrefiringWeightProducer, not shipped as a JSON.
+    # In 2018 the ECAL part is 1 and only the muon part is active.
+    branches: {nominal: L1PreFiringWeight_Nom, up: L1PreFiringWeight_Up, down: L1PreFiringWeight_Dn}
+    validity: standard
+    note: >-
+      The muon prefiring probability is evaluated for reconstructed muons only.
+      A DSA muon without a matching PF muon does not enter it, which slightly
+      overestimates the weight for events with DSA-only lepton jets.
+
+  muon_id:
+    kind: object
+    collection: pfMuons
+    cut_object: muons
+    # selections.yaml cut -> POG SF. Checked in order, so tightID wins when a
+    # channel requires both.
+    working_points:
+      tightID:
+        - {file: MUO/Run2-2018-UL-NanoAODv9/2024-07-02/muon_JPsi.json.gz, correction: NUM_TightID_DEN_TrackerMuons, pt: [2.0, 20.0]}
+        - {file: MUO/Run2-2018-UL-NanoAODv9/2024-07-02/muon_Z.json.gz, correction: NUM_TightID_DEN_TrackerMuons, pt: [20.0, .inf]}
+      looseID:
+        - {file: MUO/Run2-2018-UL-NanoAODv9/2024-07-02/muon_JPsi.json.gz, correction: NUM_LooseID_DEN_TrackerMuons, pt: [2.0, 20.0]}
+        - {file: MUO/Run2-2018-UL-NanoAODv9/2024-07-02/muon_Z.json.gz, correction: NUM_LooseID_DEN_TrackerMuons, pt: [20.0, .inf]}
+    variations: {nominal: nominal, up: systup, down: systdown}
+    max_abs_eta: 2.4
+    validity: approximate
+    note: >-
+      J/psi-based SFs below 20 GeV and Z-based above, the usual split in the
+      15-30 GeV overlap. Both are measured with prompt, isolated muons from
+      resonance decays. Lepton-jet muons are often displaced (the SR requires
+      at most 2 pixel hits) and within dR < 0.1 of another muon, where the
+      efficiency is not measured.
+
+  electron_reco:
+    kind: object
+    collection: electrons
+    cut_object: electrons
+    # The reconstruction SF corrects every reconstructed electron, whatever
+    # identification follows, so it applies in every channel.
+    working_points:
+      always:
+        - {file: EGM/Run2-2018-UL-NanoAODv9/2024-07-02/electron.json.gz, correction: UL-Electron-ID-SF, WorkingPoint: RecoBelow20, pt: [10.0, 20.0]}
+        - {file: EGM/Run2-2018-UL-NanoAODv9/2024-07-02/electron.json.gz, correction: UL-Electron-ID-SF, WorkingPoint: RecoAbove20, pt: [20.0, .inf]}
+    variations: {nominal: sf, up: sfup, down: sfdown}
+    validity: approximate
+    note: >-
+      Evaluated at the supercluster eta. Measured with prompt electrons from Z
+      decays; the SR requires electrons with missing inner hits, whose GSF
+      tracking efficiency is not covered. There is no ID SF for the analysis
+      electron ID (mvaFall17V2noIso_WPL): the EGM file stops at wp90noiso.
+
+  electron_id:
+    kind: object
+    collection: electrons
+    cut_object: electrons
+    working_points:
+      looseID:
+        - {file: EGM/Run2-2018-UL-NanoAODv9/2024-07-02/electron.json.gz, correction: UL-Electron-ID-SF, WorkingPoint: Loose, pt: [10.0, .inf]}
+    variations: {nominal: sf, up: sfup, down: sfdown}
+    validity: approximate
+    note: >-
+      Only for channels that select electrons with the cut-based Loose ID
+      (cutBased >= 2). The lepton-jet selections use mvaFall17V2noIso_WPL,
+      which has no SF, so this does nothing there.
+
+  photon_id:
+    kind: object
+    collection: photons
+    cut_object: photons
+    working_points:
+      looseID:
+        - {file: EGM/Run2-2018-UL-NanoAODv9/2024-07-02/photon.json.gz, correction: UL-Photon-ID-SF, WorkingPoint: Loose, pt: [20.0, .inf]}
+    variations: {nominal: sf, up: sfup, down: sfdown}
+    validity: approximate
+    note: >-
+      Only for channels that select photons with the cut-based Loose ID. The
+      lepton-jet selections use a custom ID (Loose without the sieie and
+      isolation cuts), which has no SF.
+
+  photon_pixel_veto:
+    kind: object
+    collection: photons
+    cut_object: photons
+    working_points:
+      pixelSeed:
+        - {file: EGM/Run2-2018-UL-NanoAODv9/2024-07-02/photon.json.gz, correction: UL-Photon-PixVeto-SF, WorkingPoint: Loose}
+    variations: {nominal: sf, up: sfup, down: sfdown}
+    validity: approximate
+    note: >-
+      Measured for real photons from Z -> mumu gamma that pass the Loose ID.
+      Lepton-jet "photons" are mostly collimated e+e- pairs, for which the
+      pixel-seed veto efficiency depends on where the dark photon decayed. The
+      Loose-ID number is the closest to the custom ID we use.
+
+  # --- helpers only, not applied by the processor ---
+
+  jet_energy:
+    kind: tool
+    file: JME/Run2-2018-UL-NanoAODv9/2026-06-10/jet_jerc.json.gz
+    # Already applied to NanoAODv9 jets; used to check that and to undo it
+    jec: Summer19UL18_V5_MC_L1L2L3Res_AK4PFchs
+    jes_uncertainty: Summer19UL18_V5_MC_Total_AK4PFchs
+    jer_resolution: Summer19UL18_JRV3_MC_PtResolution_AK4PFchs
+    jer_sf: Summer19UL18_JRV3_MC_ScaleFactor_AK4PFchs
+    jer_sf_uncertainty: Summer19UL18_JRV3_MC_SFUncertainty_AK4PFchs
+    smear_file: JME/JER-Smearing/2026-09-18/jer_smear.json.gz
+    smear: JERSmear
+    validity: approximate
+    note: >-
+      JECs are already applied in NanoAODv9 (Summer19UL18_V5, the current
+      tag). JER smearing is not; it is not applied here because the jets we use
+      most are the ones matched to lepton jets for the isolation, whose energy
+      is mostly leptons. Jet energy corrections are derived for hadronic jets.
+
+  jet_veto:
+    kind: tool
+    file: JME/Run2-2018-UL-NanoAODv9/2026-06-10/jetvetomaps.json.gz
+    correction: Summer19UL18_V1
+    type: jetvetomap
+    validity: standard
+
+  btag:
+    kind: tool
+    file: BTV/Run2-2018-UL-NanoAODv9/2025-08-19/btagging.json.gz
+    wp_values: deepJet_wp_values
+    # comb for b and c jets, incl for light jets (fixed working points)
+    sf_heavy: deepJet_comb
+    sf_light: deepJet_incl
+    validity: standard
+    note: >-
+      Fixed-working-point SFs for the ttbar control regions. An event weight
+      also needs the MC tagging efficiency per flavour (method 1a), which has
+      not been measured for our samples yet.

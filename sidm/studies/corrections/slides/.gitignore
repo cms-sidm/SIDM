@@ -1,0 +1,7 @@
+# LaTeX build products (the PDF and figures/*.pdf are already ignored repo-wide)
+*.aux
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
