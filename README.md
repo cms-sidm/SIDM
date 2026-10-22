@@ -18,7 +18,6 @@ python3 sidm/scripts/print_cuts.py -s 4mu -s 2mu2e         # several selections
 python3 sidm/scripts/print_cuts.py > cuts.txt              # save the full report
 python3 sidm/scripts/print_cuts.py path/to/selections.yaml --json
 python3 sidm/scripts/print_cuts.py --compare base_sr 4mu_sr # compare two selections
-python3 sidm/scripts/print_cuts.py --compare 2mu2e_PhotonDenominator 2mu2e_PhotonNumerator
 python3 sidm/scripts/print_cuts.py -s 4mu_sr --color never  # disable colors
 python3 sidm/scripts/print_cuts.py --compare base_sr 4mu_sr --color always | less -R
 ```
@@ -43,6 +42,12 @@ These are the configured cut labels; their Python implementations live in
 `sidm/definitions/cuts.py`. The script does not evaluate cut functions or prove
 that a runtime cut succeeded. YAMLs for sample lists, cross sections, and
 histograms do not contain selection cuts and are reported as such.
+
+Run the feature tests with only PyYAML installed:
+
+```bash
+python3 -m unittest discover -s tests -p test_print_cuts.py
+```
 
 ## Getting started
 - Fork this repository ([here's a nice guide to follow](https://gist.github.com/Chaser324/ce0505fbed06b947d962))
