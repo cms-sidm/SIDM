@@ -11,6 +11,17 @@ EOS_OUTDIR=$4
 # that don't pass them keep working.
 CHANNELS=${5:-base}
 HIST_COLLECTIONS=${6:-muon_base}
+# Optional positional args 7/8: an ntuple location YAML and a section in it, passed on to
+# run_sidm_chunk.py. They do not choose the sample metadata (is_data, skim_factor, year):
+# that comes from the one section, of this YAML or of the configs in sidm/configs/ntuples/,
+# whose directory holds the chunk's files. The YAML is searched first and the section only
+# orders the candidates named in the error raised when no section, or more than one, matches.
+NTUPLE_YAML=${7:-sidm/configs/ntuples/backgrounds.yaml}
+NTUPLE_SECTION=${8:-skimmed_llpNanoAOD_v2}
+# Optional positional arg 9: the selections file the channels are read from, relative to
+# sidm/ (SidmProcessor's selections_cfg). Studies frozen to the definitions they ran with
+# pass their own file, e.g. configs/selections_mulj_decay_angle_as_run.yaml.
+SELECTIONS_CFG=${9:-configs/selections.yaml}
 
 echo "Host:"
 hostname
@@ -98,6 +109,9 @@ python condor/run_sidm_chunk.py \
     --workers 1 \
     --channels "${CHANNELS}" \
     --hist-collections "${HIST_COLLECTIONS}" \
+    --backgrounds-yaml "${NTUPLE_YAML}" \
+    --backgrounds-section "${NTUPLE_SECTION}" \
+    --selections-cfg "${SELECTIONS_CFG}" \
     --unweighted-hist
 
 echo "Output:"

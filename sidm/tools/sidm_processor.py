@@ -15,8 +15,9 @@ import vector
 #local
 from sidm import BASE_DIR
 from sidm.tools import selection, cutflow, utilities
-from sidm.definitions.hists import hist_defs, counter_defs
-from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC
+from sidm.tools.lj_vertex_chi2 import lj_best_vertex_chi2
+from sidm.definitions.hists import hist_defs, counter_defs, vtx_chi2_or_raw_dsa_hists
+from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC, on_demand_preLj_objs
 
 def _patched_local2global(stack):
     """
@@ -92,7 +93,11 @@ class SidmProcessor(processor.ProcessorABC):
         self.histograms_cfg = histograms_cfg
         self.run_periods_cfg = run_periods_cfg
         self.unweighted_hist = unweighted_hist
-        self.obj_defs = preLj_objs
+        # dsaMuonsRaw and the dimuon-vertex tables feed only mu_ljs.vtx_chi2 and the histograms
+        # in vtx_chi2_or_raw_dsa_hists: load them, and compute vtx_chi2, only if requested
+        self.vtx_chi2_needed = self.needs_vtx_chi2_inputs()
+        self.obj_defs = {name: obj_def for name, obj_def in preLj_objs.items()
+                         if self.vtx_chi2_needed or name not in on_demand_preLj_objs}
         self.postLj_objs = postLj_objs
         self.postLj_objs_MC = postLj_objs_MC
         self.verbose = verbose
@@ -154,7 +159,7 @@ class SidmProcessor(processor.ProcessorABC):
                 objs[obj_name]["lxy"] = utilities.lxy(objs[obj_name])
 
             # add dxy wrt beamspot for all objs that don't already have it
-            if hasattr(obj, "vx") and not hasattr(obj, "dxy") and "bs" in objs:
+            if hasattr(obj, "vx") and hasattr(obj, "pt") and not hasattr(obj, "dxy") and "bs" in objs:
                 objs[obj_name]["dxy"] = utilities.dxy(objs[obj_name], ref=objs["bs"])
 
             # add dimension to one-per-event objects to allow independent obj and evt cuts
@@ -192,12 +197,21 @@ class SidmProcessor(processor.ProcessorABC):
                 # remove None entries from matched PF or DSA muons before applying cuts
                 sel_objs["dsaMuons"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuons"].matched_muons), "muons")
                 sel_objs["muons"]["good_matched_dsa_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["muons"].matched_dsa_muons), "dsaMuons")
+                # Same list on the uncut DSA copy. dsaMuons loses the cross-cleaned muons a few
+                # lines below, so this is the only place a histogram can still ask which PF muon
+                # a discarded DSA track was matched against (sidm.definitions.hists.matched_dsa_seg).
+                if "dsaMuonsRaw" in sel_objs:
+                    sel_objs["dsaMuonsRaw"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuonsRaw"].matched_muons), "muons")
 
                 # apply pre-LJ object selection
                 sel_objs = obj_selection.apply_obj_cuts(sel_objs)
 
                 # reconstruct lepton jets
                 sel_objs["ljs"] = self.build_lepton_jets(sel_objs, float(lj_reco))
+                # the dimuon-vertex tables are inputs to the LJ vertex match only (vtx_chi2 is on
+                # the LJs); drop them so later cuts never slice them
+                for vtx_table in ("dsaMuonVertex", "patMuonVertex", "patDsaMuonVertex"):
+                    sel_objs.pop(vtx_table, None)
 
                 # apply obj selection to ljs
                 lj_selection = selection.JaggedSelection(cuts["lj"], self.verbose)
@@ -530,6 +544,29 @@ class SidmProcessor(processor.ProcessorABC):
         ljs["isolation"] = ak.fill_none((ljs["matched_jet"].energy / ljs.energy) * (1 - (ljs["lepton_fraction"])), 0)
         ljs["dR_matched_jet"] = ljs.delta_r(ljs["matched_jet"])
 
+        # best within-LJ dimuon-vertex fit quality. -1 = no stored vertex whose
+        # both legs are constituents of this LJ; -1 FAILS the keep-cuts by
+        # design, the opposite convention to the *Spread_* variables, which
+        # fill 0 (= passes) when a muon category is absent. The vertex tables
+        # only exist in LLPNanoAOD inputs; unless ALL THREE resolved, vtx_chi2
+        # is NaN and every vtx_chi2 cut (keep and inverse alike) selects
+        # nothing -- with only a subset of tables, LJs of the missing category
+        # would get -1 ("no vertex") and silently migrate into the
+        # inverse-cut region. See sidm/tools/lj_vertex_chi2.py.
+        vtx_table_names = [("dsaMuonVertex", "dsa"), ("patMuonVertex", "pat"),
+                           ("patDsaMuonVertex", "mix")]
+        vtx_tables = [(objs[n], k) for n, k in vtx_table_names if n in objs]
+        if not self.vtx_chi2_needed:
+            pass  # nothing requested reads vtx_chi2 (see __init__), so the LJs get no such field
+        elif len(vtx_tables) == len(vtx_table_names):
+            ljs["vtx_chi2"] = lj_best_vertex_chi2(
+                ljs.pfMuons.idx, ljs.dsaMuons.idx, vtx_tables)
+        else:
+            missing = [n for n, _ in vtx_table_names if n not in objs]
+            print(f"Warning: vtx_chi2 disabled: missing vertex table(s) {missing}. "
+                  "Every vtx_chi2 cut will select nothing.")
+            ljs["vtx_chi2"] = ak.full_like(ljs.pt, np.nan)
+
         # todo: add LJ displacement
 
         # pt order the new LJs
@@ -538,6 +575,21 @@ class SidmProcessor(processor.ProcessorABC):
 
         # return the new LJ collection
         return ljs
+
+    def needs_vtx_chi2_inputs(self):
+        """True if a requested channel has a cut whose name contains vtx_chi2, or a requested
+        histogram is in vtx_chi2_or_raw_dsa_hists. Cuts are recognized by name only, so a cut
+        that reads vtx_chi2 must have "vtx_chi2" in its name."""
+        selection_menu = utilities.load_yaml(f"{BASE_DIR}/{self.selections_cfg}")
+        for channel in self.channel_names:
+            cuts = selection_menu.get(channel, {})
+            if any("vtx_chi2" in str(cut) for cut in utilities.flatten(cuts)):
+                return True
+        hist_menu = utilities.load_yaml(f"{BASE_DIR}/{self.histograms_cfg}")
+        for collection in self.hist_collection_names:
+            if set(utilities.flatten(hist_menu.get(collection, []))) & vtx_chi2_or_raw_dsa_hists:
+                return True
+        return False
 
     def build_cuts(self):
         """ Make list of pre-lj object, lj, post-lj obj, and event cuts per channel"""
