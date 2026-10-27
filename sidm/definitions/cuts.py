@@ -421,8 +421,7 @@ evt_cut_defs = {
     "all cosAlpha(mu, mu) > -0.99"  : lambda objs: ak.all(cosAlpha(objs["allMuons"]) > -0.99, axis=1),
     "any cosAlpha(mu, mu) <= -0.99" : lambda objs: ak.any(cosAlpha(objs["allMuons"]) <= -0.99, axis=1),
     "all cos_alpha(dsa, dsa) > -0.9" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.9, axis =1),
-    # padded so that an event without the lepton jets a cut reads fails it instead of
-    # turning the mask into an option type or raising
+    # the first three pad, the last sums the leading two (mass 0 if none), so an event short of lepton jets fails
     "muLJ-egmLJ dPhi >= 2": lambda objs: ak.fill_none(abs(ak.pad_none(objs["mu_ljs"], 1)[:, 0].delta_phi(ak.pad_none(objs["egm_ljs"], 1)[:, 0])) >= 2.0, False),
     "muLJ-egmLJ invariant mass >= 150 GeV": lambda objs: ak.fill_none((ak.pad_none(objs["mu_ljs"], 1)[:, 0] + ak.pad_none(objs["egm_ljs"], 1)[:, 0]).mass >= 150, False),
     "muLJ-muLJ dPhi >= 2": lambda objs: ak.fill_none(abs(ak.pad_none(objs["mu_ljs"], 2)[:, 0].delta_phi(ak.pad_none(objs["mu_ljs"], 2)[:, 1])) >= 2.0, False),

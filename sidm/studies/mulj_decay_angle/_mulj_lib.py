@@ -1654,9 +1654,7 @@ def _toy_processor(event, m_zd, precision):
                    "refPt": np.stack([ref0[0], ref1[0]], axis=1),
                    "refEta": np.stack([ref0[1], ref1[1]], axis=1),
                    "refPhi": np.stack([ref0[2], ref1[2]], axis=1),
-                   "refMass": np.stack([ref0[3], ref1[3]], axis=1),
-                   "kind": np.zeros((size, 2), dtype=np.int32),
-                   "hasCharge": np.ones((size, 2), dtype=np.int32)},
+                   "refMass": np.stack([ref0[3], ref1[3]], axis=1)},
                   behavior=vector.behavior)
     frame = _a_frame_observables(recs)
     summary = _toy_summary(np.concatenate(abs_cos), ak.to_numpy(frame["Phi"]))
@@ -5360,11 +5358,12 @@ def _hi_lo_with_error(histogram):
     return value, value * float(np.sqrt(1.0 / high + 1.0 / low))
 
 
-def signal_contamination_table(min_m_xx=200.0):
+def signal_contamination_table(min_m_xx=200.0, full=False):
     """Print how much signal each data region of the study would hold, and return the rows.
 
-    For every signal sample with m_XX >= `min_m_xx` and every data region it can enter, as
-    each campaign draws that region: the entries in the sample's signal channel (`4mu` or
+    One row is returned, and printed only with `full=True` (about 290 lines), for every
+    signal sample with m_XX >= `min_m_xx` and every data region it can enter, as each
+    campaign draws that region: the entries in the sample's signal channel (`4mu` or
     `2mu2e`: trigger, two lepton jets and the final state, before the displacement and
     isolation requirements of `4mu_sr` and `2mu2e_sr`), the entries in the region, their
     ratio, the expected count at a cross section of 1 fb, and that count as a percentage of
@@ -5373,7 +5372,7 @@ def signal_contamination_table(min_m_xx=200.0):
     decay-plane campaign counts events.  The weight is luminosity x 1 fb divided by the
     stored sum of generator weights of the campaign's own file.
 
-    After the rows: the largest share per region, the factor by which it scales at the
+    Always printed: the largest share per region, the factor by which it scales at the
     cross section `configs/cross_sections.yaml` lists for that sample, why the two-muon-
     two-electron validation region holds so few data events in the decay-plane campaign,
     and the effect of the contamination on the two numbers the study quotes from the
@@ -5393,10 +5392,11 @@ def signal_contamination_table(min_m_xx=200.0):
             picked.append(info)
         picked.sort(key=lambda i: (i["final_state"] != "4Mu", i["m_xx"], i["m_zd"],
                                    i["ctau_mm"]))
-        print(f"{campaign}, {short[region]} -- data: "
-              f"{0 if data_total is None else data_total:,.0f} {unit}")
-        print(f"  {'sample':31s} {'ctau mm':>8s} {'channel':>9s} {'region':>9s} "
-              f"{'reg/ch':>7s} {'N at 1 fb':>10s} {'% of data':>10s}")
+        if full:
+            print(f"{campaign}, {short[region]} -- data: "
+                  f"{0 if data_total is None else data_total:,.0f} {unit}")
+            print(f"  {'sample':31s} {'ctau mm':>8s} {'channel':>9s} {'region':>9s} "
+                  f"{'reg/ch':>7s} {'N at 1 fb':>10s} {'% of data':>10s}")
         for info in picked:
             name = info["name"]
             in_channel = counter(name, info["channel"])
@@ -5407,8 +5407,9 @@ def signal_contamination_table(min_m_xx=200.0):
             expected = in_region * factor
             percent = 100.0 * expected / data_total if data_total else float("nan")
             ratio = in_region / in_channel if in_channel else float("nan")
-            print(f"  {name:31s} {info['ctau_mm']:8.4g} {in_channel or 0:9.0f} "
-                  f"{in_region:9.0f} {ratio:7.3f} {expected:10.2f} {percent:10.4f}")
+            if full:
+                print(f"  {name:31s} {info['ctau_mm']:8.4g} {in_channel or 0:9.0f} "
+                      f"{in_region:9.0f} {ratio:7.3f} {expected:10.2f} {percent:10.4f}")
             rows.append({"campaign": campaign, "unit": unit, "region": region,
                          "sample": name, "final_state": info["final_state"],
                          "m_xx": info["m_xx"], "m_zd": info["m_zd"],
@@ -5416,7 +5417,8 @@ def signal_contamination_table(min_m_xx=200.0):
                          "region_entries": in_region, "ratio": ratio,
                          "n_1fb": expected, "data_entries": data_total,
                          "percent": percent})
-        print()
+        if full:
+            print()
 
     with open(os.path.join(_CONFIG_DIR, "cross_sections.yaml"), encoding="utf-8") as handle:
         listed = yaml.safe_load(handle)

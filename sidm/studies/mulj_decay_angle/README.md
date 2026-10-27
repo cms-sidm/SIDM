@@ -202,8 +202,8 @@ adds to the cuts every channel shares; generator-level particle selections are l
 `00_produce_inputs.ipynb` is the executable version of this section. It runs two files of
 one signal sample and two of one data sample end to end, with the same processor, channels
 and histogram collections the campaign used, and its committed outputs are the evidence
-that the recipe works. The full campaign is written out there as commands, the same ones
-repeated below.
+that the recipe works. The full campaign does not run in a notebook; its commands are
+below.
 
 Everything runs on the LPC. Each `ssh` is a fresh shell, so chain the environment setup
 into one invocation.
@@ -225,6 +225,10 @@ python condor/make_job_args.py --samples-file condor/mulj_signal_4mu_samples.txt
 python condor/make_job_args.py --samples-file condor/mulj_signal_2mu2e_samples.txt \
   --location-cfg signal_2mu2e_v10.yaml --files-per-job 5 --replace-xcache \
   --outdir condor/filelists_mulj_signal --job-args condor/job_args_mulj_signal_2mu2e.txt
+
+# submit_mulj_signal.sub queues both signal channels from one file
+cat condor/job_args_mulj_signal_4mu.txt condor/job_args_mulj_signal_2mu2e.txt \
+  > condor/job_args_mulj_signal.txt
 
 python condor/make_job_args.py --samples-file condor/mulj_background_samples.txt \
   --location-cfg backgrounds.yaml --dataset skimmed_llpNanoAOD_v2 \
@@ -349,21 +353,21 @@ lib.configure_pair("/uscms_data/d3/murtazas/mulj_pair_merged")
 ### 5. The decay-plane inputs (section j only)
 
 Section j reads a third set of merged outputs, from the campaign `LjAnglePlanes_Run2018_v1`,
-submitted on 2026-09-02 as 7,096 jobs over 154 samples and merged on 2026-09-05. It adds three
+submitted on 2026-09-02 as 7,096 jobs over 154 samples and merged on 2026-09-05. It adds two
 groups of histograms to the ones above:
 
-* the **signed** decay angle of a muon lepton jet, `mu_lj_mumu_cosTheta` and
-  `mu_lj_mumu_cosTheta_vs_mass`, where the sign is set by the negatively charged muon;
-* the same quantities for the two leading **electrons** of an electromagnetic lepton jet,
-  `egm_lj_ee_absCosTheta`, `egm_lj_ee_cosTheta`, `egm_lj_ee_ptRatio`, `egm_lj_ee_mass`,
-  `egm_lj_ee_dR` and the four planes among them;
+* the decay angle of the two leading **electrons** of an electromagnetic lepton jet,
+  `egm_lj_ee_absCosTheta`, `egm_lj_ee_ptRatio`, `egm_lj_ee_dR` and
+  `egm_lj_ee_absCosTheta_vs_mass`;
 * the **event-level decay-plane observables** of the two leading qualifying lepton jets of
-  either type, `lj_pair_cosThetaA0_vs_cosThetaA1`, `lj_pair_absCosThetaA_vs_mjj`,
-  `lj_pair_Phi`, `lj_pair_planeAngle`, `lj_pair_planeAngle_vs_mjj`, `lj_pair_mjj`,
-  `lj_pair_type`, `lj_pair_hasCharge`, `lj_pair_ptAsym`, `lj_pair_ptVecSum`, `lj_pair_met`,
-  `lj_pair_metCorr` and `lj_pair_metCorr_vs_ptVecSum`, together with their generator-level
-  counterparts `gen_pair_Phi`, `gen_pair_planeAngle` and `gen_pair_cosThetaA0_vs_cosThetaA1`
-  on the signal samples.
+  either type, `lj_pair_cosThetaA0_vs_cosThetaA1`, `lj_pair_Phi`, `lj_pair_planeAngle`,
+  `lj_pair_ptAsym`, `lj_pair_ptVecSum`, `lj_pair_met`, `lj_pair_metCorr` and
+  `lj_pair_metCorr_vs_ptVecSum`, together with their generator-level counterparts
+  `gen_pair_Phi`, `gen_pair_planeAngle` and `gen_pair_cosThetaA0_vs_cosThetaA1` on the
+  signal samples.
+
+The merged files also hold histograms the campaign filled but nothing in the study reads,
+whose definitions are no longer in the repository.
 
 Its collections are `lj_decay_angle` and `lj_pair_decay_planes` everywhere, plus
 `lj_pair_decay_planes_gen` on the two signal categories. Its channels are the four signal
@@ -405,7 +409,7 @@ and `--job-args condor/job_args_<name>.txt`, where `<name>` is the submit file's
 | `submit_muljpair_signal.sub` | `mulj_signal_4mu_samples.txt` | 33 | 10 | 199 | `4mu`, `4mu_sr`, `4mu_noMuPtCut`, four-muon validation region | `mulj_decay_angle_pair` |
 | `submit_muljpair_data.sub` | `mulj_data_samples.txt` | 68 | 60 | 2,156 | four-muon validation region | `mulj_decay_angle_pair` |
 | `submit_ljangle_signal4mu.sub` | `mulj_signal_4mu_samples.txt` | 33 | 10 | 199 | `4mu`, `4mu_sr`, `2mu2e`, `2mu2e_sr` and the five regions of step 5 | `lj_decay_angle`, `lj_pair_decay_planes`, `lj_pair_decay_planes_gen` |
-| `submit_ljangle_signal2mu2e.sub` | `lj_signal_2mu2e_samples.txt` | 33 | 10 | 163 | as above | as above |
+| `submit_ljangle_signal2mu2e.sub` | `mulj_signal_2mu2e_samples.txt` | 33 | 10 | 163 | as above | as above |
 | `submit_ljangle_bkg.sub` | `lj_bkg_samples.txt` | 20 | 20 | 3,520 | as above | `lj_decay_angle`, `lj_pair_decay_planes` |
 | `submit_ljangle_data.sub` | `mulj_data_samples.txt` | 68 | 40 | 3,214 | the five regions of step 5 only | `lj_decay_angle`, `lj_pair_decay_planes` |
 
@@ -506,11 +510,12 @@ These apply to every reading of the figures and are repeated in the notebook.
     displacement requirement inverted on every lepton jet and no isolation requirement: the
     prompt-prompt corner of the displacement plane, with no isolation split and no ABCD cells.
     A signal with a short proper lifetime is prompt by that definition and lands in them. The
-    notebook prints, at the end of section g, `_mulj_lib.signal_contamination_table()`: for
-    every signal sample with m_XX >= 200 GeV and every region as each campaign draws it, the
-    expected signal at 1 fb (luminosity x 1 fb over the campaign's own stored sum of generator
-    weights; muon-lepton-jet entries for the first and the pair campaign, events for the
-    decay-plane campaign) as a percentage of the data in the region. The largest shares are
+    notebook calls, at the end of section g, `_mulj_lib.signal_contamination_table()`, which
+    computes (and with `full=True` prints) for every signal sample with m_XX >= 200 GeV and
+    every region as each campaign draws it the expected signal at 1 fb (luminosity x 1 fb over
+    the campaign's own stored sum of generator weights; muon-lepton-jet entries for the first
+    and the pair campaign, events for the decay-plane campaign) as a percentage of the data in
+    the region, and prints the largest share per region. The largest shares are
     1.7289 percent in the four-muon validation region, 0.3452 percent in the first campaign's
     two-muon-two-electron validation region, 0.5216 percent in the two-lepton-jet control
     region, at most 0.0005 percent in the single-lepton-jet control regions, and 10.6436
