@@ -140,10 +140,11 @@ class LJCollectionsTest(unittest.TestCase):
         self.assertFalse(bool(ak.any(four & mixed)))
 
     def test_original_indices_after_generic_cuts_and_equal_pt(self):
-        objs = selected([[jet(0, pt=20), jet(3, pt=80), jet(8, pt=80), jet(11, pt=70)]])
+        objs = selected([[dict(jet(0, pt=100), eta=3.0),
+                          jet(3, pt=80), jet(8, pt=80), jet(11, pt=70)]])
         self.assertEqual(ids(objs, "candidate_ljs"), [[3, 8]])
         self.assertEqual(ids(objs, "mu_ljs"), [[3, 8, 11]])
-        failed = selected([[jet(0, pt=20), jet(3, pt=80, isolation=0.4),
+        failed = selected([[dict(jet(0, pt=100), eta=3.0), jet(3, pt=80, isolation=0.4),
                             jet(8, pt=80), jet(11, pt=70)]])
         self.assertEqual(ids(failed, "candidate_ljs"), [[]])
 
@@ -179,8 +180,10 @@ class LJCollectionsTest(unittest.TestCase):
         self.assertEqual(ids(raw, "ljs"), [[0, 1, 2, 3]])
 
     def test_generic_parent_cut_prunes_existing_descendants(self):
-        objs = selected([[jet(0, pt=45), jet(1, pt=80), jet(2, pf=0, pt=70)]])
-        objs = JaggedSelection({"ljs": ["pT > 50 GeV"]}).apply_obj_cuts(objs)
+        processor = SidmProcessor([], [])
+        raw = objects([[dict(jet(0, pt=100), eta=3.0), jet(1, pt=80), jet(2, pf=0, pt=70)]])
+        objs = processor.select_lepton_jets(raw, {"lj": {}, "postLj_obj": {}}, True)
+        objs = JaggedSelection({"ljs": ["|eta| < 2.4"]}).apply_obj_cuts(objs)
         self.assertEqual(ids(objs, "mu_ljs"), [[1, 2]])
         self.assertEqual(ids(objs, "pfmu_ljs"), [[1]])
         self.assertEqual(ids(objs, "dsamu_ljs"), [[2]])
@@ -236,6 +239,39 @@ class LJCollectionsTest(unittest.TestCase):
         self.assertEqual(ak.to_list(ak.num(mc["genEs_fromA"])), [1])
         data_stage = processor.select_lepton_jets(objects([[jet(0), jet(1)]]), cuts, True)
         self.assertNotIn("genMus_fromA", data_stage)
+
+    def test_real_one_muon_config_retains_objects_but_has_no_analysis_pair(self):
+        channel = "baseNoLj_Only_One_Muon"
+        processor = SidmProcessor([channel], ["Muon_selection_base"])
+        cuts = processor.build_cuts()[channel]
+        self.assertEqual(cuts["postLj_obj"]["mu_ljs"], ["Mu == 1"])
+        self.assertNotIn("LJ-LJ dPhi > 2", cuts["evt"])
+        self.assertNotIn("4mu", cuts["evt"])
+        self.assertNotIn("2mu2e", cuts["evt"])
+        objs = processor.select_lepton_jets(
+            objects([[jet(0, mu=1), jet(1, mu=0, ele=1, phi=2.5)]]), cuts, True)
+        objs["ch"] = channel
+        self.assertEqual(ids(objs, "mu_ljs"), [[0]])
+        self.assertEqual(ids(objs, "candidate_ljs"), [[]])
+        hists = processor.build_histograms()
+        for name, expected in (("mu_lj_pt", 1), ("mulj_egmlj_invmass", 0)):
+            hists[name].fill(objs, objs["evt_weights"])
+            self.assertEqual(hists[name].hist[{"channel": channel}].sum(flow=True).value, expected)
+
+    def test_real_sr_displacement_retains_dsa_only_and_photon_only_candidates(self):
+        events = [[jet(0, pf=0), jet(1, phi=2.5)],
+                  [jet(0, pf=0), jet(1, mu=0, photon=1, phi=2.5)]]
+        for channel in ("4mu_sr", "2mu2e_sr"):
+            processor = SidmProcessor([channel], [])
+            cuts = processor.build_cuts()[channel]
+            self.assertIn("displaced", cuts["postLj_obj"]["mu_ljs"])
+            self.assertIn("displaced", cuts["postLj_obj"]["egm_ljs"])
+            self.assertNotIn("pf_pixelhits <= 2", cuts["postLj_obj"]["mu_ljs"])
+            self.assertNotIn("lostHits >= 1", cuts["postLj_obj"]["egm_ljs"])
+            objs = processor.select_lepton_jets(objects(events), cuts, True)
+            self.assertEqual(ids(objs, "candidate_ljs"), [[0, 1], [0, 1]])
+            self.assertEqual(ak.to_list(evt_cut_defs["4mu"](objs)), [True, False])
+            self.assertEqual(ak.to_list(evt_cut_defs["2mu2e"](objs)), [False, True])
 
     def test_none_criterion_rejects_instead_of_placeholder(self):
         raw = objects([[jet(0), jet(1), jet(2)]])
