@@ -165,7 +165,11 @@ campaigns ran:
 * main cuts on `dzSpread` and `dxySpread` in the muon-lepton-jet cuts of its signal channels.
   None of the signal-like channels here has a spread cut; the four spread-veto regions cut on
   `dzSpread` and `vxySpread`, with main's thresholds (50 for all muons, 10 for particle-flow
-  muons).
+  muons);
+* main has since also required `DT + CSC hits > 3` (`trkNumDTHits + trkNumCSCHits > 3`) of
+  every particle-flow muon at the lepton-jet source (the `muons_ljsource_cuts` anchor, commit
+  `65b46a86`). None of the channels here has it, and its effect on the shapes and counts of
+  this study was not measured.
 
 The four spread-veto regions, `data_control_region_1muLj_spread_cosAlpha_mu_veto`,
 `cr_2lj_invDisplaced_spread_cosAlpha_mu_veto` and the two `test_VR_*` regions, are not defined
@@ -454,18 +458,22 @@ These apply to every reading of the figures and are repeated in the notebook.
    displaced-standalone muons where the distinction matters.
 4. **These are the as-run definitions, not main's.** Every channel here is defined by
    `selections_mulj_decay_angle_as_run.yaml`. Main's channels of the same names add an
-   eta-phi veto and the base-cut and spread-cut differences listed under "Selections used in
-   this study", and under them the shapes would change as well as the yields.
+   eta-phi veto, the `DT + CSC hits > 3` requirement on the muons at the lepton-jet source,
+   and the base-cut and spread-cut differences listed under "Selections used in this study",
+   and under them the shapes would change as well as the yields. The effect of the muon-hit
+   requirement was not measured.
 5. **Histograms are raw counts; cutflows are not.** The campaign ran with unweighted
    histograms, so nothing in them carries a cross-section or generator weight, while the
    cutflows in the same files are luminosity times cross-section scaled. Never combine the
-   two. A normalised simulation prediction needs luminosity times cross section divided by
-   the number of *generated* events; the sum of weights in the metadata counts events that
-   survived the skim, and the signal skim keeps roughly a tenth of what was generated, so
-   the generated count from the file census has to be substituted before a yield is
-   quoted. `_mulj_lib.lumi_xs_weight()` implements the lookup and says so in its
-   docstring. Shapes are unaffected, because the factor cancels in a unit-area
-   normalisation, and every comparison in this study is unit-area.
+   two. A normalised simulation prediction is luminosity times cross section divided by the
+   sum of generator weights over the events stored in the input files, the normalisation
+   the processor itself applies; `_mulj_lib.lumi_xs_weight()` and `planes_weight()` return
+   it. The figure of roughly one event in ten kept by the signal skim, which would call for
+   a generated count in the denominator instead, came from summing a cumulative counter of
+   the Runs tree across files, an artefact found on 2026-08-10. No generator filter is recorded in the files, and neither signal ntuple
+   location file the campaigns read (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`) sets a
+   `skim_factor`. Shapes are unaffected in any case, because the factor cancels in a
+   unit-area normalisation, and every comparison in this study is unit-area.
 6. **Signal-region channels evaluate their event cuts on unfiltered lepton jets**, so an
    event whose lepton jets are all prompt can pass a signal-region channel with no muon
    lepton jets left in it. Orthogonality between the validation and signal regions holds
@@ -492,6 +500,33 @@ These apply to every reading of the figures and are repeated in the notebook.
    ones are cosines the single-precision boost returns as not a number (an offline check of one
    unselected file per point, `check_gen_boost_precision.py`). Section b prints these overflow
    fractions from the stored histograms. Every figure is built from the in-range bins.
+10. **The data regions hold signal.** Collision data is read in seven regions. The three
+    single-lepton-jet control regions ask for one muon lepton jet. The two validation regions
+    and the two-lepton-jet control region are the signal-region selection with the
+    displacement requirement inverted on every lepton jet and no isolation requirement: the
+    prompt-prompt corner of the displacement plane, with no isolation split and no ABCD cells.
+    A signal with a short proper lifetime is prompt by that definition and lands in them. The
+    notebook prints, at the end of section g, `_mulj_lib.signal_contamination_table()`: for
+    every signal sample with m_XX >= 200 GeV and every region as each campaign draws it, the
+    expected signal at 1 fb (luminosity x 1 fb over the campaign's own stored sum of generator
+    weights; muon-lepton-jet entries for the first and the pair campaign, events for the
+    decay-plane campaign) as a percentage of the data in the region. The largest shares are
+    1.7289 percent in the four-muon validation region, 0.3452 percent in the first campaign's
+    two-muon-two-electron validation region, 0.5216 percent in the two-lepton-jet control
+    region, at most 0.0005 percent in the single-lepton-jet control regions, and 10.6436
+    percent in the decay-plane campaign's two-muon-two-electron validation region
+    (2Mu2E_500GeV_5p0GeV_0p08mm). They scale with the assumed cross section;
+    `cross_sections.yaml` lists 1.264 fb at m_XX = 500 GeV and 0.342 fb at 1000 GeV, at which
+    the last becomes 13.4536 percent. That region holds 7,403 muon-lepton-jet entries in the
+    first campaign but 86 events in the decay-plane campaign, because the decay-plane
+    histograms are filled only for events with two qualifying lepton jets, each a muon lepton
+    jet with two or more muons or an electromagnetic one with two or more electrons
+    (`lj_pair_evt_mask` in `sidm/definitions/hists.py`), and in its data 64 of the 7,447
+    electromagnetic lepton jets hold two or more electrons. Subtracting the expected signal at
+    1 fb moves the four-muon validation region's data high-to-low ratio of 0.327 +- 0.018 by at
+    most +0.013, and moves the coefficient A = -0.507 +- 0.150 of the decay-plane
+    two-muon-two-electron validation region by at most f x (A_s - A) = +0.096, towards
+    positive values, so the negative value is not produced by signal.
 
 ## Figure conventions
 
