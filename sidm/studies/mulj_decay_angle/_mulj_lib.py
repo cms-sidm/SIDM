@@ -414,16 +414,20 @@ def load_run_periods():
 
 
 def lumi_xs_weight(sample, year=None):
-    """Per-sample MC weight lumi x sigma / N_generated.
+    """Per-sample MC weight lumi x sigma / sum of generator weights.
 
     IMPORTANT: with `--unweighted-hist` the stored histograms are raw counts, so this
-    factor is what turns them into an expected yield.  The denominator taken here is the
-    `scaled_sum_weights` entry of the sample metadata; for signal samples that quantity
-    counts the events that survived the skim, not the events that were generated, so a
-    signal yield built from it is too large by the skim acceptance and the generated count
-    from the file census has to be substituted before any yield is quoted.  Shapes -- what
-    this study actually plots -- are unaffected, because the factor cancels in a unit-area
-    normalisation.
+    factor is what turns them into an expected yield.  The denominator is the
+    `scaled_sum_weights` entry of the sample metadata, the sum of genWeight over the events
+    stored in the input files, which is the normalisation SidmProcessor itself applies.  The
+    figure of about one event in ten kept by the signal skim, which would call for a
+    generated count here instead, came from summing a cumulative counter of the Runs tree
+    across files, an artefact found on 2026-08-10; no generator filter is
+    recorded in these files, and neither signal ntuple location file the campaigns read
+    (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`) sets a `skim_factor`.  Signal samples
+    carry 1 fb unless the SIDM utilities are not importable, in which case the fallback
+    below takes the value of `cross_sections.yaml` when the sample is listed there.
+    Shapes, which are what this study plots, do not depend on the factor at all.
     """
     record = load_sample(sample)
     if record is None:
@@ -3025,14 +3029,17 @@ PAIR_WINDOW = {500.0: (380.0, 600.0), 1000.0: (600.0, 1.0e6)}
 PAIR_POOLED_WINDOW = (300.0, 1.0e6)
 
 _PAIR_LOADED: dict = {}
+#: stored sum of generator weights per pair-campaign sample, from its own metadata.
+_PAIR_SUM_WEIGHTS: dict = {}
 
 
 def configure_pair(input_dir=None):
     """Point the pair loader at a directory of merged pair-campaign outputs."""
     global PAIR_INPUT
-    if input_dir is not None:
+    if input_dir is not None and input_dir.rstrip("/") != PAIR_INPUT:
         PAIR_INPUT = input_dir.rstrip("/")
         _PAIR_LOADED.clear()
+        _PAIR_SUM_WEIGHTS.clear()
     return PAIR_INPUT
 
 
@@ -3071,6 +3078,9 @@ def _pair_load(name):
         note(f"pair file for {name} holds {len(out)} samples and none matches its name; skipping")
         _PAIR_LOADED[name] = None
         return None
+    meta = payload.get("metadata", {})
+    _PAIR_SUM_WEIGHTS[name] = float(
+        meta.get("scaled_sum_weights", meta.get("n_evts", 0.0)) or 0.0)
     _PAIR_LOADED[name] = payload["hists"]
     return _PAIR_LOADED[name]
 
@@ -3898,7 +3908,7 @@ def planes_short(channel):
 def configure_planes(input_dir=None):
     """Point the decay-plane loader at a directory of merged plane-campaign outputs."""
     global PLANES_INPUT
-    if input_dir is not None:
+    if input_dir is not None and input_dir.rstrip("/") != PLANES_INPUT:
         PLANES_INPUT = input_dir.rstrip("/")
         _PLANES_LOADED.clear()
     return PLANES_INPUT
@@ -3982,10 +3992,11 @@ def planes_points(final_state="4Mu", min_m_xx=PLANES_MIN_M_XX):
 def planes_weight(name):
     """Per-sample lumi x sigma / N for a plane-campaign simulated sample.
 
-    The same caveat as `lumi_xs_weight`: the denominator counts events that survived the
-    skim, so this is a shape weight, not a yield.  Everything drawn in this section is
-    unit-area, where the factor cancels within a sample and only reweights one simulated
-    sample against another, which is what a background sum needs.
+    The same normalisation as `lumi_xs_weight`: the denominator is the sum of genWeight over
+    the stored events of this campaign's file, as SidmProcessor applies it, with no
+    generator filter recorded in the files.  Everything drawn in this section is unit-area,
+    where the factor cancels within a sample and only reweights one simulated sample
+    against another, which is what a background sum needs.
     """
     record = _planes_load(name)
     if record is None:
@@ -5253,3 +5264,260 @@ def planes_inventory():
     print(f"bkg samples   : {len(planes_background_samples())}")
     print(f"data channels : {', '.join(sorted(PLANES_DATA_CHANNELS))}")
     return None
+
+
+# ======================================================================================
+# signal in the data regions
+# ======================================================================================
+#
+# Every data region of this study is a control or validation region, but none of them is
+# free of signal: the two validation regions and the two-lepton-jet control region are the
+# signal-region selection with every lepton jet required to be prompt, so a signal with a
+# short proper lifetime lands in them.  The table below counts how much, region by region
+# and campaign by campaign, with each campaign's own histogram and its own normalisation.
+
+#: the histogram each campaign's region counts are read from.  The first campaign and the
+#: pair campaign fill one entry per muon lepton jet with two or more muons; the decay-plane
+#: histogram is filled once per event with two qualifying lepton jets, and is the one the
+#: cos(2 Phi) coefficient of section j is measured on.
+CONTAMINATION_HIST = "mu_lj_mumu_absCosTheta"
+CONTAMINATION_PLANES_HIST = "lj_pair_Phi"
+
+#: the cross section every yield in the table assumes, in pb (1 fb, the processor's
+#: default for the signal grid).
+CONTAMINATION_XS_PB = 0.001
+
+
+def _one_fb_weight(year, sum_weights):
+    """Luminosity x 1 fb / stored sum of generator weights: the factor `lumi_xs_weight` and
+    `planes_weight` return for a signal sample, written out so that it does not depend on
+    which cross-section lookup is importable."""
+    if not sum_weights:
+        return None
+    return load_run_periods()[year]["lumi"] * CONTAMINATION_XS_PB / sum_weights
+
+
+def _contamination_regions():
+    """Each data region as each campaign draws it:
+    `(campaign, unit, region, final states, data total, counter, weight)`."""
+    def first(sample, channel):
+        histogram = get_hist(sample, CONTAMINATION_HIST, channel, quiet=True)
+        return None if histogram is None else total_entries(histogram)
+
+    def first_weight(sample):
+        record = load_sample(sample)
+        return None if record is None else _one_fb_weight(record["year"], record["sum_weights"])
+
+    def pair(sample, channel):
+        counts = pair_counts(sample, PAIR_MJJ, channel)
+        return None if counts is None else float(np.asarray(counts).sum())
+
+    def pair_weight(sample):
+        if _pair_load(sample) is None:
+            return None
+        return _one_fb_weight(YEAR, _PAIR_SUM_WEIGHTS.get(sample, 0.0))
+
+    def planes(sample, channel):
+        counts = planes_counts(sample, CONTAMINATION_PLANES_HIST, channel)
+        return None if counts is None else float(np.asarray(counts).sum())
+
+    def planes_one_fb(sample):
+        record = _planes_load(sample)
+        return None if record is None else _one_fb_weight(record["year"], record["sum_weights"])
+
+    first_data = data_samples()
+    pair_data = pair_data_samples()
+    planes_data = planes_data_samples()
+    both = ("4Mu", "2Mu2E")
+    regions = []
+    for region, final_states in (
+            ("test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto", ("4Mu",)),
+            ("test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto", ("2Mu2E",)),
+            (CLEANED_CR, both), ("data_control_region_1muLj_cosmic_veto", both),
+            (UNCUT_CR, both)):
+        regions.append(("first campaign", "muon-LJ entries", region, final_states,
+                        first(first_data, region), first, first_weight, signal_samples()))
+    regions.append(("pair campaign", "muon-LJ entries", PAIR_VR, ("4Mu",),
+                    pair(pair_data, PAIR_VR), pair, pair_weight,
+                    [n for n in _pair_listing() if parse_signal(n) is not None]))
+    planes_signal = [n for n in _planes_listing() if parse_signal(n) is not None]
+    for region, final_states in ((PLANES_CR_2LJ, both), (PLANES_VR_4MU, ("4Mu",)),
+                                 (PLANES_VR_2MU2E, ("2Mu2E",))):
+        regions.append(("decay-plane campaign", "events", region, final_states,
+                        planes(planes_data, region), planes, planes_one_fb, planes_signal))
+    return regions
+
+
+def _hi_lo_with_error(histogram):
+    """The high-to-low density ratio of a histogram and its statistical error."""
+    counts = raw_counts(histogram)
+    edges = np.asarray(histogram.axes[0].edges, dtype=float)
+    high = counts[edges[:-1] >= 0.8 - 1e-9].sum()
+    low = counts[edges[1:] <= 0.2 + 1e-9].sum()
+    value = _hi_lo_ratio(histogram)
+    if not np.isfinite(value) or high <= 0 or low <= 0:
+        return value, float("nan")
+    return value, value * float(np.sqrt(1.0 / high + 1.0 / low))
+
+
+def signal_contamination_table(min_m_xx=200.0):
+    """Print how much signal each data region of the study would hold, and return the rows.
+
+    For every signal sample with m_XX >= `min_m_xx` and every data region it can enter, as
+    each campaign draws that region: the entries in the sample's signal channel (`4mu` or
+    `2mu2e`: trigger, two lepton jets and the final state, before the displacement and
+    isolation requirements of `4mu_sr` and `2mu2e_sr`), the entries in the region, their
+    ratio, the expected count at a cross section of 1 fb, and that count as a percentage of
+    the data entries in the region.  The first and the pair campaign count muon lepton jets,
+    so their expected counts are muon-LJ entries times the per-event weight, not events; the
+    decay-plane campaign counts events.  The weight is luminosity x 1 fb divided by the
+    stored sum of generator weights of the campaign's own file.
+
+    After the rows: the largest share per region, the factor by which it scales at the
+    cross section `configs/cross_sections.yaml` lists for that sample, why the two-muon-
+    two-electron validation region holds so few data events in the decay-plane campaign,
+    and the effect of the contamination on the two numbers the study quotes from the
+    validation regions: the high-to-low ratio of the four-muon one and the cos(2 Phi)
+    coefficient A of the two-muon-two-electron one.
+    """
+    regions = _contamination_regions()
+    short = {**PLANES_SHORT, UNCUT_CR: "1 muLJ CR uncut", CLEANED_CR: "1 muLJ CR cleaned",
+             "data_control_region_1muLj_cosmic_veto": "1 muLJ CR cosmic veto"}
+    rows = []
+    for campaign, unit, region, final_states, data_total, counter, weight, samples in regions:
+        picked = []
+        for name in samples:
+            info = parse_signal(name)
+            if info["final_state"] not in final_states or info["m_xx"] < min_m_xx:
+                continue
+            picked.append(info)
+        picked.sort(key=lambda i: (i["final_state"] != "4Mu", i["m_xx"], i["m_zd"],
+                                   i["ctau_mm"]))
+        print(f"{campaign}, {short[region]} -- data: "
+              f"{0 if data_total is None else data_total:,.0f} {unit}")
+        print(f"  {'sample':31s} {'ctau mm':>8s} {'channel':>9s} {'region':>9s} "
+              f"{'reg/ch':>7s} {'N at 1 fb':>10s} {'% of data':>10s}")
+        for info in picked:
+            name = info["name"]
+            in_channel = counter(name, info["channel"])
+            in_region = counter(name, region)
+            factor = weight(name)
+            if in_region is None or factor is None:
+                continue
+            expected = in_region * factor
+            percent = 100.0 * expected / data_total if data_total else float("nan")
+            ratio = in_region / in_channel if in_channel else float("nan")
+            print(f"  {name:31s} {info['ctau_mm']:8.4g} {in_channel or 0:9.0f} "
+                  f"{in_region:9.0f} {ratio:7.3f} {expected:10.2f} {percent:10.4f}")
+            rows.append({"campaign": campaign, "unit": unit, "region": region,
+                         "sample": name, "final_state": info["final_state"],
+                         "m_xx": info["m_xx"], "m_zd": info["m_zd"],
+                         "ctau_mm": info["ctau_mm"], "channel_entries": in_channel,
+                         "region_entries": in_region, "ratio": ratio,
+                         "n_1fb": expected, "data_entries": data_total,
+                         "percent": percent})
+        print()
+
+    with open(os.path.join(_CONFIG_DIR, "cross_sections.yaml"), encoding="utf-8") as handle:
+        listed = yaml.safe_load(handle)
+    print(f"largest share of the data per region, m_XX >= {min_m_xx:.0f} GeV, at 1 fb, and at")
+    print("the cross section configs/cross_sections.yaml lists for the same sample")
+    print(f"  {'campaign, region':44s} {'sample':31s} {'% at 1 fb':>9s} {'>= 1 %':>7s} "
+          f"{'listed fb':>9s} {'factor':>7s} {'% listed':>9s}")
+    worst = {}
+    for campaign, _unit, region, *_rest in regions:
+        mine = [r for r in rows if r["campaign"] == campaign and r["region"] == region
+                and np.isfinite(r["percent"])]
+        if not mine:
+            continue
+        top = max(mine, key=lambda r: r["percent"])
+        worst[(campaign, region)] = top
+        listed_pb = listed.get(top["sample"])
+        factor = listed_pb / CONTAMINATION_XS_PB if listed_pb else float("nan")
+        above = sum(1 for r in mine if r["percent"] >= 1.0)
+        where = f"{campaign}, {short[region]}"
+        print(f"  {where:44s} {top['sample']:31s} {top['percent']:9.4f} "
+              f"{above:3d}/{len(mine):<3d} "
+              f"{(listed_pb or float('nan')) * 1000.0:9.3f} {factor:7.3f} "
+              f"{top['percent'] * factor:9.4f}")
+    print("  (the expected count is proportional to the cross section, so every percentage")
+    print("   above scales by the factor in the same row when the listed value is assumed)")
+    by_mass = {}
+    for row in rows:
+        if row["sample"] in listed:
+            by_mass.setdefault(row["m_xx"], set()).add(listed[row["sample"]])
+    print("  values listed for the samples in the rows above: " + ", ".join(
+        f"m_XX = {m_xx:.0f} GeV: " + " / ".join(f"{v * 1000.0:.3f} fb" for v in sorted(values))
+        for m_xx, values in sorted(by_mass.items())))
+    print()
+    _contamination_effects(regions, rows)
+    return rows
+
+
+def _contamination_effects(regions, rows):
+    """The second half of `signal_contamination_table`: why the two-muon-two-electron
+    validation region is so small in the decay-plane campaign, and what the expected signal
+    does to the high-to-low ratio and the cos(2 Phi) coefficient quoted from the two
+    validation regions."""
+    data_in = {(r[0], r[2]): r[4] for r in regions}
+    four_first = data_in[("first campaign", PLANES_VR_4MU)]
+    four_planes = data_in[("decay-plane campaign", PLANES_VR_4MU)]
+    two_first = data_in[("first campaign", PLANES_VR_2MU2E)]
+    two_planes = data_in[("decay-plane campaign", PLANES_VR_2MU2E)]
+    multiplicity = planes_counts(planes_data_samples(), "egm_lj_electronN", PLANES_VR_2MU2E)
+    print("data in the validation regions, per muon lepton jet (first campaign) and per event")
+    print("with two qualifying lepton jets (decay-plane campaign):")
+    print(f"  4mu VR  : {four_first:,.0f} muon-LJ entries, {four_planes:,.0f} events, "
+          f"ratio {four_first / four_planes:.2f}")
+    print(f"  2mu2e VR: {two_first:,.0f} muon-LJ entries, {two_planes:,.0f} events, "
+          f"ratio {two_first / two_planes:.1f}")
+    if multiplicity is not None:
+        print(f"  egamma LJs in the 2mu2e VR data: {multiplicity.sum():,.0f}, of which "
+              f"{multiplicity[2:].sum():,.0f} hold two or more electrons")
+    print()
+
+    # effect on the four-muon validation region's high-to-low ratio
+    observed = get_hist(data_samples(), CONTAMINATION_HIST, PLANES_VR_4MU, quiet=True)
+    if observed is not None:
+        value, error = _hi_lo_with_error(observed)
+        print(f"4mu VR high-to-low ratio of the data: {value:.3f} +- {error:.3f}; with each")
+        print("sample's expected entries at 1 fb subtracted (samples above 1 % of the data):")
+        shifts = []
+        for row in rows:
+            if (row["campaign"] != "first campaign" or row["region"] != PLANES_VR_4MU
+                    or row["percent"] < 1.0):
+                continue
+            signal = get_hist(row["sample"], CONTAMINATION_HIST, PLANES_VR_4MU, quiet=True)
+            remainder = observed + _scale_hist(signal, -row["n_1fb"] / row["region_entries"])
+            corrected = _hi_lo_ratio(remainder)
+            shifts.append((row["sample"], row["percent"], _hi_lo_ratio(signal), corrected,
+                           value - corrected))
+        for name, percent, signal_ratio, corrected, shift in sorted(
+                shifts, key=lambda item: -abs(item[4])):
+            print(f"  {name:31s} {percent:6.2f} %  signal {signal_ratio:5.2f}  "
+                  f"data minus signal {corrected:.3f}  shift {shift:+.3f}")
+        print()
+
+    # effect on the cos(2 Phi) coefficient of the two-muon-two-electron validation region
+    region_phi = planes_counts(planes_data_samples(), CONTAMINATION_PLANES_HIST,
+                               PLANES_VR_2MU2E)
+    if region_phi is not None and region_phi.sum() > 1:
+        data_moment = harmonic_moment(region_phi, -np.pi, np.pi)
+        print(f"2mu2e VR cos(2 Phi) coefficient of the data: A = "
+              f"{data_moment['coefficient']:+.3f} +- {data_moment['sigma_coefficient']:.3f} "
+              f"on {data_moment['n']:.0f} events;")
+        print("a signal making up a fraction f of them, with coefficient A_s, moves A by")
+        print("f x (A_s - A) (samples above 1 % of the data, at 1 fb):")
+        shifts = []
+        for row in rows:
+            if (row["campaign"] != "decay-plane campaign" or row["region"] != PLANES_VR_2MU2E
+                    or row["percent"] < 1.0):
+                continue
+            signal = harmonic_moment(planes_counts(row["sample"], CONTAMINATION_PLANES_HIST,
+                                                   PLANES_VR_2MU2E), -np.pi, np.pi)
+            fraction = row["percent"] / 100.0
+            shifts.append((row["sample"], row["percent"], signal,
+                           fraction * (signal["coefficient"] - data_moment["coefficient"])))
+        for name, percent, signal, shift in sorted(shifts, key=lambda item: -abs(item[3])):
+            print(f"  {name:31s} {percent:6.2f} %  A_s = {signal['coefficient']:+.3f} +- "
+                  f"{signal['sigma_coefficient']:.3f}  shift {shift:+.3f}")
