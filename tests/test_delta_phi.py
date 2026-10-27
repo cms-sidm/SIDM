@@ -67,6 +67,16 @@ class DeltaPhiTests(unittest.TestCase):
         self.assertAlmostEqual(delta_phi(math.pi - .02, -math.pi + .02), -.04)
         self.assertAlmostEqual(delta_phi(-math.pi + .02, math.pi - .02), .04)
 
+    def test_modulo_rounding_preserves_half_open_range(self):
+        first = np.array([-math.pi, np.nextafter(-math.pi, -np.inf)])
+        second = np.array([math.ulp(math.pi), 0.0])
+        # These inputs previously rounded the modulo result up to +pi.
+        self.assertEqual(delta_phi(first[0], second[0]), -math.pi)
+        self.assert_array_close(delta_phi(first, second), [-math.pi, -math.pi])
+        result = delta_phi(ak.Array([first.tolist(), [], [None]]),
+                           ak.Array([second.tolist(), [], [0.0]]))
+        self.assertEqual(ak.to_list(result), [[-math.pi, -math.pi], [], [None]])
+
     def test_numpy_reference_swap_and_periodicity(self):
         first = np.linspace(-math.pi, math.pi, 73)[:, None]
         second = np.linspace(-math.pi, math.pi, 41)[None, :]
@@ -255,6 +265,21 @@ class DeltaPhiTests(unittest.TestCase):
             with self.subTest(histogram=name):
                 actual = hist_defs[name].axes[0].fill_func({key: objects}, slice(None))
                 self.assert_array_close(ak.flatten(actual), ak.flatten(wrapped_cosmic))
+
+    def test_missing_outer_track_sentinel_is_not_an_angle(self):
+        # MuonExtendedTableProducer initializes both outer coordinates to -5.
+        # A numeric coordinate aligned with the wrapped sentinel must not veto.
+        sentinel = {"outerEta": -5.0, "outerPhi": -5.0}
+        aligned = {"outerEta": -5.0, "outerPhi": 2 * math.pi - 5.0}
+        for dtype in (np.float32, np.float64):
+            with self.subTest(dtype=dtype):
+                first = ak.values_astype(ak.Array([aligned, sentinel, sentinel]), dtype)
+                second = ak.values_astype(ak.Array([sentinel, aligned, sentinel]), dtype)
+                self.assert_array_close(dR_outer(first, second), [np.inf, np.inf, np.inf])
+                dsa = ak.values_astype(ak.Array([[dict(aligned, nSegments=10, charge=1,
+                    good_matched_muons=[dict(sentinel, numMatch=5, charge=1)])], []]), dtype)
+                for name in ("segmatch veto + dR outer", "old_all", "all", "all + charge"):
+                    self.assertEqual(ak.to_list(obj_cut_defs["dsaMuons"][name]({}, dsa)), [[True], []])
 
 
 if __name__ == "__main__":

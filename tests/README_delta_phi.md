@@ -30,6 +30,11 @@ The following definitions now use the wrapped absolute separation:
 outer`, `old_all`, `all` and `all + charge` in the DSA muon cuts. Synthetic tests
 check that a segment-matched pair across the branch cut is recognized as close,
 and preserve the segment-count, charge and missing-match exceptions.
+The public [MuonExtendedTableProducer](https://github.com/cms-sidm/LLPNanoAOD/blob/14c5287454948a7662c06d7cf507e282af28e29a/LLPnanoAOD/plugins/MuonExtendedTableProducer.cc#L102)
+uses `(outerEta, outerPhi) == (-5, -5)` for an unavailable or invalid outer track.
+`dR_outer` treats that documented sentinel as missing (infinite distance), so
+wrapping cannot turn it into an apparent match. This source convention does not
+establish the producer revision or sentinel content of any particular dataset.
 
 The LJ and PF-muon event cuts and `genAs_genAs_absdphi` already use the vector
 library's wrapped `delta_phi`; their definitions remain unchanged. The cosmic

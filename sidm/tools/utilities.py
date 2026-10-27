@@ -90,12 +90,21 @@ def delta_phi(phi1, phi2):
     # Float32 pi lies above mathematical pi: keep the calculation in float64
     # so absolute separations cannot exceed the full-range histogram boundary.
     difference = np.subtract(phi1, phi2, dtype=np.float64)
-    return (difference + np.pi) % (2 * np.pi) - np.pi
+    wrapped = (difference + np.pi) % (2 * np.pi) - np.pi
+    # Modulo can round up to 2*pi just below the negative branch cut.
+    return wrapped - (wrapped == np.pi) * (2 * np.pi)
 
 def dR_outer(obj1, obj2):
-    """Return wrapped dR between outer tracks, filling missing matches with inf."""
-    return ak.fill_none(np.sqrt((obj1.outerEta - obj2.outerEta)**2
-                               + delta_phi(obj1.outerPhi, obj2.outerPhi)**2), np.inf)
+    """Return wrapped outer-track dR; missing matches/tracks give inf.
+
+    LLPNanoAOD uses the pair (outerEta, outerPhi) == (-5, -5) when a muon
+    has no available, valid outer track. That sentinel is not an angle.
+    """
+    missing = ((obj1.outerEta == -5) & (obj1.outerPhi == -5)
+               | (obj2.outerEta == -5) & (obj2.outerPhi == -5))
+    distance = np.sqrt((obj1.outerEta - obj2.outerEta)**2
+                       + delta_phi(obj1.outerPhi, obj2.outerPhi)**2)
+    return ak.fill_none(ak.where(missing, np.inf, distance), np.inf)
 
 def drop_none(obj):
     """Remove None entries from an array (not available in Awkward 1)"""
