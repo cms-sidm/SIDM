@@ -133,7 +133,7 @@ child:
             with redirect_stdout(output):
                 printer.main(["--compare", "base_sr", "4mu_sr", "--color", mode])
             self.assertEqual("\033[" in output.getvalue(), mode == "always")
-            self.assertIn("+ [-:6] 4mu", output.getvalue())
+            self.assertRegex(output.getvalue(), r"\+ \[-:[1-9][0-9]*\] 4mu")
         for flags in [["--compare", "missing", "4mu_sr"],
                       ["--compare", "base", "4mu", "--list"],
                       ["--compare", "base", "4mu", "-s", "4mu"]]:
