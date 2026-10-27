@@ -14,7 +14,7 @@ import awkward as ak
 import numpy as np
 # local
 from sidm.tools import histogram as h
-from sidm.tools.utilities import dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs
+from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs
 from sidm.definitions.objects import derived_objs, withMass
 # always reload local modules to pick up changes during development
 importlib.reload(h)
@@ -29,6 +29,11 @@ counter_defs = {
     "Matched gen As to muons": lambda objs: ak.count(derived_objs["genAs_toMu_matched_lj"](objs, 0.4).pt),
     "Matched gen As to electrons": lambda objs: ak.count(derived_objs["genAs_toE_matched_lj"](objs, 0.4).pt),
 }
+
+
+# Include exactly antipodal pairs in the last bin of full-range |Delta phi| axes.
+# Regular axes exclude their upper edge; this extends pi by one floating-point step.
+_ABS_DPHI_MAX = np.nextafter(math.pi, math.inf)
 
 
 # define default labels and binnings
@@ -1940,8 +1945,8 @@ hist_defs = {
     # lj-lj
     "lj_lj_absdphi": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
+                   lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
         ],
         evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
     ),
@@ -2757,8 +2762,8 @@ hist_defs = {
     # ABCD plane
     "lj_lj_absdphi_invmass": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
+                   lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
                    lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
@@ -2767,8 +2772,8 @@ hist_defs = {
     ),
     "lj_lj_absdphi_absdR": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
+                   lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta$R| ($LJ_{0}$, $LJ_{1}$)"),
                    lambda objs, mask: objs["ljs"][mask, 1].delta_r(objs["ljs"][mask, 0])),
         ],
@@ -2776,8 +2781,8 @@ hist_defs = {
     ),
     "lj_lj_absdphi_absdeta": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
+                   lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta\eta$| ($LJ_{0}$, $LJ_{1}$)"),
                    lambda objs, mask: abs(objs["ljs"][mask, 1].eta - objs["ljs"][mask, 0].eta)),
         ],
@@ -2785,8 +2790,8 @@ hist_defs = {
     ),
     "lj_lj_absdphi_ptRatio": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
+                   lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
             h.Axis(hist.axis.Regular(100, 1.0, 2.0, name="lj_lj_ptRatio",
                                      label="Leading LJ PT / Subleading LJ PT"),
                    lambda objs, mask: objs["ljs"][mask, 0].pt / objs["ljs"][mask, 1].pt),
@@ -3033,11 +3038,11 @@ hist_defs = {
     ),
     "genE_genE_dPhi": h.Histogram(
         [
-            # abs(dEta(subleading gen E, leading gen E))
+            # Wrapped |Delta phi|; retain the 0..1 rad zoom range.
             h.Axis(hist.axis.Regular(50, 0, 1.0, name="genE_genE_dPhi",
-                                     label=r"$\Delta\, \phi$($e_0^{gen}$, $e_1^{gen}$)"),
-                   lambda objs, mask: abs(objs["genEs"][mask, 1].phi
-                                          - objs["genEs"][mask, 0].phi)),
+                                     label=r"$|\Delta\phi|$($e_0^{gen}$, $e_1^{gen}$)"),
+                   lambda objs, mask: abs(delta_phi(objs["genEs"][mask, 1].phi,
+                                                    objs["genEs"][mask, 0].phi))),
         ],
         evt_mask=lambda objs: ak.num(objs["genEs"]) > 1,
     ),
@@ -3295,11 +3300,11 @@ hist_defs = {
     ),
     "genMu_genMu_dPhi": h.Histogram(
         [
-            # abs(dEta(subleading gen Mu, leading gen Mu))
+            # Wrapped |Delta phi|; retain the 0..1 rad zoom range.
             h.Axis(hist.axis.Regular(50, 0, 1.0, name="genMu_genMu_dPhi",
-                                     label=r"$\Delta\, \phi$($\mu_0^{gen}$, $\mu_1^{gen}$)"),
-                   lambda objs, mask: abs(objs["genMus"][mask, 1].phi
-                                          - objs["genMus"][mask, 0].phi)),
+                                     label=r"$|\Delta\phi|$($\mu_0^{gen}$, $\mu_1^{gen}$)"),
+                   lambda objs, mask: abs(delta_phi(objs["genMus"][mask, 1].phi,
+                                                    objs["genMus"][mask, 0].phi))),
         ],
         evt_mask=lambda objs: ak.num(objs["genMus"]) > 1,
     ),
@@ -5184,23 +5189,23 @@ hist_defs = {
     ),
     "dsa_pair_phi_diff": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 7, name="dsa_pair_phi_diff",
-                                     label=r" abs(DSA $\mu$1 $\phi$ - DSA $\mu$2 $\phi$ ) "),
-                   lambda objs, mask: (lambda v1, v2: abs(v1.phi - v2.phi))(*ak.unzip(get_pairs(objs["dsaMuons"])))),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name="dsa_pair_phi_diff",
+                                     label=r"$|\Delta\phi|$(DSA $\mu_1$, DSA $\mu_2$)"),
+                   lambda objs, mask: (lambda v1, v2: abs(delta_phi(v1.phi, v2.phi)))(*ak.unzip(get_pairs(objs["dsaMuons"])))),
         ],
     ),
     "back_to_back_dsa_pair_phi_diff": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 7, name="back to back dsa_pair_eta_diff",
-                                     label=r" back to back abs(DSA $\mu$1 $\phi$ - DSA $\mu$2 $\phi$ ) "),
-                  lambda objs, mask: (lambda v1, v2: abs(v1.phi - v2.phi))(*ak.unzip(derived_objs["back_to_back_dsa_pairs"](objs)))),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name="back to back dsa_pair_eta_diff",
+                                     label=r"Back-to-back $|\Delta\phi|$(DSA $\mu_1$, DSA $\mu_2$)"),
+                  lambda objs, mask: (lambda v1, v2: abs(delta_phi(v1.phi, v2.phi)))(*ak.unzip(derived_objs["back_to_back_dsa_pairs"](objs)))),
         ],
     ),
     "parallel_dsa_pair_phi_diff": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, 7, name="parallel dsa_pair_phi_diff",
-                                     label=r" parallel abs(DSA $\mu$1 $\phi$ - DSA $\mu$2 $\phi$ ) "),
-                  lambda objs, mask: (lambda v1, v2: abs(v1.phi - v2.phi))(*ak.unzip(derived_objs["parallel_dsa_pairs"](objs)))),
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name="parallel dsa_pair_phi_diff",
+                                     label=r"Parallel $|\Delta\phi|$(DSA $\mu_1$, DSA $\mu_2$)"),
+                  lambda objs, mask: (lambda v1, v2: abs(delta_phi(v1.phi, v2.phi)))(*ak.unzip(derived_objs["parallel_dsa_pairs"](objs)))),
         ],
     ),
     "dsa_pair_charge_diff": h.Histogram(
