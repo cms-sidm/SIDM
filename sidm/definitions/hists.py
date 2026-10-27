@@ -460,7 +460,6 @@ MULJ_PAIR_ISO_BINS = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1, 2, 10]
 MULJ_PAIR_DXY_BINS = [0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 5, 50, 1000]
 MULJ_PAIR_SPREAD_BINS = [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 1000]
 MULJ_PAIR_MUPT_BINS = [0, 10, 15, 20, 23, 26, 30, 40, 60, 100, 200, 1000]
-MULJ_PAIR_DR_BINS = [0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.2, 0.3, 0.5]
 MULJ_PAIR_MJJ_BINS = [0, 80, 130, 150, 200, 250, 300, 380, 500, 600, 780, 1000, 1000000]
 
 
@@ -723,14 +722,10 @@ def lj_pair_evt_mask(objs):
 
 
 def lj_pair_qualifying(objs, mask):
-    """Both LJ types' qualifying lepton pairs in one pT-ordered per-event collection.
-
-    kind is 0 for a mu-type and 1 for an egamma-type LJ, so the sum of the two leading LJs'
-    kinds labels the event as mu+mu (0), mu+egm (1) or egm+egm (2).
-    """
+    """Both LJ types' qualifying lepton pairs in one pT-ordered per-event collection."""
     recs = []
-    for kind, code in (("mu", 0), ("egm", 1)):
-        ljs, _lead, _sub, _lead_p4, _sub_p4, pair_p4, ref_p4, has_charge = \
+    for kind in ("mu", "egm"):
+        ljs, _lead, _sub, _lead_p4, _sub_p4, pair_p4, ref_p4, _has_charge = \
             _lj_dilepton_kinematics(objs, mask, kind)
         if kind == "mu":
             # ljs.dsaMuons is the DSA collection the LJ builder kept, i.e. after the "all"
@@ -754,8 +749,6 @@ def lj_pair_qualifying(objs, mask):
             "refPhi": ref_p4.phi,
             "refMass": ref_p4.mass,
             "ljPt": ljs.pt,
-            "kind": ak.values_astype(ak.full_like(ljs.pt, code), np.int32),
-            "hasCharge": ak.values_astype(has_charge, np.int32),
         }))
     both = ak.concatenate(recs, axis=1)
     return both[ak.argsort(both.ljPt, axis=-1, ascending=False)]
@@ -801,7 +794,6 @@ def _a_frame_observables(recs):
     plane_angle = np.arccos(ak.where(abs_n_dot > 1.0, ak.ones_like(abs_n_dot), abs_n_dot))
 
     return ak.zip({
-        "mjj": parent_p4.mass,
         "ptAsym": abs(p0.pt - p1.pt)/(p0.pt + p1.pt),
         "ptVecSum": parent_p4.pt,
         "cosThetaA0": cos_theta_0,
@@ -810,8 +802,6 @@ def _a_frame_observables(recs):
         "absCosThetaA1": abs(cos_theta_1),
         "Phi": phi,
         "planeAngle": plane_angle,
-        "pairType": rec0.kind + rec1.kind,
-        "nHasCharge": rec0.hasCharge + rec1.hasCharge,
     })
 
 
@@ -887,8 +877,6 @@ def gen_pair_qualifying(objs, mask):
         "refPhi": neg.phi,
         "refMass": lep_mass,
         "ljPt": gen_as.pt,
-        "kind": ak.values_astype(~is_mu, np.int32),
-        "hasCharge": ak.values_astype(ak.ones_like(neg.pt), np.int32),
     })
 
 
@@ -897,44 +885,11 @@ def gen_pair_a_frame(objs, mask):
     return _a_frame_observables(gen_pair_qualifying(objs, mask))
 
 
-def _stack_two(v0, v1):
-    """One length-2 list per event holding v0 then v1.
-
-    The list dimension is made variable length because the histogram machinery broadcasts the
-    event weights against the last axis, which a fixed-length (regular) dimension does not
-    accept. np.newaxis rather than ak.unflatten, so a channel with no passing events still
-    produces an empty array of the right type instead of raising.
-    """
-    return ak.from_regular(ak.concatenate([v0[:, np.newaxis], v1[:, np.newaxis]], axis=1), axis=1)
-
-
 def lj_pair_axis(axis, field, gen=False):
     """Bundle a hist axis with one per-event field of the A-frame observables."""
     source = gen_pair_a_frame if gen else lj_pair_a_frame
     return h.Axis(axis, lambda objs, mask, f=field, s=source: s(objs, mask)[f])
 
-
-def lj_pair_perlj_axis(axis, field0, field1, gen=False):
-    """Bundle a hist axis with a per-LJ field of the A-frame observables.
-
-    Two entries per event, LJ_0 then LJ_1, so such an axis can be paired with an event-level
-    quantity broadcast by lj_pair_broadcast_axis.
-    """
-    source = gen_pair_a_frame if gen else lj_pair_a_frame
-    def fill(objs, mask, f0=field0, f1=field1, s=source):
-        vals = s(objs, mask)
-        return _stack_two(vals[f0], vals[f1])
-    return h.Axis(axis, fill)
-
-
-def lj_pair_broadcast_axis(axis, field, gen=False):
-    """Bundle a hist axis with one per-event field of the A-frame observables, duplicated onto
-    both leading LJs so it can be paired with a lj_pair_perlj_axis."""
-    source = gen_pair_a_frame if gen else lj_pair_a_frame
-    def fill(objs, mask, f=field, s=source):
-        vals = s(objs, mask)[f]
-        return _stack_two(vals, vals)
-    return h.Axis(axis, fill)
 
 hist_defs = {
     # pv
@@ -6816,21 +6771,6 @@ hist_defs = {
                 "ptRatio"),
         ],
     ),
-    "mu_lj_mumu_mass": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(200, 0, 20, name="mumu_mass", label=r"$m_{\mu\mu}$ [GeV]"),
-                "mass"),
-        ],
-    ),
-    "mu_lj_mumu_dR": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(50, 0, 0.5, name="mumu_dR",
-                                  label=r"$\Delta R(\mu^{lead}, \mu^{sub})$"),
-                "dR"),
-        ],
-    ),
     "mu_lj_mumu_ptRatio_vs_absCosTheta": h.Histogram(
         [
             mulj_pair_axis(
@@ -6862,17 +6802,6 @@ hist_defs = {
                 hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="mumu_mass",
                                    label=r"$m_{\mu\mu}$ [GeV]"),
                 "mass"),
-        ],
-    ),
-    "mu_lj_mumu_absCosTheta_vs_dR": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
-                "absCosTheta"),
-            mulj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_DR_BINS, name="mumu_dR",
-                                   label=r"$\Delta R(\mu^{lead}, \mu^{sub})$"),
-                "dR"),
         ],
     ),
     "mu_lj_mumu_absCosTheta_vs_iso": h.Histogram(
@@ -6908,28 +6837,6 @@ hist_defs = {
                 "maxDxy"),
         ],
     ),
-    "mu_lj_mumu_absCosTheta_vs_dxySpread": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
-                "absCosTheta"),
-            mulj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_SPREAD_BINS, name="dxySpread",
-                                   label=r"$|\Delta d_{xy}|$ of the two muons (w.r.t. PV) [cm]"),
-                "dxySpread"),
-        ],
-    ),
-    "mu_lj_mumu_absCosTheta_vs_dzSpread": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
-                "absCosTheta"),
-            mulj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_SPREAD_BINS, name="dzSpread",
-                                   label=r"$|\Delta d_z|$ of the two muons (w.r.t. PV) [cm]"),
-                "dzSpread"),
-        ],
-    ),
     "mu_lj_mumu_absCosTheta_vs_nDsa": h.Histogram(
         [
             mulj_pair_axis(
@@ -6941,17 +6848,6 @@ hist_defs = {
                 "nDsa"),
         ],
     ),
-    "mu_lj_mumu_absCosTheta_vs_leadMuPt": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
-                "absCosTheta"),
-            mulj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_MUPT_BINS, name="leadMuPt",
-                                   label=r"Leading $\mu$ $p_T$ [GeV]"),
-                "leadPt"),
-        ],
-    ),
     "mu_lj_mumu_absCosTheta_vs_subMuPt": h.Histogram(
         [
             mulj_pair_axis(
@@ -6961,18 +6857,6 @@ hist_defs = {
                 hist.axis.Variable(MULJ_PAIR_MUPT_BINS, name="subMuPt",
                                    label=r"Subleading $\mu$ $p_T$ [GeV]"),
                 "subPt"),
-        ],
-    ),
-    "mu_lj_mumu_ptRatio_vs_pt": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="ptRatio",
-                                  label=r"$p_T^{sub}/p_T^{lead}$"),
-                "ptRatio"),
-            mulj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_LJPT_BINS, name="lj_pt",
-                                   label=r"$\mu$-type LJ $p_T$ [GeV]"),
-                "ljPt"),
         ],
     ),
     "mu_lj_mumu_absCosTheta_vs_vxySpread_mu": h.Histogram(
@@ -7024,26 +6908,6 @@ hist_defs = {
         ],
         evt_mask=mulj_pair_evt_mask,
     ),
-    # signed decay angle of the muon-LJ leading pair
-    "mu_lj_mumu_cosTheta": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(20, -1, 1, name="cosTheta",
-                                  label=r"$\cos\theta^*$ (leading $\mu\mu$ pair, pair rest frame)"),
-                "cosTheta"),
-        ],
-    ),
-    "mu_lj_mumu_cosTheta_vs_mass": h.Histogram(
-        [
-            mulj_pair_axis(
-                hist.axis.Regular(20, -1, 1, name="cosTheta", label=r"$\cos\theta^*$"),
-                "cosTheta"),
-            mulj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="mumu_mass",
-                                   label=r"$m_{\mu\mu}$ [GeV]"),
-                "mass"),
-        ],
-    ),
 
     # the same decay angle and its companions for the leading electron pair of egamma-type LJs
     "egm_lj_ee_absCosTheta": h.Histogram(
@@ -7054,14 +6918,6 @@ hist_defs = {
                 "absCosTheta"),
         ],
     ),
-    "egm_lj_ee_cosTheta": h.Histogram(
-        [
-            egmlj_pair_axis(
-                hist.axis.Regular(20, -1, 1, name="cosTheta",
-                                  label=r"$\cos\theta^*$ (leading $ee$ pair, pair rest frame)"),
-                "cosTheta"),
-        ],
-    ),
     "egm_lj_ee_ptRatio": h.Histogram(
         [
             egmlj_pair_axis(
@@ -7070,30 +6926,12 @@ hist_defs = {
                 "ptRatio"),
         ],
     ),
-    "egm_lj_ee_mass": h.Histogram(
-        [
-            egmlj_pair_axis(
-                hist.axis.Regular(200, 0, 20, name="ee_mass", label=r"$m_{ee}$ [GeV]"),
-                "mass"),
-        ],
-    ),
     "egm_lj_ee_dR": h.Histogram(
         [
             egmlj_pair_axis(
                 hist.axis.Regular(50, 0, 0.5, name="ee_dR",
                                   label=r"$\Delta R(e^{lead}, e^{sub})$"),
                 "dR"),
-        ],
-    ),
-    "egm_lj_ee_cosTheta_vs_mass": h.Histogram(
-        [
-            egmlj_pair_axis(
-                hist.axis.Regular(20, -1, 1, name="cosTheta", label=r"$\cos\theta^*$"),
-                "cosTheta"),
-            egmlj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="ee_mass",
-                                   label=r"$m_{ee}$ [GeV]"),
-                "mass"),
         ],
     ),
     "egm_lj_ee_absCosTheta_vs_mass": h.Histogram(
@@ -7105,27 +6943,6 @@ hist_defs = {
                 hist.axis.Variable(MULJ_PAIR_MASS_BINS, name="ee_mass",
                                    label=r"$m_{ee}$ [GeV]"),
                 "mass"),
-        ],
-    ),
-    "egm_lj_ee_ptRatio_vs_absCosTheta": h.Histogram(
-        [
-            egmlj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
-                "absCosTheta"),
-            egmlj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="ptRatio", label=r"$p_T^{sub}/p_T^{lead}$"),
-                "ptRatio"),
-        ],
-    ),
-    "egm_lj_ee_absCosTheta_vs_pt": h.Histogram(
-        [
-            egmlj_pair_axis(
-                hist.axis.Regular(25, 0, 1, name="cosTheta", label=r"$|\cos\theta^*|$"),
-                "absCosTheta"),
-            egmlj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_LJPT_BINS, name="lj_pt",
-                                   label=r"$e\gamma$-type LJ $p_T$ [GeV]"),
-                "ljPt"),
         ],
     ),
 
@@ -7140,18 +6957,6 @@ hist_defs = {
                 hist.axis.Regular(20, -1, 1, name="cosThetaA1",
                                   label=r"$\cos\theta_A$ (subleading LJ)"),
                 "cosThetaA1"),
-        ],
-        evt_mask=lj_pair_evt_mask,
-    ),
-    "lj_pair_absCosThetaA_vs_mjj": h.Histogram(
-        [
-            lj_pair_perlj_axis(
-                hist.axis.Regular(5, 0, 1, name="cosThetaA", label=r"$|\cos\theta_A|$"),
-                "absCosThetaA0", "absCosThetaA1"),
-            lj_pair_broadcast_axis(
-                hist.axis.Variable(MULJ_PAIR_MJJ_BINS, name="mjj",
-                                   label=r"$m(\mathrm{LJ}, \mathrm{LJ})$ [GeV]"),
-                "mjj"),
         ],
         evt_mask=lj_pair_evt_mask,
     ),
@@ -7170,46 +6975,6 @@ hist_defs = {
                 hist.axis.Regular(18, 0, math.pi/2, name="planeAngle",
                                   label=r"Angle between the two LJ decay planes"),
                 "planeAngle"),
-        ],
-        evt_mask=lj_pair_evt_mask,
-    ),
-    "lj_pair_planeAngle_vs_mjj": h.Histogram(
-        [
-            lj_pair_axis(
-                hist.axis.Regular(6, 0, math.pi/2, name="planeAngle",
-                                  label=r"Angle between the two LJ decay planes"),
-                "planeAngle"),
-            lj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_MJJ_BINS, name="mjj",
-                                   label=r"$m(\mathrm{LJ}, \mathrm{LJ})$ [GeV]"),
-                "mjj"),
-        ],
-        evt_mask=lj_pair_evt_mask,
-    ),
-    "lj_pair_mjj": h.Histogram(
-        [
-            lj_pair_axis(
-                hist.axis.Variable(MULJ_PAIR_MJJ_BINS, name="mjj",
-                                   label=r"$m(\mathrm{LJ}, \mathrm{LJ})$ [GeV]"),
-                "mjj"),
-        ],
-        evt_mask=lj_pair_evt_mask,
-    ),
-    "lj_pair_type": h.Histogram(
-        [
-            lj_pair_axis(
-                hist.axis.IntCategory([0, 1, 2], name="pairType",
-                                      label=r"LJ pair type (0 $\mu\mu$, 1 $\mu e\gamma$, 2 $e\gamma e\gamma$)"),
-                "pairType"),
-        ],
-        evt_mask=lj_pair_evt_mask,
-    ),
-    "lj_pair_hasCharge": h.Histogram(
-        [
-            lj_pair_axis(
-                hist.axis.IntCategory([0, 1, 2], name="nHasCharge",
-                                      label="Number of LJ pairs with opposite-sign leptons"),
-                "nHasCharge"),
         ],
         evt_mask=lj_pair_evt_mask,
     ),
