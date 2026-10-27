@@ -16,9 +16,10 @@
 # muons, DSA muons); ">=2 muons (pf or dsa) pT > 26 GeV" and "all cosAlpha(mu, mu) > -0.99" in
 # the base event cuts; dzSpread and dxySpread cuts in the base muon-LJ cuts. Channels that share
 # a name with a channel of main's selections.yaml therefore select different events on main.
-# None of the channels below has the eta-phi veto. The spread-veto regions (names containing
-# "spread_cosAlpha_mu_veto") cut on the transverse vertex spread vxySpread where main cuts on
-# dxySpread; the other channels have no spread cut and no cosAlpha(mu, mu) cut.
+# Main has since also required "DT + CSC hits > 3" of every PF muon at the LJ source (65b46a86).
+# None of the channels below has the eta-phi veto or that requirement. The spread-veto regions
+# (names containing "spread_cosAlpha_mu_veto") cut on the transverse vertex spread vxySpread
+# where main cuts on dxySpread; the other channels have no spread cut and no cosAlpha(mu, mu) cut.
 #
 # Use: SidmProcessor(channels, collections,
 #                    selections_cfg="configs/selections_mulj_decay_angle_as_run.yaml")
