@@ -80,9 +80,22 @@ def dR_general(obj1, obj2):
     """Return ΔR between obj1 and obj2, filling None with inf"""
     return ak.fill_none(obj1.delta_r(obj2), np.inf)
 
+def delta_phi(phi1, phi2):
+    """Return signed phi1 - phi2 in [-pi, pi), in radians.
+
+    Accepts scalars, NumPy arrays and Awkward arrays. Broadcasting, jagged
+    structure and missing values follow the input arrays' arithmetic rules.
+    Exactly antipodal directions map to -pi; abs(delta_phi(...)) is in [0, pi].
+    """
+    # Float32 pi lies above mathematical pi: keep the calculation in float64
+    # so absolute separations cannot exceed the full-range histogram boundary.
+    difference = np.subtract(phi1, phi2, dtype=np.float64)
+    return (difference + np.pi) % (2 * np.pi) - np.pi
+
 def dR_outer(obj1, obj2):
-    """Return dR between outer tracks of obj1 and obj2"""
-    return ak.fill_none(np.sqrt((obj1.outerEta - obj2.outerEta)**2 + (obj1.outerPhi - obj2.outerPhi)**2), np.inf)
+    """Return wrapped dR between outer tracks, filling missing matches with inf."""
+    return ak.fill_none(np.sqrt((obj1.outerEta - obj2.outerEta)**2
+                               + delta_phi(obj1.outerPhi, obj2.outerPhi)**2), np.inf)
 
 def drop_none(obj):
     """Remove None entries from an array (not available in Awkward 1)"""
