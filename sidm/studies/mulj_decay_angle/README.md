@@ -481,10 +481,11 @@ These apply to every reading of the figures and are repeated in the notebook.
    sum of generator weights over the events stored in the input files, the normalisation
    the processor itself applies; `_mulj_lib.lumi_xs_weight()` and `planes_weight()` return
    it. An earlier figure of roughly one event in ten kept by the signal skim, which would call
-   for a generated count in the denominator instead, was an artefact: the per-file
-   generated-event counter in the Runs tree is cumulative, so summing it over files overcounts
-   the generated events by a factor of about ten. No generator filter is recorded in the
-   files, and neither signal ntuple
+   for a generated count in the denominator instead, was an artefact: each signal file's Runs
+   tree holds several entries that are cumulative snapshots of one file-local counter, whose
+   last value equals the number of stored events, and the earlier census summed those entries
+   and so overcounted the generated events by about ten. No generator filter is recorded in
+   the files, and neither signal ntuple
    location file the campaigns read (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`) sets a
    `skim_factor`. Shapes are unaffected in any case, because the factor cancels in a
    unit-area normalisation, and every comparison in this study is unit-area.
@@ -514,39 +515,70 @@ These apply to every reading of the figures and are repeated in the notebook.
    ones are cosines the single-precision boost returns as not a number (an offline check of one
    unselected file per point, `check_gen_boost_precision.py`). Section b prints these overflow
    fractions from the stored histograms. Every figure is built from the in-range bins.
-10. **The data regions hold signal.** Collision data is read in seven regions. The three
-    single-lepton-jet control regions ask for one muon lepton jet, and the
-    electromagnetic-lepton-jet control region, read by the decay-plane campaign only, asks for
-    one electromagnetic lepton jet. The two validation regions and the two-lepton-jet control
-    region are the signal-region selection with the displacement requirement inverted on every
-    lepton jet and no isolation requirement. They form the prompt-prompt corner of the
-    displacement plane, where every lepton jet fails the displacement requirement, with no
-    isolation split and no ABCD cells (the four regions of the two-variable background
-    estimate).
-    A signal with a short proper lifetime is prompt by that definition and lands in them. The
-    notebook calls, at the end of section g, `_mulj_lib.signal_contamination_table()`, which
+10. **The data regions hold signal.** Collision data is read in seven regions, all defined in
+    `selections_mulj_decay_angle_as_run.yaml`. The three single-lepton-jet control regions ask
+    for exactly one lepton jet, a muon one, and the electromagnetic-lepton-jet control region,
+    read by the decay-plane campaign only, for exactly one lepton jet, an electromagnetic one.
+    The two validation regions and the two-lepton-jet control region keep three requirements of
+    the signal regions (the trigger, at least two lepton jets, two muons above 26 GeV) and add
+    the muon-pair opening-angle veto (every cos alpha(mu, mu) > -0.99). Their muon lepton jets
+    must hold two or more muons, pass the spread vetoes and pass the inverted displacement
+    requirement ("inverse displaced": at least one muon with more than two pixel hits); in the
+    two-muon-two-electron validation region and the two-lepton-jet control region the
+    electromagnetic lepton jets carry the inverted requirement too (at least one constituent
+    with no lost hits). These are object cuts on the muon and electromagnetic lepton-jet
+    collections: a lepton jet that fails them is dropped from its collection, and the event is
+    not rejected for it. The validation regions then require, from those collections, at least
+    two muon lepton jets (4mu) or at least one muon and one electromagnetic lepton jet (2mu2e),
+    with dPhi >= 2 and a pair mass of at least 150 GeV for the leading pair; the two-lepton-jet
+    control region has no dPhi cut and no final-state requirement. None of the three has an
+    isolation requirement. The histograms the contamination table counts
+    (`mu_lj_mumu_absCosTheta`, `mulj_pair_absCosTheta_vs_mjj`, `lj_pair_Phi`) are filled from
+    the filtered collections, so their entries are prompt lepton jets by construction, with one
+    exception: the four-muon validation region puts no displacement requirement on the
+    electromagnetic lepton jets, so its decay-plane histogram can be filled from a displaced
+    electromagnetic lepton jet paired with a muon one (none of its 2,517 data events is: all are
+    muon-muon pairs). A signal with a short proper lifetime passes the inverted requirement, so
+    these three regions collect it.
+
+    The notebook calls, at the end of section g, `_mulj_lib.signal_contamination_table()`, which
     computes (and with `full=True` prints) for every signal sample with m_XX >= 200 GeV and
     every region as each campaign draws it the expected signal at 1 fb (luminosity x 1 fb over
     the campaign's own stored sum of generator weights; muon-lepton-jet entries for the first
     and the pair campaign, events for the decay-plane campaign) as a percentage of the data in
-    the region, and prints the largest share per region. The largest shares are
-    1.7289 percent in the four-muon validation region, 0.3452 percent in the first campaign's
-    two-muon-two-electron validation region, 0.5216 percent in the two-lepton-jet control
-    region, at most 0.0005 percent in the muon single-lepton-jet control regions (the
-    electromagnetic one is not counted), and 10.6436
-    percent in the decay-plane campaign's two-muon-two-electron validation region
-    (2Mu2E_500GeV_5p0GeV_0p08mm). They scale with the assumed cross section;
+    the region, and prints the largest share per region with that sample's reg/ch (its entries
+    in the region over those in its signal channel: 0.851 of the four-muon channel's entries of
+    4Mu_500GeV_5p0GeV_0p08mm fall in the four-muon validation region). The largest shares are
+    1.7289 percent in the four-muon validation region (4Mu_500GeV_5p0GeV_0p08mm), 0.3452
+    percent in the first campaign's two-muon-two-electron validation region
+    (2Mu2E_500GeV_0p25GeV_0p004mm), 0.5216 percent in the two-lepton-jet control region, at
+    most 0.0005 percent in the muon single-lepton-jet control regions (the electromagnetic one
+    is not counted), and 10.6436 percent in the decay-plane campaign's two-muon-two-electron
+    validation region (2Mu2E_500GeV_5p0GeV_0p08mm). They scale with the assumed cross section;
     `cross_sections.yaml` lists 1.264 fb at m_XX = 500 GeV and 0.342 fb at 1000 GeV, at which
-    the last becomes 13.4536 percent. That region holds 7,403 muon-lepton-jet entries in the
-    first campaign but 86 events in the decay-plane campaign, because the decay-plane
-    histograms are filled only for events with two qualifying lepton jets, each a muon lepton
-    jet with two or more muons or an electromagnetic one with two or more electrons
-    (`lj_pair_evt_mask` in `sidm/definitions/hists.py`), and in its data 64 of the 7,447
-    electromagnetic lepton jets hold two or more electrons. Subtracting the expected signal at
-    1 fb moves the four-muon validation region's data high-to-low ratio of 0.327 +- 0.018 by at
-    most +0.013, and moves the coefficient A = -0.507 +- 0.150 of the decay-plane
-    two-muon-two-electron validation region by at most f x (A_s - A) = +0.096, towards
-    positive values, so the negative value is not produced by signal.
+    the last becomes 13.4536 percent.
+
+    That region holds 7,403 muon-lepton-jet entries in the first campaign but 86 events in the
+    decay-plane campaign, because the decay-plane histograms are filled only for events with
+    two qualifying lepton jets, each a muon lepton jet with two or more muons or an
+    electromagnetic one with two or more electrons (`lj_pair_evt_mask` in
+    `sidm/definitions/hists.py`), and in its data 64 of the 7,447 electromagnetic lepton jets
+    hold two or more electrons: 22 of the 86 events are muon-muon pairs and 64
+    muon-electromagnetic ones. The same sample, 2Mu2E_500GeV_5p0GeV_0p08mm, is therefore 0.2360
+    percent of the data in the first campaign's two-muon-two-electron validation region and
+    10.6436 percent in the decay-plane campaign's: its own count falls from 57,007
+    muon-lepton-jet entries to 29,865 events, while the data fall from 7,403 to 86.
+
+    The signal's contribution to the two numbers quoted from the validation regions: in the
+    four-muon validation region the expected signal at 1 fb raises the data high-to-low ratio by
+    at most 0.013 (0.327 with it, 0.315 without it; 4Mu_1000GeV_1p2GeV_0p0096mm), within the
+    ratio's statistical error of 0.018. In the decay-plane two-muon-two-electron validation
+    region, where the data give A = -0.507 +- 0.150 on 86 events, a signal making up a fraction f
+    of the events, with coefficient A_s, contributes f (A_s - A) / (1 - f) to A: at most +0.107
+    at 1 fb and +0.140 at the listed 1.264 fb (2Mu2E_500GeV_5p0GeV_0p08mm, A_s = +0.394). With
+    A_s > 0 the signal pulls A towards positive values, so without it A would be more negative
+    by those amounts, -0.615 at 1 fb and -0.648 at the listed cross section: the negative value
+    is not produced by signal. Both contributions grow with the assumed cross section.
 
 ## Figure conventions
 
