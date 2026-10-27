@@ -1,18 +1,24 @@
 # Decay angle of the leading muon pair in a muon lepton jet
 
-For every muon-type lepton jet that holds at least two muons, this study takes the two
+A lepton jet is a group of collimated muons, electrons or photons clustered into one object, the
+signature of a light, highly boosted dark photon decaying to a lepton pair; a muon lepton jet is
+built from muons, an electromagnetic lepton jet from electrons and photons. A fake lepton jet is
+one not produced by a dark-photon decay, for example two unrelated muons clustered together.
+
+For every muon lepton jet that holds at least two muons, this study takes the two
 leading-transverse-momentum constituent muons, boosts the leading one into the rest frame
 of the pair, and records the angle between that boosted momentum and the direction of the
-pair in the laboratory. The absolute cosine of that angle, together with the laboratory
-ratio of the two muon transverse momenta, is then compared between simulated signal,
+pair in the laboratory (the decay angle theta*). The absolute cosine of that angle,
+|cos(theta*)|, together with the laboratory ratio of the two muon transverse momenta, is
+compared between simulated signal,
 simulated background and collision data under a common set of control and validation
 regions.
 
 The question the study is built to answer is whether that angle separates the muon pairs
-of a real dark-photon decay from the pairs a fake lepton jet produces: well enough to be
-worth using in the selection or in the background estimate, and consistently enough across
-the regions, the mediator masses and the dark-photon masses that the separation measured in
-one of them can be carried to another.
+of a real dark-photon decay from the pairs of a fake lepton jet: well enough to be worth
+using in the selection or in the background estimate, and consistently enough across the
+regions, the bound-state masses m_XX and the dark-photon masses m_Zd that the separation
+measured in one of them can be carried to another.
 
 The inputs were produced with the channel definitions kept in
 `sidm/configs/selections_mulj_decay_angle_as_run.yaml`, which are not main's; "Selections used
@@ -23,9 +29,7 @@ in this study" below gives the differences and how the file is tied to the input
 | file | what it is |
 | --- | --- |
 | `00_produce_inputs.ipynb` | **step 0**: makes the `.coffea` inputs; committed with its outputs |
-| `_build_produce_inputs.py` | writes `00_produce_inputs.ipynb` |
 | `mulj_decay_angle.ipynb` | the study itself; committed with its outputs |
-| `_build_mulj_notebook.py` | writes `mulj_decay_angle.ipynb` |
 | `_mulj_lib.py` | all loading, normalisation, statistics and drawing; one function per figure |
 | `check_gen_boost_precision.py` | an offline check of one unselected 4mu file per bound-state mass at m_Zd = 0.25 GeV, read over xrootd: the generated \|cos(theta*)\| with the processor's single-precision boost, in double precision and without a boost; its numbers are quoted in section b and caveat 9 |
 | `../../configs/selections_mulj_decay_angle_as_run.yaml` | the channel definitions the three campaigns ran, passed to the processor by the submit files and by `00_produce_inputs.ipynb` |
@@ -34,7 +38,8 @@ in this study" below gives the differences and how the file is tied to the input
 Read them in that order: `00_produce_inputs.ipynb` produces one `.coffea` per sample, and
 `mulj_decay_angle.ipynb` reads a directory of them.
 
-The study notebook runs a to j, and three campaigns are behind it.
+The study notebook has sections a to j, which read the outputs of three production
+campaigns run on Condor: the first campaign, the pair campaign and the decay-plane campaign.
 
 | sections | what they measure | inputs |
 | --- | --- | --- |
@@ -45,8 +50,9 @@ The study notebook runs a to j, and three campaigns are behind it.
 Sections i and j each set their own input directory in their own configuration cell, so
 changing `INPUT_DIR` does not move them.
 
-Both notebooks are generated. Edit the builder or the library, regenerate, re-execute; hand
-edits to a `.ipynb` put it out of step with its source.
+The two notebooks, `00_produce_inputs.ipynb` and `mulj_decay_angle.ipynb`, are the
+deliverables. Both are committed with their outputs, so their figures and tables can be read
+without running them.
 
 ## Quantities
 
@@ -94,10 +100,13 @@ are the only place the signal shape is seen under its own selection.  Data is ne
 them; nothing in this study looks at the signal region in data.
 
 The two validation regions are orthogonal to the signal region by construction: the signal
-region requires every lepton jet to be displaced and these require the exact negation. For a
-muon lepton jet the negation is that at least one of its muons has more than two pixel hits.
-A displaced-standalone muon is given zero pixel hits, so that muon is always a particle-flow
-muon, but the requirement does not exclude displaced-standalone muons from the lepton jet,
+region requires every lepton jet to be displaced and these require the exact negation
+(inverted displacement, "inverse displaced" in the selection table below). A muon's pixel hits
+are the hits its track leaves in the silicon pixel detector, the innermost part of the tracker;
+a muon from a decay beyond the pixel layers has few or none. For a muon lepton jet the negation
+is that at least one of its muons has more than two pixel hits. A displaced-standalone muon,
+reconstructed from the muon system alone, is given zero pixel hits, so that muon is always a
+particle-flow muon. The requirement does not exclude displaced-standalone muons from the lepton jet,
 nor from the two leading muons the angle is computed from: 29 percent of the data pairs in
 the four-muon validation region and 10 percent in the two-muon-two-electron one contain one
 (caveat 2). The dependence of the angle on displacement is measured in the uncut
@@ -138,8 +147,8 @@ Three pieces of evidence tie the file to the inputs. The jobs ran from a working
 uncommitted changes, and commit `61224901` was made on 2026-09-07, after all three campaigns
 had run. The metadata file written next to each merged output (152, 101 and 154 such files)
 records a definition for every channel, and every recorded definition agrees with the as-run
-file; those definitions are read from the checkout that did the merging, not from the jobs,
-and the commit recorded there is likewise the merging checkout's. For the third campaign the
+file; but those definitions, and the commit recorded with them, come from the checkout that
+did the merging, not from the jobs. For the third campaign the
 code shipped to the jobs was kept and is identical, file by file, to commit `61224901`; the
 code shipped to the first two campaigns was not kept. The strongest evidence is a rerun:
 stored Condor outputs of all three campaigns (signal chunks of each, data chunks of the first
@@ -311,14 +320,13 @@ INPUT_DIR = "root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/mur
 LUMI_FB = 59.8
 ```
 
-Then rebuild and execute:
+Then execute it:
 
 ```bash
 cd <repository root>
 source /uscms_data/d3/murtazas/SIDM/sidm_venv/bin/activate
 export PYTHONPATH=$PWD
 cd sidm/studies/mulj_decay_angle
-python _build_mulj_notebook.py
 jupyter nbconvert --to notebook --execute --inplace \
     --ExecutePreprocessor.kernel_name=sidm_venv \
     --ExecutePreprocessor.timeout=1800 mulj_decay_angle.ipynb
@@ -434,7 +442,7 @@ These apply to every reading of the figures and are repeated in the notebook.
    the angular distribution of the decay, which would need the efficiency corrected for.
 2. **The inverted-displacement requirement does not exclude displaced-standalone muons.**
    In the two validation regions and the two-lepton-jet control region every muon lepton
-   jet must contain at least one muon with more than two pixel hits. The vector builder
+   jet must contain at least one muon with more than two pixel hits. The processor
    sets the pixel-hit count of a displaced-standalone track to zero, so that muon is a
    particle-flow muon, but the two leading muons the angle is computed from can include
    displaced-standalone ones. In data the pairs split 71, 29 and 0.2 percent into
@@ -472,9 +480,11 @@ These apply to every reading of the figures and are repeated in the notebook.
    two. A normalised simulation prediction is luminosity times cross section divided by the
    sum of generator weights over the events stored in the input files, the normalisation
    the processor itself applies; `_mulj_lib.lumi_xs_weight()` and `planes_weight()` return
-   it. The figure of roughly one event in ten kept by the signal skim, which would call for
-   a generated count in the denominator instead, came from summing a cumulative counter of
-   the Runs tree across files, an artefact found on 2026-08-10. No generator filter is recorded in the files, and neither signal ntuple
+   it. An earlier figure of roughly one event in ten kept by the signal skim, which would call
+   for a generated count in the denominator instead, was an artefact: the per-file
+   generated-event counter in the Runs tree is cumulative, so summing it over files overcounts
+   the generated events by a factor of about ten. No generator filter is recorded in the
+   files, and neither signal ntuple
    location file the campaigns read (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`) sets a
    `skim_factor`. Shapes are unaffected in any case, because the factor cancels in a
    unit-area normalisation, and every comparison in this study is unit-area.
@@ -505,10 +515,14 @@ These apply to every reading of the figures and are repeated in the notebook.
    unselected file per point, `check_gen_boost_precision.py`). Section b prints these overflow
    fractions from the stored histograms. Every figure is built from the in-range bins.
 10. **The data regions hold signal.** Collision data is read in seven regions. The three
-    single-lepton-jet control regions ask for one muon lepton jet. The two validation regions
-    and the two-lepton-jet control region are the signal-region selection with the
-    displacement requirement inverted on every lepton jet and no isolation requirement: the
-    prompt-prompt corner of the displacement plane, with no isolation split and no ABCD cells.
+    single-lepton-jet control regions ask for one muon lepton jet, and the
+    electromagnetic-lepton-jet control region, read by the decay-plane campaign only, asks for
+    one electromagnetic lepton jet. The two validation regions and the two-lepton-jet control
+    region are the signal-region selection with the displacement requirement inverted on every
+    lepton jet and no isolation requirement. They form the prompt-prompt corner of the
+    displacement plane, where every lepton jet fails the displacement requirement, with no
+    isolation split and no ABCD cells (the four regions of the two-variable background
+    estimate).
     A signal with a short proper lifetime is prompt by that definition and lands in them. The
     notebook calls, at the end of section g, `_mulj_lib.signal_contamination_table()`, which
     computes (and with `full=True` prints) for every signal sample with m_XX >= 200 GeV and
@@ -518,7 +532,8 @@ These apply to every reading of the figures and are repeated in the notebook.
     the region, and prints the largest share per region. The largest shares are
     1.7289 percent in the four-muon validation region, 0.3452 percent in the first campaign's
     two-muon-two-electron validation region, 0.5216 percent in the two-lepton-jet control
-    region, at most 0.0005 percent in the single-lepton-jet control regions, and 10.6436
+    region, at most 0.0005 percent in the muon single-lepton-jet control regions (the
+    electromagnetic one is not counted), and 10.6436
     percent in the decay-plane campaign's two-muon-two-electron validation region
     (2Mu2E_500GeV_5p0GeV_0p08mm). They scale with the assumed cross section;
     `cross_sections.yaml` lists 1.264 fb at m_XX = 500 GeV and 0.342 fb at 1000 GeV, at which
