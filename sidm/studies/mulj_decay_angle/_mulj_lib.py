@@ -75,6 +75,7 @@ MIN_ENTRIES_PER_BIN = 5
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _CONFIG_DIR = os.path.normpath(os.path.join(_HERE, "..", "..", "configs"))
+_REPO_ROOT = os.path.normpath(os.path.join(_HERE, "..", "..", ".."))
 
 INPUT_DIR = "/uscms_data/d3/murtazas/mulj_smoke"
 LUMI_FB = None
@@ -86,6 +87,12 @@ CACHE_DIR = os.path.join(os.path.expanduser("~"), ".cache", "mulj_decay_angle")
 _LOADED: dict = {}
 _NOTES: list = []
 _UNSET = object()
+
+
+def display_path(path):
+    """A path as the notebook prints it: relative to the repository root, so that the committed
+    outputs do not depend on which checkout executed them."""
+    return os.path.relpath(path, _REPO_ROOT)
 
 
 def configure(input_dir=None, lumi_fb=_UNSET, dataset_tag=None, year=None, fig_dir=None,
@@ -970,7 +977,7 @@ class Canvas:
         os.makedirs(FIG_DIR, exist_ok=True)
         path = os.path.join(FIG_DIR, f"{stem}.pdf")
         self.fig.savefig(path, bbox_inches="tight")
-        print(f"  wrote {path}")
+        print(f"  wrote {display_path(path)}")
         return path
 
 
