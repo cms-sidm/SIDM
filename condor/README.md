@@ -344,7 +344,8 @@ queue sample, chunk, filelist from job_args.txt
 | 6 | hist collections | `muon_base` | comma-separated collections from `hist_collections.yaml` |
 | 7 | corrections | `default` | standard corrections for simulation: `default`, names from `sidm/configs/corrections.yaml`, or `none` |
 | 8 | hist mode | `unweighted` | `unweighted` (unit weights, as before), `weighted`, or `syst` (weighted, plus a `syst` axis with every weight category; needs corrections) |
-| 9 | monitored corrections | empty | corrections evaluated but not applied, e.g. `electron_id` |
+| 9 | monitored corrections | empty | corrections evaluated but not applied, e.g. `electron_id`; `none` is the same as empty |
+| 10 | selections file | `configs/selections.yaml` | the file the channels are defined in, relative to `sidm/`; a study frozen to the definitions it ran with passes its own, e.g. `configs/selections_mulj_decay_angle_as_run.yaml` |
 
 With the defaults the job applies the default corrections, which reach the cutflows only (the histograms stay unweighted); `none` as the 7th argument runs it as before the corrections existed. See [`sidm/studies/corrections/README.md`](../sidm/studies/corrections/README.md) for the corrections and the weight categories.
 
