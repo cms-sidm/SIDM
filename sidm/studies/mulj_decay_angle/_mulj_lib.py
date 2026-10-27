@@ -421,10 +421,12 @@ def lumi_xs_weight(sample, year=None):
     `scaled_sum_weights` entry of the sample metadata, the sum of genWeight over the events
     stored in the input files, which is the normalisation SidmProcessor itself applies.  The
     figure of about one event in ten kept by the signal skim, which would call for a
-    generated count here instead, came from summing a cumulative counter of the Runs tree
-    across files, an artefact found on 2026-08-10; no generator filter is
-    recorded in these files, and neither signal ntuple location file the campaigns read
-    (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`) sets a `skim_factor`.  Signal samples
+    generated count here instead, was an artefact found on 2026-08-10: each signal file's
+    Runs tree holds several entries that are cumulative snapshots of one file-local
+    counter, whose last value equals the number of stored events, and the earlier census
+    summed those entries and so overcounted the generated events by about ten.  No generator
+    filter is recorded in these files, and neither signal ntuple location file the campaigns
+    read (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`) sets a `skim_factor`.  Signal samples
     carry 1 fb unless the SIDM utilities are not importable, in which case the fallback
     below takes the value of `cross_sections.yaml` when the sample is listed there.
     Shapes, which are what this study plots, do not depend on the factor at all.
@@ -1178,7 +1180,7 @@ def _hi_lo_ratio(histogram, low_edge=0.8, high_edge=0.2):
 def fig_gen_vs_reco(m_zd_values=(0.25, 1.2, 5.0), m_xx=None, stem="b1_gen_vs_reco"):
     """Generator-level and reconstructed |cos theta*|, one row per dark-photon mass.
 
-    Columns are the two signal final states.  Every lifetime and mediator mass of a mass
+    Columns are the two signal final states.  Every lifetime and bound-state mass of a mass
     point is summed, which is legitimate because the angular distribution of the decay
     does not depend on how far the dark photon travelled before decaying.  The masses are
     shown together because the generator-level shape changes with mass and the
@@ -1230,8 +1232,8 @@ def fig_gen_vs_reco(m_zd_values=(0.25, 1.2, 5.0), m_xx=None, stem="b1_gen_vs_rec
 def _sample_tally(samples):
     """How many samples a curve sums, and along which axes of the grid.
 
-    "15 lifetimes summed" was wrong: the fifteen are three mediator masses times five
-    lifetimes, and a reader who takes them for one mediator mass will misread the spread.
+    "15 lifetimes summed" was wrong: the fifteen are three bound-state masses times five
+    lifetimes, and a reader who takes them for one bound-state mass will misread the spread.
     """
     if not samples:
         return "no samples"
@@ -1240,14 +1242,14 @@ def _sample_tally(samples):
     for entry in parsed:
         by_mass.setdefault(entry["m_xx"], set()).add(entry["ctau_mm"])
     counts = {len(v) for v in by_mass.values()}
-    # the lifetime values are not the same from one mediator mass to the next, so the
-    # union of them is not the factor; the count per mediator mass is
+    # the lifetime values are not the same from one bound-state mass to the next, so the
+    # union of them is not the factor; the count per bound-state mass is
     if len(by_mass) > 1 and len(counts) == 1:
         per = counts.pop()
-        return (f"{len(samples)} samples ({len(by_mass)} mediator masses "
+        return (f"{len(samples)} samples ({len(by_mass)} bound-state masses "
                 f"$\\times$ {per} lifetime{'s' if per > 1 else ''} each)")
     if len(by_mass) > 1:
-        return f"{len(samples)} samples over {len(by_mass)} mediator masses"
+        return f"{len(samples)} samples over {len(by_mass)} bound-state masses"
     per = counts.pop() if counts else 0
     return f"{len(samples)} samples ({per} lifetime{'s' if per > 1 else ''})"
 
@@ -1997,7 +1999,7 @@ def fig_region_shapes(observable="absCosTheta", m_zd_values=(0.25, 1.2, 5.0),
     """Unit-area signal, simulated-background and observed shapes, region by region.
 
     Rows are the five regions, columns the dark-photon mass; every lifetime and every
-    mediator mass of a mass point is summed.  Simulated backgrounds are combined with
+    bound-state mass of a mass point is summed.  Simulated backgrounds are combined with
     their cross-section weights before the shape is taken; the observed distribution
     carries Poisson error bars.  Both signal and background are drawn under the same
     selection as the data in the same panel.
@@ -2106,6 +2108,41 @@ def fig_region_shapes(observable="absCosTheta", m_zd_values=(0.25, 1.2, 5.0),
     if drew_any:
         canvas.save(stem)
     return canvas
+
+
+def signal_hi_lo_by_mass(region=UNCUT_CR, m_zd=1.2, final_states=("4Mu", "2Mu2E"),
+                         observable="absCosTheta"):
+    """Print the signal high-to-low ratio in one region separately for each bound-state mass.
+
+    `fig_region_shapes` sums the three bound-state masses m_XX of a mass point with
+    raw-count weights, so each signal curve it draws is dominated by whichever m_XX
+    contributed most pairs.  This prints the per-m_XX ratios behind one of those curves,
+    with their statistical errors, and the summed value the figure's table quotes.
+    """
+    hist_name = OBSERVABLES[observable][0]
+    print(f"  signal hi/lo per bound-state mass m_XX, {REGION_LABEL[region]}, "
+          f"m_Zd = {m_zd} GeV:")
+    print(f"    {'final state':<11} | {'m_XX':>6} | {'pairs':>9} | {'hi/lo':>14}")
+    rows = []
+    for final_state in final_states:
+        samples = signal_samples(final_state, m_zd=m_zd)
+        masses = sorted({parse_signal(name)["m_xx"] for name in samples})
+        for m_xx in masses + [None]:
+            picked = (samples if m_xx is None
+                      else signal_samples(final_state, m_zd=m_zd, m_xx=m_xx))
+            histogram = get_hist(picked, hist_name, region, quiet=True)
+            if histogram is None:
+                continue
+            value, error = _hi_lo_with_error(histogram)
+            entries = total_entries(histogram)
+            mass_text = "summed" if m_xx is None else f"{m_xx:.0f}"
+            value_text = (f"{value:>6.3f} +- {error:<5.3f}" if np.isfinite(error)
+                          else f"{value:>6.3f}" if np.isfinite(value) else "--")
+            print(f"    {_plain(_fs_label(final_state)):<11} | {mass_text:>6} | "
+                  f"{entries:>9,.0f} | {value_text}")
+            rows.append({"final_state": final_state, "m_xx": m_xx, "entries": entries,
+                         "hi_lo": value, "error": error})
+    return rows
 
 
 # --------------------------------------------------------------------------------------
@@ -2475,15 +2512,15 @@ def _kept_fraction(histogram, threshold, direction="above"):
 
 def efficiency_by_mediator_mass(m_zd_values=(0.25, 1.2, 5.0),
                                 thresholds=(0.2, 0.4, 0.6, 0.8), direction="above"):
-    """Print the signal efficiency of the cut separately for each mediator mass.
+    """Print the signal efficiency of the cut separately for each bound-state mass m_XX.
 
-    The figures sum the three mediator masses of a mass point with raw-count weights, so
-    the curve they draw is dominated by whichever mediator mass contributed most pairs.
+    The figures sum the three bound-state masses of a mass point with raw-count weights, so
+    the curve they draw is dominated by whichever bound-state mass contributed most pairs.
     This shows what that sum hides.
     """
     rows = []
-    print(f"  signal pairs kept by {_TABLE_DIRECTION[direction]}, one row per mediator "
-          f"mass:")
+    print(f"  signal pairs kept by {_TABLE_DIRECTION[direction]}, one row per bound-state "
+          f"mass m_XX:")
     header = (f"    {'channel':<7} | {'m_Zd':>5} | {'m_XX':>6} | {'pairs':>9} | "
               + " | ".join(f"{t:>7.2f}" for t in thresholds))
     print(header)
@@ -3988,7 +4025,8 @@ def planes_points(final_state="4Mu", min_m_xx=PLANES_MIN_M_XX):
 
 
 def planes_weight(name):
-    """Per-sample lumi x sigma / N for a plane-campaign simulated sample.
+    """Per-sample lumi x sigma / sum of generator weights for a plane-campaign simulated
+    sample.
 
     The same normalisation as `lumi_xs_weight`: the denominator is the sum of genWeight over
     the stored events of this campaign's file, as SidmProcessor applies it, with no
@@ -5372,12 +5410,12 @@ def signal_contamination_table(min_m_xx=200.0, full=False):
     decay-plane campaign counts events.  The weight is luminosity x 1 fb divided by the
     stored sum of generator weights of the campaign's own file.
 
-    Always printed: the largest share per region, the factor by which it scales at the
-    cross section `configs/cross_sections.yaml` lists for that sample, why the two-muon-
-    two-electron validation region holds so few data events in the decay-plane campaign,
-    and the effect of the contamination on the two numbers the study quotes from the
-    validation regions: the high-to-low ratio of the four-muon one and the cos(2 Phi)
-    coefficient A of the two-muon-two-electron one.
+    Always printed: the largest share per region with that sample's reg/ch, the factor by
+    which it scales at the cross section `configs/cross_sections.yaml` lists for that
+    sample, why the two-muon-two-electron validation region holds so few data events in the
+    decay-plane campaign, and the signal's contribution to the two numbers the study quotes
+    from the validation regions: the high-to-low ratio of the four-muon one and the
+    cos(2 Phi) coefficient A of the two-muon-two-electron one.
     """
     regions = _contamination_regions()
     short = {**PLANES_SHORT, UNCUT_CR: "1 muLJ CR uncut", CLEANED_CR: "1 muLJ CR cleaned",
@@ -5424,8 +5462,8 @@ def signal_contamination_table(min_m_xx=200.0, full=False):
         listed = yaml.safe_load(handle)
     print(f"largest share of the data per region, m_XX >= {min_m_xx:.0f} GeV, at 1 fb, and at")
     print("the cross section configs/cross_sections.yaml lists for the same sample")
-    print(f"  {'campaign, region':44s} {'sample':31s} {'% at 1 fb':>9s} {'>= 1 %':>7s} "
-          f"{'listed fb':>9s} {'factor':>7s} {'% listed':>9s}")
+    print(f"  {'campaign, region':44s} {'sample':31s} {'reg/ch':>7s} {'% at 1 fb':>9s} "
+          f"{'>= 1 %':>7s} {'listed fb':>9s} {'factor':>7s} {'% listed':>9s}")
     worst = {}
     for campaign, _unit, region, *_rest in regions:
         mine = [r for r in rows if r["campaign"] == campaign and r["region"] == region
@@ -5438,11 +5476,12 @@ def signal_contamination_table(min_m_xx=200.0, full=False):
         factor = listed_pb / CONTAMINATION_XS_PB if listed_pb else float("nan")
         above = sum(1 for r in mine if r["percent"] >= 1.0)
         where = f"{campaign}, {short[region]}"
-        print(f"  {where:44s} {top['sample']:31s} {top['percent']:9.4f} "
+        print(f"  {where:44s} {top['sample']:31s} {top['ratio']:7.3f} {top['percent']:9.4f} "
               f"{above:3d}/{len(mine):<3d} "
               f"{(listed_pb or float('nan')) * 1000.0:9.3f} {factor:7.3f} "
               f"{top['percent'] * factor:9.4f}")
-    print("  (the expected count is proportional to the cross section, so every percentage")
+    print("  (reg/ch: the sample's entries in the region over those in its signal channel;")
+    print("   the expected count is proportional to the cross section, so every percentage")
     print("   above scales by the factor in the same row when the listed value is assumed)")
     by_mass = {}
     for row in rows:
@@ -5452,11 +5491,11 @@ def signal_contamination_table(min_m_xx=200.0, full=False):
         f"m_XX = {m_xx:.0f} GeV: " + " / ".join(f"{v * 1000.0:.3f} fb" for v in sorted(values))
         for m_xx, values in sorted(by_mass.items())))
     print()
-    _contamination_effects(regions, rows)
+    _contamination_effects(regions, rows, listed)
     return rows
 
 
-def _contamination_effects(regions, rows):
+def _contamination_effects(regions, rows, listed):
     """The second half of `signal_contamination_table`: why the two-muon-two-electron
     validation region is so small in the decay-plane campaign, and what the expected signal
     does to the high-to-low ratio and the cos(2 Phi) coefficient quoted from the two
@@ -5476,14 +5515,23 @@ def _contamination_effects(regions, rows):
     if multiplicity is not None:
         print(f"  egamma LJs in the 2mu2e VR data: {multiplicity.sum():,.0f}, of which "
               f"{multiplicity[2:].sum():,.0f} hold two or more electrons")
+    for label, region in (("2mu2e VR", PLANES_VR_2MU2E), ("4mu VR", PLANES_VR_4MU)):
+        # the type of the two lepton jets the decay-plane histograms are filled from
+        types = planes_counts(planes_data_samples(), "lj_pair_type", region)
+        if types is not None:
+            print(f"  {label} data events by the type of that pair (lj_pair_type): "
+                  f"{types[0]:,.0f} muon-muon, {types[1]:,.0f} muon-egamma, "
+                  f"{types[2]:,.0f} egamma-egamma")
     print()
 
     # effect on the four-muon validation region's high-to-low ratio
     observed = get_hist(data_samples(), CONTAMINATION_HIST, PLANES_VR_4MU, quiet=True)
     if observed is not None:
         value, error = _hi_lo_with_error(observed)
-        print(f"4mu VR high-to-low ratio of the data: {value:.3f} +- {error:.3f}; with each")
-        print("sample's expected entries at 1 fb subtracted (samples above 1 % of the data):")
+        print(f"4mu VR high-to-low ratio of the data: {value:.3f} +- {error:.3f}.  The signal's")
+        print("contribution to the ratio = ratio(data) - ratio(data minus signal), with each")
+        print("sample's expected entries at 1 fb subtracted (samples above 1 % of the data);")
+        print("a positive contribution means the signal raises the ratio:")
         shifts = []
         for row in rows:
             if (row["campaign"] != "first campaign" or row["region"] != PLANES_VR_4MU
@@ -5497,7 +5545,7 @@ def _contamination_effects(regions, rows):
         for name, percent, signal_ratio, corrected, shift in sorted(
                 shifts, key=lambda item: -abs(item[4])):
             print(f"  {name:31s} {percent:6.2f} %  signal {signal_ratio:5.2f}  "
-                  f"data minus signal {corrected:.3f}  shift {shift:+.3f}")
+                  f"data minus signal {corrected:.3f}  contribution {shift:+.3f}")
         print()
 
     # effect on the cos(2 Phi) coefficient of the two-muon-two-electron validation region
@@ -5508,8 +5556,18 @@ def _contamination_effects(regions, rows):
         print(f"2mu2e VR cos(2 Phi) coefficient of the data: A = "
               f"{data_moment['coefficient']:+.3f} +- {data_moment['sigma_coefficient']:.3f} "
               f"on {data_moment['n']:.0f} events;")
-        print("a signal making up a fraction f of them, with coefficient A_s, moves A by")
-        print("f x (A_s - A) (samples above 1 % of the data, at 1 fb):")
+        print("a signal making up a fraction f of them, with coefficient A_s, contributes")
+        print("A - A_without = f (A_s - A) / (1 - f) to it, where A_without is the coefficient of")
+        print("the data with the signal removed (samples above 1 % of the data, at 1 fb and at")
+        print("the cross section configs/cross_sections.yaml lists for the sample):")
+
+        def contribution(fraction, signal_coefficient):
+            if not 0.0 <= fraction < 1.0:
+                return float("nan"), float("nan")
+            data_a = data_moment["coefficient"]
+            return (fraction * (signal_coefficient - data_a) / (1.0 - fraction),
+                    (data_a - fraction * signal_coefficient) / (1.0 - fraction))
+
         shifts = []
         for row in rows:
             if (row["campaign"] != "decay-plane campaign" or row["region"] != PLANES_VR_2MU2E
@@ -5518,8 +5576,19 @@ def _contamination_effects(regions, rows):
             signal = harmonic_moment(planes_counts(row["sample"], CONTAMINATION_PLANES_HIST,
                                                    PLANES_VR_2MU2E), -np.pi, np.pi)
             fraction = row["percent"] / 100.0
+            listed_pb = listed.get(row["sample"])
+            listed_fraction = (fraction * listed_pb / CONTAMINATION_XS_PB if listed_pb
+                               else float("nan"))
             shifts.append((row["sample"], row["percent"], signal,
-                           fraction * (signal["coefficient"] - data_moment["coefficient"])))
-        for name, percent, signal, shift in sorted(shifts, key=lambda item: -abs(item[3])):
-            print(f"  {name:31s} {percent:6.2f} %  A_s = {signal['coefficient']:+.3f} +- "
-                  f"{signal['sigma_coefficient']:.3f}  shift {shift:+.3f}")
+                           contribution(fraction, signal["coefficient"]),
+                           listed_pb, listed_fraction,
+                           contribution(listed_fraction, signal["coefficient"])))
+        print(f"  {'sample':31s} {'% 1 fb':>6s}   {'A_s':>14s}   {'contrib.':>8s} "
+              f"{'A_without':>9s} | {'listed fb':>9s} {'%':>6s} {'contrib.':>8s} "
+              f"{'A_without':>9s}")
+        for (name, percent, signal, (shift, without), listed_pb, listed_fraction,
+             (listed_shift, listed_without)) in sorted(shifts, key=lambda item: -abs(item[3][0])):
+            print(f"  {name:31s} {percent:6.2f}   {signal['coefficient']:+.3f} +- "
+                  f"{signal['sigma_coefficient']:.3f}   {shift:+8.3f} {without:+9.3f} | "
+                  f"{(listed_pb or float('nan')) * 1000.0:9.3f} "
+                  f"{100.0 * listed_fraction:6.2f} {listed_shift:+8.3f} {listed_without:+9.3f}")
