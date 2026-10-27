@@ -339,6 +339,8 @@ For backgrounds:
 root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
 ```
 
+`run_job.sh` takes further optional positional arguments after the run tag: channels (5), histogram collections (6), the ntuple location YAML and section searched first for the sample metadata (7, 8; the section whose directory holds the chunk's files is the one used), and the selections file the channels are defined in, relative to `sidm/` (9, default `configs/selections.yaml`; a study frozen to the definitions it ran with passes its own, e.g. `configs/selections_mulj_decay_angle_as_run.yaml`).
+
 ---
 
 ## 11. Proxy setup

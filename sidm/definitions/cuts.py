@@ -52,6 +52,8 @@ obj_cut_defs = {
         "lostHits >= 1": lambda objs: ak.min(objs["egm_ljs"].electrons.trkNumPixelHits, axis=-1) >= 1,
         "displaced": lambda objs: (ak.min(objs["egm_ljs"].egamma.lostHits, axis=-1) >= 1),
         "reverse_displaced": lambda objs: (ak.max(objs["egm_ljs"].egamma.lostHits, axis=-1) <1),
+        # "inverse displaced": any constituent has no lost hits (reverse_displaced: every constituent)
+        "inverse displaced": lambda objs: (ak.min(objs["egm_ljs"].egamma.lostHits, axis=-1) < 1),
     },
     "mu_ljs": {
         "pfMuLj": lambda objs: (objs["mu_ljs"].pfMu_n > 0) & (objs["mu_ljs"].dsaMu_n == 0),
@@ -68,6 +70,8 @@ obj_cut_defs = {
         "Mu >= 4": lambda objs: objs["mu_ljs"].muon_n >= 4,
         "Mu >= 2": lambda objs: objs["mu_ljs"].muon_n >= 2,
         "reverse_displaced": lambda objs: (ak.min(objs["mu_ljs"].muons.trkNumPixelHits, axis=-1) > 2),
+        # "inverse displaced": any constituent muon has > 2 pixel hits (reverse_displaced: every one)
+        "inverse displaced": lambda objs: (ak.max(objs["mu_ljs"].muons.trkNumPixelHits, axis=-1) > 2),
         "dzSpread_dsa <= 50": lambda objs: objs["mu_ljs"].dzSpread_dsa <= 50,
         "vxySpread_dsa <= 50": lambda objs: objs["mu_ljs"].vxySpread_dsa <= 50,
         "dzSpread_dsa <= 5": lambda objs: objs["mu_ljs"].dzSpread_dsa <= 5,
@@ -363,6 +367,7 @@ evt_cut_defs = {
     "< 2 LJs": lambda objs: ak.num(objs["ljs"]) < 2,
     ">=1 egm_ljs": lambda objs: ak.num(objs["egm_ljs"]) >= 1,
     ">=1 mu_ljs": lambda objs: ak.num(objs["mu_ljs"]) >= 1,
+    ">=2 mu_ljs": lambda objs: ak.num(objs["mu_ljs"]) >= 2,
     "1 egm_ljs": lambda objs: ak.num(objs["egm_ljs"]) == 1,
     "1 mu_ljs": lambda objs: ak.num(objs["mu_ljs"]) == 1,
     "= 2 LJs": lambda objs: ak.num(objs["ljs"]) == 2,
@@ -416,4 +421,9 @@ evt_cut_defs = {
     "all cosAlpha(mu, mu) > -0.99"  : lambda objs: ak.all(cosAlpha(objs["allMuons"]) > -0.99, axis=1),
     "any cosAlpha(mu, mu) <= -0.99" : lambda objs: ak.any(cosAlpha(objs["allMuons"]) <= -0.99, axis=1),
     "all cos_alpha(dsa, dsa) > -0.9" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.9, axis =1),
+    # the first three pad, the last sums the leading two (mass 0 if none), so an event short of lepton jets fails
+    "muLJ-egmLJ dPhi >= 2": lambda objs: ak.fill_none(abs(ak.pad_none(objs["mu_ljs"], 1)[:, 0].delta_phi(ak.pad_none(objs["egm_ljs"], 1)[:, 0])) >= 2.0, False),
+    "muLJ-egmLJ invariant mass >= 150 GeV": lambda objs: ak.fill_none((ak.pad_none(objs["mu_ljs"], 1)[:, 0] + ak.pad_none(objs["egm_ljs"], 1)[:, 0]).mass >= 150, False),
+    "muLJ-muLJ dPhi >= 2": lambda objs: ak.fill_none(abs(ak.pad_none(objs["mu_ljs"], 2)[:, 0].delta_phi(ak.pad_none(objs["mu_ljs"], 2)[:, 1])) >= 2.0, False),
+    "muLJ-muLJ invariant mass >= 150 GeV": lambda objs: objs["mu_ljs"][:, :2].sum().mass >= 150,
 }
