@@ -358,6 +358,7 @@ evt_cut_defs = {
 
     "PV filter": lambda objs: ak.flatten(objs["pvs"].npvsGood) >= 1,
     #"Cosmic veto": lambda objs: objs["cosmicveto"].result,
+    # Baseline multiplicity diagnostics, before typed candidate requirements.
     ">=2 LJs": lambda objs: ak.num(objs["ljs"]) >= 2,
     ">=1 LJs": lambda objs: ak.num(objs["ljs"]) >= 1,
     "< 2 LJs": lambda objs: ak.num(objs["ljs"]) < 2,
@@ -368,11 +369,11 @@ evt_cut_defs = {
     "= 2 LJs": lambda objs: ak.num(objs["ljs"]) == 2,
     "= 1 LJs": lambda objs: ak.num(objs["ljs"]) == 1,
     ">=2 matched As": lambda objs: ak.num(derived_objs["genAs_matched_lj"](objs, 0.2)) >= 2,
-    # 4mu: leading two LJs are both mu-type
-    "4mu": lambda objs: ak.count_nonzero(objs["ljs"][:, :2].muon_n >= 2, axis=-1) == 2,
-    # 2mu2e: leading two LJs contain exactly 1 mu-type and exactly 1 egm-type
-    "2mu2e": lambda objs: ((ak.count_nonzero(objs["ljs"][:, :2].muon_n >= 2, axis=-1) == 1)
-                           & (ak.count_nonzero(objs["ljs"][:, :2].muon_n == 0, axis=-1) == 1)),
+    # One shared pair: original leading two must survive their typed cuts.
+    # Counts are on this pair, not on all surviving LJs; extras are allowed.
+    "4mu": lambda objs: ak.num(objs["candidate_mu_ljs"]) == 2,
+    "2mu2e": lambda objs: ((ak.num(objs["candidate_mu_ljs"]) == 1)
+                           & (ak.num(objs["candidate_egm_ljs"]) == 1)),
     "genAs_toE_matched_egmLj": lambda objs: ak.num(derived_objs["genAs_toE_matched_egmLj"](objs, 0.4)) >= 1,
     "genAs_toMu_matched_muLj": lambda objs: ak.num(derived_objs["genAs_toMu_matched_muLj"](objs, 0.4)) >= 1,
     "genAs_toE": lambda objs: ak.num(objs["genAs_toE"]) >= 1,
@@ -381,7 +382,9 @@ evt_cut_defs = {
     "50 GeV <= GenMu0_pT <= 60 GeV": lambda objs : (objs["genMus"][:, 0].pt >=50) & (objs["genMus"][:, 0].pt <=60),
     "genMus": lambda objs: ak.num(objs["genMus"]) > 1,
     "dR(Mu_0, Mu_1) > 0.03": lambda objs: objs["genMus"][:,0].delta_r(objs["genMus"][:,1]) > 0.03,
-    "LJ-LJ dPhi > 2": lambda objs: abs(objs["ljs"][:, 0].delta_phi(objs["ljs"][:, 1])) > 2.0,
+    "LJ-LJ dPhi > 2": lambda objs: ak.fill_none(abs(
+        ak.pad_none(objs["candidate_ljs"], 2)[:, 0].delta_phi(
+            ak.pad_none(objs["candidate_ljs"], 2)[:, 1])) > 2.0, False),
     "= 1 LJs": lambda objs: ak.num(objs["ljs"]) == 1,
     "= 1 muLj or 1 egmLJ": lambda objs:((ak.num(objs["mu_ljs"]) == 1) & (ak.num(objs["egm_ljs"]) == 0)) | ((ak.num(objs["mu_ljs"]) == 0) & (ak.num(objs["egm_ljs"]) == 1)),
     "= 1 muLJs": lambda objs: (ak.num(objs["mu_ljs"]) == 1) & (ak.num(objs["egm_ljs"]) == 0),
@@ -399,7 +402,8 @@ evt_cut_defs = {
     "dPhi(Mu_0, Mu_1) > 2.4": lambda objs: ak.fill_none(abs((ak.pad_none(objs["muons"], 2)[:,0].delta_phi(ak.pad_none(objs["muons"], 2)[:,1]))) > 2.4, False),
     "pv_ndof >=4" : lambda objs :  ak.flatten(objs["pvs"].ndof) >=4.0,
     "pv_z <= 24" : lambda objs :  abs(ak.flatten(objs["pvs"].z)) <= 24,
-    "inv(lj1, lj2) <= 100": lambda objs : (objs["ljs"][:,:2].sum().mass) <= 100,
+    "inv(lj1, lj2) <= 100": lambda objs: ((ak.num(objs["candidate_ljs"]) == 2)
+                                            & (objs["candidate_ljs"].sum().mass <= 100)),
     "all cos_alpha(dsa, dsa) > -0.95" : lambda objs : ak.all(cosAlpha(objs["dsaMuons"]) > -0.95, axis =1),
     "all cos_alpha(mu, mu) > -0.95" : lambda objs : ak.all(cosAlpha(objs["muons"]) > -0.95, axis =1),
     "any cos_alpha(dsa, dsa) <= -0.95" : lambda objs : ak.any(cosAlpha(objs["dsaMuons"]) <=-0.95, axis =1),

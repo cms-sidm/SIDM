@@ -38,6 +38,58 @@ def nE(lj, n):
 def nPhoton(lj, n):
     return lj[lj.photon_n == n]
 
+# These are diagnostic views, not an exhaustive partition: mixed PF/DSA and
+# mixed electron/photon jets belong to their parent but neither pure child.
+lj_parents = {
+    "mu_ljs": "ljs",
+    "egm_ljs": "ljs",
+    "pfmu_ljs": "mu_ljs",
+    "dsamu_ljs": "mu_ljs",
+    "electron_ljs": "egm_ljs",
+    "photon_ljs": "egm_ljs",
+}
+lj_candidate_names = ("candidate_ljs", "candidate_mu_ljs", "candidate_egm_ljs")
+
+def lj_membership(ljs, selected):
+    """Per-event membership by the stable reconstruction index, never rank/pT."""
+    return ak.fill_none(ak.any(
+        ljs.idx[:, :, None] == selected.idx[:, None, :], axis=-1
+    ), False)
+
+def refresh_lj_children(objs, parent):
+    """Prune existing descendants after a parent cut, preserving child cuts.
+
+    Child views do not select their parent. In particular, their union must not
+    replace it, since the pure-child categories omit mixed-constituent jets.
+    Missing indices are a coherence error and must propagate to the caller.
+    """
+    for child, source in lj_parents.items():
+        if source == parent and child in objs:
+            objs[child] = objs[child][lj_membership(objs[child], objs[parent])]
+            refresh_lj_children(objs, child)
+
+def add_lj_candidates(objs):
+    """Add one analysis pair, requiring the original leading two to survive.
+
+    ``ljs`` is the pT-ordered baseline after generic LJ cuts; it remains intact
+    for reconstruction diagnostics. Freeze its leading two, require each to
+    survive its typed selection (and each muon candidate to have >=2 muons),
+    and return either those two in their original order or an empty pair.
+    Extra jets are allowed but never promoted. Call after all subtype cuts.
+    """
+    pair = objs["ljs"][:, :2]
+    mu_candidates = objs["mu_ljs"][objs["mu_ljs"].muon_n >= 2]
+    egm_candidates = objs["egm_ljs"][objs["egm_ljs"].muon_n == 0]
+    surviving = (lj_membership(pair, mu_candidates)
+                 | lj_membership(pair, egm_candidates))
+    complete = (ak.num(pair) == 2) & ak.all(surviving, axis=-1)
+    pair = pair[surviving & complete[:, None]]
+    selected = objs.copy()
+    selected["candidate_ljs"] = pair
+    selected["candidate_mu_ljs"] = pair[pair.muon_n >= 2]
+    selected["candidate_egm_ljs"] = pair[pair.muon_n == 0]
+    return selected
+
 def withMass(part, mass):
     return ak.zip(
         {
