@@ -52,8 +52,8 @@ directories record the same definitions. The six back-filled sidecars (see "Prov
 sidecars") take their channel list from each output's cutflow and the definitions from that
 branch's `selections.yaml` at the time they were written. They therefore agree with it by
 construction and confirm nothing on their own. The stored-output reruns described under
-"Notebooks" confirm the definitions independently for two directories, and for a third through
-its ZZ sample.
+"Notebooks" confirm the definitions independently for one sample of each of two directories, and
+for a third through its ZZ sample.
 
 **Why the channels are kept as run.** The study compares cosmic-veto options. It therefore needs
 a baseline with no cosmic veto at all, and each veto applied on its own to that same baseline.
