@@ -22,7 +22,8 @@ PR #56, therefore stays, and the vertex veto is not adopted. The tail that survi
 veto stays as sections 5-8 of the write-up leave it: not cosmic (below 6.2% at 95% CL), and of
 the size DSA momentum mismeasurement would produce at roughly factor-1.5 precision. Section 10
 tests a transfer factor at full-2018 statistics: it takes the DSA mismeasurement rate of a
-control sample of DSA muons matched to PF muons and folds it (applies it bin by bin) onto the
+control sample of DSA muons matched to PF muons and folds it (spreads each low-pT bin over the measured-pT bins with the
+control's migration probabilities) onto the
 lepton jets' own low-pT DSA muons to predict the tail. The same prediction made entirely in MC
 does not reproduce the MC tail (it fails its MC self-closure), and nothing from it is applied.
 
@@ -62,7 +63,7 @@ from `main` today:
 
 - Unchanged: the eta-phi veto on all four LJ sources (electrons, photons, PF muons, DSA muons)
   and the event cut `>=2 muons (pf or dsa) pT > 26 GeV`.
-- As run, the PF muons at the LJ source have no muon-chamber hit requirement. `main` now also
+- As run, the PF muons at the LJ source have no explicit DT + CSC hit-count requirement. `main` now also
   requires `DT + CSC hits > 3` on them (`trkNumDTHits + trkNumCSCHits > 3`), added in commit
   `65b46a86` to the `muons_ljsource_cuts` anchor of `selections.yaml`, which now reads
   looseID, pT > 5 GeV, |eta| < 2.4, eta-phi_veto, DT + CSC hits > 3. The as-run baseline lacks
@@ -126,8 +127,8 @@ Every run notebook passes `selections_cfg="configs/selections_vertexChi2_as_run.
 `SidmProcessor` and to `write_run_metadata`. That argument was added after the notebooks were
 executed, when these channels were still defined in `sidm/configs/selections.yaml`; the stored
 outputs are those of the original runs. With the argument, the notebooks rerun on main with the
-selections they were run with. Three stored outputs were rerun this way: one 2018D data file of
-the full-2018 segment-matched run (`DoubleMuon_2018D_22` of `vtxResp2_2018Full`), one signal
+selections they were run with. Three stored outputs were rerun this way: one 2018D data sample
+(`DoubleMuon_2018D_22`, one of the 68, of the full-2018 segment-matched run `vtxResp2_2018Full`), one signal
 sample (`2Mu2E_200GeV_0p25GeV_10p0mm` of `vtxChi2_signal_2018`) and the ZZ background (`ZZ` of
 `vtxChi2_vs_spread_2018C`). The data and signal histograms and cutflows were reproduced bit for
 bit. For the simulated ZZ background the raw counts are identical and the weighted sums agree to
