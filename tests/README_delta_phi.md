@@ -1,63 +1,30 @@
-# Synthetic angular regression tests
+# Angular differences
 
-With the repository's analysis dependencies installed, run from the repository root:
+Use `delta_phi` to compare directions across the -pi/pi boundary:
+
+```python
+from sidm.tools.utilities import delta_phi
+
+signed = delta_phi(3.1, -3.1)  # approximately -0.083 radians
+separation = abs(signed)       # approximately 0.083 radians
+```
+
+The result is `phi1 - phi2` wrapped to `[-pi, pi)`, in radians. Scalars,
+NumPy arrays and jagged Awkward arrays are supported; missing values are
+preserved. Calculations use float64, and opposite directions map to -pi.
+
+For outer-track distances, `dR_outer` uses the wrapped angle and returns
+infinity for missing matches or either track's paired `(-5, -5)` coordinates.
+
+Full-range LJ and DSA angular histograms cover 0 to pi, including exact pi.
+Generator-lepton Δφ histograms retain their 0–1 radian zoom. Do not merge older
+outputs with different angular axes or definitions into these histograms.
+
+Run the synthetic regression tests from the repository root with the analysis
+dependencies installed:
 
 ```sh
 python -m unittest discover -s tests -p 'test_delta_phi.py' -v
 ```
 
-These tests build all vectors and matches in memory. They exercise the real
-histogram definitions, weighted histogram fills, vector behavior and DSA
-cross-cleaning predicates without opening event files or running a processor.
-
-## Angular contract and audit
-
-`sidm.tools.utilities.delta_phi(phi1, phi2)` returns the signed difference in
-`[-pi, pi)` radians; its absolute value is in `[0, pi]`. It calculates in float64,
-including for float32 inputs, so the rounded float32 representation of pi cannot
-put an antipodal pair above the histogram boundary. The corrected full-range
-axes end one float64 step above pi so exact pi falls in the last regular bin.
-
-The following definitions now use the wrapped absolute separation:
-
-- `lj_lj_absdphi` and its `invmass`, `absdR`, `absdeta` and `ptRatio` correlations.
-- `genE_genE_dPhi` and `genMu_genMu_dPhi`; their existing 0–1 radian zoom ranges
-  remain, so larger separations still intentionally enter overflow.
-- `dsa_pair_phi_diff`, `back_to_back_dsa_pair_phi_diff` and
-  `parallel_dsa_pair_phi_diff`. Pair selection still uses the existing 3D angle.
-
-`dR_outer` also wraps its azimuthal component. This affects `segmatch veto + dR
-outer`, `old_all`, `all` and `all + charge` in the DSA muon cuts. Synthetic tests
-check that a segment-matched pair across the branch cut is recognized as close,
-and preserve the segment-count, charge and missing-match exceptions.
-The public [MuonExtendedTableProducer](https://github.com/cms-sidm/LLPNanoAOD/blob/14c5287454948a7662c06d7cf507e282af28e29a/LLPnanoAOD/plugins/MuonExtendedTableProducer.cc#L102)
-uses `(outerEta, outerPhi) == (-5, -5)` for an unavailable or invalid outer track.
-`dR_outer` treats that documented sentinel as missing (infinite distance), so
-wrapping cannot turn it into an apparent match. This source convention does not
-establish the producer revision or sentinel content of any particular dataset.
-
-The LJ and PF-muon event cuts and `genAs_genAs_absdphi` already use the vector
-library's wrapped `delta_phi`; their definitions remain unchanged. The cosmic
-distance expressions also remain unchanged: for canonical phi coordinates,
-`(pi - abs(phi1 - phi2))**2` is invariant under ordinary angular wrapping.
-Individual phi-coordinate plots retain their coordinate definitions.
-
-`muon_muon_dphi` has an ambiguous name: both its current calculation and label
-specify Delta R. This patch preserves that behavior; deciding whether to rename
-it or change its observable requires clarification of the plot's intent. The
-existing axis identifiers are preserved, including the misnamed
-`back to back dsa_pair_eta_diff` axis in the corresponding phi histogram.
-
-## Compatibility and limits
-
-Full-range angular axes change from 0–2pi (LJ) or 0–7 (DSA) to 0–pi. Do not
-combine old and new histogram outputs as if their axes or definitions matched.
-The outer-track fix can also change selected candidates and downstream yields;
-rebinned old histograms cannot establish those effects.
-
-The suite covers float32/float64 endpoints, periodicity, pair swapping,
-jagged/empty/missing inputs, leading-pair choice, histogram/cut agreement,
-weighted integrals and variances, and the affected cross-cleaning predicates.
-It establishes these code behaviors, not their impact on event samples or
-scientific validation of a selection. Candidate-collection conventions and cut
-thresholds are unchanged.
+The tests create their inputs in memory; no event files are needed.
