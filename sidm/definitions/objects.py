@@ -69,21 +69,21 @@ def refresh_lj_children(objs, parent):
             refresh_lj_children(objs, child)
 
 def add_lj_candidates(objs):
-    """Add one analysis pair, requiring the original leading two to survive.
+    """Add the leading pair of eligible LJs after all typed selections.
 
     ``ljs`` is the pT-ordered baseline after generic LJ cuts; it remains intact
-    for reconstruction diagnostics. Freeze its leading two, require each to
-    survive its typed selection (and each muon candidate to have >=2 muons),
-    and return either those two in their original order or an empty pair.
-    Extra jets are allowed but never promoted. Call after all subtype cuts.
+    for reconstruction diagnostics. Keep jets surviving their typed selection
+    (with >=2 muons for muon candidates), then take the leading two in baseline
+    order. Later jets can replace rejected jets. Return a complete pair or an
+    empty list; extra jets are allowed. Call after all subtype cuts.
     """
-    pair = objs["ljs"][:, :2]
+    ljs = objs["ljs"]
     mu_candidates = objs["mu_ljs"][objs["mu_ljs"].muon_n >= 2]
     egm_candidates = objs["egm_ljs"][objs["egm_ljs"].muon_n == 0]
-    surviving = (lj_membership(pair, mu_candidates)
-                 | lj_membership(pair, egm_candidates))
-    complete = (ak.num(pair) == 2) & ak.all(surviving, axis=-1)
-    pair = pair[surviving & complete[:, None]]
+    surviving = (lj_membership(ljs, mu_candidates)
+                 | lj_membership(ljs, egm_candidates))
+    pair = ljs[surviving][:, :2]
+    pair = pair[ak.broadcast_arrays(ak.num(pair) == 2, pair.idx)[0]]
     selected = objs.copy()
     selected["candidate_ljs"] = pair
     selected["candidate_mu_ljs"] = pair[pair.muon_n >= 2]
