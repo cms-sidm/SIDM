@@ -369,7 +369,7 @@ evt_cut_defs = {
     "= 2 LJs": lambda objs: ak.num(objs["ljs"]) == 2,
     "= 1 LJs": lambda objs: ak.num(objs["ljs"]) == 1,
     ">=2 matched As": lambda objs: ak.num(derived_objs["genAs_matched_lj"](objs, 0.2)) >= 2,
-    # One shared pair: original leading two must survive their typed cuts.
+    # One shared pair: leading eligible LJs after all typed cuts.
     # Counts are on this pair, not on all surviving LJs; extras are allowed.
     "4mu": lambda objs: ak.num(objs["candidate_mu_ljs"]) == 2,
     "2mu2e": lambda objs: ((ak.num(objs["candidate_mu_ljs"]) == 1)
