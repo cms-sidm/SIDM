@@ -19,6 +19,3 @@ infinity for missing matches or either track's paired `(-5, -5)` coordinates.
 Full-range LJ and DSA angular histograms cover 0 to pi, including exact pi.
 Generator-lepton Δφ histograms retain their 0–1 radian zoom. Do not merge older
 outputs with different angular axes or definitions into these histograms.
-
-See [the regression test instructions](../../tests/README_delta_phi.md) to run
-the synthetic checks.
