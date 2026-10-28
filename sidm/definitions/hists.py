@@ -522,9 +522,9 @@ hist_defs = {
         ],
         evt_mask=lambda objs: ak.num(objs["muons"]) > 1,
     ),
-    "muon_muon_dphi": h.Histogram(
+    "muon_muon_dr": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(50, 0, 6.28, name="muon_muon_dphi",
+            h.Axis(hist.axis.Regular(50, 0, 6.28, name="muon_muon_dr",
                                      label=r"$\Delta R$($\mu_0$, $\mu_1$)"),
                    lambda objs, mask: objs["muons"][mask, 1].delta_r(
                        objs["muons"][mask, 0])),
