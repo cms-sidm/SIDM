@@ -80,6 +80,3 @@ pair = objs["candidate_ljs"]
 Call this before evaluating pair cuts or histograms. `JaggedSelection` refreshes
 an existing pair after further object cuts; recompute it explicitly after
 manually changing its parent collections.
-
-For regression-test instructions, see
-[the lepton-jet tests README](../../tests/README_lj_collections.md).
