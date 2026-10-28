@@ -1,94 +1,85 @@
-# Lepton-jet collections and the analysis pair
+# Lepton-jet collections
 
-The processor keeps diagnostic collections separate from the pair used to define
-an analysis channel. `SidmProcessor.select_lepton_jets` applies generic LJ cuts,
-builds typed views, applies their cuts, and calls `add_lj_candidates`.
+Use `candidate_ljs` for quantities that describe the analysis pair, and the
+baseline or typed collections for inclusive object studies. The processor
+prepares these collections before evaluating event cuts and filling histograms.
 
-| Collection | Meaning |
+Object views are defined in [objects.py](objects.py), cuts in [cuts.py](cuts.py),
+and histograms in [hists.py](hists.py). Select the cuts and histograms to run in
+[selections.yaml](../configs/selections.yaml) and
+[hist_collections.yaml](../configs/hist_collections.yaml).
+
+## Choosing a collection
+
+| Collection | Contents |
 |---|---|
-| `ljs` | All baseline LJs after generic LJ cuts, in reconstruction pT order. Subtype cuts do not change this diagnostic collection. |
-| `mu_ljs`, `egm_ljs` | Baseline mu-type (`muon_n > 0`) and egamma-type (`muon_n == 0`) views after their configured cuts. They can contain more than two LJs. |
-| `pfmu_ljs`, `dsamu_ljs`, `electron_ljs`, `photon_ljs` | Pure-subtype diagnostic children, restricted to surviving parents and any cuts applied directly to the child. Mixed constituent jets are not covered by the union of the pure children. Child-only cuts do not select the parent or the analysis pair. |
-| `candidate_ljs` | The leading two eligible LJs after all `mu_ljs`/`egm_ljs` cuts, retaining baseline pT order. Each muon candidate must have at least two muons. Fewer than two eligible LJs gives an empty list. |
+| `ljs` | All LJs passing generic LJ cuts, in reconstruction pT order. Type-specific cuts do not remove jets from this collection. |
+| `mu_ljs`, `egm_ljs` | Muon-type (`muon_n > 0`) and egamma-type (`muon_n == 0`) LJs passing their configured cuts. Each collection can contain more than two jets. |
+| `pfmu_ljs`, `dsamu_ljs` | Pure PF-muon and pure DSA-muon diagnostic views of `mu_ljs`. |
+| `electron_ljs`, `photon_ljs` | Pure electron and pure photon diagnostic views of `egm_ljs`. |
+| `candidate_ljs` | The two highest-pT eligible surviving LJs, or an empty list if fewer than two survive. Muon candidates must contain at least two muons. |
 | `candidate_mu_ljs`, `candidate_egm_ljs` | Muon and egamma members of that same complete pair. |
 
-**Explicit analysis choice for review:** apply all type-specific cuts before
-choosing the leading surviving pair. A third/fourth LJ can replace a rejected
-leading jet. Extra jets are still allowed; this is not an exactly-two-LJ
-requirement. For example, baseline `[mu(100), mu(80), mu(60)]` selects the
-80 and 60 GeV jets when the 100 GeV jet fails isolation. Generic cuts and
-type-specific cuts both precede pair selection.
+Mixed PF/DSA jets belong to `mu_ljs` but neither pure-muon view; mixed
+electron/photon jets likewise belong to `egm_ljs` but neither pure-egamma view.
+Use the parent collection when a selection should include mixed jets.
 
-`4mu` requires two muon members of the candidate pair; `2mu2e` requires one muon
-and one egamma member. Thus they remain exclusive even with extra LJs. A
-single-muon leading jet is ineligible and can be replaced by a later eligible jet.
-The LJ-LJ dPhi and mass event cuts, all `lj_lj_*` histograms, mixed muon-egamma
-mass variants, and `mu_lj_sum_pt_score` use this same pair. Their masks and values
-both refer to candidate collections. Incomplete pairs fail the event cuts and
-fill no pair histograms, including when the whole input batch is empty.
+## Selecting the analysis pair
 
-The generic `>=2 LJs`/exact baseline-count cuts, `lj_n`/inclusive LJ histograms,
-leading-object diagnostics and nearest/gen-matched diagnostics retain their
-explicit baseline or inclusive typed meaning. In particular, `>=2 LJs` alone
-does not assert that an analysis pair survived. Gen-matched masses intentionally
-use the jets matched to the generated particles, rather than the analysis pair.
-Even in a channel with pair cuts, `lj0_*`/`lj1_*` can describe baseline jets
-outside the analysis pair, including jets rejected by subtype cuts.
+For each selection, `SidmProcessor.select_lepton_jets` applies generic LJ cuts,
+builds the typed views, applies their cuts, and selects the leading eligible
+surviving pair. Extra jets are allowed. For example, three muon LJs with pT
+100, 80 and 60 GeV select the 80 and 60 GeV jets if the 100 GeV jet fails its
+type-specific cuts, provided each survivor contains at least two muons.
 
-Tighter subtype cuts can promote a different pair and move an event between
-`4mu` and `2mu2e`, or into a channel it did not pass with looser cuts. Channel
-yields and pair histograms are therefore not necessarily nested across
-selections. Ratios between them must not be interpreted as selection efficiencies.
+The `4mu` event cut requires two muon members of this pair; `2mu2e` requires one
+muon and one egamma member. The two channels are mutually exclusive within a
+selection. Fewer than two eligible survivors fails both channel cuts and fills
+no pair histograms. Passing a baseline LJ-count cut such as `>=2 LJs` alone
+does not guarantee a valid analysis pair.
 
-Candidate eligibility applies to pair histograms in **every** channel. For
-example, `baseNoLj_Only_One_Muon` selects `mu_ljs` with `Mu == 1`; it has no
-pair event cut, so adding candidates does not impose an event veto there.
-Its selected-muon distributions remain available, but no single-muon LJ
-can fill `mulj_egmlj_invmass` in `Muon_selection_base` or
-`Muon_selection_bkg_base`. Those menus therefore no longer provide the previous
-single-muon-plus-egamma mass diagnostic. That diagnostic is intentionally
-dropped, with no separately paired replacement. The `Muon_selection` summary
-excludes the one-muon channel from its mass comparisons; its other muon
-distributions remain available. A pair-histogram integral need not equal the
-channel's event yield. Current two-LJ data control selections already
-require `Mu >= 2`, as do all current selections using the LJ-LJ dPhi cut.
+The LJ-LJ dPhi and mass cuts, `lj_lj_*` histograms, mixed muon-egamma mass
+histograms and `mu_lj_sum_pt_score` use this pair. When adding pair observables,
+use candidate collections for both their masks and values.
 
-An LJ criterion must evaluate to true to retain the jet: false or `None` rejects
-it. In particular, an undefined reduction over empty constituents is not treated
-as a vacuous pass. The current SR `displaced` cuts reduce over **all** muons or
-egamma constituents; DSA muons have zero pixel hits and photons have `lostHits`
-set to 999 by reconstruction, so DSA-only and photon-only candidates pass these
-displacement criteria. The separate `pf_pixelhits <= 2` and `lostHits >= 1` cut
-definitions reduce over PF muons and electrons, respectively, and may be
-undefined for empty constituents. Neither is used in the current default
-`selections.yaml`; historical/custom configurations must specify any different
-empty-constituent rule explicitly. No default selection cuts the pure child
-views; those remain diagnostic views even when given custom cuts.
+Inclusive and leading-object diagnostics use their named collections:
+`lj0_*` and `lj1_*` refer to the leading baseline jets, which may differ from
+the analysis pair. Gen-matched histograms use the jets matched to generated
+particles. Single-muon LJs remain available in `mu_ljs` diagnostics but cannot
+fill candidate mass histograms, including the `Muon_selection` mass plots.
+A pair-histogram integral therefore need not equal the selection's event yield.
 
-Every reconstructed LJ has a stable per-event `idx`, assigned after pT sorting.
-Cuts preserve it, including gaps and pT ties. Descendants are intersected by this
-identity after a parent cut; they are not rebuilt in a way that resurrects a
-previously removed child. Custom diagnostic descendants can be declared in
-`lj_parents`, with the same stable-index requirement and an acyclic hierarchy.
-No custom post-LJ callback is rerun during synchronization. If a dictionary
-already has candidates, further `JaggedSelection` calls refresh them afterward.
-Additional generic or subtype cuts can change which surviving jets define the
-pair. The processor always applies all generic cuts before building typed views,
-then all configured subtype cuts before selecting candidates.
-Missing identity during synchronization and missing candidate setup in pair
-cuts are errors, not silently skipped selections.
+Tighter cuts can select a different pair, changing an event's pair mass or
+channel. Pair distributions from different selections need not be nested.
 
-For direct use outside the processor, construct the typed views with stable
-indices, apply their cuts, and call `add_lj_candidates(objs)` before evaluating
-pair cuts or histograms. Do not reuse a cached candidate dictionary after manually
-mutating its parent collections.
+## Adding cuts or using the collections directly
 
-Run the dataset-free regressions from the repository root in the analysis
-Python environment:
+Place cuts that should affect the analysis pair on `ljs`, `mu_ljs` or
+`egm_ljs`. A parent cut also removes rejected jets from its diagnostic children.
+Cuts on a pure diagnostic child affect only that view; they do not select its
+parent or the analysis pair. An LJ cut retains only entries whose mask is true;
+false and `None` reject the jet. Define the intended behavior of reductions over
+empty constituent collections when adding a custom cut.
 
-```bash
-PYTHONPATH=. python tests/test_lj_collections.py
+Every reconstructed LJ has a stable per-event `idx`. Preserve it through cuts;
+it identifies membership even after filtering leaves gaps or jets have equal
+pT. Custom diagnostic descendants can be registered in `lj_parents` with an
+acyclic parent hierarchy and the same indices. Synchronization preserves cuts
+already applied to children and does not rerun their construction callbacks.
+
+Outside the processor, provide pT-ordered `ljs` and the selected `mu_ljs` and
+`egm_ljs` views with matching indices, then finalize the pair:
+
+```python
+from sidm.definitions.objects import add_lj_candidates
+
+objs = add_lj_candidates(objs)
+pair = objs["candidate_ljs"]
 ```
 
-These tests check software membership, identity and pair agreement using literal
-records. They do not measure physics acceptance or validate real inputs.
+Call this before evaluating pair cuts or histograms. `JaggedSelection` refreshes
+an existing pair after further object cuts; recompute it explicitly after
+manually changing its parent collections.
+
+For regression-test instructions, see
+[the lepton-jet tests README](../../tests/README_lj_collections.md).
