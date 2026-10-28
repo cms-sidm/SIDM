@@ -750,14 +750,14 @@ hist_defs = {
             h.Axis(hist.axis.Regular(7, 0, 3.5, name="sum_pt_score",
                                      label="Sum of LJ Muon pT Scores"),
                    lambda objs, mask: (
-                       ak.where(ak.sum(objs["mu_ljs"][mask, 0].muons.pt > 26, axis=-1) >= 2, 1.5,
-                                ak.sum(objs["mu_ljs"][mask, 0].muons.pt > 26, axis=-1))
+                       ak.where(ak.sum(objs["candidate_mu_ljs"][mask, 0].muons.pt > 26, axis=-1) >= 2, 1.5,
+                                ak.sum(objs["candidate_mu_ljs"][mask, 0].muons.pt > 26, axis=-1))
                        +
-                       ak.where(ak.sum(objs["mu_ljs"][mask, 1].muons.pt > 26, axis=-1) >= 2, 1.5,
-                                ak.sum(objs["mu_ljs"][mask, 1].muons.pt > 26, axis=-1))
+                       ak.where(ak.sum(objs["candidate_mu_ljs"][mask, 1].muons.pt > 26, axis=-1) >= 2, 1.5,
+                                ak.sum(objs["candidate_mu_ljs"][mask, 1].muons.pt > 26, axis=-1))
                    )),
         ],
-        evt_mask=lambda objs: ak.num(objs["mu_ljs"]) >= 2,
+        evt_mask=lambda objs: ak.num(objs["candidate_mu_ljs"]) >= 2,
     ),
 
 
@@ -1937,27 +1937,29 @@ hist_defs = {
                    lambda objs, mask: dR(objs["dsaMuons"], objs["ljs"]))
         ],
     ),
-    # lj-lj
+    # Analysis pair: original leading two baseline LJs, only if both survive
+    # typed selection. Inclusive/leading-object diagnostics above still use
+    # ljs or the full selected typed views; gen-matched diagnostics stay separate.
     "lj_lj_absdphi": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].phi - objs["candidate_ljs"][mask, 0].phi)),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdR": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta$R| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, 1].delta_r(objs["ljs"][mask, 0])),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 1].delta_r(objs["candidate_ljs"][mask, 0])),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdeta": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta\eta$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].eta - objs["ljs"][mask, 0].eta)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].eta - objs["candidate_ljs"][mask, 0].eta)),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     # gen-matched pair mass: each dark photon paired with ITS OWN nearest LJ
     # (nearest() maps each genA to its own closest LJ, unlike lj_lj_invmass's
@@ -1992,354 +1994,354 @@ hist_defs = {
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+                   lambda objs, mask: objs["candidate_ljs"][mask, :2].sum().mass),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "mulj_egmlj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-        evt_mask=lambda objs: (ak.num(objs["mu_ljs"]) > 0) & (ak.num(objs["egm_ljs"]) > 0),
+        evt_mask=lambda objs: (ak.num(objs["candidate_mu_ljs"]) > 0) & (ak.num(objs["candidate_egm_ljs"]) > 0),
     ),
     "mulj_egmlj_invmass_pixelHits_lostHits": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
-                             & ak.fill_none(ak.firsts(ak.min(objs["egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
+                             & ak.fill_none(ak.firsts(ak.min(objs["candidate_egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)
                              ),
     ),
     "mulj_egmlj_invmass_trkLayers_lostHits": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <=10), False)
-                             & ak.fill_none(ak.firsts(ak.min(objs["egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <=10), False)
+                             & ak.fill_none(ak.firsts(ak.min(objs["candidate_egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)
                              ),
     ),
     "pf_mulj_egmlj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].dsaMu_n) == 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].dsaMu_n) == 0, False))),
     ),
     "1pf_mulj_egmlj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))),
     ),
     "pf_mulj_egmlj_invmass_pixelHits": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].dsaMu_n) == 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].dsaMu_n) == 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_pixelHits2": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_pixelHits1": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=1), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=1), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_pixelHits0": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=0), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=0), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_pixelHits3": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <= 3), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <= 3), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_pixelHits4": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <= 4), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <= 4), False)
                              ),
     ),
     "pf_dsa_mulj_egmlj_invmass_pixelHits": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].dsaMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].dsaMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumPixelHits, axis =-1) <=2), False)
                              ),
     ),
     "pf_mulj_egmlj_invmass_trkLayers": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].dsaMu_n) == 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <=10), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].dsaMu_n) == 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <=10), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_trkLayers10": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 10), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 10), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_trkLayers12": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 12), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 12), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_trkLayers11": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 11), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 11), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_trkLayers9": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 9), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 9), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_trkLayers8": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 8), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 8), False)
                              ),
     ),
     "1pf_mulj_egmlj_invmass_trkLayers7": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 7), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <= 7), False)
                              ),
     ),
     "pf_dsa_mulj_egmlj_invmass_trkLayers": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].dsaMu_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.max(objs["mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <=10), False)
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].dsaMu_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.max(objs["candidate_mu_ljs"].pfMuons.trkNumTrkLayers, axis =-1) <=10), False)
                              ),
     ),
     "pf_dsa_mulj_egmlj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].dsaMu_n) > 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].dsaMu_n) > 0, False))),
     ),
     "dsa_mulj_egmlj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].pfMu_n) == 0, False))
-                              & (ak.fill_none(ak.firsts(objs["mu_ljs"].dsaMu_n) > 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].pfMu_n) == 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_mu_ljs"].dsaMu_n) > 0, False))),
     ),
     "mulj_e_lj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].photon_n) == 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].photon_n) == 0, False))),
     ),
     "mulj_1e_lj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))),
     ),
     "mulj_e_lj_invmass_lostHits": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].photon_n) == 0, False))
-                              & ak.fill_none(ak.firsts(ak.min(objs["egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].photon_n) == 0, False))
+                              & ak.fill_none(ak.firsts(ak.min(objs["candidate_egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)),
     ),
     "mulj_1e_lj_invmass_lostHits1": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.min(objs["egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.min(objs["candidate_egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)),
     ),
     "mulj_1e_lj_invmass_lostHits0": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.min(objs["egm_ljs"].electrons.lostHits, axis =-1) >= 0), False)),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.min(objs["candidate_egm_ljs"].electrons.lostHits, axis =-1) >= 0), False)),
     ),
     "mulj_1e_lj_invmass_lostHits2": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.min(objs["egm_ljs"].electrons.lostHits, axis =-1) >= 2), False)),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.min(objs["candidate_egm_ljs"].electrons.lostHits, axis =-1) >= 2), False)),
     ),
     "mulj_eg_lj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].photon_n) > 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].photon_n) > 0, False))),
     ),
     "mulj_eg_lj_invmass_lostHits": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) > 0, False))
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].photon_n) > 0, False))
-                              & ak.fill_none(ak.firsts(ak.min(objs["egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) > 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].photon_n) > 0, False))
+                              & ak.fill_none(ak.firsts(ak.min(objs["candidate_egm_ljs"].electrons.lostHits, axis =-1) >= 1), False)),
     ),
     "mulj_g_lj_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: ((objs["mu_ljs"][mask, 0] + objs["egm_ljs"][mask, 0]).mass)),
+                   lambda objs, mask: ((objs["candidate_mu_ljs"][mask, 0] + objs["candidate_egm_ljs"][mask, 0]).mass)),
         ],
-       evt_mask=lambda objs: ((ak.num(objs["mu_ljs"]) > 0)& (ak.num(objs["egm_ljs"]) > 0)
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].electron_n) == 0, False))
-                              & (ak.fill_none(ak.firsts(objs["egm_ljs"].photon_n) > 0, False))),
+       evt_mask=lambda objs: ((ak.num(objs["candidate_mu_ljs"]) > 0)& (ak.num(objs["candidate_egm_ljs"]) > 0)
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].electron_n) == 0, False))
+                              & (ak.fill_none(ak.firsts(objs["candidate_egm_ljs"].photon_n) > 0, False))),
     ),
     "lj_lj_invmass_lowRange": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 500, name="ljlj_mass",
                                      label=r"InvMass($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+                   lambda objs, mask: objs["candidate_ljs"][mask, :2].sum().mass),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_ptRatio": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 1.0, 2.0, name="lj_lj_ptRatio",
                    label="Leading LJ PT / Subleading LJ PT"),
-                   lambda objs, mask: objs["ljs"][mask, 0].pt / objs["ljs"][mask, 1].pt),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 0].pt / objs["candidate_ljs"][mask, 1].pt),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     # matchedjet
     "matched_jet_n": h.Histogram(
@@ -2754,93 +2756,93 @@ hist_defs = {
                    lambda objs, mask:  objs["photon_ljs"].isolation),
         ],
     ),
-    # ABCD plane
+    # ABCD pair observables use the same candidate pair as channel/event cuts.
     "lj_lj_absdphi_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].phi - objs["candidate_ljs"][mask, 0].phi)),
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+                   lambda objs, mask: objs["candidate_ljs"][mask, :2].sum().mass),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdphi_absdR": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].phi - objs["candidate_ljs"][mask, 0].phi)),
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta$R| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, 1].delta_r(objs["ljs"][mask, 0])),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 1].delta_r(objs["candidate_ljs"][mask, 0])),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdphi_absdeta": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].phi - objs["candidate_ljs"][mask, 0].phi)),
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta\eta$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].eta - objs["ljs"][mask, 0].eta)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].eta - objs["candidate_ljs"][mask, 0].eta)),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdphi_ptRatio": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 2*math.pi, name=r"|$\Delta\phi$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].phi - objs["ljs"][mask, 0].phi)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].phi - objs["candidate_ljs"][mask, 0].phi)),
             h.Axis(hist.axis.Regular(100, 1.0, 2.0, name="lj_lj_ptRatio",
                                      label="Leading LJ PT / Subleading LJ PT"),
-                   lambda objs, mask: objs["ljs"][mask, 0].pt / objs["ljs"][mask, 1].pt),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 0].pt / objs["candidate_ljs"][mask, 1].pt),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdR_absdeta": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta$R| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, 1].delta_r(objs["ljs"][mask, 0])),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 1].delta_r(objs["candidate_ljs"][mask, 0])),
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta\eta$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].eta - objs["ljs"][mask, 0].eta)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].eta - objs["candidate_ljs"][mask, 0].eta)),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdR_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta$R| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, 1].delta_r(objs["ljs"][mask, 0])),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 1].delta_r(objs["candidate_ljs"][mask, 0])),
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+                   lambda objs, mask: objs["candidate_ljs"][mask, :2].sum().mass),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdR_ptRatio": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta$R| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, 1].delta_r(objs["ljs"][mask, 0])),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 1].delta_r(objs["candidate_ljs"][mask, 0])),
             h.Axis(hist.axis.Regular(100, 1.0, 2.0, name="lj_lj_ptRatio",
                    label="Leading LJ PT / Subleading LJ PT"),
-                   lambda objs, mask: objs["ljs"][mask, 0].pt / objs["ljs"][mask, 1].pt),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 0].pt / objs["candidate_ljs"][mask, 1].pt),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdeta_invmass": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta\eta$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].eta - objs["ljs"][mask, 0].eta)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].eta - objs["candidate_ljs"][mask, 0].eta)),
             h.Axis(hist.axis.Regular(100, 0, 1200, name="ljlj_mass",
                                      label=r"Invariant Mass ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+                   lambda objs, mask: objs["candidate_ljs"][mask, :2].sum().mass),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     "lj_lj_absdeta_ptRatio": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 6, name=r"|$\Delta\eta$| ($LJ_{0}$, $LJ_{1}$)"),
-                   lambda objs, mask: abs(objs["ljs"][mask, 1].eta - objs["ljs"][mask, 0].eta)),
+                   lambda objs, mask: abs(objs["candidate_ljs"][mask, 1].eta - objs["candidate_ljs"][mask, 0].eta)),
             h.Axis(hist.axis.Regular(100, 1.0, 2.0, name="lj_lj_ptRatio",
                    label="Leading LJ PT / Subleading LJ PT"),
-                   lambda objs, mask: objs["ljs"][mask, 0].pt / objs["ljs"][mask, 1].pt),
+                   lambda objs, mask: objs["candidate_ljs"][mask, 0].pt / objs["candidate_ljs"][mask, 1].pt),
         ],
-        evt_mask=lambda objs: ak.num(objs["ljs"]) > 1,
+        evt_mask=lambda objs: ak.num(objs["candidate_ljs"]) > 1,
     ),
     # gen
     "gen_abspid": h.Histogram(
