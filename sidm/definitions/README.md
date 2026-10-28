@@ -49,8 +49,7 @@ can fill `mulj_egmlj_invmass` in `Muon_selection_base` or
 single-muon-plus-egamma mass diagnostic. That diagnostic is intentionally
 dropped, with no separately paired replacement. The `Muon_selection` summary
 excludes the one-muon channel from its mass comparisons; its other muon
-distributions remain available. Mass comparisons are overlaid distributions,
-without binomial-efficiency ratio panels. A pair-histogram integral need not equal the
+distributions remain available. A pair-histogram integral need not equal the
 channel's event yield. Current two-LJ data control selections already
 require `Mu >= 2`, as do all current selections using the LJ-LJ dPhi cut.
 
