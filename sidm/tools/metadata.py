@@ -3,8 +3,8 @@
 ``write_run_metadata`` produces a ``.meta.yaml`` sidecar next to a ``.coffea``
 recording the selection definitions, hist-collection contents, input ROOT
 file list, per-sample cross section, SIDM git commit, coffea version, schema,
-chunksize, ``unweighted_hist`` flag, and a UTC timestamp. ``load_run_metadata``
-reads the sidecar back.
+chunksize, ``unweighted_hist`` flag, the standard corrections applied (files and
+checksums), and a UTC timestamp. ``load_run_metadata`` reads the sidecar back.
 
 Used by both the dask-from-notebook path
 (``sidm/test_notebooks/lpc_dask_example.ipynb``) and the Condor batch path
@@ -20,6 +20,7 @@ from pathlib import Path
 import coffea
 import yaml
 
+from sidm.tools.corrections import Corrections
 from sidm.tools.utilities import get_xs, load_yaml
 
 
@@ -32,6 +33,8 @@ def write_run_metadata(
     schema=None,
     chunksize=None,
     unweighted_hist=None,
+    corrections=True,
+    monitor_corrections=None,
     extra=None,
     sidm_root=None,
 ):
@@ -54,6 +57,13 @@ def write_run_metadata(
         chunksize: optional chunk size used by ``processor.Runner``.
         unweighted_hist: optional bool — whether ``SidmProcessor`` was
             constructed with ``unweighted_hist=True``.
+        corrections: the ``corrections`` argument given to ``SidmProcessor``
+            (``True``, its default, or a list of names; ``None`` for none). For
+            each year in the fileset, the files, correction names and checksums
+            are recorded under ``corrections``.
+        monitor_corrections: optional, the ``monitor_corrections`` argument
+            given to ``SidmProcessor`` (evaluated, not applied); recorded the
+            same way under ``monitored_corrections``.
         extra: optional dict of additional fields to merge into the sidecar
             (e.g. condor cluster ID, dask cluster dashboard URL).
         sidm_root: optional repo-root override; default walks up from this file.
@@ -107,6 +117,13 @@ def write_run_metadata(
         "coffea_version": coffea.__version__,
         "samples": samples,
     }
+    if corrections:
+        years = sorted({str(info.get("metadata", {}).get("year", "2018"))
+                        for info in fileset.values()})
+        meta["corrections"] = [Corrections(year, corrections).provenance() for year in years]
+        if monitor_corrections:
+            meta["monitored_corrections"] = [Corrections(year, monitor_corrections).provenance()
+                                             for year in years]
     if extra:
         meta.update(extra)
 

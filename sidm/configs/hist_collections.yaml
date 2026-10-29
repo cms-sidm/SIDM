@@ -1156,3 +1156,56 @@ cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - "muon_muon_invmass_highRange"
   - "mulj_egmlj_invmass"
   - "lj_lj_invmass"
+# corrections study (sidm/studies/corrections): the standard corrections, the
+# lepton-jet constituents they act on, and the jet corrections inside the
+# lepton-jet isolation. Needs the corrections on (SidmProcessor's default); run with
+# syst_hists=True to get every weight category on the syst axis.
+corrections_weights: &corrections_weights
+  - "pileup_nTrueInt"
+  - "pv_npvsGood"
+  - "weight_pileup"
+  - "weight_pileup_halfwidth"
+  - "weight_l1_prefiring"
+  - "weight_muon_id"
+  - "weight_electron_reco"
+  - "weight_photon_pixel_veto"
+
+corrections_objects: &corrections_objects
+  - "lj_pfMuon_muon_id_sf"
+  - "lj_electron_electron_reco_sf"
+  - "lj_photon_photon_pixel_veto_sf"
+  - "lj_electron_eCorr"
+  - "lj_photon_eCorr"
+  - "lj_electron_energy_variations"
+  - "lj_photon_energy_variations"
+
+corrections_applicability: &corrections_applicability
+  - "lj_pfMuon_absdxy_log"
+  - "lj_pfMuon_pixelHits"
+  - "lj_pfMuon_nearest_muon_dR"
+  - "lj_pfMuon_tnp_phase_space"
+  - "lj_muon_composition"
+  - "lj_electron_id"
+  - "lj_photon_genE_dR"
+  - "lj_photon_genPhoton_dR"
+  - "lj_has_matched_jet"
+  - "lj_matched_jet_lepfrac_jec"
+  - "lj_isolation_analysis"
+  - "lj_isolation_raw"
+  - "lj_isolation_jes_up"
+  - "lj_isolation_jes_down"
+  - "lj_isolation_jer"
+  - "lj_isolation_raw_flips"
+  - "lj_isolation_jes_up_flips"
+  - "lj_isolation_jes_down_flips"
+  - "lj_isolation_jer_flips"
+
+corrections_study: &corrections_study
+  - *corrections_weights
+  - *corrections_objects
+  - *corrections_applicability
+  - "lj_n"
+  - "lj0_pt"
+  - "lj1_pt"
+  - "lj_lj_absdphi"
+  - "lj_lj_invmass"

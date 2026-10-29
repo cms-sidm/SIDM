@@ -206,3 +206,6 @@ sidm/studies/limit_plotting/reference_limits/*
 !sidm/studies/limit_plotting/campaigns/*/datacards*/datacards.meta.yaml
 !sidm/studies/limit_plotting/campaigns/*/datacards/datacard_SR_4mu_4Mu_800GeV_5p0GeV_5p0mm.txt
 !sidm/studies/limit_plotting/campaigns/*/datacards_abcd/datacard_abcd_SR_4mu_4Mu_800GeV_5p0GeV_5p0mm.txt
+# corrections campaign (submit_corrections.sub): generated filelists and job logs
+condor/filelists_corrections/
+condor/logs_corrections/

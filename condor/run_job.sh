@@ -11,6 +11,25 @@ EOS_OUTDIR=$4
 # that don't pass them keep working.
 CHANNELS=${5:-base}
 HIST_COLLECTIONS=${6:-muon_base}
+# Optional positional arg 7: standard corrections for SidmProcessor
+# ("default", the default; a comma-separated list from
+# sidm/configs/corrections.yaml; or "none" for the uncorrected genWeight).
+CORRECTIONS=${7:-default}
+# Optional positional arg 8: how the histograms are weighted. "unweighted"
+# (the default, as before) fills unit weights, so the corrections reach the
+# cutflow only; "weighted" fills the event weights; "syst" fills them and adds
+# a syst axis with every weight category (needs corrections).
+HIST_MODE=${8:-unweighted}
+# Optional positional arg 9: corrections to evaluate without applying them
+# (comma-separated), e.g. photon_pixel_veto; needs corrections.
+MONITOR_CORRECTIONS=${9:-}
+
+case "${HIST_MODE}" in
+    unweighted) HIST_FLAGS=(--unweighted-hist) ;;
+    weighted)   HIST_FLAGS=() ;;
+    syst)       HIST_FLAGS=(--syst-hists) ;;
+    *) echo "unknown histogram mode '${HIST_MODE}' (unweighted, weighted or syst)"; exit 2 ;;
+esac
 
 echo "Host:"
 hostname
@@ -98,7 +117,9 @@ python condor/run_sidm_chunk.py \
     --workers 1 \
     --channels "${CHANNELS}" \
     --hist-collections "${HIST_COLLECTIONS}" \
-    --unweighted-hist
+    --corrections "${CORRECTIONS}" \
+    --monitor-corrections "${MONITOR_CORRECTIONS}" \
+    ${HIST_FLAGS[@]+"${HIST_FLAGS[@]}"}
 
 echo "Output:"
 ls -lh "${OUTFILE}"

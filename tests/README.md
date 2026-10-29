@@ -100,7 +100,12 @@ all channels — and the 14-representative-channel × valid-collections pass). T
 fixture (`tests/data/events_2mu2e_500GeV_200ev.root`, a 200-event 2Mu2E skim — a
 full-width snapshot, all branches retained) lets the chain run on a stock CI runner with
 no EOS/XRootD/cvmfs access. The harness runs with a deliberately non-unit `skim_factor`
-so the skim-scaling path of the weighted cutflow column is genuinely tested.
+so the skim-scaling path of the weighted cutflow column is genuinely tested. The
+processor applies the standard corrections to simulation by default, so
+`tests/data/corrections/` holds copies of the correction files that the default list and
+the `corrections_*` histograms read (about 800 kB, the CVMFS layout under
+`SIDM_CORRECTIONS_ROOT`); a correction file that the processor or a histogram starts
+reading needs copying there too.
 
 The data path (`is_data: True`) is exercised by a second fixture,
 `tests/data/events_DoubleMuon2018C_200ev.root`: a 200-event slice of a real DoubleMuon

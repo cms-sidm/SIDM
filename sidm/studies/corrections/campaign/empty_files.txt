@@ -1,0 +1,5 @@
+# Input files without events (Events tree with 0 entries); coffea has nothing to process in them.
+root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo2Mu2e/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-1000_MDp-0p25_ctau-2p0_v3/LLPnanoAODv2/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-1000_MDp-0p25_ctau-2p0_v3_part-3.root
+root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo2Mu2e/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-150_MDp-1p2_ctau-0p064_v3/LLPnanoAODv2/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-150_MDp-1p2_ctau-0p064_v3_part-1.root
+root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo2Mu2e/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-800_MDp-0p25_ctau-0p25_v3/LLPnanoAODv2/CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-800_MDp-0p25_ctau-0p25_v3_part-22.root
+root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo4Mu/CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-150_MDp-1p2_ctau-0p64_v3/LLPnanoAODv2/CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-150_MDp-1p2_ctau-0p64_v3_part-46.root
