@@ -6,8 +6,9 @@ This module turns that into event weights with up/down variations.
 
 From the processor:
 
-    SidmProcessor(channels, hists, corrections=True)             # the config's default list
+    SidmProcessor(channels, hists)                               # the config's default list
     SidmProcessor(channels, hists, corrections=["pileup"])       # a subset
+    SidmProcessor(channels, hists, corrections=None)             # the plain genWeight
 
 From a notebook:
 
@@ -15,6 +16,7 @@ From a notebook:
     corr = corrections.Corrections("2018")
     weights = corr.event_weights(events)             # genWeight, pileup, prefiring
     corr.add_object_weights(weights, ljs, obj_cuts)  # SFs for the objects in the lepton jets
+    corr.add_object_weights(weights, None, obj_cuts, {"muons": muons})  # or for selected objects
     weights.weight(), weights.weight("pileupUp")
 
 Only event-weight corrections are applied by the processor. The jet and
@@ -172,6 +174,9 @@ def _branch(events, name):
     if name in events.fields:
         return events[name]
     prefix, _, field = name.partition("_")
+    if prefix not in events.fields or field not in events[prefix].fields:
+        raise KeyError(f"this sample has no {name} branch; run SidmProcessor with "
+                       "corrections=None, or without the corrections that read it")
     return events[prefix][field]
 
 
@@ -297,7 +302,8 @@ class Corrections:
         menu = load_config(cfg)
         self.year = str(year)
         if self.year not in menu:
-            raise KeyError(f"no corrections configured for {self.year}; add them to {cfg}")
+            raise KeyError(f"no corrections configured for {self.year}; add them to {cfg}, "
+                           "or run SidmProcessor with corrections=None")
         self.config = menu[self.year]
         self.json_root = os.environ.get("SIDM_CORRECTIONS_ROOT", menu["json_root"])
         self.names = resolve_names(names, cfg)
@@ -391,20 +397,28 @@ class Corrections:
         return {name: self.working_point(name, obj_cuts)
                 for name in self.names if self.config[name]["kind"] == "object"}
 
-    def add_object_weights(self, weights, ljs, obj_cuts):
+    def add_object_weights(self, weights, ljs, obj_cuts, selected=None):
         """Multiply in the object SFs that apply to one channel
 
-        The SFs are evaluated for the constituents of the channel's lepton jets
-        after the lepton-jet cuts, i.e. the objects the event selection is built
-        from, and multiplied over each event. Up and down move every object's SF
-        together (fully correlated). Returns {correction: working point} for the
-        corrections that were applied.
+        By default the SFs are evaluated for the constituents of the channel's
+        lepton jets after the lepton-jet cuts, i.e. the objects the signal
+        selections are built from. selected, {collection: objects} keyed like
+        obj_cuts (e.g. {"muons": sel_objs["muons"]}), evaluates them for those
+        objects instead and skips the corrections of every other collection,
+        for selections built from objects rather than lepton jets (sf_objects in
+        selections.yaml). The SFs are multiplied over each event; up and down
+        move every object's SF together (fully correlated). Returns
+        {correction: working point} for the corrections that were applied.
         """
         applied = {}
         for name, wp in self.coverage(obj_cuts).items():
-            if wp is None:
+            entry = self.config[name]
+            if wp is None or (selected is not None and entry["cut_object"] not in selected):
                 continue
-            objs = ak.flatten(ljs[self.config[name]["collection"]], axis=2)
+            if selected is None:
+                objs = ak.flatten(ljs[entry["collection"]], axis=2)
+            else:
+                objs = selected[entry["cut_object"]]
             per_event = [ak.prod(self.object_sf(name, objs, wp, which), axis=1)
                          for which in ("nominal", "up", "down")]
             weights.add(name, *per_event)

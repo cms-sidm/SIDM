@@ -14,7 +14,9 @@
 #   kind: event   one factor per event, from event-level inputs
 #   kind: object  product of per-object SFs over the lepton-jet constituents in
 #                 `collection`, applied only in channels whose `cut_object`
-#                 cuts include the cut named in `working_points`
+#                 cuts include the cut named in `working_points`. A channel
+#                 with sf_objects in selections.yaml takes them from its
+#                 selected `cut_object` objects instead
 # Entries of kind `tool` are not applied by the processor; they configure the
 # jet and b-tagging helpers in sidm/tools/corrections.py.
 #
@@ -28,7 +30,7 @@
 
 json_root: /cvmfs/cms-griddata.cern.ch/cat/metadata
 
-# What `SidmProcessor(corrections=True)` applies. photon_pixel_veto is left
+# What SidmProcessor applies by default (corrections=True). photon_pixel_veto is left
 # out on purpose: in signal the lepton-jet "photons" are e+e- pairs, for which a
 # SF measured with real photons does not hold, and at 0.96 (barrel) to 0.88
 # (endcap) per object it would be the largest correction applied. Ask for it by

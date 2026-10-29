@@ -13,9 +13,9 @@ otherwise. The data/MC checks that normally go with these corrections are listed
 
 ## In short
 
-* `SidmProcessor(..., corrections=True)` applies the standard corrections to
-  simulation. With the default, `corrections=None`, the output is identical to
-  `main`, cutflows and histograms bin by bin.
+* `SidmProcessor` applies the standard corrections to simulation by default. With
+  `corrections=None` the output is identical to `main`, cutflows and histograms bin
+  by bin.
 * The default set is **pileup reweighting, the L1 prefiring weight, the PF-muon
   Loose ID SF and the electron reconstruction SF**, read from dated CVMFS snapshots
   pinned in [`sidm/configs/corrections.yaml`](../../configs/corrections.yaml).
@@ -48,7 +48,6 @@ otherwise. The data/MC checks that normally go with these corrections are listed
 from sidm.tools import sidm_processor
 
 p = sidm_processor.SidmProcessor(["2mu2e_sr", "4mu_sr"], ["lj_lj_base"],
-                                 corrections=True,     # the default list
                                  syst_hists=True,      # optional: syst axis on every hist
                                  monitor_corrections=["photon_pixel_veto"])  # optional
 out = runner.run(fileset, treename="Events", processor_instance=p)["out"]
@@ -69,6 +68,8 @@ The weight categories, in the cutflows and on the `syst` axis:
 | `<name>Up`, `<name>Down` | nominal with one correction shifted |
 | `with_<name>`, `with_<name>Up`, `with_<name>Down` | nominal × a monitored correction (evaluated, not applied) and its shifts |
 
+* `corrections=True`, the default, applies the config's default list, and
+  `corrections=None` the plain genWeight, as on `main`.
 * `corrections=["pileup", "l1_prefiring"]` applies a subset; any entry of the config
   can be named, including ones that are not in the default list
   (`photon_pixel_veto`, `electron_id`, `photon_id`).
@@ -87,11 +88,11 @@ The weight categories, in the cutflows and on the `syst` axis:
   of each object SF in the channel) and `objs["year"]`. The `corrections_study`
   collection in `hist_collections.yaml` is built on them; its histograms are defined
   at the end of `sidm/definitions/hists.py`.
-* **Condor**: `condor/run_job.sh` takes the corrections as its 7th argument, `syst` as
-  the 8th (weighted histograms with the `syst` axis; the default is still unweighted)
+* **Condor**: `condor/run_job.sh` takes the corrections as its 7th argument (`default`
+  unless given, `none` for none), `syst` as the 8th (weighted histograms with the `syst` axis; the default is still unweighted)
   and the monitored corrections as the 9th; see [`condor/README.md`](../../../condor/README.md).
-* **Metadata sidecars:** `metadata.write_run_metadata(..., corrections=True)` records
-  each correction's file and its md5 checksum; the Condor merge script forwards what
+* **Metadata sidecars:** `metadata.write_run_metadata(...)` records each correction's
+  file and its md5 checksum (its `corrections` argument has the processor's default); the Condor merge script forwards what
   the processor recorded, monitored corrections included.
 * **Your own correction** (e.g. a trigger or DSA-muon SF measured in the analysis):
   write it as a correctionlib file, register it in `corrections.yaml` with the
@@ -118,7 +119,11 @@ The jobs also had two speed-ups of `SidmProcessor` that are not part of this cod
 come in a separate change): channels with the same object cuts sharing one lepton-jet
 clustering, and a vectorised mask in `make_constituent`. They change no output: with the
 campaign's options, this code and the code of the jobs give identical histograms and
-cutflows on a 4Mu signal file, so the outputs below are what this code produces. Without
+cutflows on a 4Mu signal file, so the outputs below are what this code produces, with one
+exception: the campaign ran before `sf_objects`, so in `Z_to_mumu_control_region` its
+weights also carry the electron reconstruction SF of the few events with a selected
+electron (0.2% of DY), which this code leaves out there (−0.01% on the DY yield of that
+region, on the file checked). Without
 them the processing takes about 3 times longer, so the job times quoted below are lower
 than a rerun with this code would see.
 
@@ -198,29 +203,32 @@ hour-long EOS outage.
 |---|---|
 | `sidm/configs/corrections.yaml` | **new.** Per year: which POG file and correction to use for each correction, the pinned snapshot, the selection cut an object SF corrects, the names of its variations, and a validity note |
 | `sidm/tools/corrections.py` | **new.** `Corrections` (loads the config and the JSON files, evaluates event and object corrections, records provenance), `EventWeights` (the event weight as a product of named factors with up/down variations, and the weight categories), jet and b-tagging helpers for studies, and `import_correctionlib()` (see [environment](#environment)) |
-| `sidm/tools/test_corrections.py` | **new.** Standalone test in the style of `test_gen.py`: 49 checks, with synthetic corrections and, when CVMFS is mounted, the pinned POG files. `python sidm/tools/test_corrections.py` |
-| `sidm/tools/sidm_processor.py` | `corrections=`, `syst_hists=` and `monitor_corrections=` options: builds the event weights for simulation, adds each channel's object SFs, carries every weight category through the event selection, adds the `syst` axis, passes the factors to fill functions, and records the corrections in the metadata. |
+| `sidm/tools/test_corrections.py` | **new.** Standalone test in the style of `test_gen.py`: 55 checks, with synthetic corrections and, when CVMFS is mounted, the pinned POG files. `python sidm/tools/test_corrections.py` |
+| `sidm/tools/sidm_processor.py` | `corrections=` (the default list by default; `None` for none), `syst_hists=` and `monitor_corrections=` options: builds the event weights for simulation, adds each channel's object SFs (from its lepton jets, or from the `sf_objects` collections), carries every weight category through the event selection, adds the `syst` axis, passes the factors to fill functions, and records the corrections in the metadata. |
+| `sidm/configs/selections.yaml` | optional `sf_objects` per selection; `sf_objects: [muons]` in `Z_to_mumu_control_region`, `ttjets_2j2btag` and `ttjets_4j2btag` |
 | `sidm/tools/selection.py` | the cutflow rows also record the weighted count of every category; a cut listed twice in a selection is still reported and skipped as before |
 | `sidm/tools/cutflow.py` | `SimpleCutflow` rows can carry `variations`, which add, scale and survive `identity()`; new `variation_yields()` |
 | `sidm/tools/histogram.py` | optional `syst` axis: `make_hist(..., systematics=[...])`, and `fill()` takes `{category: weights}` |
 | `sidm/definitions/hists.py`, `sidm/configs/hist_collections.yaml` | **new histograms and collections** `corrections_weights`, `corrections_objects`, `corrections_applicability`, `corrections_study`: pileup and vertex distributions, the weight factors, the SF of every lepton-jet constituent, the inputs of the applicability study, and the lepton-jet isolation recomputed with raw, JES-shifted and JER-smeared jets |
+| `sidm/definitions/cuts.py` | `Keep all evts` now gives one value per event. It gave one per primary-vertex list, which could not slim any per-event array, so the `barrelE`/`endcapE` family never applied it and the chain report counted each new per-event column (`pileup`, `event_number`, the weights) as a new cut failure |
 | `sidm/definitions/objects.py` | `pileup` (simulation only) and `event_number` as standard objects; `genPhotons` as a derived object |
-| `sidm/tools/metadata.py` | `write_run_metadata(..., corrections=..., monitor_corrections=...)` records the corrections, with file checksums |
+| `sidm/tools/metadata.py` | `write_run_metadata(..., corrections=..., monitor_corrections=...)` records the corrections, with file checksums; `corrections` defaults to the processor's default |
+| `tests/_e2e_common.py`, `tests/data/corrections/`, `tests/README.md` | the CI chain report runs with the default corrections, from copies of the six correction files the processor and the `corrections_*` histograms read (800 kB; GitHub's runners have no CVMFS) |
 | `sidm/scripts/merge_coffea_chunks_eos.py` | **bug fix**: the per-chunk normalisation correction was never applied to real chunk files ([found along the way](#found-along-the-way)). Also: accumulates one chunk at a time (a sample of 1,000 chunks no longer needs 16 GB of memory), frees each sample's local chunks once merged, `--samples` to merge a subset, and forwards the corrections to the sidecar |
 | `sidm/scripts/corrections_campaign.py` | **new.** Status, retry, skipped-file and merge steps of the campaign above |
-| `condor/run_sidm_chunk.py` | reads `skim_factor`, `is_data` and `year` from the location YAML of the files (it used `skim_factor = 1` for every sample); refuses collision data unless `--allow-data`; `--corrections`, `--syst-hists`, `--monitor-corrections` |
-| `condor/run_job.sh` | optional 7th (corrections), 8th (`unweighted`, `weighted` or `syst`) and 9th (monitored corrections) arguments; the defaults run as before |
+| `condor/run_sidm_chunk.py` | reads `skim_factor`, `is_data` and `year` from the location YAML of the files (it used `skim_factor = 1` for every sample); refuses collision data unless `--allow-data`; `--corrections` (`default` unless given, or `none`), `--syst-hists`, `--monitor-corrections` |
+| `condor/run_job.sh` | optional 7th (corrections, `default` unless given), 8th (`unweighted`, `weighted` or `syst`) and 9th (monitored corrections) arguments |
 | `condor/make_job_args.py` | `--files-per-job-map`: files per job per sample |
 | `condor/submit_corrections.sub`, `condor/samples_corrections_*.txt`, `condor/job_args_corrections_*.txt`, `condor/files_per_job_corrections.yaml` | **new.** The campaign above |
 | `requirements.txt`, `condor/requirements.txt` | `correctionlib==2.9.0` pinned as a direct dependency (it was already in both constraints files) |
 | `sidm/scripts/install_correctionlib_cmssw.sh` | **new.** Builds correctionlib into `.python_userbase` for the CMSSW_17 kernel (see [environment](#environment)) |
-| `README.md`, `condor/README.md` | how to turn the corrections on; the new job arguments; the merge fix |
+| `README.md`, `condor/README.md` | the corrections and how to turn them off; the new job arguments; the merge fix |
 | `.gitignore` | the campaign's filelists and logs |
 | `sidm/studies/corrections/` | **new.** This README, four notebooks, `corrections_study.py` (helpers shared by the notebooks, including the campaign loader), `tables/`, `campaign/` and `slides/` |
 
-Nothing in the default path changed: with `corrections=None`, a 4Mu signal file and a
-DY file give identical cutflows, histograms (values, variances and flow bins), metadata
-and warnings on this branch and on `main`, in weighted and unweighted mode.
+With `corrections=None`, a 4Mu signal file and a DY file give identical cutflows,
+histograms (values, variances and flow bins), metadata and warnings on this branch and
+on `main`, in weighted and unweighted mode.
 
 ## The corrections
 
@@ -244,7 +252,13 @@ the CMS analysis-corrections area that replaced jsonpog-integration.
 efficiency it corrects (`working_points` in the config). In a channel whose `muons`
 cuts include `looseID`, every PF muon inside the channel's lepton jets (after the
 lepton-jet cuts) gets the Loose ID SF, and the event weight is the product over those
-muons. A channel asking for `tightID` gets the Tight SF instead. Objects outside the
+muons. Every selected muon, electron and photon is clustered into a lepton jet, so in a
+selection without lepton-jet cuts these are all its selected objects. A selection that
+is not built from lepton jets names the objects its SFs belong to with `sf_objects` in
+`selections.yaml`: with `sf_objects: [muons]` the SFs come from the selected muons, and
+the SFs of other collections are not applied. The Z→μμ and the two $t\bar t$ control
+regions have it, so the electrons they select but never use get no reconstruction SF.
+A channel asking for `tightID` gets the Tight SF instead. Objects outside the
 measured range get an SF of one. Up and down move all the SFs of an event together.
 `out[sample]["metadata"]["object_corrections"]` lists what each channel used.
 
@@ -356,11 +370,22 @@ but they are driven by the lepton content and should be similar.
 
 ## Validation
 
-* `sidm/tools/test_corrections.py`: 49 checks, including a zero factor that must not
+* `sidm/tools/test_corrections.py`: 55 checks, including a zero factor that must not
   produce NaN variations, the pT stitching of the muon SFs, the working-point
-  selection from cuts, cutflow variations through `add`/`scale`/`identity`, and the
-  `syst` axis.
-* With `corrections=None` the branch reproduces `main` exactly (see above).
+  selection from cuts, SFs from selected objects (`sf_objects`), cutflow variations
+  through `add`/`scale`/`identity`, the `syst` axis, and the processor's default.
+* The chain report's two passes over the MC fixture (every channel, then the
+  representative channels with every valid collection), with the default corrections
+  on: the raw cutflows of all 127 channels are identical to `corrections=None`, the
+  copies in `tests/data/corrections` give the same results as CVMFS, and no cut fails
+  that does not fail on `main`. The final weighted yields move by −0.6% (median).
+* In the Z→μμ and $t\bar t$ control regions, the muon SFs from the selected muons
+  (`sf_objects`) equal those from the lepton-jet constituents in every event of a DY,
+  a $t\bar t$ and a 4Mu file. The only change is that the electrons these regions select
+  but never use no longer get the reconstruction SF: 0.2% of DY events in the Z→μμ
+  region (yield −0.01%), 16% of $t\bar t$ events in `ttjets_2j2btag` (−0.16%).
+* With `corrections=None` the branch reproduces `main` exactly (see above), including
+  all 812 histograms of `main` in the chain report's histogram pass.
 * With the campaign's options, this code and the code the campaign jobs ran (which had
   the processor speed-ups, see [the Condor campaign](#the-condor-campaign)) give identical
   histograms and cutflows on the MC fixture and a 4Mu signal file.

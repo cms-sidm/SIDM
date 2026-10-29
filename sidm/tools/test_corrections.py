@@ -147,6 +147,16 @@ def test_object_sfs():
         check("not applied without the cut", not corr.add_object_weights(w2, ljs, {"muons": []}))
         check("provenance lists the file", "toy.json" in corr.provenance()["corrections"]["toy_id"]["files"])
 
+        # selected objects instead of the constituents, as with sf_objects
+        selected = {"muons": ak.Array([[{"pt": 30.0, "eta": 0.5}], [{"pt": 30.0, "eta": 1.5}]])}
+        w3 = corrections.EventWeights(2)
+        applied = corr.add_object_weights(w3, ljs, {"muons": ["looseID"]}, selected)
+        check("SFs of the selected objects", applied == {"toy_id": "looseID"}
+              and np.allclose(w3.weight(), [0.95, 0.90]))
+        w4 = corrections.EventWeights(2)
+        check("other collections skipped",
+              not corr.add_object_weights(w4, ljs, {"muons": ["looseID"]}, {"electrons": selected["muons"]}))
+
 
 def test_evaluate_structure():
     """evaluate() keeps flat and jagged shapes"""
@@ -196,6 +206,17 @@ def test_hist_syst_axis():
     check("no syst axis: nominal used", np.allclose(plain.hist[{"channel": "ch"}].values(), [1, 1, 2, 0]))
 
 
+def test_processor_config():
+    """The processor applies the default list unless told otherwise; sf_objects is read per channel"""
+    from sidm.tools.sidm_processor import SidmProcessor  # pylint: disable=import-outside-toplevel
+    p = SidmProcessor(["Z_to_mumu_control_region", "base"], [])
+    check("default list by default", p.corrections == corrections.resolve_names(True))
+    check("None turns them off", SidmProcessor(["base"], [], corrections=None).corrections == [])
+    cuts = p.build_cuts()
+    check("sf_objects read", cuts["Z_to_mumu_control_region"]["sf_objects"] == ["muons"])
+    check("lepton jets without sf_objects", cuts["base"]["sf_objects"] is None)
+
+
 def test_pog_files():
     """Reads the pinned POG files; skipped without CVMFS"""
     corr = corrections.Corrections("2018")
@@ -227,6 +248,7 @@ if __name__ == "__main__":
     test_evaluate_structure()
     test_cutflow_variations()
     test_hist_syst_axis()
+    test_processor_config()
     test_pog_files()
     print(f"{_P} passed, {_F} failed")
     sys.exit(1 if _F else 0)

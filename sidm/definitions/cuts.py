@@ -313,7 +313,7 @@ def _gen_filter_count(leps, flag_bits, status=None):
 
 evt_cut_defs = {
     # This following will be True for every event. There's probably a more intuitive way to do this
-    "Keep all evts": lambda objs: objs["pvs"].npvs >= 0,
+    "Keep all evts": lambda objs: ak.flatten(objs["pvs"].npvs) >= 0,
     # Re-application of the central-production gen filter. The v10 signal samples
     # were PRODUCED with this filter (their GenFilterInfo records the tried/passed
     # counts), so on them the cutflow of these cuts is a re-pass/validation rate

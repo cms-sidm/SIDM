@@ -1158,7 +1158,7 @@ cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - "lj_lj_invmass"
 # corrections study (sidm/studies/corrections): the standard corrections, the
 # lepton-jet constituents they act on, and the jet corrections inside the
-# lepton-jet isolation. Needs SidmProcessor(corrections=...); run with
+# lepton-jet isolation. Needs the corrections on (SidmProcessor's default); run with
 # syst_hists=True to get every weight category on the syst axis.
 corrections_weights: &corrections_weights
   - "pileup_nTrueInt"

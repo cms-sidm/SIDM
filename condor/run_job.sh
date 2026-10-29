@@ -12,9 +12,9 @@ EOS_OUTDIR=$4
 CHANNELS=${5:-base}
 HIST_COLLECTIONS=${6:-muon_base}
 # Optional positional arg 7: standard corrections for SidmProcessor
-# ("default", or a comma-separated list from sidm/configs/corrections.yaml).
-# Empty keeps the uncorrected genWeight.
-CORRECTIONS=${7:-}
+# ("default", the default; a comma-separated list from
+# sidm/configs/corrections.yaml; or "none" for the uncorrected genWeight).
+CORRECTIONS=${7:-default}
 # Optional positional arg 8: how the histograms are weighted. "unweighted"
 # (the default, as before) fills unit weights, so the corrections reach the
 # cutflow only; "weighted" fills the event weights; "syst" fills them and adds

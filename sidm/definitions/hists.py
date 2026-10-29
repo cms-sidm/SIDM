@@ -5622,7 +5622,7 @@ hist_defs = {
 
     # corrections study (sidm/studies/corrections). Filled with the event
     # weights; with syst_hists=True every weight category is on the syst axis.
-    # weight_* hists need SidmProcessor(corrections=...), *_sf hists the
+    # weight_* hists need the corrections on (SidmProcessor's default), *_sf hists the
     # corresponding object correction (applied or monitored).
     "pileup_nTrueInt": h.Histogram([
         # nTrueInt is integer in UL simulation: bins centred on the integers, since on

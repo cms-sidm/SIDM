@@ -33,7 +33,7 @@ def write_run_metadata(
     schema=None,
     chunksize=None,
     unweighted_hist=None,
-    corrections=None,
+    corrections=True,
     monitor_corrections=None,
     extra=None,
     sidm_root=None,
@@ -57,10 +57,10 @@ def write_run_metadata(
         chunksize: optional chunk size used by ``processor.Runner``.
         unweighted_hist: optional bool — whether ``SidmProcessor`` was
             constructed with ``unweighted_hist=True``.
-        corrections: optional, the ``corrections`` argument given to
-            ``SidmProcessor`` (``True`` or a list of names). For each year in
-            the fileset, the files, correction names and checksums are recorded
-            under ``corrections``.
+        corrections: the ``corrections`` argument given to ``SidmProcessor``
+            (``True``, its default, or a list of names; ``None`` for none). For
+            each year in the fileset, the files, correction names and checksums
+            are recorded under ``corrections``.
         monitor_corrections: optional, the ``monitor_corrections`` argument
             given to ``SidmProcessor`` (evaluated, not applied); recorded the
             same way under ``monitored_corrections``.

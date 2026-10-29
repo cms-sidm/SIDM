@@ -342,11 +342,11 @@ queue sample, chunk, filelist from job_args.txt
 |---|---|---|---|
 | 5 | channels | `base` | comma-separated selections from `selections.yaml` |
 | 6 | hist collections | `muon_base` | comma-separated collections from `hist_collections.yaml` |
-| 7 | corrections | empty | standard corrections for simulation: `default`, or names from `sidm/configs/corrections.yaml` |
+| 7 | corrections | `default` | standard corrections for simulation: `default`, names from `sidm/configs/corrections.yaml`, or `none` |
 | 8 | hist mode | `unweighted` | `unweighted` (unit weights, as before), `weighted`, or `syst` (weighted, plus a `syst` axis with every weight category; needs corrections) |
 | 9 | monitored corrections | empty | corrections evaluated but not applied, e.g. `photon_pixel_veto` |
 
-With the defaults the job runs exactly as before. See [`sidm/studies/corrections/README.md`](../sidm/studies/corrections/README.md) for the corrections and the weight categories.
+With the defaults the job applies the default corrections, which reach the cutflows only (the histograms stay unweighted); `none` as the 7th argument runs it as before the corrections existed. See [`sidm/studies/corrections/README.md`](../sidm/studies/corrections/README.md) for the corrections and the weight categories.
 
 `run_sidm_chunk.py` reads each sample's `skim_factor`, `is_data` and `year` from the location YAML its files come from (it matches the files against every YAML in `sidm/configs/ntuples/`), so the skimmed backgrounds are normalized with their skim factor. Earlier versions set `skim_factor = 1` for every sample, which overestimates a skimmed sample's yields by 1/skim_factor. The analysis is blinded, so a chunk whose files are collision data (an `is_data` sample, a `data*.yaml` location or a `/SIDM/Data/` path) stops before reading anything unless `--allow-data` is passed; `run_job.sh` never passes it.
 

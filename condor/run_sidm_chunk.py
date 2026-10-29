@@ -74,9 +74,10 @@ def main():
     parser.add_argument("--hist-collections", default="muon_base")
     parser.add_argument("--unweighted-hist", action="store_true")
     parser.add_argument(
-        "--corrections", default="",
+        "--corrections", default="default",
         help="standard corrections to apply (sidm/configs/corrections.yaml): 'default' for "
-             "the config's default list, or a comma-separated list of names; empty for none")
+             "the config's default list (the default), a comma-separated list of names, or "
+             "'none' for the plain genWeight")
     parser.add_argument("--syst-hists", action="store_true",
                         help="add a syst axis with the weight variations to every histogram")
     parser.add_argument(
@@ -125,6 +126,8 @@ def main():
     hist_collections = [x.strip() for x in args.hist_collections.split(",") if x.strip()]
     if args.corrections.strip() == "default":
         corrections = True
+    elif args.corrections.strip() in ("none", ""):
+        corrections = None
     else:
         corrections = [x.strip() for x in args.corrections.split(",") if x.strip()]
     monitored = [x.strip() for x in args.monitor_corrections.split(",") if x.strip()]

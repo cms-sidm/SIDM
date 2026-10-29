@@ -59,8 +59,8 @@
   \vspace{0.1em}
   \small
   \begin{enumerate}
-    \item \textbf{Framework}: \code{SidmProcessor(..., corrections=True)} applies the standard
-          corrections to simulation, with every weight category (uncorrected, one correction at
+    \item \textbf{Framework}: \code{SidmProcessor} applies the standard corrections to
+          simulation by default, with every weight category (uncorrected, one correction at
           a time, up/down) in every cutflow and, optionally, every histogram.
     \item \textbf{Campaign}: every v10 signal point and every skimmed background through Condor,
           with dedicated histograms; merged outputs on EOS for the whole group.
@@ -132,7 +132,9 @@
       {\scriptsize
       \begin{itemize}
         \item Normalisation from the plain genWeight sum; data never corrected.
-        \item \code{corrections=None} (default): \textbf{identical to \texttt{main}}.
+        \item On by default; \code{corrections=None}: \textbf{identical to \texttt{main}}.
+        \item Object SFs from the lepton jets, or from the selected muons in the Z and
+              $t\bar{t}$ CRs (\code{sf\_objects}).
         \item Fill functions see the factors: histograms of the corrections themselves.
       \end{itemize}}
     \end{column}
@@ -207,12 +209,13 @@
 \begin{frame}{Framework changes made for the campaign}
   \footnotesize
   \begin{itemize}
-    \item \code{SidmProcessor}: \code{corrections=}, \code{syst\_hists=}, \code{monitor\_corrections=};
-          with the defaults the output is identical to \texttt{main}.
+    \item \code{SidmProcessor}: \code{corrections=} (on by default), \code{syst\_hists=},
+          \code{monitor\_corrections=}; with \code{corrections=None} the output is identical to
+          \texttt{main}. \code{sf\_objects} in \code{selections.yaml}: SFs from selected objects.
     \item \code{run\_sidm\_chunk.py}: metadata (\code{skim\_factor}, \code{is\_data}, year) from the
           location YAML; \textbf{refuses collision data} unless \code{-{}-allow-data}.
-    \item \code{run\_job.sh}: optional arguments for weighted / \code{syst} histograms and monitored
-          corrections; defaults unchanged.
+    \item \code{run\_job.sh}: default corrections unless told \code{none}; optional arguments for
+          weighted / \code{syst} histograms and monitored corrections.
     \item \code{merge\_coffea\_chunks\_eos.py}: normalisation bug fixed (next slides); streams the
           chunks (1,000 chunks no longer need 16 GB); \code{-{}-samples}.
     \item \code{make\_job\_args.py}: files per job per sample; \code{submit\_corrections.sub}: holds and
@@ -226,7 +229,7 @@
     \begin{column}{0.48\textwidth}
       \footnotesize
       \begin{itemize}
-        \item \code{test\_corrections.py}: \textbf{49/49} checks, with synthetic corrections and
+        \item \code{test\_corrections.py}: \textbf{55/55} checks, with synthetic corrections and
               the pinned POG files.
         \item \code{corrections=None} reproduces \texttt{main} exactly on a signal and a DY file:
               cutflows, 187 histograms bin by bin, metadata, warnings.

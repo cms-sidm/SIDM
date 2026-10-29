@@ -85,7 +85,7 @@ class SidmProcessor(processor.ProcessorABC):
         debug_branches=None,
         include_default_debug_branches=True,
         debug_suppress_failures=True,
-        corrections=None,
+        corrections=True,
         syst_hists=False,
         monitor_corrections=None,
     ):
@@ -124,8 +124,9 @@ class SidmProcessor(processor.ProcessorABC):
             self.debug_branches.update(debug_branches)
 
         # Standard CMS corrections from configs/corrections.yaml, applied to
-        # simulation only. None keeps the plain genWeight; True applies the
-        # config's default list; a list names the corrections to apply. Each
+        # simulation only. True (the default) applies the config's default
+        # list; a list names the corrections to apply; None keeps the plain
+        # genWeight. Each
         # channel's cutflow then also holds the weighted count of every weight
         # category (corrections.weight_categories: the uncorrected and
         # one-correction references and the up/down variations), and
@@ -246,7 +247,8 @@ class SidmProcessor(processor.ProcessorABC):
                 sel_objs = postLj_selection.apply_obj_cuts(sel_objs)
  
                 # attach event weights. With corrections, the object SFs are
-                # evaluated for this channel's lepton-jet constituents, and every
+                # evaluated for this channel's lepton-jet constituents, or for
+                # its selected objects of the sf_objects collections, and every
                 # weight category rides along so the event cuts slim it with the
                 # rest, as do the factors themselves (weight_factors, one column
                 # per factor and shift) for histograms of the corrections.
@@ -255,7 +257,11 @@ class SidmProcessor(processor.ProcessorABC):
                     sel_objs["evt_weights"] = evt_weights
                 else:
                     ch_weights = weights.copy()
-                    applied = corrector.add_object_weights(ch_weights, sel_objs["ljs"], cuts["obj"])
+                    selected = None
+                    if cuts["sf_objects"] is not None:
+                        selected = {c: sel_objs[c] for c in cuts["sf_objects"]}
+                    applied = corrector.add_object_weights(ch_weights, sel_objs["ljs"], cuts["obj"],
+                                                           selected)
                     object_corrections[channel] = processor.set_accumulator(
                         f"{name}:{wp}" for name, wp in applied.items())
                     sel_objs["evt_weights"] = ak.Array(ch_weights.category("nominal", self.monitored))
@@ -656,6 +662,14 @@ class SidmProcessor(processor.ProcessorABC):
 
             if "evt_cuts" in cuts:
                 ch_cuts[channel]["evt"] = utilities.flatten(cuts["evt_cuts"])
+
+            # not a cut: the collections whose selected objects get the object
+            # SFs, instead of the lepton-jet constituents
+            ch_cuts[channel]["sf_objects"] = None
+            if "sf_objects" in cuts:
+                sf_objects = cuts["sf_objects"]
+                ch_cuts[channel]["sf_objects"] = ([sf_objects] if isinstance(sf_objects, str)
+                                                  else utilities.flatten(sf_objects))
 
         return ch_cuts
 
