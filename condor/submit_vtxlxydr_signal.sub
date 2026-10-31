@@ -1,0 +1,26 @@
+universe = vanilla
+
+executable = run_job.sh
+
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/vtxLxyDr_signal_2018 base_ljDisplacementIso_cosAlpha,base_ljDisplacementIso_cosAlpha_ljSpread mu_lj_vtx_outcome_lxy_dr,mu_lj_vtx_chi2_dsa_pt,dsa_tail_diag sidm/configs/ntuples/backgrounds.yaml skimmed_llpNanoAOD_v2 configs/selections_vertexChi2_as_run.yaml
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = sidm_code.tar.gz, requirements.txt, constraints.txt, $(filelist)
+transfer_output_files = ""
+
+output = $(LOGDIR)/$(sample)_$(chunk)_$(Cluster)_$(Process).out
+error  = $(LOGDIR)/$(sample)_$(chunk)_$(Cluster)_$(Process).err
+log    = $(LOGDIR)/$(sample)_$(chunk)_$(Cluster)_$(Process).log
+
+request_cpus = 1
+request_memory = 2GB
+request_disk = 4GB
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+# LOGDIR defaults to logs/ (git-ignored); pass -append 'LOGDIR=...' to put them elsewhere.
+LOGDIR = logs
+JOBARGS = job_args_vtxlxydr.txt
+queue sample, chunk, filelist from $(JOBARGS)
