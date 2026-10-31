@@ -1,0 +1,99 @@
+data files: 68   MC files: 8
+loaded data 68  MC 8   hists per file: 60
+matrix ptPf edges: [  0.  10.  20.  30.  40.  50.  60.  80. 100. 150. 200. 300. 500.]
+matrix ptDsa edges: [  0.  10.  20.  30.  40.  50.  60.  80. 100. 150. 200. 300. 500.]
+LJ cube pt edges: [  0. 100. 200. 500.]  nHits: [ 0. 20. 30. 60.]  dxyBS: [0.e+00 1.e-01 5.e-01 2.e+00 1.e+01 5.e+01 2.e+02]
+nDTHits edges: [ 0.  1.  6. 12. 24. 60.]
+phi edges: [-3.14159265 -2.74889357 -2.35619449 -1.96349541 -1.57079633 -1.17809725
+ -0.78539816 -0.39269908  0.          0.39269908  0.78539816  1.17809725
+  1.57079633  1.96349541  2.35619449  2.74889357  3.14159265]
+abseta edges: [0.  0.9 1.2 2.4]
+
+=== CONTROL-SAMPLE SIZES (same 68 files, flow-inclusive) ===
+channel     dR-matched  seg-matched   seg/dR   dR tail  seg tail
+Before         3429834      3114556   0.9081     27698     24090
+CR             3243506      2945527   0.9081     26297     22833
+VR             2438302      2232200   0.9155     19500     17347
+
+=== SEGMENT-MATCH PARTNER MULTIPLICITY AND pT_PF TIE-BREAK ===
+Before    nPartners 1..5 = [3046437, 67699, 416, 4, 0]  multi-partner frac 0.0219
+          feed-up T(>=200 | pT_PF<100): most=7.90680e-03  fewest=7.90893e-03  rel shift +0.0003
+CR        nPartners 1..5 = [2909461, 35938, 128, 0, 0]  multi-partner frac 0.0122
+          feed-up T(>=200 | pT_PF<100): most=7.92977e-03  fewest=7.93210e-03  rel shift +0.0003
+VR        nPartners 1..5 = [2201935, 29971, 290, 4, 0]  multi-partner frac 0.0136
+          feed-up T(>=200 | pT_PF<100): most=7.95420e-03  fewest=7.95502e-03  rel shift +0.0001
+
+=== HALO DIAGNOSTICS (mu-LJ DSA muons) ===
+sample/chan    region               N  f|dxy|>2cm  f|dxy|>10cm  f CSC-only
+data/Before    tail_lowNH      2248.0      0.9106       0.5529      0.4150
+data/Before    tail_highNH    19514.0      0.9734       0.8827      0.0196
+data/Before    SB_lowNH        7546.0      0.8619       0.5465      0.3717
+data/Before    low_lowNH     108020.0      0.6765       0.2469      0.5756
+data/Before    low_highNH    372439.0      0.7942       0.3825      0.1110
+mc/Before      tail_lowNH       137.3      0.6373       0.1419      0.6852
+mc/Before      tail_highNH     1010.1      0.6662       0.2344      0.1825
+mc/Before      SB_lowNH        1817.2      0.6147       0.2193      0.6382
+mc/Before      low_lowNH      76879.1      0.5598       0.0801      0.5664
+mc/Before      low_highNH    429728.4      0.6779       0.0973      0.1670
+data/CR        tail_lowNH      1032.0      0.8295       0.1347      0.7936
+data/CR        tail_highNH     1852.0      0.8504       0.3677      0.1701
+data/CR        SB_lowNH        3594.0      0.7496       0.1931      0.6622
+data/CR        low_lowNH      81165.0      0.6299       0.1329      0.6369
+data/CR        low_highNH    254142.0      0.7155       0.1516      0.1478
+mc/CR          tail_lowNH       133.6      0.6465       0.1444      0.6859
+mc/CR          tail_highNH      978.4      0.6748       0.2417      0.1724
+mc/CR          SB_lowNH        1554.3      0.6364       0.2441      0.6547
+mc/CR          low_lowNH      67976.9      0.5631       0.0792      0.5613
+mc/CR          low_highNH    414461.3      0.6765       0.0945      0.1623
+data/VR        tail_lowNH       659.0      0.7951       0.1184      0.8240
+data/VR        tail_highNH     1195.0      0.8360       0.4276      0.1858
+data/VR        SB_lowNH        2476.0      0.7092       0.1632      0.7019
+data/VR        low_lowNH      63233.0      0.5858       0.1119      0.7000
+data/VR        low_highNH    171386.0      0.6712       0.1394      0.1833
+mc/VR          tail_lowNH        89.2      0.6696       0.1930      0.6198
+mc/VR          tail_highNH      556.9      0.6052       0.2923      0.2740
+mc/VR          SB_lowNH        1044.9      0.5293       0.0646      0.6613
+mc/VR          low_lowNH      54704.1      0.5331       0.0690      0.6034
+mc/VR          low_highNH    296767.8      0.6363       0.0793      0.1995
+
+sample/chan    pT region          N        H        V     H/V     f_H     eta frac (0-0.9/0.9-1.2/1.2-2.4)  f halo corner
+data/Before    phi_tail     21762.0    993.0  10474.0   0.095  0.0456                    0.920/0.022/0.058         0.0155
+data/Before    phi_SB       41997.0   3197.0  19858.0   0.161  0.0761                    0.871/0.040/0.089         0.0235
+data/Before    phi_low     480459.0  92761.0 166933.0   0.556  0.1931                    0.688/0.101/0.211         0.0529
+mc/Before      phi_tail      1147.4    174.6    226.0   0.772  0.1521                    0.688/0.069/0.243         0.0403
+mc/Before      phi_SB        7131.4   1939.5   1648.5   1.177  0.2720                    0.642/0.097/0.261         0.0839
+mc/Before      phi_low     506607.5 130734.0 127206.7   1.028  0.2581                    0.669/0.107/0.224         0.0609
+data/CR        phi_tail      2884.0    782.0    752.0   1.040  0.2712                    0.517/0.094/0.389         0.1078
+data/CR        phi_SB       10669.0   2712.0   2882.0   0.941  0.2542                    0.577/0.115/0.308         0.0811
+data/CR        phi_low     335307.0  85372.0  86716.0   0.985  0.2546                    0.606/0.131/0.263         0.0658
+mc/CR          phi_tail      1112.0    171.6    211.9   0.810  0.1543                    0.702/0.064/0.234         0.0404
+mc/CR          phi_SB        6515.9   1649.9   1568.9   1.052  0.2532                    0.650/0.104/0.246         0.0667
+mc/CR          phi_low     482438.3 124213.0 121129.1   1.025  0.2575                    0.677/0.108/0.215         0.0581
+data/VR        phi_tail      1854.0    455.0    524.0   0.868  0.2454                    0.519/0.072/0.409         0.1079
+data/VR        phi_SB        6818.0   1712.0   1878.0   0.912  0.2511                    0.548/0.099/0.352         0.0959
+data/VR        phi_low     234619.0  60207.0  61237.0   0.983  0.2566                    0.563/0.119/0.318         0.0800
+mc/VR          phi_tail       646.0    104.6    120.8   0.865  0.1619                    0.630/0.048/0.322         0.0482
+mc/VR          phi_SB        3986.3   1197.3    907.6   1.319  0.3003                    0.590/0.108/0.302         0.0953
+mc/VR          phi_low     351471.9  91732.5  87508.6   1.048  0.2610                    0.640/0.102/0.258         0.0721
+
+=== SEGMENT-MATCHED CONTROL, same (pT_DSA, nHits) corner ===
+data/Before    tail_lowNH   N=   8737.0  f|dxy|>2cm= 0.7366  f CSC-only= 0.7792
+data/Before    low_lowNH    N= 569720.0  f|dxy|>2cm= 0.5198  f CSC-only= 0.6600
+data/Before    tail_highNH  N=  26574.0  f|dxy|>2cm= 0.7595  f CSC-only= 0.1822
+data/CR        tail_lowNH   N=   8196.0  f|dxy|>2cm= 0.7343  f CSC-only= 0.7762
+data/CR        low_lowNH    N= 516699.0  f|dxy|>2cm= 0.5157  f CSC-only= 0.6482
+data/CR        tail_highNH  N=  25597.0  f|dxy|>2cm= 0.7579  f CSC-only= 0.1765
+data/VR        tail_lowNH   N=   6246.0  f|dxy|>2cm= 0.7243  f CSC-only= 0.7791
+data/VR        low_lowNH    N= 392850.0  f|dxy|>2cm= 0.5163  f CSC-only= 0.6485
+data/VR        tail_highNH  N=  19605.0  f|dxy|>2cm= 0.7552  f CSC-only= 0.1817
+mc/Before    tail_lowNH   N=   3032.1  f|dxy|>2cm= 0.5683  f CSC-only= 0.7055
+mc/Before    low_lowNH    N= 431387.5  f|dxy|>2cm= 0.4246  f CSC-only= 0.6792
+mc/Before    tail_highNH  N=  10978.5  f|dxy|>2cm= 0.4681  f CSC-only= 0.2059
+mc/CR        tail_lowNH   N=   2890.0  f|dxy|>2cm= 0.5549  f CSC-only= 0.6998
+mc/CR        low_lowNH    N= 405784.8  f|dxy|>2cm= 0.4244  f CSC-only= 0.6728
+mc/CR        tail_highNH  N=  10662.3  f|dxy|>2cm= 0.4622  f CSC-only= 0.2047
+mc/VR        tail_lowNH   N=   1790.1  f|dxy|>2cm= 0.5623  f CSC-only= 0.6792
+mc/VR        low_lowNH    N= 280439.2  f|dxy|>2cm= 0.4288  f CSC-only= 0.6730
+mc/VR        tail_highNH  N=   7307.1  f|dxy|>2cm= 0.4333  f CSC-only= 0.2144
+
+JSON written: /uscms_data/d3/murtazas/SIDM-wt-lpcagent-vtx-slides/sidm/studies/vertexChi2/transfer_factor/full/tf_seg_aux.json
