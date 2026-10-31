@@ -1,4 +1,4 @@
-% Group-meeting deck on sections 8-10 of ../vertexChi2CosmicVetoStudy.ipynb.
+% Group-meeting deck on sections 8 and 10 (with context from 3-9) of ../vertexChi2CosmicVetoStudy.ipynb.
 % Every number is quoted from the write-up's markdown, the records in ../transfer_factor/,
 % or the fold logs in ../transfer_factor/logs/. Figures are the notebook's own PNG outputs:
 % run `python extract_figures.py` first, then `pdflatex dsa_tail.tex`.
@@ -28,6 +28,12 @@
 
 % ---------------------------------------------------------------------------------------
 \begin{frame}{Where the tail comes from (sections 3, 5)}
+  \fig[0.34]{sec3_cell19.png}
+  {\scriptsize DSA-muon $\pt$ in mu-type LJs, 2018C data against MC stacked by process and scaled by
+  6.97/59.83. Panels: before, Spread veto + cosAlpha, vertex veto + cosAlpha, vertex veto only;
+  lower pads data/MC.\par}
+  \smallskip
+  \footnotesize
   \begin{itemize}
     \item 1-LJ control region, DSA muons inside mu-type lepton jets, 2018C \texttt{DoubleMuon}.
           The \emph{tail} is DSA $\pt \geq 200$~GeV, overflow included.
@@ -38,8 +44,11 @@
     \item Residual data/MC in the tail: $2.4 \pm 0.4$ (eight-sample tail set, $2.385 \pm 0.426$).
           The MC tail is about 35 effective events.
   \end{itemize}
-  \medskip
-  \textbf{Why that ratio is not load-bearing (section 3.1).}
+  \src{write-up sections 3, 5, Figure 6}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Why that ratio is not load-bearing (section 3.1)}
   \begin{itemize}
     \item Before the veto the region holds 0.770 data mu-type LJs per MC one, but 0.556 data DSA
           muons per MC one.
@@ -48,35 +57,44 @@
     \item A ratio of rates (tail entries over all entries of the same channel) divides this out.
           Section 8 is built that way.
   \end{itemize}
-  \src{write-up sections 3, 3.1, 5}
+  \src{write-up section 3.1}
 \end{frame}
 
 % ---------------------------------------------------------------------------------------
 \begin{frame}{The tail is not cosmic (sections 6, 7)}
-  \textbf{Azimuth} (vertical $=$ within 0.5 rad of $\pm\pi/2$, horizontal $=$ within 0.5 rad of 0 or $\pm\pi$):
-  \begin{center}
-  \begin{tabular}{lcc}
-    \toprule
-     tail, V/H & data & MC \\
-    \midrule
-    before the veto & $12.2 \pm 1.3$ & $1.29 \pm 0.22$ \\
-    after the Spread veto & $0.94 \pm 0.15$ & $1.23 \pm 0.21$ \\
-    \bottomrule
-  \end{tabular}
-  \end{center}
-  \begin{itemize}
-    \item Cosmic content of the pre-veto tail: 0.84 from the two-template $\phi$ fit, $\sim$87\%
-          from veto retention against the MC prompt-muon reference (section 6).
-    \item After the veto: residual cosmic content $< 6.2\%$ of the tail at 95\% CL, fewer than 19
-          of the 309 events. The best fit is negative. With the template's vertical fraction
-          degraded from 0.99 to 0.90 the bound moves to 7.8\%.
-    \item Limits of the statement: the bound is inclusive over the tail, and the cosmic template is
-          93.9\% $\mathrm{nHits} \geq 20$, so it says nothing either way about the low-nHits
-          survivors (section 10.4 returns to them).
-    \item The low-nHits concentration of the post-veto tail is mostly inherited from the bulk:
-          tail/bulk double ratio in nHits [10,20) is $1.95 \pm 0.46$, 2.1 standard deviations.
-  \end{itemize}
-  \src{write-up sections 6, 7}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \footnotesize
+      \textbf{Azimuth} (vertical $=$ within 0.5 rad of $\pm\pi/2$, horizontal $=$ within 0.5 rad of
+      0 or $\pm\pi$):\\[3pt]
+      \begin{tabular}{lcc}
+        \toprule
+         tail, V/H & data & MC \\
+        \midrule
+        before the veto & $12.2 \pm 1.3$ & $1.29 \pm 0.22$ \\
+        after the Spread veto & $0.94 \pm 0.15$ & $1.23 \pm 0.21$ \\
+        \bottomrule
+      \end{tabular}
+      \begin{itemize}
+        \item Cosmic content of the pre-veto tail: 0.84 from the two-template $\phi$ fit, $\sim$87\%
+              from veto retention against the MC prompt-muon reference (section 6).
+        \item After the veto: residual cosmic content $< 6.2\%$ of the tail at 95\% CL, fewer than 19
+              of the 309 events. The best fit is negative. With the template's vertical fraction
+              degraded from 0.99 to 0.90 the bound moves to 7.8\%.
+        \item Limits: the bound is inclusive over the tail, and the cosmic template is
+              93.9\% $\mathrm{nHits} \geq 20$, so it says nothing either way about the low-nHits
+              survivors (section 10.4 returns to them).
+        \item The low-nHits concentration of the post-veto tail is mostly inherited from the bulk:
+              tail/bulk double ratio in nHits [10,20) is $1.95 \pm 0.46$, 2.1 standard deviations.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \fig[0.55]{sec7_cell45.png}
+      {\scriptsize DSA-muon $\phi$ above 200~GeV, each channel at unit area; dotted lines at $\pm\pi/2$,
+      shaded bands the horizontal windows; grey dashed, the vertex-inverted cosmic template.\par}
+    \end{column}
+  \end{columns}
+  \src{write-up sections 6, 7, Figure 11}
 \end{frame}
 
 % ---------------------------------------------------------------------------------------

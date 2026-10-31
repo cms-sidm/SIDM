@@ -20,7 +20,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--notebook", default=os.path.join(HERE, "..", "vertexChi2CosmicVetoStudy.ipynb"))
     ap.add_argument("--outdir", default=os.path.join(HERE, "figures"))
-    ap.add_argument("--sections", nargs="+", default=["8", "9", "10"],
+    ap.add_argument("--sections", nargs="+", default=["3", "7", "8", "9", "10"],
                     help="top-level sections to extract")
     args = ap.parse_args()
     os.makedirs(args.outdir, exist_ok=True)
