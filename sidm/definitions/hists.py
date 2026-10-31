@@ -292,6 +292,24 @@ def dsa_seg_response(objs):
     dsa, pf_pt = matched_dsa_seg(objs)[:2]
     return dsa.pt / pf_pt
 
+def mu_lj_muon_count(objs):
+    """Per mu-type LJ: number of PF plus DSA muon constituents."""
+    return objs["mu_ljs"].pfMu_n + objs["mu_ljs"].dsaMu_n
+
+def mu_lj_mumu_dr(objs):
+    """Per mu-type LJ: dR between its two highest-pT muons, PF and DSA constituents pooled;
+    -1 for a single-muon LJ."""
+    muons = objs["mu_ljs"].muons
+    muons = muons[ak.argsort(muons.pt, axis=-1, ascending=False)]
+    lead = ak.pad_none(muons, 2, axis=-1)
+    return ak.fill_none(lead[..., 0].delta_r(lead[..., 1]), -1)
+
+def mu_lj_gen_a_lxy(objs, r=0.4):
+    """Per mu-type LJ: Lxy (cm) of the nearest genAs_toMu in dR, required within r; -1 for an
+    LJ with no such gen dark photon."""
+    gen_a, dr_gen = objs["mu_ljs"].nearest(objs["genAs_toMu"], return_metric=True)
+    return ak.fill_none(ak.where(dr_gen < r, lxy(gen_a), -1), -1)
+
 # Histograms that read mu_ljs.vtx_chi2 or objs["dsaMuonsRaw"]. SidmProcessor loads dsaMuonsRaw
 # and the dimuon-vertex tables, and computes vtx_chi2, only when a requested histogram is listed
 # here or a requested channel cuts on vtx_chi2. tests/test_vtx_chi2_inputs.py checks the list.
@@ -303,6 +321,8 @@ vtx_chi2_or_raw_dsa_hists = {
     "dsaSegMatch_response_abseta", "dsaSegMatch_response_nHits", "dsaSegMatch_response_relPtErr",
     "dsaSegMatch_ptPf_ptDsa_nPartners", "dsaSegMatch_ptPfFewest_ptDsa",
     "dsaSegMatch_ptDsa_absdxyBS_nHits", "dsaSegMatch_ptDsa_nDTHits_nHits",
+    "mu_lj_vtxChi2_muonN_genA_lxy", "mu_lj_vtxChi2_muonN_mumu_dR",
+    "mu_lj_vtxChi2_genA_lxy_mumu_dR",
 }
 
 
@@ -5365,6 +5385,55 @@ hist_defs = {
             h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="mu_lj_dsaMuon_abseta",
                                       label=r"DSA $\mu$ $|\eta|$"),
                    lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.eta)),
+        ],
+    ),
+    # ------------------------------------------------------------------------------------
+    # Vertex outcome of every mu-type LJ against the gen dark photon's Lxy and the LJ's muon-pair
+    # opening angle. vtx_chi2 bin [-1.5, -0.5) is the -1 no-vertex sentinel, [0, 5) passes the
+    # vertex requirement, >= 5 (overflow included) fails it. The muon count is an axis rather
+    # than a mask, so the vtx_chi2 marginal equals mu_lj_vtx_chi2's.
+    "mu_lj_vtxChi2_muonN_genA_lxy": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([-1.5, -0.5, 0, 1, 2, 5, 10, 100, 1e4, 1e9],
+                                      name="vtx_chi2",
+                                      label="mu-type LJ best dimuon-vertex normChi2"),
+                   lambda objs, mask: objs["mu_ljs"].vtx_chi2),
+            h.Axis(hist.axis.Variable([1, 2, 3, 11], name="mu_lj_muonN",
+                                      label=r"N($\mu$) in $\mu$-type LJ (PF + DSA)"),
+                   lambda objs, mask: mu_lj_muon_count(objs)),
+            h.Axis(hist.axis.Variable([0, 0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000],
+                                      name="genA_lxy",
+                                      label=r"$L_{xy}$ of the matched $Z_d\rightarrow\mu\mu$ (cm)"),
+                   lambda objs, mask: mu_lj_gen_a_lxy(objs)),
+        ],
+    ),
+    "mu_lj_vtxChi2_muonN_mumu_dR": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([-1.5, -0.5, 0, 1, 2, 5, 10, 100, 1e4, 1e9],
+                                      name="vtx_chi2",
+                                      label="mu-type LJ best dimuon-vertex normChi2"),
+                   lambda objs, mask: objs["mu_ljs"].vtx_chi2),
+            h.Axis(hist.axis.Variable([1, 2, 3, 11], name="mu_lj_muonN",
+                                      label=r"N($\mu$) in $\mu$-type LJ (PF + DSA)"),
+                   lambda objs, mask: mu_lj_muon_count(objs)),
+            h.Axis(hist.axis.Variable([0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0],
+                                      name="mu_lj_mumu_dR",
+                                      label=r"$\Delta R$ of the two leading LJ muons"),
+                   lambda objs, mask: mu_lj_mumu_dr(objs)),
+        ],
+    ),
+    "mu_lj_vtxChi2_genA_lxy_mumu_dR": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([-1.5, -0.5, 0, 1, 2, 5, 10, 100, 1e4, 1e9],
+                                      name="vtx_chi2",
+                                      label="mu-type LJ best dimuon-vertex normChi2"),
+                   lambda objs, mask: objs["mu_ljs"].vtx_chi2),
+            h.Axis(hist.axis.Variable([0, 1, 10, 100, 1000], name="genA_lxy",
+                                      label=r"$L_{xy}$ of the matched $Z_d\rightarrow\mu\mu$ (cm)"),
+                   lambda objs, mask: mu_lj_gen_a_lxy(objs)),
+            h.Axis(hist.axis.Variable([0, 0.02, 0.1, 0.5, 1.0], name="mu_lj_mumu_dR",
+                                      label=r"$\Delta R$ of the two leading LJ muons"),
+                   lambda objs, mask: mu_lj_mumu_dr(objs)),
         ],
     ),
     "dsaMu_pfMu_dR_closest": h.Histogram(

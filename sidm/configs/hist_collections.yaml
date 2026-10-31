@@ -1171,6 +1171,16 @@ dsa_tail_diag: &dsa_tail_diag
   - "mu_lj_dsaMuon_pt_nHits_nDTHits"
   - "mu_lj_dsaMuon_pt_phi_abseta"
 
+# vertexChi2 study: vertex outcome (no vertex / normChi2 >= 5 / pass) of every mu-type LJ
+# against its muon count, the matched gen dark photon's Lxy and the LJ's muon-pair dR, plus the
+# plain vtx_chi2 histogram the outcome marginal closes against. Signal MC only (gen axis).
+mu_lj_vtx_outcome_lxy_dr: &mu_lj_vtx_outcome_lxy_dr
+  - "mu_lj_vtxChi2_muonN_genA_lxy"
+  - "mu_lj_vtxChi2_muonN_mumu_dR"
+  - "mu_lj_vtxChi2_genA_lxy_mumu_dR"
+  - "mu_lj_vtx_chi2"
+  - "mu_lj_pt"
+
 cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - *cosAlpha
   - "egm_lj_pt"
