@@ -154,7 +154,7 @@ histograms as far as they existed then.
 | `runMCRespFull.ipynb` | The MC counterpart of `runDataFull2018.ipynb`: the same eight background samples used from section 5 on, same hist collections. | `vtxRespMC_2018` (8 samples) |
 | `runDataSegMatch2018.ipynb` | All 68 2018A-D `DoubleMuon` skims again, this time with `dsa_response_segmatch` (control muons matched by the segment-based cross-cleaning the analysis actually uses, not `dR`) and `dsa_tail_diag` (beamspot displacement, DT/CSC hit split, phi x \|eta\|). The primary input to section 10. | `vtxResp2_2018Full` (68 samples) |
 | `runMCRespSegMatch2018.ipynb` | The MC counterpart of `runDataSegMatch2018.ipynb`, same eight background samples, segment-matched response and halo diagnostics. | `vtxRespMC2_2018` (8 samples) |
-| `vertexChi2CosmicVetoStudy.ipynb` | The write-up. Reads the ten output directories above and the three JSON records in `transfer_factor/`, and recomputes every figure and printed number from them. Some values quoted in the section-10 text are not in the committed records: the dR-matched values of 10.1 and 10.2 and the no-veto column of the 10.1 table, the ratios, fractions and significance quoted in 10.3, and in 10.4 the no-veto, MC `\|eta\|` and control-muon fractions, the azimuth significance, the fit probability and the halo-corner fractions. They come from the fold's full output and, for the MC `\|eta\|` fractions, from the `vtxRespMC2_2018` outputs. The fold script that wrote the JSON records is not in the repository. | reads only; writes nothing |
+| `vertexChi2CosmicVetoStudy.ipynb` | The write-up. Reads the ten output directories above and the three JSON records in `transfer_factor/`, and recomputes every figure and printed number from them. Some values quoted in the section-10 text are not in the committed records: the dR-matched values of 10.1 and 10.2 and the no-veto column of the 10.1 table, the ratios, fractions and significance quoted in 10.3, and in 10.4 the no-veto, MC `\|eta\|` and control-muon fractions, the azimuth significance, the fit probability and the halo-corner fractions. They are in the fold logs, `transfer_factor/logs/`, and, for the MC `\|eta\|` fractions, come from the `vtxRespMC2_2018` outputs. The fold scripts that wrote the JSON records are in `transfer_factor/`; its README says how to rerun them. | reads only; writes nothing |
 
 ## Provenance sidecars
 
@@ -204,12 +204,12 @@ Section 10 of the write-up (the transfer-factor fold) needs four more runs, inde
 above and of each other: `runDataFull2018.ipynb` + `runMCRespFull.ipynb` (the dR-matched
 comparison) and `runDataSegMatch2018.ipynb` + `runMCRespSegMatch2018.ipynb` (the
 segment-matched control, the primary input). All four read the full 2018 sample (all 68
-skimmed 2018A-D `DoubleMuon` samples on the data side), not 2018C alone. The fold itself is not
-in the repository. It ran on their `.coffea` outputs and wrote the three JSON records in
-`transfer_factor/`, which the write-up re-reads; the write-up also re-opens the segment-matched
-data `.coffea` files directly for its `phi` x `nHits` and `|eta|` x `nHits` figure. Rerunning
-the notebooks therefore reproduces every input of the write-up except those three JSON
-records.
+skimmed 2018A-D `DoubleMuon` samples on the data side), not 2018C alone. The fold scripts in
+`transfer_factor/` run on their `.coffea` outputs and write the three JSON records there, which
+the write-up re-reads (`transfer_factor/README.md` has the command lines); the write-up also
+re-opens the segment-matched data `.coffea` files directly for its `phi` x `nHits` and
+`|eta|` x `nHits` figure. Rerunning the notebooks and then the fold scripts therefore
+reproduces every input of the write-up.
 
 ## A note on the two MC sets
 
