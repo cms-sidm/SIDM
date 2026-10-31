@@ -693,4 +693,4 @@ LIMITS THE WRITE-UP MUST STATE (spec section 13)
   12. Data are 68/68 chunks. Closures need no luminosity, but T14 and the era table depend on an external era-lumi table until 68/68 land; the verdict is PROVISIONAL.
   13. The thresholds 3 sigma / 1/3 / 2 sigma / 0.25 / 0.10 are PRE-REGISTERED CHOICES, not derived numbers. 'Consistent with feed-up at factor-1.5 precision' remains the strongest honest formulation unless R_cons and A_low are flat across the scan.
 
-JSON written: /uscms_data/d3/murtazas/SIDM-wt-lpcagent-vtx-slides/sidm/studies/vertexChi2/transfer_factor/full/tf_transfer_factor_full68.json
+JSON written: sidm/studies/vertexChi2/transfer_factor/full/tf_transfer_factor_full68.json

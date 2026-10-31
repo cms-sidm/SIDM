@@ -25,7 +25,7 @@ python $T/extract_records.py
 
 Each fold takes about 2-3 minutes on an LPC login node and 0.4 GB of memory; `tf_seg_aux.py` takes seconds. Every path is a command-line argument (`--data-dir`, `--mc-dir`, `--yaml-data`, `--json`; `--seg`, `--dr`, `--aux`, `--outdir` for the extractor), and a relative path is taken from the repository root wherever the script is run from. The full outputs (about 390 kB each) go to `full/`, which is not tracked; the logs are.
 
-The last line of each log names the absolute path the full JSON was written to; it is the only line that depends on where the scripts run.
+The last line of each log names the path the full JSON was written to. The scripts print it as an absolute path; in the committed logs it has been made relative to the repository root, so a fresh rerun differs from them in that line only.
 
 ## Provenance
 
