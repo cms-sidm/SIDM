@@ -96,4 +96,4 @@ mc/VR        tail_lowNH   N=   1790.1  f|dxy|>2cm= 0.5623  f CSC-only= 0.6792
 mc/VR        low_lowNH    N= 280439.2  f|dxy|>2cm= 0.4288  f CSC-only= 0.6730
 mc/VR        tail_highNH  N=   7307.1  f|dxy|>2cm= 0.4333  f CSC-only= 0.2144
 
-JSON written: /uscms_data/d3/murtazas/SIDM-wt-lpcagent-vtx-slides/sidm/studies/vertexChi2/transfer_factor/full/tf_seg_aux.json
+JSON written: sidm/studies/vertexChi2/transfer_factor/full/tf_seg_aux.json
