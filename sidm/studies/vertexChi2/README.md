@@ -175,7 +175,10 @@ done
 cat /tmp/job_args_vtxlxydr_4mu.txt /tmp/job_args_vtxlxydr_2mu2e.txt > condor/job_args_vtxlxydr.txt
 ```
 
-The census skip list drops 17 known-corrupt files from 15 samples. `run_job.sh` books
+The census skip list drops 17 known-corrupt files from 15 samples. One of them, `part-1.root`
+of `4Mu_200GeV_5p0GeV_200p0mm` (1718 events), had been read by the earlier `vtxChi2_signal_2018`
+run, so that sample holds 92544 events here against 94262 there; `vtx_outcome_lxy_dr/closure_checks.txt`
+lists it as the only sample whose event count differs between the two runs. `run_job.sh` books
 **unweighted** histograms and processes chunks of 50000 events, so the merged histograms hold raw
 counts, not the lumi x xs weighted sums of the Dask outputs; a per-LJ fraction is the same
 either way when every event of a sample carries the same generator weight, and the yield of a
@@ -196,7 +199,7 @@ and the merged files are copied to `RunOutputFiles/vtxLxyDr_signal_2018/`.
 ### Vertex outcome vs Lxy and dR, and the halo fractions (`vtx_outcome_lxy_dr/`)
 
 The tables in `vtx_outcome_lxy_dr/` are read from `vtxLxyDr_signal_2018` (signal), the existing
-`vtxChi2_signal_2018` (the O2 reference), and `vtxResp2_2018Full` / `vtxRespMC2_2018` (data and
+`vtxChi2_signal_2018` (the reference of the efficiency closure), and `vtxResp2_2018Full` / `vtxRespMC2_2018` (data and
 MC halo fractions). The scripts sit next to them; from the repository root, with the
 `sidm_venv` active and `PYTHONPATH` at the repository root, `OUT` an output directory:
 
@@ -205,12 +208,15 @@ D=sidm/studies/vertexChi2/vtx_outcome_lxy_dr
 python $D/vtx_outcome_vs_lxy_dr.py RunOutputFiles/vtxLxyDr_signal_2018 $OUT   # first: halo_signal reads its by-sample table
 python $D/halo_signal.py RunOutputFiles/vtxLxyDr_signal_2018 $OUT
 python $D/halo_data_mc.py $OUT
-python $D/o4_dask_vs_condor.py > $OUT/oracle_O4.txt
+python $D/condor_vs_dask.py $OUT/condor_vs_dask.txt
 ```
 
 They also write PNG figures, which are not committed. Outcome of a mu-type LJ: **no vertex**
-(`vtx_chi2 = -1`), **chi2 >= 5** (a stored within-LJ vertex with normChi2 >= 5), **pass**
-(`0 <= vtx_chi2 < 5`). Every LJ of the two channels has >= 2 muons (`Mu >= 2`). The
+(`vtx_chi2 < 0`: the -1 sentinel of an LJ without a stored within-LJ vertex, and the three LJs
+in the grid whose stored normChi2 lies in [-0.5, 0), which the vertex cut and `mu_lj_vtx_chi2`
+count as no vertex too), **chi2 >= 5** (a stored vertex with normChi2 >= 5), **pass**
+(`0 <= vtx_chi2 < 5`); the underflow bin below -1.5 is reported as `frac_other_vtx_bins` and is
+empty. Every LJ of the two channels has >= 2 muons (`Mu >= 2`). The
 **robust** samples (162 of 180) have `N_eff = (sum w)^2 / sum w^2 >= 200`, computed from the
 reference channel's `mu_lj_dsaMuon_pt_relPtErr`, flow included. Two ways of combining samples:
 **mean** / **sem** is the unweighted mean of the per-sample fractions, and its standard error,
@@ -220,18 +226,20 @@ counts).
 
 | file | what it holds | written by |
 |---|---|---|
-| `outcome_by_sample.csv` | Per sample and channel: mass point, `N_eff` from this run and from `vtxChi2_signal_2018`, robust flag, LJ count and yield, 1-muon and >= 2-muon fractions, the three outcome fractions among >= 2-muon LJs, the gen-matched fraction, pass/all, the old run's per-LJ vertex-veto efficiency (reference channel), and the input-file counts of both runs. | `vtx_outcome_vs_lxy_dr.py` |
+| `outcome_by_sample.csv` | Per sample and channel: mass point, `N_eff` from this run and from `vtxChi2_signal_2018`, robust flag, LJ count and yield, 1-muon and >= 2-muon fractions, the three outcome fractions among >= 2-muon LJs, the gen-matched fraction, pass/all, the old run's per-LJ vertex-veto efficiency (reference channel), and the input-file and event counts of both runs. | `vtx_outcome_vs_lxy_dr.py` |
 | `outcome_vs_lxy.csv` | Robust samples, gen-matched LJs (nearest `genAs_toMu` within dR < 0.4): outcome fractions in bins of the dark photon's Lxy (cm), mean / sem and pooled with its error, for all samples and per mediator mass, in both channels. | `vtx_outcome_vs_lxy_dr.py` |
 | `outcome_vs_dR.csv` | The same in bins of dR between the LJ's two highest-pT muons (PF and DSA pooled). | `vtx_outcome_vs_lxy_dr.py` |
 | `outcome_vs_lxy_dR.csv` | The same in coarse Lxy x dR bins. | `vtx_outcome_vs_lxy_dr.py` |
-| `oracles.txt`, `oracle_O1.csv` | Closure checks. O1: in every sample, channel and new histogram, the `vtx_chi2` marginal, grouped as no vertex / pass / chi2 >= 5, against `mu_lj_vtx_chi2`. O2: per-sample pass/all against the old run's per-LJ efficiency, and the robust means by mediator mass, m_Zd and ctau. | `vtx_outcome_vs_lxy_dr.py` |
-| `oracle_O4.txt` | `4Mu_100GeV_0p25GeV_0p02mm` from condor against the Dask run in `dask_check/`, every bin of the three new histograms and `mu_lj_vtx_chi2`, both channels. | `o4_dask_vs_condor.py` |
+| `closure_checks.txt`, `closure_vtx_chi2_marginal.csv` | Closure checks. The marginal closure (the CSV, summarised in the text file): in every sample, channel and new histogram, the `vtx_chi2` marginal, grouped as no vertex / pass / chi2 >= 5, against `mu_lj_vtx_chi2`. The efficiency closure: per-sample pass/all against the old run's per-LJ efficiency, the samples whose input-file or event count differs between the two runs, and the robust means by mediator mass, m_Zd and ctau. | `vtx_outcome_vs_lxy_dr.py` |
+| `condor_vs_dask.txt` | `4Mu_100GeV_0p25GeV_0p02mm` from condor against the Dask run in `dask_check/`, every bin of the three new histograms and `mu_lj_vtx_chi2`, both channels. | `condor_vs_dask.py` |
 | `halo_fractions_data_mc.csv` | 2018 data (68 skims) and the eight-sample MC, `cr_1egmOr1mu_lj` and its Spread-veto version, all DSA muons of mu-type LJs. Per DSA pT bin and nHits bin: the fraction with `|dxy_BS| >= 10` cm and the fraction with zero DT hits. Per pT bin and \|eta\| bin: the horizontal-over-vertical phi ratio. Data errors binomial, MC errors from sum w^2. | `halo_data_mc.py` |
 | `halo_fractions_signal.csv` | The same three quantities for the robust signal samples in both signal channels, all samples and per mediator mass, pooled and mean / sem. | `halo_signal.py` |
 
 In the halo tables, horizontal and vertical are as in sections 7 and 10.4 of the write-up: a phi
 bin is vertical if its centre is within 0.5 rad of +-pi/2, horizontal if within 0.5 rad of 0
-or +-pi.
+or +-pi. `halo_common.py` holds these index groups and the fraction and ratio helpers shared by
+`halo_signal.py` and `halo_data_mc.py`. A horizontal-over-vertical ratio with no horizontal
+entries is 0 with error 0; one with no vertical entries is left blank.
 
 ## Provenance sidecars
 

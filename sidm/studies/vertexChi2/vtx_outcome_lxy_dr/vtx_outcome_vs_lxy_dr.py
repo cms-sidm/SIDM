@@ -3,14 +3,16 @@
 usage: python vtx_outcome_vs_lxy_dr.py [NEW_RUN_DIR] [OUT_DIR]
 
 Reads NEW_RUN_DIR/*.coffea (default <repo>/RunOutputFiles/vtxLxyDr_signal_2018) and the existing
-vtxChi2_signal_2018 outputs (oracle O2). Writes to OUT_DIR (default the working directory):
-outcome_by_sample.csv, outcome_vs_lxy.csv, outcome_vs_dR.csv, outcome_vs_lxy_dR.csv,
-oracles.txt and PNG figures.
+vtxChi2_signal_2018 outputs (the reference of the efficiency closure). Writes to OUT_DIR (default
+the working directory): outcome_by_sample.csv, outcome_vs_lxy.csv, outcome_vs_dR.csv,
+outcome_vs_lxy_dR.csv, closure_checks.txt, closure_vtx_chi2_marginal.csv and PNG figures.
 
 Outcome of an LJ, from the vtx_chi2 axis edges [-1.5, -0.5, 0, 1, 2, 5, 10, 100, 1e4, 1e9]
-(flow view, index 0 = underflow): no vertex = index 1 (the -1 sentinel); pass = [0, 5) =
-indices 3-5; chi2 >= 5 = indices 6-10 (overflow included). Indices 0 and 2 hold no physical
-value and are reported as "other" (expected 0).
+(flow view, index 0 = underflow): no vertex = every negative value, indices 1 and 2 (the -1
+sentinel, and a stored normChi2 in [-0.5, 0), which the vtxChi2 cut and the mu_lj_vtx_chi2
+histogram also count as no vertex); pass = [0, 5) = indices 3-5; chi2 >= 5 = indices 6-10
+(overflow included). Index 0 (below -1.5) holds no physical value and is reported as "other"
+(expected 0).
 """
 import glob
 import math
@@ -42,7 +44,7 @@ NEFF_MIN = 200          # robust subset, as in the write-up (section 4)
 NEFF_BIN_MIN = 20       # a sample enters a bin's unweighted mean only with N_eff >= this there
 H_LXY, H_DR, H_3D = ("mu_lj_vtxChi2_muonN_genA_lxy", "mu_lj_vtxChi2_muonN_mumu_dR",
                      "mu_lj_vtxChi2_genA_lxy_mumu_dR")
-V_NOVTX, V_PASS, V_FAIL, V_OTHER = [1], [3, 4, 5], [6, 7, 8, 9, 10], [0, 2]
+V_NOVTX, V_PASS, V_FAIL, V_OTHER = [1, 2], [3, 4, 5], [6, 7, 8, 9, 10], [0]
 OUTCOMES = {"no_vertex": V_NOVTX, "chi2_ge5": V_FAIL, "pass": V_PASS}
 MU_1, MU_GE2 = [1], [2, 3, 4]   # muonN axis [1, 2, 3, 11], flow view
 
@@ -94,13 +96,13 @@ def bin_labels(edges, over_fmt=">= {:g}"):
 
 # ---------------------------------------------------------------- per-sample pass
 new_files = sorted(glob.glob(f"{NEW}/*.coffea"))
-rows, cubes, o1 = [], {}, []
+rows, cubes, closure = [], {}, []
 edges = {}
 for f in new_files:
     n, H, md = hists(f, with_meta=True)
     fs, m, ma, ct = parse(n)
     scale = yield_scale(n, md)
-    _, Ho = hists(f"{OLD}/{n}.coffea")
+    _, Ho, mdo = hists(f"{OLD}/{n}.coffea", with_meta=True)
     # N_eff as in the write-up (DSA-muon relPtErr histogram, reference channel), from each
     # histogram's own sum w and sum w^2: the new run's decides the robust flag
     v_rp, var_rp = vv(Ho["mu_lj_dsaMuon_pt_relPtErr"], REF)
@@ -111,6 +113,7 @@ for f in new_files:
                / Ho["mu_lj_pt"][{"channel": REF}].values(flow=True).sum())
     nf_new = n_files(f[:-len(".coffea")] + ".meta.yaml")
     nf_old = n_files(f"{OLD}/{n}.meta.yaml")
+    ne_new, ne_old = int(md["n_evts"]), int(mdo["n_evts"])
     for ch in SELS:
         a, av = vv(H[H_LXY], ch)            # (vtx, muonN, lxy)
         d, dv = vv(H[H_DR], ch)             # (vtx, muonN, dR)
@@ -120,14 +123,14 @@ for f in new_files:
         if not edges:
             edges = {"lxy": H[H_LXY].axes["genA_lxy"].edges, "dR": H[H_DR].axes["mu_lj_mumu_dR"].edges,
                      "lxy3": H[H_3D].axes["genA_lxy"].edges, "dR3": H[H_3D].axes["mu_lj_mumu_dR"].edges}
-        # O1: each new histogram's vtx_chi2 marginal against mu_lj_vtx_chi2 (Regular 52, -2, 50)
+        # marginal closure: each new histogram's vtx_chi2 marginal against mu_lj_vtx_chi2 (Regular 52, -2, 50)
         b = H["mu_lj_vtx_chi2"][{"channel": ch}].values(flow=True)
         ref_grp = np.array([b[2], b[3:8].sum(), b[8:].sum(), b[0:2].sum()])
         for hn, arr in ((H_LXY, a), (H_DR, d), (H_3D, c)):
             marg = arr.sum(axis=tuple(range(1, arr.ndim)))
             grp = np.array([marg[V_NOVTX].sum(), marg[V_PASS].sum(), marg[V_FAIL].sum(),
                             marg[V_OTHER].sum()])
-            o1.append(dict(sample=n, channel=ch, hist=hn, maxabs=float(np.abs(grp - ref_grp).max()),
+            closure.append(dict(sample=n, channel=ch, hist=hn, maxabs=float(np.abs(grp - ref_grp).max()),
                            rel=float(np.abs(grp - ref_grp).max() / max(ref_grp.sum(), 1e-300))))
         tot = a.sum()
         ge2 = a[:, MU_GE2, :].sum()
@@ -146,30 +149,33 @@ for f in new_files:
             frac_gen_matched=a[:, :, 1:].sum() / tot if tot > 0 else np.nan,
             eff_pass_over_all=a[V_PASS].sum() / tot if tot > 0 else np.nan,
             eff_old_run_vtx_over_ref=eff_old if ch == REF else np.nan,
-            n_files_new=nf_new, n_files_old=nf_old,
+            n_files_new=nf_new, n_files_old=nf_old, n_evts_new=ne_new, n_evts_old=ne_old,
         ))
 S = pd.DataFrame(rows)
 S.to_csv(f"{OUT}/outcome_by_sample.csv", index=False, float_format="%.6g")
-O1 = pd.DataFrame(o1)
+CLOSURE = pd.DataFrame(closure)
 
-# ---------------------------------------------------------------- oracles
+# ---------------------------------------------------------------- closure checks
 ref = S[S.selection == REF].copy()
-ref["o2_diff"] = ref.eff_pass_over_all - ref.eff_old_run_vtx_over_ref
+ref["eff_diff"] = ref.eff_pass_over_all - ref.eff_old_run_vtx_over_ref
 lines = [f"samples read: {len(new_files)} from {NEW}"]
-lines.append(f"O1: largest |difference| over {len(O1)} (sample, channel, hist) comparisons "
-             f"of the grouped vtx_chi2 marginal: {O1.maxabs.max():.3g} (relative {O1.rel.max():.3g})")
-lines.append(f"O1: 'other' vtx bins (underflow, [-0.5, 0)) largest fraction: "
+lines.append(f"marginal closure: largest |difference| over {len(CLOSURE)} (sample, channel, hist) "
+             f"comparisons of the grouped vtx_chi2 marginal: {CLOSURE.maxabs.max():.3g} "
+             f"(relative {CLOSURE.rel.max():.3g})")
+lines.append(f"'other' vtx bin (underflow below -1.5) largest fraction: "
              f"{S.frac_other_vtx_bins.max():.3g}")
-lines.append(f"O2: per-sample |pass/all (new) - vtxChi2/ref yield (old)|: max {ref.o2_diff.abs().max():.3g}, "
-             f"median {ref.o2_diff.abs().median():.3g}; > 1e-3: {(ref.o2_diff.abs() > 1e-3).sum()}; "
-             f"> 1e-2: {(ref.o2_diff.abs() > 1e-2).sum()}")
-for _, r in ref[ref.o2_diff.abs() > 1e-2].iterrows():
+lines.append(f"efficiency closure: per-sample |pass/all (new) - vtxChi2/ref yield (old)|: "
+             f"max {ref.eff_diff.abs().max():.3g}, median {ref.eff_diff.abs().median():.3g}; "
+             f"> 1e-3: {(ref.eff_diff.abs() > 1e-3).sum()}; > 1e-2: {(ref.eff_diff.abs() > 1e-2).sum()}")
+for _, r in ref[ref.eff_diff.abs() > 1e-2].iterrows():
     lines.append(f"   off by > 1e-2: {r['sample']} new {r.eff_pass_over_all:.4f} old "
                  f"{r.eff_old_run_vtx_over_ref:.4f} files new {r.n_files_new} old {r.n_files_old}")
 for _, r in ref[ref.n_files_new != ref.n_files_old].iterrows():
     lines.append(f"   file count differs: {r['sample']} new {r.n_files_new} old {r.n_files_old}")
+for _, r in ref[ref.n_evts_new != ref.n_evts_old].iterrows():
+    lines.append(f"   event count differs: {r['sample']} new {r.n_evts_new} old {r.n_evts_old}")
 rb = ref[ref.robust]
-lines.append(f"O2: robust subset ({len(rb)} samples) unweighted mean pass/all: new "
+lines.append(f"efficiency closure: robust subset ({len(rb)} samples) unweighted mean pass/all: new "
              f"{rb.eff_pass_over_all.mean():.4f}, old {rb.eff_old_run_vtx_over_ref.mean():.4f} "
              f"(write-up 0.6897)")
 lines.append(f"robust flag from the new run's own sums: {int(ref.robust.sum())} robust; "
@@ -179,7 +185,7 @@ lines.append(f"robust flag from the new run's own sums: {int(ref.robust.sum())} 
 lines.append(f"N_eff new (own sums) / old (weighted): median {(ref.n_eff / ref.n_eff_oldrun).median():.4f}, "
              f"min {(ref.n_eff / ref.n_eff_oldrun).min():.4f}, max {(ref.n_eff / ref.n_eff_oldrun).max():.4f}")
 rbo = ref[ref.robust_oldrun]
-lines.append(f"O2 with the old run's robust flag ({len(rbo)} samples): new "
+lines.append(f"efficiency closure with the old run's robust flag ({len(rbo)} samples): new "
              f"{rbo.eff_pass_over_all.mean():.4f}, old {rbo.eff_old_run_vtx_over_ref.mean():.4f}")
 lines.append(f"frac_1mu: max over samples and selections {S.frac_1mu.max():.3g} "
              "(the channels cut mu_ljs on 'Mu >= 2')")
@@ -196,8 +202,8 @@ for ex in ("2Mu2E_100GeV_0p25GeV_20p0mm", "2Mu2E_800GeV_0p25GeV_2p5mm", "4Mu_150
         r = r.iloc[0]
         lines.append(f"example {ex}: no-vertex fraction of all LJs "
                      f"{r.ge2_frac_no_vertex * r.frac_ge2mu:.3f}")
-O1.to_csv(f"{OUT}/oracle_O1.csv", index=False, float_format="%.6g")
-with open(f"{OUT}/oracles.txt", "w", encoding="utf-8") as fh:
+CLOSURE.to_csv(f"{OUT}/closure_vtx_chi2_marginal.csv", index=False, float_format="%.6g")
+with open(f"{OUT}/closure_checks.txt", "w", encoding="utf-8") as fh:
     fh.write("\n".join(lines) + "\n")
 print("\n".join(lines))
 
