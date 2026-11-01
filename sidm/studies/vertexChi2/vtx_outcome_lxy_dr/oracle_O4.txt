@@ -1,0 +1,11 @@
+condor unweighted_hist=set_accumulator({True}); n_evts dask 115723 condor 115723; sumw dask 115723 condor 115723; c = lumi*xs/sumw = 0.00051701045
+mu_lj_vtxChi2_muonN_genA_lxy       Iso_cosAlpha bins   605 nonzero   52 raw total      2493  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+mu_lj_vtxChi2_muonN_genA_lxy       pha_ljSpread bins   605 nonzero   49 raw total      2460  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+mu_lj_vtxChi2_muonN_mumu_dR        Iso_cosAlpha bins   605 nonzero   61 raw total      2493  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+mu_lj_vtxChi2_muonN_mumu_dR        pha_ljSpread bins   605 nonzero   55 raw total      2460  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+mu_lj_vtxChi2_genA_lxy_mumu_dR     Iso_cosAlpha bins   396 nonzero   34 raw total      2493  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+mu_lj_vtxChi2_genA_lxy_mumu_dR     pha_ljSpread bins   396 nonzero   31 raw total      2460  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+mu_lj_vtx_chi2                     Iso_cosAlpha bins    54 nonzero   36 raw total      2493  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+mu_lj_vtx_chi2                     pha_ljSpread bins    54 nonzero   36 raw total      2460  max|dask - c*condor|/max 1.66e-08  max|var_dask - c^2*condor|/max 3.01e-08  same nonzero bins True  condor = integer counts True
+fitted c over the 8 (hist, channel) pairs: min 0.000517010456 max 0.000517010456; lumi*xs/sumw 0.0005170104474; max |c_fit/c - 1| 1.66e-08
+O4 worst relative difference: 3.01e-08

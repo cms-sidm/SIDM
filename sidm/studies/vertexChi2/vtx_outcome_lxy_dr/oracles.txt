@@ -1,0 +1,16 @@
+samples read: 180 from RunOutputFiles/vtxLxyDr_signal_2018
+O1: largest |difference| over 1080 (sample, channel, hist) comparisons of the grouped vtx_chi2 marginal: 1 (relative 2.28e-05)
+O1: 'other' vtx bins (underflow, [-0.5, 0)) largest fraction: 2.28e-05
+O2: per-sample |pass/all (new) - vtxChi2/ref yield (old)|: max 7.5e-05, median 0; > 1e-3: 0; > 1e-2: 0
+O2: robust subset (162 samples) unweighted mean pass/all: new 0.6897, old 0.6897 (write-up 0.6897)
+robust flag from the new run's own sums: 162 robust; differs from the old weighted run's flag for 0 samples: 
+N_eff new (own sums) / old (weighted): median 1.0000, min 0.9815, max 1.0000
+O2 with the old run's robust flag (162 samples): new 0.6897, old 0.6897
+frac_1mu: max over samples and selections 0 (the channels cut mu_ljs on 'Mu >= 2')
+robust mean pass/all by mediator: 100: 0.748, 150: 0.759, 200: 0.737, 500: 0.670, 800: 0.631, 1000: 0.618
+robust mean pass/all by m_Zd: 0.25: 0.627, 1.2: 0.687, 5: 0.764
+robust mean pass/all by ctau [0,0.1,1,10,100,inf) mm: 0.742, 0.715, 0.629, 0.678, 0.802
+example 2Mu2E_100GeV_0p25GeV_20p0mm: no-vertex fraction of all LJs 0.200
+example 2Mu2E_800GeV_0p25GeV_2p5mm: no-vertex fraction of all LJs 0.423
+example 4Mu_150GeV_5p0GeV_270p0mm: no-vertex fraction of all LJs 0.080
+example 4Mu_1000GeV_5p0GeV_40p0mm: no-vertex fraction of all LJs 0.130

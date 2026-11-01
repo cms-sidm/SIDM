@@ -193,6 +193,46 @@ python sidm/scripts/merge_coffea_chunks_eos.py \
 
 and the merged files are copied to `RunOutputFiles/vtxLxyDr_signal_2018/`.
 
+### Vertex outcome vs Lxy and dR, and the halo fractions (`vtx_outcome_lxy_dr/`)
+
+The tables in `vtx_outcome_lxy_dr/` are read from `vtxLxyDr_signal_2018` (signal), the existing
+`vtxChi2_signal_2018` (the O2 reference), and `vtxResp2_2018Full` / `vtxRespMC2_2018` (data and
+MC halo fractions). The scripts sit next to them; from the repository root, with the
+`sidm_venv` active and `PYTHONPATH` at the repository root, `OUT` an output directory:
+
+```bash
+D=sidm/studies/vertexChi2/vtx_outcome_lxy_dr
+python $D/vtx_outcome_vs_lxy_dr.py RunOutputFiles/vtxLxyDr_signal_2018 $OUT   # first: halo_signal reads its by-sample table
+python $D/halo_signal.py RunOutputFiles/vtxLxyDr_signal_2018 $OUT
+python $D/halo_data_mc.py $OUT
+python $D/o4_dask_vs_condor.py > $OUT/oracle_O4.txt
+```
+
+They also write PNG figures, which are not committed. Outcome of a mu-type LJ: **no vertex**
+(`vtx_chi2 = -1`), **chi2 >= 5** (a stored within-LJ vertex with normChi2 >= 5), **pass**
+(`0 <= vtx_chi2 < 5`). Every LJ of the two channels has >= 2 muons (`Mu >= 2`). The
+**robust** samples (162 of 180) have `N_eff = (sum w)^2 / sum w^2 >= 200`, computed from the
+reference channel's `mu_lj_dsaMuon_pt_relPtErr`, flow included. Two ways of combining samples:
+**mean** / **sem** is the unweighted mean of the per-sample fractions, and its standard error,
+over the samples with `N_eff >= 20` in that bin; **pooled** sums the LJs of all samples, each
+sample weighted to its yield at 1 fb (`lumi*xs/sumw`, since the condor histograms are raw
+counts).
+
+| file | what it holds | written by |
+|---|---|---|
+| `outcome_by_sample.csv` | Per sample and channel: mass point, `N_eff` from this run and from `vtxChi2_signal_2018`, robust flag, LJ count and yield, 1-muon and >= 2-muon fractions, the three outcome fractions among >= 2-muon LJs, the gen-matched fraction, pass/all, the old run's per-LJ vertex-veto efficiency (reference channel), and the input-file counts of both runs. | `vtx_outcome_vs_lxy_dr.py` |
+| `outcome_vs_lxy.csv` | Robust samples, gen-matched LJs (nearest `genAs_toMu` within dR < 0.4): outcome fractions in bins of the dark photon's Lxy (cm), mean / sem and pooled with its error, for all samples and per mediator mass, in both channels. | `vtx_outcome_vs_lxy_dr.py` |
+| `outcome_vs_dR.csv` | The same in bins of dR between the LJ's two highest-pT muons (PF and DSA pooled). | `vtx_outcome_vs_lxy_dr.py` |
+| `outcome_vs_lxy_dR.csv` | The same in coarse Lxy x dR bins. | `vtx_outcome_vs_lxy_dr.py` |
+| `oracles.txt`, `oracle_O1.csv` | Closure checks. O1: in every sample, channel and new histogram, the `vtx_chi2` marginal, grouped as no vertex / pass / chi2 >= 5, against `mu_lj_vtx_chi2`. O2: per-sample pass/all against the old run's per-LJ efficiency, and the robust means by mediator mass, m_Zd and ctau. | `vtx_outcome_vs_lxy_dr.py` |
+| `oracle_O4.txt` | `4Mu_100GeV_0p25GeV_0p02mm` from condor against the Dask run in `dask_check/`, every bin of the three new histograms and `mu_lj_vtx_chi2`, both channels. | `o4_dask_vs_condor.py` |
+| `halo_fractions_data_mc.csv` | 2018 data (68 skims) and the eight-sample MC, `cr_1egmOr1mu_lj` and its Spread-veto version, all DSA muons of mu-type LJs. Per DSA pT bin and nHits bin: the fraction with `|dxy_BS| >= 10` cm and the fraction with zero DT hits. Per pT bin and \|eta\| bin: the horizontal-over-vertical phi ratio. Data errors binomial, MC errors from sum w^2. | `halo_data_mc.py` |
+| `halo_fractions_signal.csv` | The same three quantities for the robust signal samples in both signal channels, all samples and per mediator mass, pooled and mean / sem. | `halo_signal.py` |
+
+In the halo tables, horizontal and vertical are as in sections 7 and 10.4 of the write-up: a phi
+bin is vertical if its centre is within 0.5 rad of +-pi/2, horizontal if within 0.5 rad of 0
+or +-pi.
+
 ## Provenance sidecars
 
 Each `.coffea` is written with a `<sample>.meta.yaml` next to it via `sidm.tools.metadata`,
