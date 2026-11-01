@@ -2,6 +2,11 @@ universe = vanilla
 
 executable = run_job.sh
 
+# run_job.sh positional arguments: sample, chunk, filelist, EOS output directory, channels,
+# hist collections, ntuple config and section, selections file. The ntuple config and section
+# are run_job.sh's defaults, kept as placeholders: run_sidm_chunk.find_sample_cfg looks the
+# sample up in every config under sidm/configs/ntuples/ and picks the section the chunk's
+# files belong to.
 arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/vtxLxyDr_signal_2018 base_ljDisplacementIso_cosAlpha,base_ljDisplacementIso_cosAlpha_ljSpread mu_lj_vtx_outcome_lxy_dr,mu_lj_vtx_chi2_dsa_pt,dsa_tail_diag sidm/configs/ntuples/backgrounds.yaml skimmed_llpNanoAOD_v2 configs/selections_vertexChi2_as_run.yaml
 
 should_transfer_files = YES
