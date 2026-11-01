@@ -1,0 +1,51 @@
+{
+  "skip": {
+    "4Mu_800GeV_5p0GeV_5p0mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-5p0_ctau-5p0_v3_part-43.root"
+    ],
+    "4Mu_800GeV_5p0GeV_0p05mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-5p0_ctau-0p05_v3_part-35.root",
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-5p0_ctau-0p05_v3_part-16.root"
+    ],
+    "4Mu_100GeV_1p2GeV_0p096mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-1p2_ctau-0p096_v3_part-41.root"
+    ],
+    "4Mu_100GeV_1p2GeV_9p6mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-100_MDp-1p2_ctau-9p6_v3_part-14.root"
+    ],
+    "4Mu_200GeV_1p2GeV_0p48mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-1p2_ctau-0p48_v3_part-50.root"
+    ],
+    "4Mu_200GeV_1p2GeV_4p8mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-1p2_ctau-4p8_v3_part-16.root"
+    ],
+    "4Mu_200GeV_5p0GeV_2p0mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-2p0_v3_part-46.root",
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-2p0_v3_part-44.root"
+    ],
+    "4Mu_200GeV_5p0GeV_100p0mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-100p0_v3_part-28.root"
+    ],
+    "4Mu_500GeV_5p0GeV_80p0mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-500_MDp-5p0_ctau-80p0_v3_part-32.root"
+    ],
+    "4Mu_800GeV_1p2GeV_0p12mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-1p2_ctau-0p12_v3_part-4.root"
+    ],
+    "4Mu_800GeV_5p0GeV_0p5mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-800_MDp-5p0_ctau-0p5_v3_part-28.root"
+    ],
+    "2Mu2E_1000GeV_0p25GeV_0p2mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-1000_MDp-0p25_ctau-0p2_v3_part-45.root"
+    ],
+    "2Mu2E_1000GeV_1p2GeV_9p6mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-1000_MDp-1p2_ctau-9p6_v3_part-30.root"
+    ],
+    "2Mu2E_1000GeV_5p0GeV_0p04mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo2Mu2e_MBs-1000_MDp-5p0_ctau-0p04_v3_part-22.root"
+    ],
+    "4Mu_200GeV_5p0GeV_200p0mm": [
+      "CutDecayFalse_SIDM_BsTo2DpTo4Mu_MBs-200_MDp-5p0_ctau-200p0_v3_part-1.root"
+    ]
+  }
+}

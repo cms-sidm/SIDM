@@ -1,7 +1,7 @@
 % Group-meeting deck on sections 8 and 10 (with context from 3-9) of ../vertexChi2CosmicVetoStudy.ipynb.
 % Every number is quoted from the write-up's markdown, the records in ../transfer_factor/,
 % or the fold logs in ../transfer_factor/logs/. Figures are the notebook's own PNG outputs:
-% run `python extract_figures.py` first, then `pdflatex dsa_tail.tex`.
+% run `python extract_figures.py` first, then `pdflatex dsa_tail.tex` twice.
 \documentclass[aspectratio=169,10pt]{beamer}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -354,7 +354,8 @@
     \item The fold fails its MC self-closure in the low-hit-count slice. Is there another data-driven
           handle on the high-pT DSA tail worth building, or do we bound it and move on?
     \item Section 10.4 rules out halo as the dominant origin of this tail only. Do we want a beam-halo
-          statement for the full analysis? (A run with the same diagnostics is in progress.)
+          statement for the full analysis? (The same diagnostics over the signal grid are in
+          \texttt{vtx\_outcome\_lxy\_dr/halo\_fractions\_signal.csv}.)
   \end{enumerate}
 \end{frame}
 
