@@ -40,9 +40,12 @@ def frac(a, va, n, vn):
 
 
 def ratio(num, vnum, den, vden):
-    """num/den with independent variances."""
-    if num <= 0 or den <= 0:
+    """num/den with independent variances. An empty numerator over a non-empty denominator
+    is 0 with error 0 (the relative error is undefined there); an empty denominator is nan."""
+    if num < 0 or den <= 0:
         return float("nan"), float("nan")
+    if num == 0:
+        return 0.0, 0.0
     r = num / den
     return r, r * math.sqrt(vnum / num ** 2 + vden / den ** 2)
 
