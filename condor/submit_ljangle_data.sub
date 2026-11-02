@@ -1,0 +1,32 @@
+# LJ decay-plane campaign (LjAnglePlanes_Run2018_v1) -- submit_ljangle_data.sub
+# chunking: 40 ROOT files per job, 3214 jobs (68 2018 A/B/C/D data samples)
+# Submit from inside condor/ with X509_USER_PROXY pointing at the shared-NFS proxy copy.
+universe = vanilla
+
+executable = run_job.sh
+
+# run_job.sh args: SAMPLE CHUNK FILELIST EOS_OUTDIR CHANNELS HIST_COLLECTIONS [NTUPLE_YAML] [NTUPLE_SECTION] [SELECTIONS_CFG]
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/LjAnglePlanes_Run2018_v1/data test_VR_4mu_invDisplaced_spread_cosAlpha_mu_veto,test_VR_2mu2e_invDisplaced_spread_cosAlpha_mu_veto,cr_2lj_invDisplaced_spread_cosAlpha_mu_veto,data_control_region_1muLj_spread_cosAlpha_mu_veto,data_control_region_1egmLj_cosmic_veto lj_decay_angle,lj_pair_decay_planes sidm/configs/ntuples/data_skimmed.yaml llpNanoAOD_v2 configs/selections_mulj_decay_angle_as_run.yaml
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = sidm_code.tar.gz, requirements.txt, constraints.txt, $(filelist)
+transfer_output_files = ""
+
+output = logs_ljangle_data/$(sample)_$(chunk)_$(Cluster)_$(Process).out
+error  = logs_ljangle_data/$(sample)_$(chunk)_$(Cluster)_$(Process).err
+log    = logs_ljangle_data/$(sample)_$(chunk)_$(Cluster)_$(Process).log
+
+request_cpus = 1
+request_memory = 2048MB
+request_disk = 4GB
+
+# Release jobs held for transient reasons (xrootd/EOS input-transfer hiccups, proxy
+# refresh) after 10 minutes, at most twice. Memory holds (HoldReasonCode 34) and
+# user holds (1) are NOT auto-released -- resubmit those at a higher request_memory.
+periodic_release = (NumJobStarts < 3) && (HoldReasonCode =!= 34) && (HoldReasonCode =!= 1) && ((time() - EnteredCurrentStatus) > 600)
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+queue sample, chunk, filelist from job_args_ljangle_data.txt

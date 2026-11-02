@@ -1156,3 +1156,65 @@ cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - "muon_muon_invmass_highRange"
   - "mulj_egmlj_invmass"
   - "lj_lj_invmass"
+
+mulj_decay_angle: &mulj_decay_angle
+  - "mu_lj_mumu_absCosTheta"
+  - "mu_lj_mumu_ptRatio"
+  - "mu_lj_mumu_ptRatio_vs_absCosTheta"
+  - "mu_lj_mumu_absCosTheta_vs_pt"
+  - "mu_lj_mumu_absCosTheta_vs_mass"
+  - "mu_lj_mumu_absCosTheta_vs_iso"
+  - "mu_lj_mumu_absCosTheta_vs_minDxy"
+  - "mu_lj_mumu_absCosTheta_vs_maxDxy"
+  - "mu_lj_mumu_absCosTheta_vs_nDsa"
+  - "mu_lj_mumu_absCosTheta_vs_subMuPt"
+  - "mu_lj_mumu_absCosTheta_vs_vxySpread_mu"
+  - "mu_lj_mumu_absCosTheta_vs_dzSpread_mu"
+  - "mu_lj_n"
+  - "mu_lj_iso"
+  - "mu_lj_pt"
+  - "lj_n"
+  - "mu_lj_muonN"
+  - "mu_lj_dsaMu_n"
+
+mulj_decay_angle_gen: &mulj_decay_angle_gen
+  - "genMu_AFrame_absCosTheta"
+  - "genMu_ptRatio_vs_absCosTheta"
+  - "genAs_toMu_lxy"
+
+mulj_decay_angle_pair: &mulj_decay_angle_pair
+  - "mulj_pair_absCosTheta0_vs_absCosTheta1"
+  - "mulj_pair_absCosTheta_vs_mjj"
+  - "mu_lj_mumu_absCosTheta"
+  - "mu_lj_n"
+
+# per-LJ decay angle of the leading lepton pair, for both LJ types
+lj_decay_angle: &lj_decay_angle
+  - *mulj_decay_angle
+  - "egm_lj_ee_absCosTheta"
+  - "egm_lj_ee_ptRatio"
+  - "egm_lj_ee_dR"
+  - "egm_lj_ee_absCosTheta_vs_mass"
+  - "egm_lj_n"
+  - "egm_lj_electronN"
+
+# event-level decay-plane observables of the two leading qualifying LJs (either type)
+lj_pair_decay_planes: &lj_pair_decay_planes
+  - "lj_pair_cosThetaA0_vs_cosThetaA1"
+  - "lj_pair_Phi"
+  - "lj_pair_planeAngle"
+  - "lj_pair_ptAsym"
+  - "lj_pair_ptVecSum"
+  - "lj_pair_met"
+  - "lj_pair_metCorr"
+  - "lj_pair_metCorr_vs_ptVecSum"
+  - "mulj_pair_absCosTheta0_vs_absCosTheta1"
+  - "mulj_pair_absCosTheta_vs_mjj"
+
+# the truth-level counterpart of lj_pair_decay_planes (signal only)
+lj_pair_decay_planes_gen: &lj_pair_decay_planes_gen
+  - "gen_pair_Phi"
+  - "gen_pair_planeAngle"
+  - "gen_pair_cosThetaA0_vs_cosThetaA1"
+  - "genMu_AFrame_absCosTheta"
+  - "genE_AFrame_absCosTheta"
