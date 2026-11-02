@@ -1,0 +1,362 @@
+% Group-meeting deck on sections 8 and 10 (with context from 3-9) of ../vertexChi2CosmicVetoStudy.ipynb.
+% Every number is quoted from the write-up's markdown, the records in ../transfer_factor/,
+% or the fold logs in ../transfer_factor/logs/. Figures are the notebook's own PNG outputs:
+% run `python extract_figures.py` first, then `pdflatex dsa_tail.tex` twice.
+\documentclass[aspectratio=169,10pt]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\graphicspath{{figures/}}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamerfont{frametitle}{size=\large}
+\newcommand{\src}[1]{\par\vfill{\scriptsize\color{gray} Source: #1}}
+\newcommand{\pt}{p_{\mathrm{T}}}
+\newcommand{\fig}[2][]{{\centering\includegraphics[width=\linewidth,height=#1\textheight,keepaspectratio]{#2}\par}}
+
+\title{What survives the cosmic veto: the high-\texorpdfstring{$\pt$}{pT} DSA-muon tail}
+\subtitle{vertexChi2 study, sections 8 and 10}
+\author{Murtaza Safdari}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Where the tail comes from (sections 3, 5)}
+  \fig[0.34]{sec3_cell19.png}
+  {\scriptsize DSA-muon $\pt$ in mu-type LJs, 2018C data against MC stacked by process and scaled by
+  6.97/59.83. Panels: before, Spread veto + cosAlpha, vertex veto + cosAlpha, vertex veto only;
+  lower pads data/MC.\par}
+  \smallskip
+  \footnotesize
+  \begin{itemize}
+    \item 1-LJ control region, DSA muons inside mu-type lepton jets, 2018C \texttt{DoubleMuon}.
+          The \emph{tail} is DSA $\pt \geq 200$~GeV, overflow included.
+    \item The Spread veto with the cosAlpha cut removes 87\% of the data tail: $2414 \to 309$.
+    \item In MC it removes 3\% of the eight-sample tail set's tail ($133.7 \to 129.5$) and
+          54\% of the full background stack's ($293.6 \to 133.7$): one high-weight
+          \texttt{QCD\_Pt30To50} event that the veto removes.
+    \item Residual data/MC in the tail: $2.4 \pm 0.4$ (eight-sample tail set, $2.385 \pm 0.426$).
+          The MC tail is about 35 effective events.
+  \end{itemize}
+  \src{write-up sections 3, 5, Figure 6}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Why that ratio is not load-bearing (section 3.1)}
+  \begin{itemize}
+    \item Before the veto the region holds 0.770 data mu-type LJs per MC one, but 0.556 data DSA
+          muons per MC one.
+    \item MC carries 0.351 DSA muons per mu-type LJ against 0.254 in data: 38\% more.
+          No scale factor is applied anywhere.
+    \item A ratio of rates (tail entries over all entries of the same channel) divides this out.
+          Section 8 is built that way.
+  \end{itemize}
+  \src{write-up section 3.1}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{The tail is not cosmic (sections 6, 7)}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \footnotesize
+      \textbf{Azimuth} (vertical $=$ within 0.5 rad of $\pm\pi/2$, horizontal $=$ within 0.5 rad of
+      0 or $\pm\pi$):\\[3pt]
+      \begin{tabular}{lcc}
+        \toprule
+         tail, V/H & data & MC \\
+        \midrule
+        before the veto & $12.2 \pm 1.3$ & $1.29 \pm 0.22$ \\
+        after the Spread veto & $0.94 \pm 0.15$ & $1.23 \pm 0.21$ \\
+        \bottomrule
+      \end{tabular}
+      \begin{itemize}
+        \item Cosmic content of the pre-veto tail: 0.84 from the two-template $\phi$ fit, $\sim$87\%
+              from veto retention against the MC prompt-muon reference (section 6).
+        \item After the veto: residual cosmic content $< 6.2\%$ of the tail at 95\% CL, fewer than 19
+              of the 309 events. The best fit is negative. With the template's vertical fraction
+              degraded from 0.99 to 0.90 the bound moves to 7.8\%.
+        \item Limits: the bound is inclusive over the tail, and the cosmic template is
+              93.9\% $\mathrm{nHits} \geq 20$, so it says nothing either way about the low-nHits
+              survivors (section 10.4 returns to them).
+        \item The low-nHits concentration of the post-veto tail is mostly inherited from the bulk:
+              tail/bulk double ratio in nHits [10,20) is $1.95 \pm 0.46$, 2.1 standard deviations.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \fig[0.55]{sec7_cell45.png}
+      {\scriptsize DSA-muon $\phi$ above 200~GeV, each channel at unit area; dotted lines at $\pm\pi/2$,
+      shaded bands the horizontal windows; grey dashed, the vertex-inverted cosmic template.\par}
+    \end{column}
+  \end{columns}
+  \src{write-up sections 6, 7, Figure 11}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 8 (1/2): an independent control, DSA against PF momentum}
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \begin{itemize}
+        \item Same events. Raw DSA muons re-selected with the LJ DSA-muon identification cuts,
+              \emph{minus} the cross-cleaning against PF muons, then matched to a PF muon within
+              $\Delta R < 0.2$.
+        \item Response $r = \pt(\mathrm{DSA}) / \pt(\mathrm{PF})$, PF standing in for the truth.
+              Disjoint from the LJ tail; no veto applied.
+        \item The analysis cross-cleans by segment match, not $\Delta R$: this is a sizing tool,
+              not a substitution.
+      \end{itemize}
+      \medskip
+      Response tail, data/MC:
+      $P(r>2)$: $1.806 \pm 0.037$; \ $P(r>5)$: $2.126 \pm 0.127$.\\[4pt]
+      Not flat: across $|\eta|$ 1.07 to 2.18 ($\chi^2 = 69.8/4$), across nHits 1.19 to 2.01
+      ($\chi^2 = 45.5/6$). A single factor carries that spread as a systematic.
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \fig[0.62]{sec8_cell50.png}
+      {\scriptsize Matched DSA/PF response, data vs.\ eight-sample MC, unit area; dotted lines at $r = 2, 5$.}
+    \end{column}
+  \end{columns}
+  \src{write-up section 8, Figure 12}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 8 (2/2): the feed-up rate and the rate closure}
+  \fig[0.40]{sec8_cell53.png}
+  \vspace{-2pt}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \footnotesize
+      Feed-up: a matched muon with $\pt^{\mathrm{PF}} < 100$~GeV is reconstructed with
+      $\pt^{\mathrm{DSA}} \geq 200$~GeV \textbf{$3.47 \pm 0.25$ times more often in data than in MC}
+      (before any veto).\\[3pt]
+      Post-veto tail rate / feed-up rate:\\
+      \textbf{data $0.95 \pm 0.06$, MC $0.99 \pm 0.18$}.\\
+      Before the veto: data $4.81 \pm 0.13$ (the cosmics), MC $0.97 \pm 0.17$.
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \footnotesize
+      What it does not say:
+      \begin{itemize}
+        \item Not a per-cent-level MC self-closure: 35 effective MC events.
+        \item Not window-independent: moving the $\pt^{\mathrm{PF}}$ window from 60 to 500~GeV moves
+              the data closure between 0.70 and 1.41, MC between 0.57 and 1.35.
+      \end{itemize}
+      Write-up's statement: the surviving excess is of the size DSA momentum mismeasurement would
+      produce, at roughly factor-1.5 precision.
+    \end{column}
+  \end{columns}
+  \src{write-up section 8, Figure 13}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 9: candidate handles, none adopted}
+  \fig[0.36]{sec9_cell60.png}
+  {\scriptsize Signal cost per sample vs.\ mediator mass: left $\sigma(\pt)/\pt < 0.3$ (180 samples),
+  right $\mathrm{nHits} \geq 20$ (26 samples); dashed line, the same cut on the 2018C data bulk.\par}
+  \smallskip
+  \begin{columns}[T]
+    \begin{column}{0.49\textwidth}
+      \footnotesize
+      \textbf{$\mathrm{nHits} \geq 20$.} Tail data/MC $2.385 \pm 0.43 \to 1.605 \pm 0.33$; removes
+      40.8\% of the data tail, 12\% of the MC tail. Costs 24.5\% of the data bulk against 14.1\% of
+      the MC bulk, so it would need its own scale factor. Signal: keeps 0.854 of the DSA muons at all
+      $\pt$ (26-sample subset).
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \footnotesize
+      \textbf{$\sigma(\pt)/\pt < 0.3$.} Keeps 0.084 of the data tail, 0.145 of the MC tail: moves
+      the ratio the wrong way. Signal survival 0.892 at a 100~GeV mediator, 0.560 at 1~TeV.\\[3pt]
+      \textbf{The section-8 control as a correction.} Costs no signal, but the $P(r>2)$ ratio varies
+      by a factor 2 across $|\eta|$ and 1.7 across nHits. Tested as a fold in section 10.
+    \end{column}
+  \end{columns}
+  \src{write-up sections 9.1--9.3, Figure 14}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 10: folding the control transfer factor onto the LJs' own low-\texorpdfstring{$\pt$}{pT} muons}
+  \small
+  Full 2018 \texttt{DoubleMuon} (59.83/fb, 68 skimmed samples), same 8 MC samples. Channels: no veto,
+  Spread veto, vertex veto (both with cosAlpha).
+  \begin{enumerate}
+    \item Migration matrix $M[i,j]$ of matched control muons, PF $\pt$ bin $i$, DSA $\pt$ bin $j$,
+          per channel and per slice of $|\eta|$ or nHits; $T(j|i) = M[i,j] / \sum_k M[i,k]$.
+    \item Source: the LJs' own DSA spectrum below 100~GeV, same channel and slice, unfolded with $T$
+          (three iterations of iterative Bayesian unfolding).
+    \item $\mathrm{Pred}(j) = \sum_i T(j|i)\, N_{\mathrm{true}}(i)$ for the tail ($\geq 200$~GeV)
+          and the $[100, 200)$~GeV sideband; $R = \mathrm{Obs}/\mathrm{Pred} - 1$.
+    \item Load-bearing: the \textbf{MC self-closure} $R_{\mathrm{MC}}$, the same chain on MC alone.
+    \item A control muon has a PF partner, so it is better measured than an LJ muon: the fold should
+          under-predict. $\mathrm{Pred}_{\mathrm{SB}} \leq \mathrm{Obs}_{\mathrm{SB}}$ is a necessary condition.
+  \end{enumerate}
+  \textbf{Two control definitions.} dR-matched ($\Delta R < 0.2$) and segment-matched (the PF muon the
+  analysis's cross-cleaning removes the DSA muon against; used unless stated). Spread veto:
+  segment-matched holds 9.2\% fewer muons (2.95 against 3.24 million), feed-up 4.4\% lower
+  ($7.93 \times 10^{-3}$ against $8.29 \times 10^{-3}$). The partner tie-break (1.2\% of muons)
+  shifts $T$ by $3 \times 10^{-4}$ relative.
+  \src{write-up section 10 (introduction); transfer\_factor/tf\_seg\_aux.json}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 10.1: sideband closure fails, with both control definitions}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \small
+      The prediction is a lower bound, so $\mathrm{Pred} > \mathrm{Obs}$ in the 100--200~GeV sideband
+      means the control's mismeasurement rate does not carry over to the LJs.
+      \begin{itemize}
+        \item \textbf{8 of 18 slices fail the sign test} (dR-matched: 9).
+        \item \textbf{3 fail beyond three standard deviations} (dR-matched: 5), the same three with both
+              controls, each marginally worse with the segment match:
+      \end{itemize}
+      {\footnotesize\setlength{\tabcolsep}{4pt}\begin{tabular}{lcc}
+        \toprule
+        slice & $R \pm \sigma_{\mathrm{stat}}$ & dR-matched \\
+        \midrule
+        Spread, $\mathrm{nHits} < 20$ & $-0.129 \pm 0.017$ & $-0.124$ \\
+        vertex, $\mathrm{nHits} < 20$ & $-0.200 \pm 0.018$ & $-0.191$ \\
+        vertex, $|\eta|$ 1.2--2.4 & $-0.127 \pm 0.020$ & $-0.120$ \\
+        \bottomrule
+      \end{tabular}}\\[4pt]
+      Failures sit in the highest-$|\eta|$ and lowest-nHits bins. Of the eight failing cells the
+      segment match is more negative in five, less negative in three.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \centering
+      \fig[0.80]{sec10_cell65.png}
+      {\scriptsize Top: tail; bottom: sideband. Red markers: $\mathrm{Pred} > \mathrm{Obs}$.}
+    \end{column}
+  \end{columns}
+  \src{write-up section 10.1; transfer\_factor/tf\_transfer\_factor\_seg68.json, \_full68.json}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 10.2: the \texorpdfstring{$\geq 200$}{>= 200}~GeV tail in the deciding slice}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \small
+      Spread veto, $\mathrm{nHits} < 20$:
+      \begin{itemize}
+        \item Data: \textbf{1067.5 predicted, 1032 observed},
+              $R = -0.033 \pm 0.033\,(\mathrm{stat}) \pm 0.096\,(\mathrm{syst})$\\
+              (dR-matched: 1093.0, $R = -0.056 \pm 0.032 \pm 0.097$).
+        \item MC self-closure fails: $\boldsymbol{R_{\mathrm{MC}} = -0.592 \pm 0.104}$, the fold
+              over-predicts the MC tail by a \textbf{factor 2.45} (dR-matched: 2.56), $N_{\mathrm{eff}} = 34$.
+      \end{itemize}
+      Same slice, three channels:\\[2pt]
+      \begin{tabular}{lccc}
+        \toprule
+        & Obs & Pred & $R$ \\
+        \midrule
+        no veto & 2248 & 1662 & $+0.352$ \\
+        Spread veto & 1032 & 1068 & $-0.033$ \\
+        vertex veto & 659 & 778 & $-0.153$ \\
+        \bottomrule
+      \end{tabular}\\[3pt]
+      The vetoes remove what the un-vetoed channel has in excess: the cosmics of section 7.
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \fig[0.72]{sec10.2_cell67.png}
+      {\scriptsize MC folded on itself: Pred(MC) (red) against Obs(MC), with $N_{\mathrm{eff}}$ per slice.}
+    \end{column}
+  \end{columns}
+  \src{write-up section 10.2; logs/tf\_transfer\_factor\_seg.log (T7 closure, ``AS MEASURED'')}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 10.3: what the segment match did fix}
+  Fake-match exposure test: among control muons with $r > 2$, the fraction the fit flags as well
+  measured ($\sigma(\pt)/\pt < 0.3$), data/MC:
+  \begin{center}
+  \begin{tabular}{lccc}
+    \toprule
+    control & no veto & Spread veto & vertex veto \\
+    \midrule
+    segment-matched & $0.974 \pm 0.025$ & $0.975 \pm 0.026$ & $0.973 \pm 0.032$ \\
+    dR-matched & $0.873 \pm 0.014$ & $0.872 \pm 0.015$ & $0.853 \pm 0.017$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item The dR-matched deficit (8.7 standard deviations, Spread veto) could have meant the data
+          control was contaminated differently from MC. It was an artifact of wrong partners; that
+          concern is retired.
+    \item Unchanged: among LJ DSA muons above 200~GeV only 9.5\% carry $\sigma(\pt)/\pt < 0.3$, against
+          45\% of the control muons in the same channel. A fold sliced in $|\eta|$ and nHits does not
+          absorb that difference in fit quality.
+    \item The sideband failures of 10.1 do not come from the wrong partners.
+  \end{itemize}
+  \src{write-up sections 10.1, 10.3; logs/tf\_transfer\_factor\_seg.log and tf\_transfer\_factor.log}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 10.4 (1/2): the low-hit-count tail is not beam halo; azimuth and \texorpdfstring{$|\eta|$}{|eta|}}
+  \fig[0.40]{sec10.4_cell70.png}
+  \small
+  Spread veto, $\mathrm{nHits} < 20$, tail against its own bulk ($\pt < 100$~GeV):
+  \begin{itemize}
+    \item Azimuth: horizontal by 3.6 standard deviations ($H/V = 1.37$ against 1.01 for the bulk), but
+          the two-template cosmic mixture is rejected ($p = 3 \times 10^{-6}$): no cosmic or halo
+          fraction is quoted from it.
+    \item $|\eta|$: 78\% at $|\eta| > 1.2$ against 62\% in the bulk, but MC shows a similar shift
+          (69\% against 54\%): not data-specific.
+    \item No co-localization (full tail, any nHits): the horizontal-and-endcap corner holds 10.8\%,
+          against 10.6\% if azimuth and $|\eta|$ factorize.
+  \end{itemize}
+  \src{write-up section 10.4; logs/tf\_seg\_aux.log, logs/tf\_transfer\_factor\_seg.log}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 10.4 (2/2): displacement and detector}
+  \fig[0.42]{sec10.4_cell71.png}
+  \small
+  \begin{itemize}
+    \item Displacement: 83\% of the tail at $|d_{xy}^{\mathrm{BS}}| > 2$~cm (bulk 63\%), but only
+          13.5\% beyond 10~cm (bulk 13.3\%). Without a veto 55\% ($\mathrm{nHits} < 20$) and 88\%
+          ($\geq 20$) of the tail is beyond 10~cm: halo and cosmics live there, the surviving tail does not.
+    \item Detector: 79\% CSC-only (bulk 64\%, 17\% at $\mathrm{nHits} \geq 20$). It follows hit count,
+          not momentum; MC shows the same pattern (69\% against 56\%).
+    \item Halo would need large displacement and a horizontal, endcap-localized azimuth together;
+          neither holds. A small halo admixture is not excluded, only shown not to dominate.
+    \item Best description: badly measured few-hit endcap standalone muons, more forward and more
+          displaced in data than in MC.
+  \end{itemize}
+  \src{write-up section 10.4; transfer\_factor/tf\_seg\_aux.json, logs/tf\_seg\_aux.log}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{Section 10.5: outcome}
+  \begin{itemize}
+    \item The fold was to be used only if its MC self-closure held. It does not: Spread veto,
+          $\mathrm{nHits} < 20$, $R_{\mathrm{MC}} = -0.592 \pm 0.104$, 5.7 standard deviations from
+          zero; in MC the fold over-predicts the tail by a factor 2.45.
+    \item Without any veto, where the cosmics are still in the tail, the data closure of the same slice
+          is $R = +0.352 \pm 0.223$. A fold able to detect that excess would give $R > 1$ there.
+    \item The cause is the method's own bias in the low-hit-count slice, not the control definition:
+          the dR-matched control fails the same way ($R_{\mathrm{MC}} = -0.609 \pm 0.096$).
+    \item \textbf{Nothing from section 10 is applied, and no nHits cut is adopted.}
+    \item From the conclusions (section 11): no correction from the DSA-PF control is available; the
+          residual DSA high-$\pt$ rate has to be set from data in the background estimate.
+  \end{itemize}
+  \src{write-up sections 10.5, 11; transfer\_factor/tf\_transfer\_factor\_full68.json}
+\end{frame}
+
+% ---------------------------------------------------------------------------------------
+\begin{frame}{For discussion}
+  \begin{enumerate}\setlength{\itemsep}{14pt}
+    \item The DSA momentum mismeasurement rate is 3.5 times higher in data than in MC. Is that a
+          correction to derive or a systematic to assign, and on which objects?
+    \item The fold fails its MC self-closure in the low-hit-count slice. Is there another data-driven
+          handle on the high-pT DSA tail worth building, or do we bound it and move on?
+    \item Section 10.4 rules out halo as the dominant origin of this tail only. Do we want a beam-halo
+          statement for the full analysis? (The same diagnostics over the signal grid are in
+          \texttt{vtx\_outcome\_lxy\_dr/halo\_fractions\_signal.csv}.)
+  \end{enumerate}
+\end{frame}
+
+\end{document}
