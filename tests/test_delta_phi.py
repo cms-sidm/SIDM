@@ -118,7 +118,7 @@ class DeltaPhiTests(unittest.TestCase):
                                    [math.pi - .02, -math.pi + .02]])
                 objects = ak.with_field(objects, ak.values_astype(objects.phi, dtype), "phi")
                 for name in LJ_HISTS + DSA_HISTS:
-                    key = "ljs" if name in LJ_HISTS else "dsaMuons"
+                    key = "candidate_ljs" if name in LJ_HISTS else "dsaMuons"
                     definition = hist_defs[name]
                     objs = {key: objects}
                     actual = definition.axes[0].fill_func(objs, definition.evt_mask(objs))
@@ -138,12 +138,12 @@ class DeltaPhiTests(unittest.TestCase):
 
     def test_lj_histograms_fill_and_agree_with_cut(self):
         ljs = self.lj_fixture()
-        objs = {"ljs": ljs}
+        objs = {"candidate_ljs": ljs}
         expected = [.04, 2.5, math.pi, 0.0, .07]
         weights = [2.0, 3.0, 101.0, 103.0, 5.0, 7.0, 11.0]
         selected = ak.num(ljs) > 1
         self.assert_array_close(abs(ljs[selected, 1].delta_phi(ljs[selected, 0])), expected)
-        self.assertEqual(ak.to_list(evt_cut_defs["LJ-LJ dPhi > 2"]({"ljs": ljs[selected]})),
+        self.assertEqual(ak.to_list(evt_cut_defs["LJ-LJ dPhi > 2"]({"candidate_ljs": ljs[selected]})),
                          [False, True, True, False, False])
         for name in LJ_HISTS:
             with self.subTest(histogram=name):
@@ -170,11 +170,11 @@ class DeltaPhiTests(unittest.TestCase):
                     ak.concatenate([ljs[:, 1:2], ljs[:, :1], ljs[:, 2:]], axis=1),
                     ak.with_field(ljs, ljs.phi + 4 * math.pi * ak.local_index(ljs, axis=1), "phi"),
                 ):
-                    objs = {"ljs": changed}
+                    objs = {"candidate_ljs": changed}
                     self.assert_array_close(definition.axes[0].fill_func(objs, definition.evt_mask(objs)),
                                             [.04, 2.5, math.pi, 0.0, .07])
                 for empty in (ljs[:0], ljs[:, :1], ljs[:, :0]):
-                    objs = {"ljs": empty}
+                    objs = {"candidate_ljs": empty}
                     self.assertEqual(ak.to_list(definition.axes[0].fill_func(objs, definition.evt_mask(objs))), [])
                     self.assertEqual(self.fill_hist(name, objs, np.ones(len(empty))).sum(flow=True).value, 0)
 
