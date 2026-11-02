@@ -4,6 +4,7 @@ import contextlib
 import copy
 import io
 import itertools
+import math
 import sys
 import unittest
 from unittest.mock import patch
@@ -178,6 +179,33 @@ class LJCollectionsTest(unittest.TestCase):
                     histogram = hist_defs[name]
                     values = histogram.axes[0].fill_func(objs, histogram.evt_mask(objs))
                     self.assertTrue(np.allclose(ak.to_numpy(values), [expected]), name)
+
+    def test_promoted_pair_uses_wrapped_angles_in_all_pair_histograms(self):
+        objs = selected([
+            [jet(0, pt=100, isolation=0.4, phi=0.0),
+             jet(1, pt=80, phi=math.pi - .02),
+             jet(2, pt=60, phi=-math.pi + .02)],
+            [jet(0, pt=100, isolation=0.4, phi=1.0),
+             jet(1, pt=80, phi=0.0), jet(2, pt=60, phi=math.pi)],
+        ])
+        self.assertEqual(ids(objs, "candidate_ljs"), [[1, 2], [1, 2]])
+        self.assertEqual(ak.to_list(evt_cut_defs["LJ-LJ dPhi > 2"](objs)),
+                         [False, True])
+        for name in ("lj_lj_absdphi", "lj_lj_absdphi_invmass",
+                     "lj_lj_absdphi_absdR", "lj_lj_absdphi_absdeta",
+                     "lj_lj_absdphi_ptRatio"):
+            with self.subTest(histogram=name):
+                definition = copy.deepcopy(hist_defs[name])
+                values = definition.axes[0].fill_func(objs, definition.evt_mask(objs))
+                np.testing.assert_allclose(ak.to_numpy(values), [.04, math.pi])
+                definition.make_hist(name)
+                with contextlib.redirect_stdout(io.StringIO()) as output:
+                    definition.fill(objs, ak.Array([2.0, 3.0]), verbose=True)
+                self.assertEqual(output.getvalue(), "")
+                projected = definition.hist.project(0)
+                self.assertEqual(projected.sum().value, 5.0)
+                self.assertEqual(projected.sum(flow=True).value, 5.0)
+                self.assertEqual(projected.values()[-1], 3.0)
 
     def test_pair_order_is_baseline_order_even_when_typed_views_are_reordered(self):
         objs = selected([[jet(2, pt=100, isolation=0.4), jet(5, mu=0, ele=1, pt=80),
