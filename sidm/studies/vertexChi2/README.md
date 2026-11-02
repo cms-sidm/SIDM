@@ -123,6 +123,14 @@ copies both to `root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/
 `sidm_path` is derived from the working directory, so run them from this directory. Per-sample
 outputs already on disk are skipped, so an interrupted run can be resumed.
 
+Every stored output predates the correction of `dR_outer` in `sidm/tools/utilities.py` (PR #65,
+merged 2026-11-02: the outer-track phi difference is wrapped across +-pi, and the (-5, -5)
+coordinates of a missing outer track count as missing). `dR_outer` enters the DSA cross-cleaning
+cut `all` of every channel here and the segment-matched control of the write-up's section 10, so
+a rerun on the current code would change which DSA muons survive where an outer-track phi
+difference crosses +-pi or an outer track is missing. Nothing has been rerun for this; the size of
+the change is not measured.
+
 Every run notebook passes `selections_cfg="configs/selections_vertexChi2_as_run.yaml"` to
 `SidmProcessor` and to `write_run_metadata`. That argument was added after the notebooks were
 executed, when these channels were still defined in `sidm/configs/selections.yaml`; the stored
