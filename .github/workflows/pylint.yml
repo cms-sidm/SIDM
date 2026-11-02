@@ -37,6 +37,9 @@ jobs:
         # and forgetting the image ships green.
         run: python tests/check_worker_image.py
 
+      - name: Synthetic lepton-jet collection and candidate-pair regressions
+        run: PYTHONPATH=. python tests/test_lj_collections.py
+
       - name: Pylint (whole repo, fail-under)
         run: pylint --rcfile .pylintrc $(git ls-files '*.py')
 
