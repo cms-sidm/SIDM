@@ -126,10 +126,14 @@ outputs already on disk are skipped, so an interrupted run can be resumed.
 Every stored output predates the correction of `dR_outer` in `sidm/tools/utilities.py` (PR #65,
 merged 2026-11-02: the outer-track phi difference is wrapped across +-pi, and the (-5, -5)
 coordinates of a missing outer track count as missing). `dR_outer` enters the DSA cross-cleaning
-cut `all` of every channel here and the segment-matched control of the write-up's section 10, so
-a rerun on the current code would change which DSA muons survive where an outer-track phi
-difference crosses +-pi or an outer track is missing. Nothing has been rerun for this; the size of
-the change is not measured.
+cut `all` of every channel here and the segment-matched control of the write-up's section 10.
+Rerunning `vtxResp2_2018Full/DoubleMuon_2018D_22` and
+`vtxChi2_signal_2018/2Mu2E_200GeV_0p25GeV_10p0mm` from their sidecars with the as-run selections on
+the corrected code reproduced every histogram and cutflow of the stored outputs exactly, as did the
+code with `dR_outer` as it was before the fix: the 1 (data) and 4 (signal) DSA muons whose
+cross-cleaning decision the wrap flips are below the DSA pT cut, matched to a PF muon that fails the
+loose ID, or removed through another match, and no pair has both outer tracks missing. Nothing else
+has been rerun.
 
 Every run notebook passes `selections_cfg="configs/selections_vertexChi2_as_run.yaml"` to
 `SidmProcessor` and to `write_run_metadata`. That argument was added after the notebooks were
