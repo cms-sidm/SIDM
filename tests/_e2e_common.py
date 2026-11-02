@@ -41,6 +41,13 @@ DATASET = "2Mu2E_500GeV_1p2GeV_1p9mm"
 DATA_FIXTURE = os.path.join(_HERE, "data", "events_DoubleMuon2018C_200ev.root")
 DATA_DATASET = "DoubleMuon_2018C_slice"
 
+# The processor applies the standard corrections by default, and their files live
+# on CVMFS, which GitHub's runners do not mount. data/corrections holds copies of
+# the files the default list and the corrections_* histograms read, in the CVMFS
+# layout, so the chain runs with the corrections everywhere. A correction file
+# that the processor or a histogram starts reading needs copying here too.
+os.environ.setdefault("SIDM_CORRECTIONS_ROOT", os.path.join(_HERE, "data", "corrections"))
+
 # Two chunks per 200-event fixture. For the MC fixture this only splits the
 # accumulation (sums are chunk-order independent, so all counts are unchanged);
 # for the data fixture it is load-bearing -- see DATA_FIXTURE above.

@@ -21,9 +21,18 @@ class Selection:
         self.cutflow = SimpleCutflow() # will be filled later when cuts are evaluated
         self.verbose = verbose
 
+    @staticmethod
+    def variation_sums(objs):
+        """Weighted count for each weight variation, if the processor made any"""
+        variations = objs.get("evt_weight_variations")
+        if variations is None:
+            return None
+        return {name: ak.sum(variations[name]) for name in variations.fields}
+
     def apply_evt_cuts(self, objs):
         """Evaluate all event cuts and apply results to object collections"""
-        self.cutflow.add_row("None", ak.count(objs["evt_weights"]), ak.sum(objs["evt_weights"]))
+        self.cutflow.add_row("None", ak.count(objs["evt_weights"]), ak.sum(objs["evt_weights"]),
+                             self.variation_sums(objs))
         sel_objs = objs.copy()
         for cut in self.evt_cuts:
             # evaluate cuts
@@ -54,15 +63,29 @@ class Selection:
                 continue
 
             # apply to all object collections
+            weights_masked = False
             for name, obj in sel_objs.items():
                 try:
                     sel_objs[name] = obj[mask]
                     if name == "evt_weights":
-                        self.cutflow.add_row(cut, ak.count(sel_objs[name]), ak.sum(sel_objs[name]))
+                        weights_masked = True
                 except Exception as e:
                     if isinstance(e, OSError) or "I/O operation" in str(e):
                         raise
                     print(f"Warning: Unable to apply event cuts to {name}. Skipping. "
+                          f"({type(e).__name__}: {e})")
+            # Added after the loop so the variations, a separate entry of
+            # sel_objs, have been masked too. A cut listed twice in a selection
+            # fails here; it is reported and skipped as it always has been.
+            if weights_masked:
+                try:
+                    self.cutflow.add_row(cut, ak.count(sel_objs["evt_weights"]),
+                                         ak.sum(sel_objs["evt_weights"]),
+                                         self.variation_sums(sel_objs))
+                except Exception as e:
+                    if isinstance(e, OSError) or "I/O operation" in str(e):
+                        raise
+                    print(f"Warning: Unable to apply event cuts to evt_weights. Skipping. "
                           f"({type(e).__name__}: {e})")
 
         return sel_objs

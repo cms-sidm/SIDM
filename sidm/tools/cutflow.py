@@ -9,6 +9,12 @@ import awkward as ak
 import numpy as np
 
 class SimpleCutflow(processor.AccumulatorABC):
+    """Raw and weighted event counts after each event-level cut
+
+    When the processor applies corrections, each row also holds the weighted
+    count for every weight variation, rows[cut]["variations"][name], so the
+    effect of a systematic can be read at any point of the selection.
+    """
     def __init__(self, verbose=False):
         self.verbose = verbose
         self.rows = {}
@@ -16,8 +22,9 @@ class SimpleCutflow(processor.AccumulatorABC):
     def identity(self):
         """Create additive identity Cutflow to allow accumlator behavior"""
         cutflow = SimpleCutflow()
-        for cut in self.rows:
-            cutflow.add_row(cut, 0, 0.0)
+        for cut, vals in self.rows.items():
+            variations = {name: 0.0 for name in vals.get("variations", {})}
+            cutflow.add_row(cut, 0, 0.0, variations or None)
         return cutflow
 
     def add(self, other):
@@ -27,17 +34,37 @@ class SimpleCutflow(processor.AccumulatorABC):
         for cut in self.rows:
             self.rows[cut]["raw"] += other.rows[cut]["raw"]
             self.rows[cut]["weighted"] += other.rows[cut]["weighted"]
+            other_variations = other.rows[cut].get("variations")
+            if other_variations:
+                variations = self.rows[cut].setdefault("variations", {})
+                for name, value in other_variations.items():
+                    variations[name] = variations.get(name, 0.0) + value
 
     def scale(self, weight):
         """Apply overall scale factor to weighted Cutflow"""
         for cut in self.rows:
             self.rows[cut]["weighted"] *= weight
+            for name in self.rows[cut].get("variations", {}):
+                self.rows[cut]["variations"][name] *= weight
 
-    def add_row(self, cut, raw, weighted): 
+    def add_row(self, cut, raw, weighted, variations=None):
         """Add additional cut and associated cut to cutflow"""
         if cut in self.rows:
             raise RuntimeError(f"{cut} already in cutflow and cannot be added twice")
         self.rows[cut] = {"raw": raw, "weighted": weighted}
+        if variations:
+            self.rows[cut]["variations"] = dict(variations)
+
+    def variation_yields(self, cut=None):
+        """{"nominal": weighted count, variation: weighted count, ...} after one cut
+
+        Defaults to the last cut. Only the nominal entry is present when the
+        cutflow was filled without weight variations.
+        """
+        if not self.rows:
+            return {}
+        row = self.rows[cut] if cut is not None else list(self.rows.values())[-1]
+        return {"nominal": row["weighted"], **row.get("variations", {})}
 
     def print_table(self):
         """Print simple cutflow table to stdout"""

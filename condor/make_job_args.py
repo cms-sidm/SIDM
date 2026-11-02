@@ -28,6 +28,9 @@ def main():
     parser.add_argument("--location-cfg", default="signal_2mu2e_v10.yaml")
     parser.add_argument("--max-files", type=int, default=None)
     parser.add_argument("--files-per-job", type=int, default=1)
+    parser.add_argument("--files-per-job-map", default=None,
+                        help="YAML of {sample: files per job} overriding --files-per-job for the "
+                             "samples it lists, to even out job lengths when events per file vary")
     parser.add_argument("--outdir", default="condor/filelists")
     parser.add_argument("--job-args", default="condor/job_args.txt")
     parser.add_argument("--replace-xcache", action="store_true",
@@ -49,6 +52,12 @@ def main():
         census_skip=args.census_skip,
     )
 
+    files_per_job = {}
+    if args.files_per_job_map:
+        import yaml
+        with open(args.files_per_job_map) as f:
+            files_per_job = yaml.safe_load(f) or {}
+
     os.makedirs(args.outdir, exist_ok=True)
 
     n_jobs = 0
@@ -61,9 +70,10 @@ def main():
             else:
                 files = list(sample_info)
 
-            for i in range(0, len(files), args.files_per_job):
-                chunk = i // args.files_per_job
-                chunk_files = files[i:i + args.files_per_job]
+            step = int(files_per_job.get(sample, args.files_per_job))
+            for i in range(0, len(files), step):
+                chunk = i // step
+                chunk_files = files[i:i + step]
 
                 filelist_name = f"{sample}_{chunk}.txt"
                 filelist_path = Path(args.outdir) / filelist_name

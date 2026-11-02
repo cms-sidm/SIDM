@@ -104,6 +104,17 @@ def parse_sample_chunk(path):
     return sample, chunk
 
 
+def sample_outputs(out):
+    """{sample: output} of a chunk file or merge result
+
+    run_sidm_chunk.py saves what Runner.run returns, {"out": {sample: ...}, "processed": ...,
+    "exception": ...}; a bare {sample: output} dict is passed through.
+    """
+    if isinstance(out, dict) and isinstance(out.get("out"), dict) and "processed" in out:
+        return out["out"]
+    return out
+
+
 def combine_normalized_chunks(outputs, unweighted_override=None):
     """Combine per-chunk SidmProcessor outputs that were normalized PER CHUNK in postprocess.
 
@@ -117,6 +128,10 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
 
     unweighted_override is only for OLD outputs whose metadata predates the 'unweighted_hist' key;
     newer runs store it, so the merge is self-describing.
+
+    outputs may be any iterable, e.g. a generator that loads one chunk at a time: each chunk is
+    re-weighted and added to the running sum before the next is read, so a sample with
+    thousands of chunks never has more than one in memory.
     """
     def scaled(meta):
         is_data_set = meta.get("is_data")
@@ -134,8 +149,8 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
             unweighted = False
         return True, (not unweighted)                 # (scale_cutflow, scale_hists)
 
-    for out in outputs:
-        for sout in out.values():
+    def reweighted(out):
+        for sout in sample_outputs(out).values():
             if not isinstance(sout, dict) or "metadata" not in sout:
                 continue
             sumw = sout["metadata"].get("scaled_sum_weights", 0) or 0
@@ -148,10 +163,12 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
             if scale_h:
                 for n in sout.get("hists", {}):
                     sout["hists"][n] = sout["hists"][n] * sumw
+        return out
 
-    merged = processor.accumulate(outputs)
+    # accumulate consumes the generator one chunk at a time
+    merged = processor.accumulate(reweighted(out) for out in outputs)
 
-    for sout in merged.values():
+    for sout in sample_outputs(merged).values():
         if not isinstance(sout, dict) or "metadata" not in sout:
             continue
         sumw_full = sout["metadata"].get("scaled_sum_weights", 0) or 0
@@ -231,6 +248,13 @@ def main():
     )
 
     parser.add_argument(
+        "--samples",
+        default=None,
+        help="Merge only these samples: a comma-separated list, or a file with one sample per "
+             "line. Default: every sample with chunks in --input-eos-dir.",
+    )
+
+    parser.add_argument(
         "--delete-chunks-after-merge",
         action="store_true",
         help=(
@@ -276,6 +300,18 @@ def main():
 
     print(f"Found {len(groups)} samples")
 
+    if args.samples:
+        if os.path.isfile(args.samples):
+            with open(args.samples) as f:
+                wanted = [l.strip() for l in f if l.strip() and not l.strip().startswith("#")]
+        else:
+            wanted = [x.strip() for x in args.samples.split(",") if x.strip()]
+        missing = sorted(set(wanted) - set(groups))
+        if missing:
+            print(f"WARNING: no chunks on EOS for {missing}")
+        groups = {s: paths for s, paths in groups.items() if s in wanted}
+        print(f"Merging {len(groups)} of them (--samples)")
+
     for sample, eos_paths in sorted(groups.items()):
         print("=" * 80)
         print(f"Merging sample: {sample}")
@@ -287,25 +323,26 @@ def main():
             basename = os.path.basename(eos_path)
             local_path = os.path.join(local_chunk_dir, basename)
 
-            if not os.path.exists(local_path):
+            # a local copy is reused only with --keep-local: a chunk that was replaced
+            # on EOS (a resubmitted job) would otherwise be merged from its stale copy
+            if args.keep_local and os.path.exists(local_path):
+                print(f"[{i+1}/{len(eos_paths)}] Already local: {basename}")
+            else:
                 print(f"[{i+1}/{len(eos_paths)}] Copying {basename}")
                 xrdcp_from_eos(eos_path, local_path)
-            else:
-                print(f"[{i+1}/{len(eos_paths)}] Already local: {basename}")
 
             local_paths.append(local_path)
 
         print(f"Loading and accumulating {len(local_paths)} chunks for {sample}")
 
-        outputs = []
-
-        for i, path in enumerate(sorted(local_paths)):
-            if i % 50 == 0:
-                print(f"  loading chunk {i+1}/{len(local_paths)}")
-            outputs.append(load(path))
+        def outputs():
+            for i, path in enumerate(sorted(local_paths)):
+                if i % 50 == 0:
+                    print(f"  loading chunk {i+1}/{len(local_paths)}")
+                yield load(path)
 
         merged = combine_normalized_chunks(
-            outputs, unweighted_override=(True if args.unweighted_hist else None))
+            outputs(), unweighted_override=(True if args.unweighted_hist else None))
 
         local_merged_path = os.path.join(local_merged_dir, f"{sample}.coffea")
         save(merged, local_merged_path)
@@ -324,6 +361,10 @@ def main():
 
             selections = [s.strip() for s in (args.selections or "").split(",") if s.strip()]
             hist_collections = [s.strip() for s in (args.hist_collections or "").split(",") if s.strip()]
+            # the processor records the corrections it applied in the output itself
+            sample_meta = sample_outputs(merged).get(sample, {}).get("metadata", {})
+            corrections = sorted(sample_meta.get("corrections") or [])
+            monitored = sorted(sample_meta.get("monitored_corrections") or [])
 
             sidecar = write_run_metadata(
                 local_merged_path,
@@ -333,6 +374,8 @@ def main():
                 schema=args.schema,
                 chunksize=args.chunksize,
                 unweighted_hist=args.unweighted_hist,
+                corrections=corrections or None,
+                monitor_corrections=monitored or None,
                 extra={"n_chunks": len(local_paths)},
                 sidm_root=_REPO_ROOT,
             )
@@ -340,6 +383,11 @@ def main():
             xrdcp_to_eos(sidecar, output_eos_dir)
         else:
             print("--filelists-dir not provided; skipping .meta.yaml sidecar.")
+
+        if not args.keep_local:
+            # the chunks of this sample are merged; free the disk before the next one
+            for path in local_paths:
+                os.remove(path)
 
         if args.delete_chunks_after_merge:
             for eos_path in eos_paths:

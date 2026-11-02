@@ -1,0 +1,48 @@
+# Corrections study campaign (sidm/studies/corrections): every v10 signal point
+# and every skimmed background, simulation only, with the default corrections,
+# the photon pixel-veto SF monitored, and weighted histograms with a syst axis.
+#
+# Submit from condor/, once per job list:
+#
+#     condor_submit JOB_ARGS=job_args_corrections_2mu2e.txt submit_corrections.sub
+#     condor_submit JOB_ARGS=job_args_corrections_4mu.txt submit_corrections.sub
+#     condor_submit JOB_ARGS=job_args_corrections_background.txt submit_corrections.sub
+#
+# run_sidm_chunk.py refuses collision data unless given --allow-data, which this
+# campaign never passes. See sidm/studies/corrections/README.md.
+
+universe = vanilla
+
+executable = run_job.sh
+
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/CorrectionsChunks_v1 base,2mu2e,4mu,2mu2e_sr,4mu_sr,Z_to_mumu_control_region corrections_study default syst photon_pixel_veto
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = sidm_code.tar.gz, requirements.txt, constraints.txt, $(filelist)
+transfer_output_files = ""
+
+output = logs_corrections/$(sample)_$(chunk)_$(Cluster)_$(Process).out
+error  = logs_corrections/$(sample)_$(chunk)_$(Cluster)_$(Process).err
+log    = logs_corrections/$(sample)_$(chunk)_$(Cluster)_$(Process).log
+
+request_cpus = 1
+request_memory = 2GB
+request_disk = 4GB
+
+# jobs peak at about 1 GB; an OOM is resubmitted at 8GB by corrections_campaign.py retry
+# transient EOS read failures: retry a failed job twice before giving up
+max_retries = 2
+# a job reading from a stuck EOS node can hang: after 12 hours, hold it and release it
+# once onto another node; a second stall stays held. In the corrections_v1 campaign most
+# jobs took 0.5-1.5 hours and chunks of a few hundred tiny files up to 3.5, with processor
+# speed-ups that are not in this code (they come in a separate change); without them the
+# processing takes about 3 times longer
+periodic_hold = (JobStatus == 2) && ((time() - EnteredCurrentStatus) > 12 * 3600)
+periodic_hold_reason = "running for more than 12 hours"
+periodic_release = (HoldReasonCode == 3) && (NumJobStarts < 3)
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+queue sample, chunk, filelist from $(JOB_ARGS)
