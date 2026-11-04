@@ -177,6 +177,10 @@ condor/job_args.txt
 condor/filelists/*.txt
 ```
 
+Each `job_args.txt` line is `sample chunk filelist production`. The fourth column is the
+gen-filter production tag of `--location-cfg` (`utilities.get_production`: `v10` for the v10 signal
+configs, `central` for `ffntuples.yaml`, the literal `none` otherwise); see §17.
+
 ### Backgrounds
 
 For backgrounds, use chunks of around 10 ROOT files per job:
@@ -306,7 +310,7 @@ universe = vanilla
 
 executable = run_job.sh
 
-arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/BackgroundChunks_v1 base muon_base $(production)
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
@@ -324,10 +328,13 @@ request_disk = 4GB
 
 x509userproxy = $ENV(X509_USER_PROXY)
 
-queue sample, chunk, filelist from job_args.txt
+queue sample, chunk, filelist, production from job_args.txt
 ```
 
-`$ENV(USER)` is expanded at submit time, so the same file works for any LPC user. The only thing to edit between runs is the trailing "run tag" — for signals use:
+`run_job.sh` takes the channels and hist collections as positions 5 and 6 (passed explicitly here
+with their defaults) and the production tag as position 7.
+
+`$ENV(USER)` is expanded at submit time, so the same file works for any LPC user. The only thing to edit between runs is the "run tag" at the end of the EOS directory — for signals use:
 
 ```
 root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/SignalChunks_v1
@@ -518,6 +525,7 @@ while read PROC EXITCODE; do
     SAMPLE=$(echo "$LINE" | awk '{print $1}')
     CHUNK=$(echo "$LINE" | awk '{print $2}')
     FILELIST=$(echo "$LINE" | awk '{print $3}')
+    PRODUCTION=$(echo "$LINE" | awk '{print $4}')
 
     OLD_FILELIST="condor/${FILELIST}"
     NEW_FILELIST="condor/filelists_retry/${SAMPLE}_${CHUNK}.txt"
@@ -539,7 +547,7 @@ while read PROC EXITCODE; do
     NGOOD=$(wc -l < "$NEW_FILELIST")
 
     if [ "$NGOOD" -gt 0 ]; then
-        echo "$SAMPLE $CHUNK filelists_retry/${SAMPLE}_${CHUNK}.txt" >> condor/failed_retry_job_args_59092403.txt
+        echo "$SAMPLE $CHUNK filelists_retry/${SAMPLE}_${CHUNK}.txt $PRODUCTION" >> condor/failed_retry_job_args_59092403.txt
     else
         echo "  WARNING: no good files left for $SAMPLE chunk $CHUNK"
     fi
@@ -558,7 +566,7 @@ cp condor/submit.sub condor/submit_retry_59092403.sub
 Edit the final queue line:
 
 ```
-queue sample, chunk, filelist from failed_retry_job_args_59092403.txt
+queue sample, chunk, filelist, production from failed_retry_job_args_59092403.txt
 ```
 
 Submit:
@@ -586,12 +594,21 @@ source sidm_venv/bin/activate
 
 `merge_coffea_chunks_eos.py` does more than concatenate: it **corrects the per-chunk
 normalization**. Each Condor job is its own `Runner.run`, so `SidmProcessor.postprocess()` scales
-that job's outputs by `lumi*xs / sumw` using only **that job's** sum of weights — as if its files
+that job's outputs by `lumi*xs*gen_filter_eff / sumw` using only **that job's** sum of weights — as if its files
 were the whole sample. A naive add of those pieces inflates yields by ~the number of jobs (and more
 files-per-job → more inflation). The merge instead re-weights each chunk by its own `sumw`,
 accumulates, and divides by the **total** `sumw`, recovering the correct
-`lumi*xs/sumw_full × Σ_chunks(raw)`. **Always go through this script — never hand-add chunk
+`lumi*xs*gen_filter_eff/sumw_full × Σ_chunks(raw)`. **Always go through this script — never hand-add chunk
 `.coffea` files.**
+
+The signal generator-filter efficiency in that factor is chosen by a production tag that
+`utilities.make_fileset` sets from the location config. On the Condor path it travels as the fourth
+`job_args.txt` column, `$(production)` in `submit.sub`, position 7 of `run_job.sh`, and
+`--production` of `run_sidm_chunk.py` (`none` means no tag). An old three-column `job_args.txt`
+still submits with the current `submit.sub`, but `production` is then empty: signal chunks are
+scaled with an efficiency of 1.0 and the job log prints a `WARNING: no gen filter efficiency`
+line. Regenerate `job_args.txt` with `make_job_args.py` instead. As for any code change, a
+resubmission needs `sidm_code.tar.gz` rebuilt (§8).
 
 The correction mirrors `postprocess` and is conditional: **data** is never scaled; the **cutflow**
 (simulation) is always corrected; **hists** are corrected only for *weighted* runs — with

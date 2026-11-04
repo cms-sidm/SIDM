@@ -29,6 +29,9 @@ FIXTURE = os.path.join(_HERE, "data", "events_2mu2e_500GeV_200ev.root")
 # A signal-shaped dataset name so the processor takes its "assume 1 fb" path
 # instead of failing the cross-section lookup.
 DATASET = "2Mu2E_500GeV_1p2GeV_1p9mm"
+# Production tag as make_fileset sets it for the v10 location configs, so the
+# fixture's weighted yields carry that point's gen-filter efficiency.
+PRODUCTION = "v10"
 
 # Real-data fixture: a 200-event slice of a DoubleMuon 2018C skim
 # (skimmed_output_583.root, entries 11649-11849) chosen to SPAN a golden-JSON
@@ -46,7 +49,7 @@ DATA_DATASET = "DoubleMuon_2018C_slice"
 # for the data fixture it is load-bearing -- see DATA_FIXTURE above.
 CHUNKSIZE = 100
 # Deliberately non-unit: postprocess scales the weighted column by
-# lumi*xs/(sum_w/skim_factor), so at skim_factor=1.0 (with the fixture's
+# lumi*xs*gen_filter_eff/(sum_w/skim_factor), so at skim_factor=1.0 (with the fixture's
 # genWeights identically 1.0) the /skim_factor path is a numerical no-op and a
 # PR that broke or dropped the skim_factor handling would leave every weighted
 # number unchanged; at 0.5 such a bug moves every weighted row.
@@ -128,7 +131,8 @@ def run_chain(channels, collections, data=False):
     else:
         fileset = {DATASET: {"files": [FIXTURE],
                              "metadata": {"is_data": False, "year": "2018",
-                                          "skim_factor": SKIM_FACTOR}}}
+                                          "skim_factor": SKIM_FACTOR,
+                                          "production": PRODUCTION}}}
     runner = processor.Runner(
         executor=processor.IterativeExecutor(),
         schema=llpnanoaodschema.LLPNanoAODSchema,
@@ -163,7 +167,7 @@ def cutflow_weighted(per_sample_output):
 
 
 def scaled_sum_weights(per_sample_output):
-    """The sample-level sum(genWeight)/skim_factor the processor uses for lumi*xs/Sw
+    """The sample-level sum(genWeight)/skim_factor the processor uses for lumi*xs*eff/Sw
     normalization, rounded for a stable diff. None if absent."""
     val = per_sample_output.get("metadata", {}).get("scaled_sum_weights")
     return None if val is None else round(float(val), 6)

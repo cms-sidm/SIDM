@@ -2,7 +2,7 @@ universe = vanilla
 
 executable = run_job.sh
 
-arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/TruthkinChunks_selfcon base selfconsistency_matched
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/TruthkinChunks_selfcon base selfconsistency_matched $(production)
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
@@ -19,4 +19,4 @@ request_disk = 4GB
 
 x509userproxy = $ENV(X509_USER_PROXY)
 
-queue sample, chunk, filelist from job_args_selfcon.txt
+queue sample, chunk, filelist, production from job_args_selfcon.txt

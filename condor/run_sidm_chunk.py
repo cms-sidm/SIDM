@@ -38,10 +38,15 @@ def main():
     parser.add_argument("--channels", default="base")
     parser.add_argument("--hist-collections", default="muon_base")
     parser.add_argument("--unweighted-hist", action="store_true")
+    parser.add_argument("--production", default=None,
+                        help="gen-filter production tag (v10 or central, see "
+                             "utilities.get_production); 'none' or absent means no tag, so "
+                             "signal yields get no gen-filter efficiency and postprocess warns.")
 
     args = parser.parse_args()
 
     files = read_filelist(args.filelist)
+    production = None if args.production in (None, "", "none") else args.production
     # SidmProcessor.process reads events.metadata["is_data"] / ["skim_factor"] /
     # ["year"] without .get() defaults, so a bare {sample: files} fileset crashes
     # with KeyError. Supply MC-sample defaults; data submissions should override.
@@ -52,6 +57,7 @@ def main():
                 "is_data": False,
                 "skim_factor": 1.0,
                 "year": "2018",
+                "production": production,
             },
         }
     }

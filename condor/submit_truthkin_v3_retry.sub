@@ -2,7 +2,7 @@ universe = vanilla
 
 executable = run_job.sh
 
-arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/TruthkinChunks_v3 genOnly,genOnly_trigger,baseNoLj_noTrigger,baseNoLj,base gen_truth,genA_lifetime,genBS_genA_kinematics,genA_base,genA_ratio,lj_base,lj_lj_base,muon_base,anatomy_extra
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/TruthkinChunks_v3 genOnly,genOnly_trigger,baseNoLj_noTrigger,baseNoLj,base gen_truth,genA_lifetime,genBS_genA_kinematics,genA_base,genA_ratio,lj_base,lj_lj_base,muon_base,anatomy_extra $(production)
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
@@ -19,4 +19,4 @@ request_disk = 4GB
 
 x509userproxy = $ENV(X509_USER_PROXY)
 
-queue sample, chunk, filelist from job_args_truthkin_v3_retry.txt
+queue sample, chunk, filelist, production from job_args_truthkin_v3_retry.txt

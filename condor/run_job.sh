@@ -11,6 +11,14 @@ EOS_OUTDIR=$4
 # that don't pass them keep working.
 CHANNELS=${5:-base}
 HIST_COLLECTIONS=${6:-muon_base}
+# Optional positional arg 7: gen-filter production tag (v10, central, or none),
+# the fourth job_args.txt column from make_job_args.py. Without it signal yields
+# get no gen-filter efficiency and postprocess warns.
+PRODUCTION=${7:-}
+PRODUCTION_ARGS=()
+if [[ -n "${PRODUCTION}" ]]; then
+    PRODUCTION_ARGS=(--production "${PRODUCTION}")
+fi
 
 echo "Host:"
 hostname
@@ -98,6 +106,7 @@ python condor/run_sidm_chunk.py \
     --workers 1 \
     --channels "${CHANNELS}" \
     --hist-collections "${HIST_COLLECTIONS}" \
+    "${PRODUCTION_ARGS[@]}" \
     --unweighted-hist
 
 echo "Output:"
