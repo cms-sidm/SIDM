@@ -81,6 +81,24 @@ Use the `sidm_venv` kernel ("SIDM (LCG_107 Py3.11)"). The notebook adds the repo
 `sys.path`, imports the two local modules, reads `mstw2008nnlo.00.dat` from this directory, and needs
 only `numpy`, `scipy`, `matplotlib`, `mplhep`, and `pandas`.
 
+## From production cross section to final-state yield
+
+The signal cross sections in `sidm/configs/cross_sections.yaml` are the production cross section
+$\sigma$ of the bound state at each bound-state mass, the same for every dark photon mass, lifetime
+and final state. The samples force both dark photons to decay, to $4\mu$ (4Mu) or $2\mu2e$ (2Mu2E), so
+the yield of a sample is $\sigma$ times its final-state factor: $\mathrm{BR}(Z_d\to\mu\mu)^2$ for 4Mu and
+$2\,\mathrm{BR}(Z_d\to\mu\mu)\,\mathrm{BR}(Z_d\to ee)$ for 2Mu2E. `sidm/tools/dark_photon_br.py` computes
+the dark photon branching fractions (leptonic widths plus hadrons from the PDG $R$ ratio,
+`sidm/configs/r_hadronic.dat`) and these factors, `final_state_factor(m_Zd, final_state)`; at
+$m_{Z_d} = 0.25,\ 1.2,\ 5$ GeV the 4Mu factor is 0.177, 0.117, 0.024 and the 2Mu2E factor 0.487, 0.234,
+0.048. Carry a scheme uncertainty wherever the factors are used: Darkcast, which fits vector-meson
+form factors instead of using the PDG $R$ data, gives 4Mu factors about 7% lower at 1.2 GeV and 3%
+higher at 5 GeV, and the same at 0.25 GeV (no hadronic channel open). The datacard combination,
+`combine_final_states` in `sidm/studies/limit_plotting/datacard_tools.py`, is where they would enter,
+through its `final_state_weights` argument. That argument currently holds one weight per final state
+(default 1 for both); since the factors depend on $m_{Z_d}$, applying them needs a weight per grid
+point, evaluated at the point's dark photon mass.
+
 ## References
 
 The model and inputs are documented inline in the notebook. Key references: the ATLAS/CMS Dark Matter
