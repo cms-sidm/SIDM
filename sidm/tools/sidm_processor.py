@@ -151,6 +151,8 @@ class SidmProcessor(processor.ProcessorABC):
         """Apply selections, make histograms and cutflow"""
         is_data = events.metadata["is_data"]
         year = str(events.metadata["year"])
+        # gen-filter production tag from make_fileset; absent in hand-built filesets
+        production = events.metadata.get("production")
 
         # apply golden json
         n_removed = 0
@@ -362,6 +364,7 @@ class SidmProcessor(processor.ProcessorABC):
                 # add sample metadata as set_accumulator to only keep unique values during accumulation
                 "year": processor.set_accumulator([year]),
                 "is_data": processor.set_accumulator([is_data]),
+                "production": processor.set_accumulator([production]),
                 "unweighted_hist": processor.set_accumulator([self.unweighted_hist]),
                 "n_removed_golden_json": n_removed,
             },
@@ -725,7 +728,7 @@ class SidmProcessor(processor.ProcessorABC):
 
     def postprocess(self, accumulator):
         """Modify accumulator after process has run on all chunks"""
-        # scale cutflow and hists according to lumi*xs
+        # scale cutflow and hists according to lumi*xs*gen_filter_eff
         for sample, output in accumulator.items():
             if len(output["metadata"]["is_data"]) != 1 or len(output["metadata"]["year"]) != 1:
                 print(f"WARNING: {sample} has more than one value for is_data or year. Not scaling histograms or cutflows.")
@@ -735,10 +738,17 @@ class SidmProcessor(processor.ProcessorABC):
                 print(f"{sample} is data. Not scaling histograms or cutflows.")
                 continue
 
-            print(f"{sample} is simulation. Scaling histograms or cutflows according to lumi*xs.")
+            productions = output["metadata"].get("production", {None})
+            production = next(iter(productions)) if len(productions) == 1 else None
+            gen_filter_eff = utilities.get_gen_filter_eff(sample, production)
+            print(f"{sample} is simulation. Scaling histograms or cutflows according to "
+                  f"lumi*xs*gen_filter_eff (gen_filter_eff = {gen_filter_eff:.4g}, "
+                  f"production {production}).")
+            # set_accumulator, like year/is_data, so a merge of chunks keeps one value
+            accumulator[sample]["metadata"]["gen_filter_eff"] = processor.set_accumulator([gen_filter_eff])
             year = list(output["metadata"]["year"])[0]
             sum_weights = output["metadata"]["scaled_sum_weights"]
-            lumixs_weight = utilities.get_lumixs_weight(sample, year, sum_weights)
+            lumixs_weight = utilities.get_lumixs_weight(sample, year, sum_weights, production)
             for name in output["cutflow"]:
                 accumulator[sample]["cutflow"][name].scale(lumixs_weight)
             if not self.unweighted_hist:

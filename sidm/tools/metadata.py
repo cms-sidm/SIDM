@@ -21,7 +21,26 @@ import coffea
 import yaml
 
 from sidm.tools.corrections import Corrections
-from sidm.tools.utilities import get_xs, load_yaml
+from sidm.tools.utilities import get_gen_filter_eff, get_xs, load_yaml
+
+
+def _gen_filter_eff(name, info, output):
+    """Generator-filter efficiency applied to a sample: the value postprocess
+    recorded in the output when present, else the lookup in
+    sidm/configs/signal_gen_filter_eff.yaml with the fileset's production tag
+    (1.0 for non-signal samples, None when the lookup falls back)."""
+    try:
+        recorded = output[name]["metadata"]["gen_filter_eff"]
+    except (KeyError, TypeError):
+        recorded = None
+    if recorded:
+        return float(next(iter(recorded))) if len(recorded) == 1 else None
+    try:
+        eff = get_gen_filter_eff(name, info.get("metadata", {}).get("production"),
+                                 default=None, warn=False)
+    except KeyError:
+        return None
+    return None if eff is None else float(eff)
 
 
 def write_run_metadata(
@@ -35,6 +54,7 @@ def write_run_metadata(
     unweighted_hist=None,
     corrections=True,
     monitor_corrections=None,
+    output=None,
     extra=None,
     sidm_root=None,
 ):
@@ -64,6 +84,8 @@ def write_run_metadata(
         monitor_corrections: optional, the ``monitor_corrections`` argument
             given to ``SidmProcessor`` (evaluated, not applied); recorded the
             same way under ``monitored_corrections``.
+        output: optional processor output ``{sample_name: {...}}``; the
+            gen-filter efficiency postprocess applied is read from its metadata.
         extra: optional dict of additional fields to merge into the sidecar
             (e.g. condor cluster ID, dask cluster dashboard URL).
         sidm_root: optional repo-root override; default walks up from this file.
@@ -100,6 +122,7 @@ def write_run_metadata(
             "name": name,
             "n_files": len(files),
             "xsec_pb": xsec_pb,
+            "gen_filter_eff": _gen_filter_eff(name, info, output),
             "metadata": _yaml_safe(info.get("metadata", {})),
             "files": files,
         })
