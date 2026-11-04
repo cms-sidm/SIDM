@@ -5196,7 +5196,7 @@ hist_defs = {
     ),
     "back_to_back_dsa_pair_phi_diff": h.Histogram(
         [
-            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name="back to back dsa_pair_eta_diff",
+            h.Axis(hist.axis.Regular(100, 0, _ABS_DPHI_MAX, name="back to back dsa_pair_phi_diff",
                                      label=r"Back-to-back $|\Delta\phi|$(DSA $\mu_1$, DSA $\mu_2$)"),
                   lambda objs, mask: (lambda v1, v2: abs(delta_phi(v1.phi, v2.phi)))(*ak.unzip(derived_objs["back_to_back_dsa_pairs"](objs)))),
         ],
