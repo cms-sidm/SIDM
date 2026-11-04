@@ -118,12 +118,13 @@ def sample_outputs(out):
 def combine_normalized_chunks(outputs, unweighted_override=None):
     """Combine per-chunk SidmProcessor outputs that were normalized PER CHUNK in postprocess.
 
-    postprocess scales (simulation only): cutflow ALWAYS by lumi*xs/sumw_chunk, and hists by the
+    postprocess scales (simulation only): cutflow ALWAYS by lumi*xs*gen_filter_eff/sumw_chunk, and
+    hists by the
     same factor UNLESS the run used unweighted_hist. A plain processor.accumulate over chunks
     therefore inflates those per-chunk-scaled objects by ~the number of chunks (more chunks -> more
     inflation). Recover the correct full-sample normalization by re-weighting each scaled object by
     its chunk sumw, accumulating, then dividing by the total sumw:
-        sum_j(obj_j*sumw_j) / sum_j(sumw_j)  ==  lumi*xs/sumw_full * sum_j raw_j   (the right answer).
+        sum_j(obj_j*sumw_j) / sum_j(sumw_j)  ==  lumi*xs*eff/sumw_full * sum_j raw_j   (the right answer).
     Data, and raw (unweighted) hists, are left to plain accumulation.
 
     unweighted_override is only for OLD outputs whose metadata predates the 'unweighted_hist' key;
@@ -381,6 +382,7 @@ def main():
                 unweighted_hist=args.unweighted_hist,
                 corrections=corrections or None,
                 monitor_corrections=monitored or None,
+                output=sample_outputs(merged),
                 extra={"n_chunks": len(local_paths)},
                 sidm_root=_REPO_ROOT,
                 selections_cfg=args.selections_cfg,

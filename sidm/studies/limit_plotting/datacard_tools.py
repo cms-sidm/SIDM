@@ -8,7 +8,7 @@ sample is simply that histogram summed over the observable axis at
 
 Two details matter for getting the count right:
 
-* The histograms are already scaled to ``lumi * xs`` by
+* The histograms are already scaled to ``lumi * xs * gen_filter_eff`` by
   ``sidm_processor.postprocess``, so the sums are yields, not raw entries.
   Signal has no entry in ``configs/cross_sections.yaml``, so
   ``utilities.get_xs`` falls back to 1 fb -- signal yields (and therefore the

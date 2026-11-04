@@ -260,10 +260,12 @@ def make_fileset(samples, ntuple_version, max_files=-1, location_cfg="signal_v8.
 
     replace_xcache: when True, rewrite 'root://xcache//' to 'root://cmseos.fnal.gov//' so the
     fileset is usable from LPC (xcache is the coffea-casa cache and does not resolve elsewhere).
+    Each sample's metadata carries the production tag of location_cfg (get_production).
     census_skip: optional census skip-list (a path, or a name under sidm/configs/census/). Files
     the census flagged (bad / unreachable / empty -- see file_census) are dropped IN ADDITION to
     those the location YAML comments out; the YAML's manual commenting is always honored.
     """
+    production = get_production(location_cfg)
     # assume location_cfg is stored in sidm/configs/ntuples/
     location_cfg = f"{BASE_DIR}/configs/ntuples/" + location_cfg
     locations = load_yaml(location_cfg)[ntuple_version]
@@ -287,6 +289,8 @@ def make_fileset(samples, ntuple_version, max_files=-1, location_cfg="signal_v8.
                 "skim_factor": sample_yaml.get("skim_factor", 1.0),
                 "is_data": sample_yaml.get("is_data", False),
                 "year": sample_yaml.get("year", "2018"),
+                # selects the gen-filter efficiency in postprocess (get_gen_filter_eff)
+                "production": production,
             },
         }
     return fileset
@@ -429,12 +433,60 @@ def get_lumi(year, cfg="run_periods.yaml"):
     lumi_menu = load_yaml(f"{BASE_DIR}/configs/" + cfg)
     return lumi_menu[year]["lumi"]
 
-def get_lumixs_weight(dataset, year, sum_weights):
-    """Get weights to scale n_evts to lumi*xs"""
-    # n_evts: sum of weights from processed events
+_GEN_FILTER_EFF = {}
+_GEN_FILTER_WARNED = set()
+# production tag -> field of signal_gen_filter_eff.yaml holding that production's efficiency
+_GEN_FILTER_FIELDS = {"v10": "v10", "central": "central"}
+# location config (sidm/configs/ntuples/) -> production tag
+_PRODUCTION_TAGS = {
+    "signal_2mu2e_v10.yaml": "v10",
+    "signal_4mu_v10.yaml": "v10",
+    "ffntuples.yaml": "central",
+}
+
+def get_production(location_cfg):
+    """Production tag of a location config: "v10", "central" (Firefighter ntuples), or None"""
+    return _PRODUCTION_TAGS.get(os.path.basename(location_cfg))
+
+def get_gen_filter_eff(dataset, production=None, cfg="signal_gen_filter_eff.yaml", default=1.0,
+                       warn=True):
+    """Fetch the generator-filter efficiency of a signal dataset from cfg
+
+    The signal samples were produced with a generator filter and store only
+    passing events; cfg (made by sidm/scripts/make_signal_gen_filter_eff.py)
+    holds the per-point efficiency of each production. Sample names are shared
+    between productions, so the production tag (set by make_fileset from the
+    location config, see get_production) selects the entry: "v10" -> v10.eff,
+    "central" -> central.eff. Returns 1.0 for non-signal datasets, and default
+    for a signal dataset with no tag, an unknown tag, or no entry in cfg,
+    printing a warning once per dataset if warn.
+    """
+    if not dataset.startswith(("2Mu2E", "4Mu")):
+        return 1.0
+    # assume cfg is stored in sidm/configs/; load it once
+    if cfg not in _GEN_FILTER_EFF:
+        _GEN_FILTER_EFF[cfg] = load_yaml(f"{BASE_DIR}/configs/" + cfg)
+    try:
+        return _GEN_FILTER_EFF[cfg][dataset][_GEN_FILTER_FIELDS[production]]["eff"]
+    except KeyError:
+        if warn and dataset not in _GEN_FILTER_WARNED:
+            _GEN_FILTER_WARNED.add(dataset)
+            print(f"WARNING: no gen filter efficiency for {dataset} (production {production}) "
+                  f"in {cfg}, assuming {default}")
+        return default
+
+def get_lumixs_weight(dataset, year, sum_weights, production=None):
+    """Get weights to scale n_evts to lumi*xs*gen_filter_eff
+
+    N = L * sigma * eff_filter * N_sel / sum_w(stored): sum_weights is the sum of
+    generator weights of the stored (post-filter) events, so the filter
+    efficiency of the dataset's production (see get_gen_filter_eff) restores
+    the pre-filter normalization.
+    """
     lumi = get_lumi(year)
     xs = get_xs(dataset)
-    return lumi*xs/sum_weights
+    eff = get_gen_filter_eff(dataset, production)
+    return lumi*xs*eff/sum_weights
 
 def check_variablePhoton(value, min_val=0b01):
     """
