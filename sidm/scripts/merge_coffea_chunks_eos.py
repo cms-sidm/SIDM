@@ -115,6 +115,19 @@ def sample_outputs(out):
     return out
 
 
+def check_single_valued(merged, keys=("gen_filter_eff", "production")):
+    """Raise if a merged sample's chunks disagreed on a per-sample setting: each chunk is
+    normalized with its own value, so a mixture would be summed without warning."""
+    for sample, sout in merged.items():
+        if not isinstance(sout, dict) or "metadata" not in sout:
+            continue
+        for key in keys:
+            values = sout["metadata"].get(key)
+            if values is not None and len(values) > 1:
+                raise ValueError(f"{sample}: chunks disagree on {key}: {sorted(values, key=str)}; "
+                                 "not merging (re-run the odd chunks with the same setting)")
+
+
 def combine_normalized_chunks(outputs, unweighted_override=None):
     """Combine per-chunk SidmProcessor outputs that were normalized PER CHUNK in postprocess.
 
@@ -126,6 +139,8 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
     its chunk sumw, accumulating, then dividing by the total sumw:
         sum_j(obj_j*sumw_j) / sum_j(sumw_j)  ==  lumi*xs*eff/sumw_full * sum_j raw_j   (the right answer).
     Data, and raw (unweighted) hists, are left to plain accumulation.
+    Runner-wrapped chunks are unwrapped (sample_outputs), and chunks of one sample
+    that disagree on gen_filter_eff or production raise instead of merging.
 
     unweighted_override is only for OLD outputs whose metadata predates the 'unweighted_hist' key;
     newer runs store it, so the merge is self-describing.
@@ -168,6 +183,7 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
 
     # accumulate consumes the generator one chunk at a time
     merged = processor.accumulate(reweighted(out) for out in outputs)
+    check_single_valued(sample_outputs(merged))
 
     for sout in sample_outputs(merged).values():
         if not isinstance(sout, dict) or "metadata" not in sout:
