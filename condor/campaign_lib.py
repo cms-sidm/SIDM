@@ -115,7 +115,7 @@ class ChunkResult:
 # Parsing job_args.txt and filelists
 # --------------------------------------------------------------------------
 def parse_job_args(path):
-    """Read job_args.txt -> list[ChunkSpec]. Lines are 'sample chunk filelist'."""
+    """Read job_args.txt -> list[ChunkSpec]. Lines are 'sample chunk filelist [production]'."""
     specs = []
     with open(path) as f:
         for raw in f:

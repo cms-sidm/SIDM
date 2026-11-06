@@ -317,11 +317,13 @@ evt_cut_defs = {
     # This following will be True for every event. There's probably a more intuitive way to do this
     "Keep all evts": lambda objs: objs["pvs"].npvs >= 0,
     # Re-application of the central-production gen filter. The v10 signal samples
-    # were PRODUCED with this filter (their GenFilterInfo records the tried/passed
-    # counts), so on them the cutflow of these cuts is a re-pass/validation rate
-    # (0.84-1.00, mass-dependent) -- NOT a filter efficiency. Per-point production
-    # efficiencies are recorded in
-    # sidm/studies/truth_kinematics_forAN/central_genFilterEfficiencies.yml.
+    # were PRODUCED with the same cut string at pT > 4 GeV (their GenFilterInfo
+    # records the tried/passed counts), so on them the cutflow of these cuts is a
+    # re-pass rate (0.84-1.00, mass-dependent; the deficit is the 4-5 GeV band)
+    # -- NOT a filter efficiency. Per-point central-production efficiencies are
+    # recorded in
+    # sidm/studies/truth_kinematics_forAN/central_genFilterEfficiencies.yml, the
+    # v10 ones (central / re-pass) in sidm/configs/signal_gen_filter_eff.yaml.
     # "pass gen filter" follows the McM request's cut string (isLastCopy &&
     # isPromptFinalState && fromHardProcessFinalState); the isHardProcess variant
     # follows the piedpiper template. Both count electrons and muons together, >= 4.

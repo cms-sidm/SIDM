@@ -167,15 +167,21 @@ figures regenerate from the stored histograms.
 
 ## The production gen filter
 
-The v10 samples were produced **with the central gen filter applied**: at
-least 4 e/mu with pT > 5 GeV, |eta| < 2.4, and production vertex within
-rho < 740 cm, |z| < 960 cm. Evidence: the samples' own `GenFilterInfo`
+The v10 samples were produced **with the central gen filter's cut string
+applied at a 4 GeV threshold**: at least 4 e/mu with pT > 4 GeV (the central
+production uses 5 GeV), |eta| < 2.4, and production vertex within
+rho < 740 cm, |z| < 960 cm. The 4 GeV threshold is in the GEN process PSet
+stored in the v10 files (cut string `... && pt>4. && isLastCopy() &&
+isPromptFinalState() && fromHardProcessFinalState()`, read back in
+`sidm/studies/run3_signal_validation/gen_requirement.py` on branch
+`run3-signal-validation`, where the 4 GeV emulation passes 99.94% of stored
+events and 2% of the signal leptons sit between 4 and 5 GeV). Further evidence: the samples' own `GenFilterInfo`
 bookkeeping (e.g. tried 4500 / passed 2325, eff = 0.517, in the retained
 `4Mu MBs-500 MDp-1.2 ctau-19mm` AODSIM), and the kinematic walls in the
-stored events sitting exactly on the filter thresholds. Re-applying the cut
-string at the ntuple level passes 0.84-1.00 of stored events depending on the
-mass point (lowest at the lightest masses, where leptons sit near the pT
-threshold), a form validation on filtered events, not an efficiency. The `CutDecayFalse`
+stored events sitting exactly on the filter thresholds. Re-applying the central
+(5 GeV) cut string at the ntuple level passes 0.84-1.00 of stored events
+depending on the mass point (lowest at the lightest masses, where leptons sit
+near the pT threshold); the deficit is the 4-5 GeV band, not an efficiency. The `CutDecayFalse`
 sample-name prefix refers to the MadGraph run-card flag (which removes
 LHE-level cuts on the decay leptons and is indeed False); it does not mean
 the samples are unfiltered. Note `edmProvDump` does not reveal this filter;
@@ -185,9 +191,11 @@ Two consequences:
 
 1. The lifetime truncation modeled in `lifetime_forAN.ipynb` (R_max ~ 8 m) is
    this filter's vertex cylinder, approximated by a single radius.
-2. **Normalization**: the stored sum of generator weights is post-filter. Any
-   absolute signal normalization must use sigma x eff_filter with the
-   per-point efficiency; otherwise yields are overstated by 1.1-5.2x.
+2. **Normalization**: the stored sum of generator weights is post-filter, so
+   yields need sigma x eff_filter; without the per-point v10 efficiency they
+   are overstated by 1.1-4.4x. The factor is applied in
+   `utilities.get_lumixs_weight` from `sidm/configs/signal_gen_filter_eff.yaml`,
+   so postprocessed yields already include it.
 
 Per-point central-production efficiencies (with uncertainties) are committed
 here as `central_genFilterEfficiencies.yml`
@@ -196,6 +204,32 @@ Two points were re-measured from scratch with the exact production
 configuration (gridpack from cvmfs, CMSSW_10_2_16_UL, GenFilterInfo counting)
 and agree: 0.8607 +- 0.0035 vs 0.8593 recorded, and 0.6060 +- 0.0049 vs
 0.5994, for the 2Mu2E mXX-1000 mA-0.25 prompt and lxy-300 points.
+
+The efficiency of the v10 samples follows from the central one:
+eff_v10 = eff_central / repass5, where repass5 is the fraction of stored v10
+events passing the central (5 GeV) cut string, the `genFilterEmulation`
+channel. `v10_filter_repass.json` holds those counts for all 180 samples (both
+emulation channels), made by `_v10_filter_repass.py` from the merged outputs on
+EOS; `sidm/scripts/make_signal_gen_filter_eff.py` combines it with
+`central_genFilterEfficiencies.yml` into `sidm/configs/signal_gen_filter_eff.yaml`.
+The re-pass uses raw event counts while the normalization divides by the sum
+of generator weights; the two agree because the v10 signal `genWeight` is
+constant (1.0 for every event in the checked files, with Runs `genEventSumw`
+equal to `genEventCount`). Where repass5 = 1 its binomial error is 0.
+
+Sample names are shared between productions (v6-v8, the Firefighter
+`ffntuples.yaml` and v10 reuse the same names), so the efficiency is chosen by
+a production tag, not by name: `make_fileset` derives it from the location
+config (`signal_2mu2e_v10.yaml`, `signal_4mu_v10.yaml` -> `v10`;
+`ffntuples.yaml` -> `central`; anything else -> none), the processor carries
+it in the output metadata, and postprocess takes `v10.eff` or `central.eff`
+(1.0 with a warning for an untagged signal sample) and records the factor
+used in `metadata["gen_filter_eff"]`.
+
+One direct check of a v10 efficiency exists: `GenFilterInfo` of the retained
+`4Mu_500GeV_1p2GeV_19p0mm` AODSIM gives 2325/4500 = 0.517 +- 0.007, against
+0.531 +- 0.001 from central/repass5, a 1.9 sigma difference. No systematic
+for transferring the central efficiency to v10 is assigned here.
 
 ## Framework changes in this branch
 

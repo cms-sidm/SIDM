@@ -21,6 +21,12 @@ def read_samples(path):
         ]
 
 
+def job_args_line(sample, chunk, filelist_path, production):
+    """One job_args.txt line, 'sample chunk filelist production'; production is the
+    gen-filter tag of the location config (utilities.get_production), 'none' if it has none."""
+    return f"{sample} {chunk} {filelist_path} {production or 'none'}\n"
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--samples-file", required=True)
@@ -39,6 +45,7 @@ def main():
     args = parser.parse_args()
 
     samples = read_samples(args.samples_file)
+    production = utilities.get_production(args.location_cfg)
 
     fileset = utilities.make_fileset(
         samples,
@@ -76,7 +83,7 @@ def main():
                 # so write the path relative to that directory (e.g. filelists/foo_0.txt,
                 # not condor/filelists/foo_0.txt).
                 path_for_submit = os.path.relpath(filelist_path, "condor")
-                job_args.write(f"{sample} {chunk} {path_for_submit}\n")
+                job_args.write(job_args_line(sample, chunk, path_for_submit, production))
                 n_jobs += 1
 
         print(f"Made {n_jobs} jobs")

@@ -361,7 +361,7 @@ def probe_file_deep(url, sample, metadata, channels, hist_collections,
     except Exception as exc:  # noqa: BLE001 -- classify, don't crash the census
         import traceback
         tb = traceback.format_exc()
-        if any(s in tb for s in ("get_xs", "get_lumixs_weight", "xs_menu")):
+        if any(s in tb for s in ("get_xs", "get_lumixs_weight", "get_gen_filter_eff", "xs_menu")):
             # events processed fine; only the xsec/postprocess lookup failed (config).
             pr.process_status = "ok"
             pr.process_error = ("events processed; xsec/postprocess config issue "

@@ -1,0 +1,3602 @@
+{
+ "2Mu2E_1000GeV_0p25GeV_0p002mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 194971,
+   "n_pass": 193416,
+   "repass": 0.9920244549189366
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 194971,
+   "n_pass": 193461,
+   "repass": 0.9922552584743372
+  }
+ },
+ "2Mu2E_1000GeV_0p25GeV_0p02mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 126281,
+   "n_pass": 125195,
+   "repass": 0.991400131452871
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 126281,
+   "n_pass": 125245,
+   "repass": 0.9917960738353355
+  }
+ },
+ "2Mu2E_1000GeV_0p25GeV_0p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 194623,
+   "n_pass": 192998,
+   "repass": 0.991650524347071
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 194623,
+   "n_pass": 193067,
+   "repass": 0.9920050559286415
+  }
+ },
+ "2Mu2E_1000GeV_0p25GeV_1p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 147205,
+   "n_pass": 146008,
+   "repass": 0.9918684827281682
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 147205,
+   "n_pass": 146065,
+   "repass": 0.9922556978363507
+  }
+ },
+ "2Mu2E_1000GeV_0p25GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 55389,
+   "n_pass": 54900,
+   "repass": 0.9911715322536966
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 55389,
+   "n_pass": 54926,
+   "repass": 0.9916409395367312
+  }
+ },
+ "2Mu2E_1000GeV_1p2GeV_0p0096mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 196092,
+   "n_pass": 192991,
+   "repass": 0.9841859943291924
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 196092,
+   "n_pass": 193083,
+   "repass": 0.9846551618627991
+  }
+ },
+ "2Mu2E_1000GeV_1p2GeV_0p096mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 218652,
+   "n_pass": 215268,
+   "repass": 0.9845233521760606
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 218652,
+   "n_pass": 215352,
+   "repass": 0.9849075242851655
+  }
+ },
+ "2Mu2E_1000GeV_1p2GeV_0p96mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 161441,
+   "n_pass": 158973,
+   "repass": 0.9847126814130239
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 161441,
+   "n_pass": 159046,
+   "repass": 0.9851648589887327
+  }
+ },
+ "2Mu2E_1000GeV_1p2GeV_4p8mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 193469,
+   "n_pass": 190486,
+   "repass": 0.9845815091823497
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 193469,
+   "n_pass": 190557,
+   "repass": 0.9849484930402287
+  }
+ },
+ "2Mu2E_1000GeV_1p2GeV_9p6mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 131048,
+   "n_pass": 128925,
+   "repass": 0.9837998290702643
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 131048,
+   "n_pass": 129002,
+   "repass": 0.9843874000366278
+  }
+ },
+ "2Mu2E_1000GeV_5p0GeV_0p04mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 131702,
+   "n_pass": 129520,
+   "repass": 0.9834322941185404
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 131702,
+   "n_pass": 129623,
+   "repass": 0.9842143627279768
+  }
+ },
+ "2Mu2E_1000GeV_5p0GeV_0p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 217802,
+   "n_pass": 214288,
+   "repass": 0.9838660802012837
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 217802,
+   "n_pass": 214457,
+   "repass": 0.984642014306572
+  }
+ },
+ "2Mu2E_1000GeV_5p0GeV_20p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 194599,
+   "n_pass": 191403,
+   "repass": 0.9835764829212894
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 194599,
+   "n_pass": 191540,
+   "repass": 0.9842804947610214
+  }
+ },
+ "2Mu2E_1000GeV_5p0GeV_40p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 135919,
+   "n_pass": 133713,
+   "repass": 0.9837697452159007
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 135919,
+   "n_pass": 133792,
+   "repass": 0.9843509737417138
+  }
+ },
+ "2Mu2E_1000GeV_5p0GeV_4p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 154606,
+   "n_pass": 152048,
+   "repass": 0.9834547171519863
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 154606,
+   "n_pass": 152197,
+   "repass": 0.9844184572396931
+  }
+ },
+ "2Mu2E_100GeV_0p25GeV_0p02mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 125720,
+   "n_pass": 114473,
+   "repass": 0.9105392936684696
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 125720,
+   "n_pass": 115039,
+   "repass": 0.9150413617562838
+  }
+ },
+ "2Mu2E_100GeV_0p25GeV_0p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 115129,
+   "n_pass": 104922,
+   "repass": 0.9113429283673097
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 115129,
+   "n_pass": 105399,
+   "repass": 0.9154861068887943
+  }
+ },
+ "2Mu2E_100GeV_0p25GeV_10p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 105444,
+   "n_pass": 95992,
+   "repass": 0.9103600015173932
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 105444,
+   "n_pass": 96410,
+   "repass": 0.9143241910397937
+  }
+ },
+ "2Mu2E_100GeV_0p25GeV_20p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 79486,
+   "n_pass": 72085,
+   "repass": 0.9068892635181038
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 79486,
+   "n_pass": 72440,
+   "repass": 0.9113554588229373
+  }
+ },
+ "2Mu2E_100GeV_0p25GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 120148,
+   "n_pass": 109499,
+   "repass": 0.9113676465692313
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 120148,
+   "n_pass": 109989,
+   "repass": 0.9154459499950062
+  }
+ },
+ "2Mu2E_100GeV_1p2GeV_0p096mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 103496,
+   "n_pass": 87354,
+   "repass": 0.8440326196181495
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 103496,
+   "n_pass": 87966,
+   "repass": 0.849945891628662
+  }
+ },
+ "2Mu2E_100GeV_1p2GeV_0p96mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 99429,
+   "n_pass": 84133,
+   "repass": 0.8461615826368565
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 99429,
+   "n_pass": 84692,
+   "repass": 0.8517836848404389
+  }
+ },
+ "2Mu2E_100GeV_1p2GeV_48p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 88591,
+   "n_pass": 74552,
+   "repass": 0.8415301780090528
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 88591,
+   "n_pass": 75080,
+   "repass": 0.847490151369778
+  }
+ },
+ "2Mu2E_100GeV_1p2GeV_96p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 62027,
+   "n_pass": 52107,
+   "repass": 0.8400696470891709
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 62027,
+   "n_pass": 52485,
+   "repass": 0.8461637673916198
+  }
+ },
+ "2Mu2E_100GeV_1p2GeV_9p6mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 98618,
+   "n_pass": 83227,
+   "repass": 0.8439331562189458
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 98618,
+   "n_pass": 83861,
+   "repass": 0.8503620028797988
+  }
+ },
+ "2Mu2E_100GeV_5p0GeV_0p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 86913,
+   "n_pass": 73626,
+   "repass": 0.8471229850540195
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 86913,
+   "n_pass": 74337,
+   "repass": 0.8553035794415105
+  }
+ },
+ "2Mu2E_100GeV_5p0GeV_200mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 83640,
+   "n_pass": 70545,
+   "repass": 0.8434361549497847
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 83640,
+   "n_pass": 71347,
+   "repass": 0.853024868483979
+  }
+ },
+ "2Mu2E_100GeV_5p0GeV_400mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 60962,
+   "n_pass": 51135,
+   "repass": 0.8388012204324005
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 60962,
+   "n_pass": 51679,
+   "repass": 0.8477248121780782
+  }
+ },
+ "2Mu2E_100GeV_5p0GeV_40p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 94293,
+   "n_pass": 79804,
+   "repass": 0.8463406615549405
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 94293,
+   "n_pass": 80591,
+   "repass": 0.8546869863086337
+  }
+ },
+ "2Mu2E_100GeV_5p0GeV_4p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 96654,
+   "n_pass": 81604,
+   "repass": 0.8442899414406025
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 96654,
+   "n_pass": 82374,
+   "repass": 0.8522565025761997
+  }
+ },
+ "2Mu2E_150GeV_0p25GeV_0p013mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 148789,
+   "n_pass": 140555,
+   "repass": 0.9446598874916828
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 148789,
+   "n_pass": 140970,
+   "repass": 0.9474490721760345
+  }
+ },
+ "2Mu2E_150GeV_0p25GeV_0p13mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 146225,
+   "n_pass": 137933,
+   "repass": 0.9432928705761668
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 146225,
+   "n_pass": 138404,
+   "repass": 0.946513934005813
+  }
+ },
+ "2Mu2E_150GeV_0p25GeV_13p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 89957,
+   "n_pass": 84815,
+   "repass": 0.9428393565814778
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 89957,
+   "n_pass": 85067,
+   "repass": 0.9456406949987216
+  }
+ },
+ "2Mu2E_150GeV_0p25GeV_1p3mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 140178,
+   "n_pass": 132460,
+   "repass": 0.9449414316083836
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 140178,
+   "n_pass": 132867,
+   "repass": 0.9478448829345546
+  }
+ },
+ "2Mu2E_150GeV_0p25GeV_6p7mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 123104,
+   "n_pass": 116148,
+   "repass": 0.9434949311151547
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 123104,
+   "n_pass": 116472,
+   "repass": 0.9461268520925397
+  }
+ },
+ "2Mu2E_150GeV_1p2GeV_0p064mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 105815,
+   "n_pass": 94897,
+   "repass": 0.8968199215612154
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 105815,
+   "n_pass": 95348,
+   "repass": 0.9010820772102254
+  }
+ },
+ "2Mu2E_150GeV_1p2GeV_0p64mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 121318,
+   "n_pass": 109038,
+   "repass": 0.8987784170527044
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 121318,
+   "n_pass": 109519,
+   "repass": 0.9027432038114707
+  }
+ },
+ "2Mu2E_150GeV_1p2GeV_32p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 101521,
+   "n_pass": 90988,
+   "repass": 0.8962480669024143
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 101521,
+   "n_pass": 91418,
+   "repass": 0.9004836437781346
+  }
+ },
+ "2Mu2E_150GeV_1p2GeV_64p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 69709,
+   "n_pass": 62543,
+   "repass": 0.8972012222238162
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 69709,
+   "n_pass": 62833,
+   "repass": 0.9013613737107117
+  }
+ },
+ "2Mu2E_150GeV_1p2GeV_6p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 118965,
+   "n_pass": 106689,
+   "repass": 0.8968099861303744
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 118965,
+   "n_pass": 107133,
+   "repass": 0.9005421762703316
+  }
+ },
+ "2Mu2E_150GeV_5p0GeV_0p27mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 126301,
+   "n_pass": 113265,
+   "repass": 0.896786248723288
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 126301,
+   "n_pass": 114004,
+   "repass": 0.9026373504564493
+  }
+ },
+ "2Mu2E_150GeV_5p0GeV_130p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 100871,
+   "n_pass": 90415,
+   "repass": 0.8963428537438907
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 100871,
+   "n_pass": 91002,
+   "repass": 0.9021621675208931
+  }
+ },
+ "2Mu2E_150GeV_5p0GeV_270p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 76615,
+   "n_pass": 68469,
+   "repass": 0.8936761730731579
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 76615,
+   "n_pass": 68876,
+   "repass": 0.8989884487371924
+  }
+ },
+ "2Mu2E_150GeV_5p0GeV_27p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 121491,
+   "n_pass": 108829,
+   "repass": 0.8957782881036456
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 121491,
+   "n_pass": 109556,
+   "repass": 0.9017622704562478
+  }
+ },
+ "2Mu2E_150GeV_5p0GeV_2p7mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 114953,
+   "n_pass": 103214,
+   "repass": 0.8978800031317147
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 114953,
+   "n_pass": 103816,
+   "repass": 0.9031169260480371
+  }
+ },
+ "2Mu2E_200GeV_0p25GeV_0p01mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 78428,
+   "n_pass": 75181,
+   "repass": 0.9585989697556995
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 78428,
+   "n_pass": 75383,
+   "repass": 0.9611745805069618
+  }
+ },
+ "2Mu2E_200GeV_0p25GeV_0p1mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 89633,
+   "n_pass": 86071,
+   "repass": 0.9602601720348533
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 89633,
+   "n_pass": 86274,
+   "repass": 0.9625249629042875
+  }
+ },
+ "2Mu2E_200GeV_0p25GeV_10p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 16682,
+   "n_pass": 15999,
+   "repass": 0.9590576669464093
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 16682,
+   "n_pass": 16035,
+   "repass": 0.9612156815729529
+  }
+ },
+ "2Mu2E_200GeV_0p25GeV_1p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 45057,
+   "n_pass": 43284,
+   "repass": 0.9606498435315267
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 45057,
+   "n_pass": 43372,
+   "repass": 0.9626029251836563
+  }
+ },
+ "2Mu2E_200GeV_0p25GeV_5p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 123555,
+   "n_pass": 118372,
+   "repass": 0.9580510703735179
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 123555,
+   "n_pass": 118630,
+   "repass": 0.9601392092590344
+  }
+ },
+ "2Mu2E_200GeV_1p2GeV_0p048mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 41057,
+   "n_pass": 37890,
+   "repass": 0.9228633363372872
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 41057,
+   "n_pass": 37993,
+   "repass": 0.9253720437440631
+  }
+ },
+ "2Mu2E_200GeV_1p2GeV_0p48mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 76668,
+   "n_pass": 70871,
+   "repass": 0.9243882715083216
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 76668,
+   "n_pass": 71058,
+   "repass": 0.9268273595241822
+  }
+ },
+ "2Mu2E_200GeV_1p2GeV_24p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 66724,
+   "n_pass": 61469,
+   "repass": 0.921242731251124
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 66724,
+   "n_pass": 61654,
+   "repass": 0.9240153468017505
+  }
+ },
+ "2Mu2E_200GeV_1p2GeV_48p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 18011,
+   "n_pass": 16605,
+   "repass": 0.9219365943034812
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 18011,
+   "n_pass": 16658,
+   "repass": 0.9248792404641608
+  }
+ },
+ "2Mu2E_200GeV_1p2GeV_4p8mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 84245,
+   "n_pass": 77696,
+   "repass": 0.9222624488100184
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 84245,
+   "n_pass": 77895,
+   "repass": 0.9246246068015906
+  }
+ },
+ "2Mu2E_200GeV_5p0GeV_0p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 77664,
+   "n_pass": 71600,
+   "repass": 0.9219200659250103
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 77664,
+   "n_pass": 71913,
+   "repass": 0.9259502472187886
+  }
+ },
+ "2Mu2E_200GeV_5p0GeV_100p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 68631,
+   "n_pass": 63220,
+   "repass": 0.9211580772537191
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 68631,
+   "n_pass": 63556,
+   "repass": 0.9260538240736693
+  }
+ },
+ "2Mu2E_200GeV_5p0GeV_200p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 51583,
+   "n_pass": 47422,
+   "repass": 0.9193338890719811
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 51583,
+   "n_pass": 47680,
+   "repass": 0.9243355369016925
+  }
+ },
+ "2Mu2E_200GeV_5p0GeV_20p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 69308,
+   "n_pass": 63968,
+   "repass": 0.9229526173024759
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 69308,
+   "n_pass": 64260,
+   "repass": 0.9271656951578461
+  }
+ },
+ "2Mu2E_200GeV_5p0GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 84593,
+   "n_pass": 78062,
+   "repass": 0.9227950303216578
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 84593,
+   "n_pass": 78477,
+   "repass": 0.9277008735947418
+  }
+ },
+ "2Mu2E_500GeV_0p25GeV_0p004mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 203851,
+   "n_pass": 200615,
+   "repass": 0.984125660408828
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 203851,
+   "n_pass": 200779,
+   "repass": 0.9849301695846476
+  }
+ },
+ "2Mu2E_500GeV_0p25GeV_0p04mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 194235,
+   "n_pass": 191054,
+   "repass": 0.9836229309856617
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 194235,
+   "n_pass": 191212,
+   "repass": 0.9844363786135352
+  }
+ },
+ "2Mu2E_500GeV_0p25GeV_0p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 208564,
+   "n_pass": 205165,
+   "repass": 0.9837028442108897
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 208564,
+   "n_pass": 205303,
+   "repass": 0.9843645116127424
+  }
+ },
+ "2Mu2E_500GeV_0p25GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 186966,
+   "n_pass": 183922,
+   "repass": 0.9837189649454982
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 186966,
+   "n_pass": 184074,
+   "repass": 0.9845319469850133
+  }
+ },
+ "2Mu2E_500GeV_0p25GeV_4p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 138237,
+   "n_pass": 135856,
+   "repass": 0.9827759572328681
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 138237,
+   "n_pass": 135972,
+   "repass": 0.9836150958137112
+  }
+ },
+ "2Mu2E_500GeV_1p2GeV_0p019mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 204771,
+   "n_pass": 198393,
+   "repass": 0.9688530114127488
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 204771,
+   "n_pass": 198615,
+   "repass": 0.9699371493033682
+  }
+ },
+ "2Mu2E_500GeV_1p2GeV_0p19mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 192396,
+   "n_pass": 186440,
+   "repass": 0.9690430154473066
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 192396,
+   "n_pass": 186647,
+   "repass": 0.9701189213912971
+  }
+ },
+ "2Mu2E_500GeV_1p2GeV_19p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 138545,
+   "n_pass": 133992,
+   "repass": 0.9671370312894727
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 138545,
+   "n_pass": 134139,
+   "repass": 0.96819805839258
+  }
+ },
+ "2Mu2E_500GeV_1p2GeV_1p9mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 205180,
+   "n_pass": 198681,
+   "repass": 0.9683253728433571
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 205180,
+   "n_pass": 198918,
+   "repass": 0.9694804561848134
+  }
+ },
+ "2Mu2E_500GeV_1p2GeV_9p6mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 188746,
+   "n_pass": 182615,
+   "repass": 0.9675171924173227
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 188746,
+   "n_pass": 182851,
+   "repass": 0.9687675500407956
+  }
+ },
+ "2Mu2E_500GeV_5p0GeV_0p08mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 195206,
+   "n_pass": 189044,
+   "repass": 0.9684333473356351
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 195206,
+   "n_pass": 189376,
+   "repass": 0.97013411473008
+  }
+ },
+ "2Mu2E_500GeV_5p0GeV_0p8mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 190498,
+   "n_pass": 184534,
+   "repass": 0.968692584699052
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 190498,
+   "n_pass": 184838,
+   "repass": 0.9702884019779735
+  }
+ },
+ "2Mu2E_500GeV_5p0GeV_40p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 166571,
+   "n_pass": 161208,
+   "repass": 0.9678035192200323
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 166571,
+   "n_pass": 161459,
+   "repass": 0.9693103841605081
+  }
+ },
+ "2Mu2E_500GeV_5p0GeV_80p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 132287,
+   "n_pass": 127960,
+   "repass": 0.967290814668108
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 132287,
+   "n_pass": 128169,
+   "repass": 0.9688707129196369
+  }
+ },
+ "2Mu2E_500GeV_5p0GeV_8p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 195420,
+   "n_pass": 189168,
+   "repass": 0.9680073687442432
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 195420,
+   "n_pass": 189473,
+   "repass": 0.9695681097124143
+  }
+ },
+ "2Mu2E_800GeV_0p25GeV_0p0025mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 137219,
+   "n_pass": 135835,
+   "repass": 0.9899139332016703
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 137219,
+   "n_pass": 135894,
+   "repass": 0.9903439028122928
+  }
+ },
+ "2Mu2E_800GeV_0p25GeV_0p025mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 184245,
+   "n_pass": 182271,
+   "repass": 0.9892860050476268
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 184245,
+   "n_pass": 182385,
+   "repass": 0.98990474639746
+  }
+ },
+ "2Mu2E_800GeV_0p25GeV_0p25mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 157754,
+   "n_pass": 156114,
+   "repass": 0.9896040670918012
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 157754,
+   "n_pass": 156193,
+   "repass": 0.9901048467867692
+  }
+ },
+ "2Mu2E_800GeV_0p25GeV_1p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 167188,
+   "n_pass": 165462,
+   "repass": 0.989676292556882
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 167188,
+   "n_pass": 165532,
+   "repass": 0.9900949828935091
+  }
+ },
+ "2Mu2E_800GeV_0p25GeV_2p5mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 152489,
+   "n_pass": 150779,
+   "repass": 0.988786076372722
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 152489,
+   "n_pass": 150854,
+   "repass": 0.9892779151283043
+  }
+ },
+ "2Mu2E_800GeV_1p2GeV_0p012mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 163722,
+   "n_pass": 160361,
+   "repass": 0.9794712989091264
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 163722,
+   "n_pass": 160482,
+   "repass": 0.9802103565800564
+  }
+ },
+ "2Mu2E_800GeV_1p2GeV_0p12mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 152127,
+   "n_pass": 149086,
+   "repass": 0.9800101231208135
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 152127,
+   "n_pass": 149187,
+   "repass": 0.9806740420832594
+  }
+ },
+ "2Mu2E_800GeV_1p2GeV_12p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 137159,
+   "n_pass": 134331,
+   "repass": 0.9793815936249171
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 137159,
+   "n_pass": 134405,
+   "repass": 0.9799211134522707
+  }
+ },
+ "2Mu2E_800GeV_1p2GeV_1p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 177722,
+   "n_pass": 174163,
+   "repass": 0.9799743419497867
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 177722,
+   "n_pass": 174246,
+   "repass": 0.9804413634777912
+  }
+ },
+ "2Mu2E_800GeV_1p2GeV_6p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 141467,
+   "n_pass": 138560,
+   "repass": 0.979451038051277
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 141467,
+   "n_pass": 138659,
+   "repass": 0.9801508479009239
+  }
+ },
+ "2Mu2E_800GeV_5p0GeV_0p05mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 173803,
+   "n_pass": 170387,
+   "repass": 0.9803455636554029
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 173803,
+   "n_pass": 170551,
+   "repass": 0.9812891607164433
+  }
+ },
+ "2Mu2E_800GeV_5p0GeV_0p5mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 126887,
+   "n_pass": 124312,
+   "repass": 0.9797063528966719
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 126887,
+   "n_pass": 124453,
+   "repass": 0.9808175778448541
+  }
+ },
+ "2Mu2E_800GeV_5p0GeV_25p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 147273,
+   "n_pass": 144295,
+   "repass": 0.9797790497918831
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 147273,
+   "n_pass": 144499,
+   "repass": 0.9811642324119153
+  }
+ },
+ "2Mu2E_800GeV_5p0GeV_50p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 129074,
+   "n_pass": 126438,
+   "repass": 0.9795776066442505
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 129074,
+   "n_pass": 126546,
+   "repass": 0.9804143359623162
+  }
+ },
+ "2Mu2E_800GeV_5p0GeV_5p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 183026,
+   "n_pass": 179379,
+   "repass": 0.9800738692863309
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 183026,
+   "n_pass": 179548,
+   "repass": 0.9809972353654672
+  }
+ },
+ "4Mu_1000GeV_0p25GeV_0p002mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 278639,
+   "n_pass": 278639,
+   "repass": 1.0
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 278639,
+   "n_pass": 278639,
+   "repass": 1.0
+  }
+ },
+ "4Mu_1000GeV_0p25GeV_0p02mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 189736,
+   "n_pass": 189736,
+   "repass": 1.0
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 189736,
+   "n_pass": 189736,
+   "repass": 1.0
+  }
+ },
+ "4Mu_1000GeV_0p25GeV_0p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 157605,
+   "n_pass": 157605,
+   "repass": 1.0
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 157605,
+   "n_pass": 157605,
+   "repass": 1.0
+  }
+ },
+ "4Mu_1000GeV_0p25GeV_1p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 131162,
+   "n_pass": 131138,
+   "repass": 0.9998170201735259
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 131162,
+   "n_pass": 131138,
+   "repass": 0.9998170201735259
+  }
+ },
+ "4Mu_1000GeV_0p25GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 109194,
+   "n_pass": 109146,
+   "repass": 0.99956041540744
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 109194,
+   "n_pass": 109146,
+   "repass": 0.99956041540744
+  }
+ },
+ "4Mu_1000GeV_1p2GeV_0p0096mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 236293,
+   "n_pass": 232654,
+   "repass": 0.9845996284274185
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 236293,
+   "n_pass": 232620,
+   "repass": 0.9844557392728519
+  }
+ },
+ "4Mu_1000GeV_1p2GeV_0p096mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 222807,
+   "n_pass": 219382,
+   "repass": 0.984627951545508
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 222807,
+   "n_pass": 219322,
+   "repass": 0.9843586601857213
+  }
+ },
+ "4Mu_1000GeV_1p2GeV_0p96mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 247691,
+   "n_pass": 243987,
+   "repass": 0.9850458837826163
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 247691,
+   "n_pass": 243943,
+   "repass": 0.9848682430932089
+  }
+ },
+ "4Mu_1000GeV_1p2GeV_4p8mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 201665,
+   "n_pass": 198668,
+   "repass": 0.985138720154712
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 201665,
+   "n_pass": 198623,
+   "repass": 0.9849155778146926
+  }
+ },
+ "4Mu_1000GeV_1p2GeV_9p6mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 114304,
+   "n_pass": 112487,
+   "repass": 0.9841037933930571
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 114304,
+   "n_pass": 112459,
+   "repass": 0.9838588325867861
+  }
+ },
+ "4Mu_1000GeV_5p0GeV_0p04mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 213947,
+   "n_pass": 210587,
+   "repass": 0.984295175908052
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 213947,
+   "n_pass": 210609,
+   "repass": 0.9843980051134159
+  }
+ },
+ "4Mu_1000GeV_5p0GeV_0p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 195735,
+   "n_pass": 192701,
+   "repass": 0.9844994507880552
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 195735,
+   "n_pass": 192681,
+   "repass": 0.9843972718215955
+  }
+ },
+ "4Mu_1000GeV_5p0GeV_20p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 213680,
+   "n_pass": 210229,
+   "repass": 0.9838496817671284
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 213680,
+   "n_pass": 210240,
+   "repass": 0.9839011606140022
+  }
+ },
+ "4Mu_1000GeV_5p0GeV_40p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 104373,
+   "n_pass": 102723,
+   "repass": 0.9841913138455347
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 104373,
+   "n_pass": 102720,
+   "repass": 0.9841625707797994
+  }
+ },
+ "4Mu_1000GeV_5p0GeV_4p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 270366,
+   "n_pass": 266033,
+   "repass": 0.9839735765591827
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 270366,
+   "n_pass": 266015,
+   "repass": 0.9839070001405502
+  }
+ },
+ "4Mu_100GeV_0p25GeV_0p02mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 115723,
+   "n_pass": 113779,
+   "repass": 0.983201265089913
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 115723,
+   "n_pass": 113775,
+   "repass": 0.9831666997917441
+  }
+ },
+ "4Mu_100GeV_0p25GeV_0p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 138553,
+   "n_pass": 136287,
+   "repass": 0.9836452476669578
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 138553,
+   "n_pass": 136286,
+   "repass": 0.9836380302122654
+  }
+ },
+ "4Mu_100GeV_0p25GeV_10p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 119039,
+   "n_pass": 116910,
+   "repass": 0.9821151051336117
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 119039,
+   "n_pass": 116905,
+   "repass": 0.9820731020925915
+  }
+ },
+ "4Mu_100GeV_0p25GeV_20p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 88918,
+   "n_pass": 87145,
+   "repass": 0.9800602802582155
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 88918,
+   "n_pass": 87143,
+   "repass": 0.980037787624553
+  }
+ },
+ "4Mu_100GeV_0p25GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 179987,
+   "n_pass": 176871,
+   "repass": 0.9826876385516732
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 179987,
+   "n_pass": 176869,
+   "repass": 0.982676526638035
+  }
+ },
+ "4Mu_100GeV_1p2GeV_0p096mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 94365,
+   "n_pass": 80020,
+   "repass": 0.8479838923329625
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 94365,
+   "n_pass": 80165,
+   "repass": 0.8495204789911514
+  }
+ },
+ "4Mu_100GeV_1p2GeV_0p96mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 98939,
+   "n_pass": 83834,
+   "repass": 0.8473301731369834
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 98939,
+   "n_pass": 83939,
+   "repass": 0.8483914331052467
+  }
+ },
+ "4Mu_100GeV_1p2GeV_48p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 54830,
+   "n_pass": 46388,
+   "repass": 0.8460331935072041
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 54830,
+   "n_pass": 46486,
+   "repass": 0.8478205362028087
+  }
+ },
+ "4Mu_100GeV_1p2GeV_96p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 46260,
+   "n_pass": 39158,
+   "repass": 0.8464764375270212
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 46260,
+   "n_pass": 39234,
+   "repass": 0.8481193255512322
+  }
+ },
+ "4Mu_100GeV_1p2GeV_9p6mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 83221,
+   "n_pass": 70410,
+   "repass": 0.8460604895398998
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 83221,
+   "n_pass": 70518,
+   "repass": 0.8473582389060453
+  }
+ },
+ "4Mu_100GeV_5p0GeV_0p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 74086,
+   "n_pass": 62772,
+   "repass": 0.8472855870204897
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 74086,
+   "n_pass": 63017,
+   "repass": 0.8505925545987096
+  }
+ },
+ "4Mu_100GeV_5p0GeV_200mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 52742,
+   "n_pass": 44452,
+   "repass": 0.842819764134845
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 52742,
+   "n_pass": 44638,
+   "repass": 0.846346365325547
+  }
+ },
+ "4Mu_100GeV_5p0GeV_400mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 42021,
+   "n_pass": 35357,
+   "repass": 0.8414126270198234
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 42021,
+   "n_pass": 35510,
+   "repass": 0.8450536636443683
+  }
+ },
+ "4Mu_100GeV_5p0GeV_40p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 57106,
+   "n_pass": 48411,
+   "repass": 0.8477392918432389
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 57106,
+   "n_pass": 48636,
+   "repass": 0.8516793331698946
+  }
+ },
+ "4Mu_100GeV_5p0GeV_4p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 63242,
+   "n_pass": 53584,
+   "repass": 0.8472850320989216
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 63242,
+   "n_pass": 53807,
+   "repass": 0.8508111697922267
+  }
+ },
+ "4Mu_150GeV_0p25GeV_0p013mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 227568,
+   "n_pass": 226604,
+   "repass": 0.9957639035365253
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 227568,
+   "n_pass": 226605,
+   "repass": 0.9957682978274626
+  }
+ },
+ "4Mu_150GeV_0p25GeV_0p13mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 149238,
+   "n_pass": 148596,
+   "repass": 0.9956981465846501
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 149238,
+   "n_pass": 148593,
+   "repass": 0.9956780444658867
+  }
+ },
+ "4Mu_150GeV_0p25GeV_13p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 152894,
+   "n_pass": 152129,
+   "repass": 0.994996533546117
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 152894,
+   "n_pass": 152129,
+   "repass": 0.994996533546117
+  }
+ },
+ "4Mu_150GeV_0p25GeV_1p3mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 251524,
+   "n_pass": 250481,
+   "repass": 0.9958532784147834
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 251524,
+   "n_pass": 250476,
+   "repass": 0.9958333995960624
+  }
+ },
+ "4Mu_150GeV_0p25GeV_6p7mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 106480,
+   "n_pass": 105993,
+   "repass": 0.9954263711495116
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 106480,
+   "n_pass": 105992,
+   "repass": 0.9954169797145004
+  }
+ },
+ "4Mu_150GeV_1p2GeV_0p064mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 125319,
+   "n_pass": 112517,
+   "repass": 0.8978447003247711
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 125319,
+   "n_pass": 112601,
+   "repass": 0.8985149897461677
+  }
+ },
+ "4Mu_150GeV_1p2GeV_0p64mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 75841,
+   "n_pass": 68063,
+   "repass": 0.8974433353990585
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 75841,
+   "n_pass": 68105,
+   "repass": 0.8979971255653275
+  }
+ },
+ "4Mu_150GeV_1p2GeV_32p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 117511,
+   "n_pass": 105353,
+   "repass": 0.8965373454400014
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 117511,
+   "n_pass": 105443,
+   "repass": 0.8973032311868676
+  }
+ },
+ "4Mu_150GeV_1p2GeV_64p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 84693,
+   "n_pass": 75826,
+   "repass": 0.8953042164051338
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 84693,
+   "n_pass": 75880,
+   "repass": 0.895941813373006
+  }
+ },
+ "4Mu_150GeV_1p2GeV_6p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 133938,
+   "n_pass": 120288,
+   "repass": 0.8980871746629038
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 133938,
+   "n_pass": 120341,
+   "repass": 0.8984828801385716
+  }
+ },
+ "4Mu_150GeV_5p0GeV_0p27mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 125902,
+   "n_pass": 112842,
+   "repass": 0.8962685263141174
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 125902,
+   "n_pass": 113155,
+   "repass": 0.8987545869009229
+  }
+ },
+ "4Mu_150GeV_5p0GeV_130p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 96791,
+   "n_pass": 86828,
+   "repass": 0.8970668760525256
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 96791,
+   "n_pass": 87053,
+   "repass": 0.8993914723476356
+  }
+ },
+ "4Mu_150GeV_5p0GeV_270p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 59593,
+   "n_pass": 53308,
+   "repass": 0.8945345929891094
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 59593,
+   "n_pass": 53434,
+   "repass": 0.8966489352776332
+  }
+ },
+ "4Mu_150GeV_5p0GeV_27p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 123467,
+   "n_pass": 110937,
+   "repass": 0.8985153927770173
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 123467,
+   "n_pass": 111184,
+   "repass": 0.9005159273328096
+  }
+ },
+ "4Mu_150GeV_5p0GeV_2p7mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 125226,
+   "n_pass": 112417,
+   "repass": 0.8977129350134956
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 125226,
+   "n_pass": 112750,
+   "repass": 0.9003721271940331
+  }
+ },
+ "4Mu_200GeV_0p25GeV_0p01mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 128628,
+   "n_pass": 128449,
+   "repass": 0.9986083900861399
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 128628,
+   "n_pass": 128449,
+   "repass": 0.9986083900861399
+  }
+ },
+ "4Mu_200GeV_0p25GeV_0p1mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 132966,
+   "n_pass": 132809,
+   "repass": 0.9988192470255554
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 132966,
+   "n_pass": 132808,
+   "repass": 0.9988117263059729
+  }
+ },
+ "4Mu_200GeV_0p25GeV_10p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 131584,
+   "n_pass": 131340,
+   "repass": 0.9981456712062257
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 131584,
+   "n_pass": 131340,
+   "repass": 0.9981456712062257
+  }
+ },
+ "4Mu_200GeV_0p25GeV_1p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 210055,
+   "n_pass": 209784,
+   "repass": 0.9987098617028873
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 210055,
+   "n_pass": 209784,
+   "repass": 0.9987098617028873
+  }
+ },
+ "4Mu_200GeV_0p25GeV_5p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 203273,
+   "n_pass": 202947,
+   "repass": 0.9983962454433201
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 203273,
+   "n_pass": 202947,
+   "repass": 0.9983962454433201
+  }
+ },
+ "4Mu_200GeV_1p2GeV_0p048mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 142565,
+   "n_pass": 131663,
+   "repass": 0.923529618068951
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 142565,
+   "n_pass": 131715,
+   "repass": 0.9238943639743274
+  }
+ },
+ "4Mu_200GeV_1p2GeV_0p48mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 114173,
+   "n_pass": 105230,
+   "repass": 0.9216714985154109
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 114173,
+   "n_pass": 105254,
+   "repass": 0.9218817058323772
+  }
+ },
+ "4Mu_200GeV_1p2GeV_24p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 132900,
+   "n_pass": 122672,
+   "repass": 0.9230398796087284
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 132900,
+   "n_pass": 122706,
+   "repass": 0.9232957110609481
+  }
+ },
+ "4Mu_200GeV_1p2GeV_48p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 96829,
+   "n_pass": 89231,
+   "repass": 0.9215317725061707
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 96829,
+   "n_pass": 89258,
+   "repass": 0.9218106145886047
+  }
+ },
+ "4Mu_200GeV_1p2GeV_4p8mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 131014,
+   "n_pass": 120979,
+   "repass": 0.92340513227594
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 131014,
+   "n_pass": 120998,
+   "repass": 0.923550154945273
+  }
+ },
+ "4Mu_200GeV_5p0GeV_0p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 145042,
+   "n_pass": 134026,
+   "repass": 0.9240495856372637
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 145042,
+   "n_pass": 134197,
+   "repass": 0.9252285544876656
+  }
+ },
+ "4Mu_200GeV_5p0GeV_100p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 93001,
+   "n_pass": 85779,
+   "repass": 0.9223449210223545
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 93001,
+   "n_pass": 85928,
+   "repass": 0.9239470543327492
+  }
+ },
+ "4Mu_200GeV_5p0GeV_200p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 94262,
+   "n_pass": 86887,
+   "repass": 0.9217606246419554
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 94262,
+   "n_pass": 87057,
+   "repass": 0.9235641085485137
+  }
+ },
+ "4Mu_200GeV_5p0GeV_20p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 120805,
+   "n_pass": 111458,
+   "repass": 0.922627374694756
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 120805,
+   "n_pass": 111647,
+   "repass": 0.9241918794751873
+  }
+ },
+ "4Mu_200GeV_5p0GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 107223,
+   "n_pass": 98998,
+   "repass": 0.9232907118808464
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 107223,
+   "n_pass": 99168,
+   "repass": 0.9248761926079293
+  }
+ },
+ "4Mu_500GeV_0p25GeV_0p004mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 280879,
+   "n_pass": 280873,
+   "repass": 0.9999786384884595
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 280879,
+   "n_pass": 280873,
+   "repass": 0.9999786384884595
+  }
+ },
+ "4Mu_500GeV_0p25GeV_0p04mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 238163,
+   "n_pass": 238157,
+   "repass": 0.9999748071698794
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 238163,
+   "n_pass": 238157,
+   "repass": 0.9999748071698794
+  }
+ },
+ "4Mu_500GeV_0p25GeV_0p4mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 253940,
+   "n_pass": 253935,
+   "repass": 0.999980310309522
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 253940,
+   "n_pass": 253935,
+   "repass": 0.999980310309522
+  }
+ },
+ "4Mu_500GeV_0p25GeV_2p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 203539,
+   "n_pass": 203507,
+   "repass": 0.9998427819729879
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 203539,
+   "n_pass": 203507,
+   "repass": 0.9998427819729879
+  }
+ },
+ "4Mu_500GeV_0p25GeV_4p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 103459,
+   "n_pass": 103422,
+   "repass": 0.9996423704076011
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 103459,
+   "n_pass": 103422,
+   "repass": 0.9996423704076011
+  }
+ },
+ "4Mu_500GeV_1p2GeV_0p019mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 240503,
+   "n_pass": 233221,
+   "repass": 0.9697217914121653
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 240503,
+   "n_pass": 233161,
+   "repass": 0.969472314274666
+  }
+ },
+ "4Mu_500GeV_1p2GeV_0p19mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 266173,
+   "n_pass": 258068,
+   "repass": 0.9695498792138947
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 266173,
+   "n_pass": 258003,
+   "repass": 0.9693056771347958
+  }
+ },
+ "4Mu_500GeV_1p2GeV_19p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 144262,
+   "n_pass": 139577,
+   "repass": 0.9675243653907474
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 144262,
+   "n_pass": 139544,
+   "repass": 0.9672956149228487
+  }
+ },
+ "4Mu_500GeV_1p2GeV_1p9mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 250763,
+   "n_pass": 243125,
+   "repass": 0.9695409609870674
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 250763,
+   "n_pass": 243044,
+   "repass": 0.9692179468262861
+  }
+ },
+ "4Mu_500GeV_1p2GeV_9p6mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 229638,
+   "n_pass": 222372,
+   "repass": 0.968358895304784
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 229638,
+   "n_pass": 222324,
+   "repass": 0.9681498706660048
+  }
+ },
+ "4Mu_500GeV_5p0GeV_0p08mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 274199,
+   "n_pass": 265620,
+   "repass": 0.9687125044219709
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 274199,
+   "n_pass": 265712,
+   "repass": 0.9690480271627541
+  }
+ },
+ "4Mu_500GeV_5p0GeV_0p8mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 234641,
+   "n_pass": 227348,
+   "repass": 0.9689184754582533
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 234641,
+   "n_pass": 227449,
+   "repass": 0.9693489202654267
+  }
+ },
+ "4Mu_500GeV_5p0GeV_40p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 227005,
+   "n_pass": 220028,
+   "repass": 0.9692649941631242
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 227005,
+   "n_pass": 220083,
+   "repass": 0.9695072795753398
+  }
+ },
+ "4Mu_500GeV_5p0GeV_80p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 122218,
+   "n_pass": 118299,
+   "repass": 0.9679343468228903
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 122218,
+   "n_pass": 118356,
+   "repass": 0.9684007265705542
+  }
+ },
+ "4Mu_500GeV_5p0GeV_8p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 188929,
+   "n_pass": 182916,
+   "repass": 0.9681732290966447
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 188929,
+   "n_pass": 183002,
+   "repass": 0.9686284265517734
+  }
+ },
+ "4Mu_800GeV_0p25GeV_0p0025mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 231736,
+   "n_pass": 231736,
+   "repass": 1.0
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 231736,
+   "n_pass": 231736,
+   "repass": 1.0
+  }
+ },
+ "4Mu_800GeV_0p25GeV_0p025mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 208811,
+   "n_pass": 208811,
+   "repass": 1.0
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 208811,
+   "n_pass": 208811,
+   "repass": 1.0
+  }
+ },
+ "4Mu_800GeV_0p25GeV_0p25mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 261211,
+   "n_pass": 261211,
+   "repass": 1.0
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 261211,
+   "n_pass": 261211,
+   "repass": 1.0
+  }
+ },
+ "4Mu_800GeV_0p25GeV_1p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 203025,
+   "n_pass": 202989,
+   "repass": 0.9998226819357222
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 203025,
+   "n_pass": 202989,
+   "repass": 0.9998226819357222
+  }
+ },
+ "4Mu_800GeV_0p25GeV_2p5mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 153152,
+   "n_pass": 153099,
+   "repass": 0.9996539385708316
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 153152,
+   "n_pass": 153099,
+   "repass": 0.9996539385708316
+  }
+ },
+ "4Mu_800GeV_1p2GeV_0p012mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 206094,
+   "n_pass": 202177,
+   "repass": 0.9809941094840219
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 206094,
+   "n_pass": 202147,
+   "repass": 0.9808485448387629
+  }
+ },
+ "4Mu_800GeV_1p2GeV_0p12mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 178213,
+   "n_pass": 174799,
+   "repass": 0.980843148367403
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 178213,
+   "n_pass": 174730,
+   "repass": 0.9804559712254437
+  }
+ },
+ "4Mu_800GeV_1p2GeV_12p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 148161,
+   "n_pass": 145177,
+   "repass": 0.9798597471669332
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 148161,
+   "n_pass": 145139,
+   "repass": 0.9796032694163781
+  }
+ },
+ "4Mu_800GeV_1p2GeV_1p2mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 127518,
+   "n_pass": 125143,
+   "repass": 0.9813751784061858
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 127518,
+   "n_pass": 125097,
+   "repass": 0.9810144450195266
+  }
+ },
+ "4Mu_800GeV_1p2GeV_6p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 202897,
+   "n_pass": 198938,
+   "repass": 0.9804876365840796
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 202897,
+   "n_pass": 198897,
+   "repass": 0.9802855636110933
+  }
+ },
+ "4Mu_800GeV_5p0GeV_0p05mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 159876,
+   "n_pass": 156740,
+   "repass": 0.9803847982186195
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 159876,
+   "n_pass": 156747,
+   "repass": 0.9804285821511671
+  }
+ },
+ "4Mu_800GeV_5p0GeV_0p5mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 145276,
+   "n_pass": 142462,
+   "repass": 0.9806299732922162
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 145276,
+   "n_pass": 142466,
+   "repass": 0.9806575070899529
+  }
+ },
+ "4Mu_800GeV_5p0GeV_25p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 180131,
+   "n_pass": 176489,
+   "repass": 0.9797813813280335
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 180131,
+   "n_pass": 176497,
+   "repass": 0.9798257934503223
+  }
+ },
+ "4Mu_800GeV_5p0GeV_50p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 136963,
+   "n_pass": 134169,
+   "repass": 0.9796003300161358
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 136963,
+   "n_pass": 134161,
+   "repass": 0.9795419200806057
+  }
+ },
+ "4Mu_800GeV_5p0GeV_5p0mm": {
+  "genFilterEmulation": {
+   "cuts": [
+    "None",
+    "pass gen filter"
+   ],
+   "n_all": 157050,
+   "n_pass": 153960,
+   "repass": 0.9803247373447946
+  },
+  "genFilterEmulation_isHardProcess": {
+   "cuts": [
+    "None",
+    "pass gen filter isHardProcess"
+   ],
+   "n_all": 157050,
+   "n_pass": 153990,
+   "repass": 0.9805157593123209
+  }
+ }
+}
