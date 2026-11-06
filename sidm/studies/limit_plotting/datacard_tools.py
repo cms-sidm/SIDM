@@ -8,11 +8,18 @@ sample is simply that histogram summed over the observable axis at
 
 Two details matter for getting the count right:
 
-* The histograms are already scaled to ``lumi * xs * gen_filter_eff`` by
-  ``sidm_processor.postprocess``, so the sums are yields, not raw entries.
-  Signal has no entry in ``configs/cross_sections.yaml``, so
-  ``utilities.get_xs`` falls back to 1 fb -- signal yields (and therefore the
-  Combine signal strength ``r``) are relative to a 1 fb reference cross section.
+* ``region_yields`` reads histogram yields as stored. The datacard builders
+  assume signal inputs at a 1 fb reference cross section. ``use_theory_xs``
+  rescales them by ``sigma_theory / 1 fb``; ``target_lumi_pb`` can also rescale
+  all yields. Nothing here applies a generator-filter correction.
+  The current processor scales new weighted simulation outputs to
+  ``lumi * xs * gen_filter_eff`` and defaults signal to 1 fb, even for points
+  listed in ``configs/cross_sections.yaml``. Older outputs can use a different
+  cross section and lack the filter correction. Verify the campaign and convert
+  its signal yields to the 1 fb reference before building cards, applying any
+  missing filter correction exactly once. Otherwise the default card headers
+  and metadata mislabel the normalization, and ``use_theory_xs`` applies an
+  extra theory factor to yields that may already include it.
 * The observable axis is ``Regular`` and does overflow (a few percent for the
   pt axes), so sums must use ``flow=True``.  With flow included the SR sum
   reproduces the final row of the corresponding cutflow exactly.
@@ -522,8 +529,8 @@ class DatacardConfig:
     ``min_bkg`` floors the total background so Combine has a non-zero
     expectation to build the Asimov dataset from.
 
-    ``use_theory_xs`` switches the signal normalisation from the 1 fb reference
-    to the point's own theory cross section, which turns Combine's signal
+    ``use_theory_xs`` requires signal inputs at the 1 fb reference and switches
+    their normalisation to the point's own theory cross section, which turns Combine's signal
     strength from "the limit on sigma in fb" into "the limit relative to
     theory".  The two are related by a constant factor per point, so they carry
     the same information -- but with the theory normalisation the exclusion
@@ -546,8 +553,8 @@ class DatacardConfig:
     # rescales both signal and background by target/LUMI_PB.  None means "leave
     # the yields at the luminosity they were produced with".
     target_lumi_pb: float | None = None
-    # How the signal is normalised.  False keeps the 1 fb reference the
-    # histograms were produced with, so Combine's r is the limit on sigma in fb.
+    # How the signal is normalised. Inputs must already be at the 1 fb reference.
+    # False keeps that reference, so Combine's r is the limit on sigma in fb.
     # True rescales each signal point to its own cross section from
     # cross_sections.yaml, so r is directly sigma_limit/sigma_theory and r < 1
     # means the point is excluded.
