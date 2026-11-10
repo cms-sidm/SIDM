@@ -4,6 +4,9 @@
 import awkward as ak
 # local
 from sidm.definitions.cuts import evt_cut_defs, obj_cut_defs
+from sidm.definitions.objects import (
+    add_lj_candidates, lj_candidate_names, lj_parents, refresh_lj_children,
+)
 from sidm.tools.cutflow import SimpleCutflow
 import traceback
 
@@ -34,6 +37,10 @@ class Selection:
             except Exception as e:
                 # An I/O failure means an unreadable chunk, not an unevaluable cut.
                 if isinstance(e, OSError) or "I/O operation" in str(e):
+                    raise
+                if isinstance(e, KeyError) and e.args and e.args[0] in lj_candidate_names:
+                    # Candidate views are required by pair cuts on every sample;
+                    # missing setup must not silently disable channel selection.
                     raise
                 # A collection absent from this sample (a gen-level cut on data)
                 # means the cut does not apply here, not that it is broken;
@@ -100,12 +107,24 @@ class JaggedSelection:
                         # Eventually should change every cut to this form
                         sel_objs[obj] = sel_objs[obj][obj_cut_defs[obj][cut](sel_objs,sel_objs[obj])]
                     else:
-                        sel_objs[obj] = sel_objs[obj][obj_cut_defs[obj][cut](sel_objs)]
+                        mask = obj_cut_defs[obj][cut](sel_objs)
+                        if obj == "ljs" or obj in lj_parents:
+                            # An undefined LJ criterion is not a surviving jet.
+                            mask = ak.fill_none(mask, False)
+                        sel_objs[obj] = sel_objs[obj][mask]
                 except Exception as e:
                     if isinstance(e, OSError) or "I/O operation" in str(e):
                         raise
                     print(f"Warning: Unable to apply {cut} for {obj}. Skipping. Error message: {e}")
                     traceback.print_exc()
+                else:
+                    # Keep this outside the warning-and-skip handler: a failed
+                    # synchronization must not leave stale views in an event.
+                    refresh_lj_children(sel_objs, obj)
+        if "candidate_ljs" in sel_objs:
+            # Support further cuts on an already-finalized dictionary, without
+            # leaving its cached pair inconsistent with the selected views.
+            sel_objs = add_lj_candidates(sel_objs)
         return sel_objs
 
 

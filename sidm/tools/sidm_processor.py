@@ -16,7 +16,7 @@ import vector
 from sidm import BASE_DIR
 from sidm.tools import selection, cutflow, utilities
 from sidm.definitions.hists import hist_defs, counter_defs
-from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC
+from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC, add_lj_candidates
 
 def _patched_local2global(stack):
     """
@@ -199,19 +199,7 @@ class SidmProcessor(processor.ProcessorABC):
                 # reconstruct lepton jets
                 sel_objs["ljs"] = self.build_lepton_jets(sel_objs, float(lj_reco))
 
-                # apply obj selection to ljs
-                lj_selection = selection.JaggedSelection(cuts["lj"], self.verbose)
-                sel_objs = lj_selection.apply_obj_cuts(sel_objs)
-
-                # add post-lj objects to sel_objs
-                if not is_data:
-                    self.postLj_objs = {**self.postLj_objs, **self.postLj_objs_MC}
-                for obj in self.postLj_objs:
-                    sel_objs[obj] = self.postLj_objs[obj](sel_objs)
-
-                # apply post-lj obj selection
-                postLj_selection = selection.JaggedSelection(cuts["postLj_obj"], self.verbose)
-                sel_objs = postLj_selection.apply_obj_cuts(sel_objs)
+                sel_objs = self.select_lepton_jets(sel_objs, cuts, is_data)
  
                 # build Selection objects and apply event selection
                 sel_objs["evt_weights"] = evt_weights
@@ -538,6 +526,19 @@ class SidmProcessor(processor.ProcessorABC):
 
         # return the new LJ collection
         return ljs
+
+    def select_lepton_jets(self, objs, cuts, is_data):
+        """Apply LJ cuts, refresh typed views and finalize the analysis pair.
+
+        This stage also accepts in-memory reconstructed jets, independently of
+        NanoEvents input, weights and event selection.
+        """
+        sel_objs = selection.JaggedSelection(cuts["lj"], self.verbose).apply_obj_cuts(objs)
+        post_objects = self.postLj_objs if is_data else {**self.postLj_objs, **self.postLj_objs_MC}
+        for name, definition in post_objects.items():
+            sel_objs[name] = definition(sel_objs)
+        sel_objs = selection.JaggedSelection(cuts["postLj_obj"], self.verbose).apply_obj_cuts(sel_objs)
+        return add_lj_candidates(sel_objs)
 
     def build_cuts(self):
         """ Make list of pre-lj object, lj, post-lj obj, and event cuts per channel"""
