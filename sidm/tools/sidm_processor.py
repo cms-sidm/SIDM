@@ -236,34 +236,41 @@ class SidmProcessor(processor.ProcessorABC):
                 lj_selection = selection.JaggedSelection(cuts["lj"], self.verbose)
                 sel_objs = lj_selection.apply_obj_cuts(sel_objs)
 
-                # add post-lj objects to sel_objs
+                # add post-lj objects to sel_objs, recording which collections
+                # each one is built from (e.g. mu_ljs from ljs)
                 if not is_data:
                     self.postLj_objs = {**self.postLj_objs, **self.postLj_objs_MC}
+                built_from = {}
                 for obj in self.postLj_objs:
-                    sel_objs[obj] = self.postLj_objs[obj](sel_objs)
+                    recorder = selection.CollectionRecorder(sel_objs)
+                    sel_objs[obj] = self.postLj_objs[obj](recorder)
+                    built_from[obj] = recorder.looked_up
 
                 # apply post-lj obj selection
                 postLj_selection = selection.JaggedSelection(cuts["postLj_obj"], self.verbose)
                 sel_objs = postLj_selection.apply_obj_cuts(sel_objs)
- 
-                # attach event weights. With corrections, the object SFs are
-                # evaluated for this channel's lepton-jet constituents, or for
-                # its selected objects of the sf_objects collections, and every
-                # weight category rides along so the event cuts slim it with the
-                # rest, as do the factors themselves (weight_factors, one column
-                # per factor and shift) for histograms of the corrections.
+
+                evt_selection = selection.Selection(cuts["evt"], self.verbose)
+
+                # attach event weights. With corrections, the object SFs come
+                # from the objects the event cuts use (Corrections.sf_sources):
+                # the selected objects of a collection the cuts read, else the
+                # lepton-jet constituents if they read lepton jets, else none.
+                # Every weight category rides along so the event cuts slim it
+                # with the rest, as do the factors themselves (weight_factors,
+                # one column per factor and shift) for histograms of the
+                # corrections.
                 applied = {}
                 if weights is None:
                     sel_objs["evt_weights"] = evt_weights
                 else:
                     ch_weights = weights.copy()
-                    selected = None
-                    if cuts["sf_objects"] is not None:
-                        selected = {c: sel_objs[c] for c in cuts["sf_objects"]}
-                    applied = corrector.add_object_weights(ch_weights, sel_objs["ljs"], cuts["obj"],
-                                                           selected)
+                    sources = corrector.sf_sources(
+                        cuts["obj"], evt_selection.collections_read(sel_objs, built_from))
+                    corrector.add_object_weights(ch_weights, sel_objs, sources)
+                    applied = {name: wp for name, (wp, _) in sources.items()}
                     object_corrections[channel] = processor.set_accumulator(
-                        f"{name}:{wp}" for name, wp in applied.items())
+                        f"{name}:{wp}:{source}" for name, (wp, source) in sources.items())
                     sel_objs["evt_weights"] = ak.Array(ch_weights.category("nominal", self.monitored))
                     sel_objs["evt_weight_variations"] = ak.zip({
                         c: ch_weights.category(c, self.monitored) for c in self.weight_categories
@@ -271,8 +278,7 @@ class SidmProcessor(processor.ProcessorABC):
                     sel_objs["weight_factors"] = ak.zip(ch_weights.factor_columns(
                         ["genWeight"] + self.corrections + self.monitored))
 
-                # build Selection objects and apply event selection
-                evt_selection = selection.Selection(cuts["evt"], self.verbose)
+                # apply event selection
                 sel_objs = evt_selection.apply_evt_cuts(sel_objs)
 
                 # optional debug output (no effect unless debug=True).
@@ -365,6 +371,9 @@ class SidmProcessor(processor.ProcessorABC):
                 corrected["all_event_level"] = float(np.sum(
                     weights.category("nominal", self.monitored))) / skim
                 out["metadata"]["scaled_sum_weights_corrected"] = corrected
+                # {channel: {"<correction>:<working point>:<source>"}}, source
+                # being the collection whose selected objects gave the SFs
+                # (e.g. "muons") or "ljs" for the lepton-jet constituents
                 out["metadata"]["object_corrections"] = object_corrections
 
         # optional debug output: keep the standard return shape, add one key
@@ -662,14 +671,6 @@ class SidmProcessor(processor.ProcessorABC):
 
             if "evt_cuts" in cuts:
                 ch_cuts[channel]["evt"] = utilities.flatten(cuts["evt_cuts"])
-
-            # not a cut: the collections whose selected objects get the object
-            # SFs, instead of the lepton-jet constituents
-            ch_cuts[channel]["sf_objects"] = None
-            if "sf_objects" in cuts:
-                sf_objects = cuts["sf_objects"]
-                ch_cuts[channel]["sf_objects"] = ([sf_objects] if isinstance(sf_objects, str)
-                                                  else utilities.flatten(sf_objects))
 
         return ch_cuts
 

@@ -103,7 +103,7 @@ no EOS/XRootD/cvmfs access. The harness runs with a deliberately non-unit `skim_
 so the skim-scaling path of the weighted cutflow column is genuinely tested. The
 processor applies the standard corrections to simulation by default, so
 `tests/data/corrections/` holds copies of the correction files that the default list and
-the `corrections_*` histograms read (about 800 kB, the CVMFS layout under
+the `corrections_*` histograms read (about 820 kB, the CVMFS layout under
 `SIDM_CORRECTIONS_ROOT`); a correction file that the processor or a histogram starts
 reading needs copying there too.
 

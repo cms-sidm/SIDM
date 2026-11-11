@@ -2,9 +2,6 @@
 # Selections contain object- and event-level cuts
 # Previously defined selections can be imported with '<<' or '*'
 # Any nested collections created by "<<" or '*' operations will be flattened in sidm_processor.py
-# Optional sf_objects: [collections] takes the object SFs (configs/corrections.yaml) from
-# the selected objects of those collections instead of the lepton-jet constituents, and
-# applies only the SFs of those collections; for selections that do not use lepton jets
 
 ### Main selections ###
 
@@ -1535,8 +1532,6 @@ Z_to_mumu_control_region: &Z_to_mumu_control_region
       - "looseID"
       - "pT > 5 GeV"
       - "|eta| < 2.4"
-  # the selection is built from the two muons, not from lepton jets or electrons
-  sf_objects: [muons]
   evt_cuts:
     - *evt_baseNoLj
     - "pass flags"
@@ -1564,8 +1559,6 @@ ttjets_2j2btag: &ttjets_2j2btag
       - "|eta| < 2.4"
       - "tightID"
       - "dR(bjets, mu) > 0.4"
-  # the selection is built from the two muons and the jets, not from lepton jets
-  sf_objects: [muons]
   evt_cuts:
     - *evt_baseNoLj
     - "pass flags"
@@ -1594,8 +1587,6 @@ ttjets_4j2btag: &ttjets_4j2btag
       - "|eta| < 2.4"
       - "tightID"
       - "dR(bjets, mu) > 0.4"
-  # the selection is built from the two muons and the jets, not from lepton jets
-  sf_objects: [muons]
   evt_cuts:
     - *evt_baseNoLj
     - "pass flags"

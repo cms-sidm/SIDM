@@ -12,11 +12,13 @@
 #
 # Two kinds of entries are applied by SidmProcessor(corrections=...):
 #   kind: event   one factor per event, from event-level inputs
-#   kind: object  product of per-object SFs over the lepton-jet constituents in
-#                 `collection`, applied only in channels whose `cut_object`
-#                 cuts include the cut named in `working_points`. A channel
-#                 with sf_objects in selections.yaml takes them from its
-#                 selected `cut_object` objects instead
+#   kind: object  product of per-object SFs, applied only in channels whose
+#                 `cut_object` cuts include the cut named in `working_points`.
+#                 The SFs are those of the objects the channel's event cuts
+#                 use (Corrections.sf_sources): its selected `cut_object`
+#                 objects if the event cuts read them, otherwise the
+#                 lepton-jet constituents in `collection` if the event cuts
+#                 read lepton jets, otherwise none
 # Entries of kind `tool` are not applied by the processor; they configure the
 # jet and b-tagging helpers in sidm/tools/corrections.py.
 #
@@ -30,16 +32,13 @@
 
 json_root: /cvmfs/cms-griddata.cern.ch/cat/metadata
 
-# What SidmProcessor applies by default (corrections=True). photon_pixel_veto is left
-# out on purpose: in signal the lepton-jet "photons" are e+e- pairs, for which a
-# SF measured with real photons does not hold, and at 0.96 (barrel) to 0.88
-# (endcap) per object it would be the largest correction applied. Ask for it by
-# name to see its effect (sidm/studies/corrections/03_impact_on_results.ipynb).
+# What SidmProcessor applies by default (corrections=True)
 default:
   - pileup
   - l1_prefiring
   - muon_id
   - electron_reco
+  - photon_pixel_veto
 
 '2018':
   campaign: Run2-2018-UL-NanoAODv9
@@ -146,10 +145,15 @@ default:
     variations: {nominal: sf, up: sfup, down: sfdown}
     validity: approximate
     note: >-
-      Measured for real photons from Z -> mumu gamma that pass the Loose ID.
-      Lepton-jet "photons" are mostly collimated e+e- pairs, for which the
-      pixel-seed veto efficiency depends on where the dark photon decayed. The
-      Loose-ID number is the closest to the custom ID we use.
+      Measured for real photons from Z -> mumu gamma that pass the Loose ID,
+      the closest to the custom ID we use. Lepton-jet "photons" are mostly
+      collimated e+e- pairs, but the veto only asks whether pixel hits match
+      the supercluster, and the SF hardly depends on the photon (0.964 for
+      high-R9 and 0.963 for low-R9 barrel photons, 0.962-0.963 for every ID
+      working point), so it is applied to them too. It is largest where most
+      dark photons decay beyond the pixel detector and leave no pixel hits of
+      their own, as an unconverted photon does. Its quoted uncertainty is for
+      real photons.
 
   # --- helpers only, not applied by the processor ---
 

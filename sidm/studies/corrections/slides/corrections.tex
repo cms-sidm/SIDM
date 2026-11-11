@@ -114,8 +114,10 @@
         \item \code{EventWeights}: the weight as a product of named factors with up/down shifts;
               each category is a product, so a zero factor cannot give NaN.
         \item \textbf{Object SFs follow the selection}: an SF is tied to the cut it corrects
-              (\code{looseID} $\to$ Loose ID SF on the lepton-jet PF muons, \code{tightID} $\to$ Tight).
-        \item \textbf{Monitored corrections} are evaluated, not applied, e.g.\ the pixel veto.
+              (\code{looseID} $\to$ Loose ID SF, \code{tightID} $\to$ Tight), on the objects the
+              event cuts use.
+        \item \textbf{Monitored corrections} are evaluated, not applied, e.g.\ the pixel veto
+              in the campaign.
       \end{itemize}
     \end{column}
     \begin{column}{0.46\textwidth}
@@ -133,8 +135,8 @@
       \begin{itemize}
         \item Normalisation from the plain genWeight sum; data never corrected.
         \item On by default; \code{corrections=None}: \textbf{identical to \texttt{main}}.
-        \item Object SFs from the lepton jets, or from the selected muons in the Z and
-              $t\bar{t}$ CRs (\code{sf\_objects}).
+        \item Object SFs from what the event cuts read: the selected muons, the lepton-jet
+              constituents, or none (the cuts are run on zero events to find out).
         \item Fill functions see the factors: histograms of the corrections themselves.
       \end{itemize}}
     \end{column}
@@ -153,7 +155,7 @@
     \texttt{l1\_prefiring} & \yes & NanoAOD \texttt{L1PreFiringWeight} & standard; muons only in 2018 \\
     \texttt{muon\_id} & \yes & MUO \texttt{muon\_JPsi/Z} (2024-07-02) & approximate: prompt, isolated muons \\
     \texttt{electron\_reco} & \yes & EGM \texttt{electron}, Reco (2024-07-02) & approximate: prompt electrons \\
-    \texttt{photon\_pixel\_veto} & monitored & EGM \texttt{photon}, PixVeto (2024-07-02) & not applicable: electron pairs \\
+    \texttt{photon\_pixel\_veto} & \yes & EGM \texttt{photon}, PixVeto (2024-07-02) & approximate: real photons; the veto asks for pixel hits \\
     \texttt{electron\_id}, \texttt{photon\_id} & \no & EGM Loose (2024-07-02) & not our working points \\
     \midrule
     \texttt{jet\_energy} & helper & JME \texttt{jet\_jerc}, \texttt{jer\_smear} & JEC check, JES, JER \\
@@ -178,7 +180,8 @@
               (70k files, $\sim$250M events). \textbf{Simulation only.}
         \item \textbf{Processor}: channels \code{base}, \code{2mu2e}, \code{4mu}, the two SRs and the
               Z$\to\mu\mu$ CR; collection \code{corrections\_study} (new, \code{hists.py});
-              default corrections, pixel veto monitored, \code{syst} axis.
+              default corrections of the time, pixel veto monitored (default since),
+              \code{syst} axis.
         \item \textbf{Jobs}: 2,955, sized to $\sim$100k events each; six resubmission rounds
               with \code{sidm/scripts/corrections\_campaign.py} (status, retry, skipped files,
               merge).
@@ -211,7 +214,7 @@
   \begin{itemize}
     \item \code{SidmProcessor}: \code{corrections=} (on by default), \code{syst\_hists=},
           \code{monitor\_corrections=}; with \code{corrections=None} the output is identical to
-          \texttt{main}. \code{sf\_objects} in \code{selections.yaml}: SFs from selected objects.
+          \texttt{main}. Object SFs from the objects the event cuts use.
     \item \code{run\_sidm\_chunk.py}: metadata (\code{skim\_factor}, \code{is\_data}, year) from the
           location YAML; \textbf{refuses collision data} unless \code{-{}-allow-data}.
     \item \code{run\_job.sh}: default corrections unless told \code{none}; optional arguments for
@@ -229,7 +232,7 @@
     \begin{column}{0.48\textwidth}
       \footnotesize
       \begin{itemize}
-        \item \code{test\_corrections.py}: \textbf{55/55} checks, with synthetic corrections and
+        \item \code{test\_corrections.py}: \textbf{58/58} checks, with synthetic corrections and
               the pinned POG files.
         \item \code{corrections=None} reproduces \texttt{main} exactly on a signal and a DY file:
               cutflows, 187 histograms bin by bin, metadata, warnings.
@@ -286,7 +289,7 @@
               \textbf{0.84\%} of the selected events on average, against 0.56\% for 2Mu2E and
               0.64\% for DY.
         \item Computed for PF muons only: a lepton jet of DSA muons alone does not enter it.
-        \item The largest default correction on the SR yields (slide \ref{sl:shifts}).
+        \item The largest default correction on the 4Mu SR yields.
       \end{itemize}
     \end{column}
   \end{columns}
@@ -325,9 +328,9 @@
   \begin{itemize}
     \item Electron reconstruction SF at the supercluster $\eta$, RecoBelow20/RecoAbove20: mean
           0.997 for lepton-jet electrons. Below 20 GeV it carries a 6\% uncertainty per electron.
-    \item Photon pixel veto: 0.96 in the barrel and 0.88 in the endcap \textbf{per photon}. It
-          would be the largest correction in the event weight, for objects it was not measured
-          on, so it is \textbf{monitored, not applied}.
+    \item Photon pixel veto: 0.96 in the barrel and 0.88 in the endcap \textbf{per photon}, the
+          largest correction in the 2Mu2E event weight. \textbf{Applied by default}: the veto only
+          asks for pixel hits, the same question for our $e^+e^-$ pairs (slide \ref{sl:photons}).
   \end{itemize}}
 \end{frame}
 
@@ -422,7 +425,7 @@
 \end{frame}
 
 % ===========================================================================
-\begin{frame}{Where the SFs stop applying: photons are electron pairs}
+\begin{frame}{Where the SFs stop applying: photons are electron pairs}\label{sl:photons}
   \begin{columns}[T]
     \begin{column}{0.50\textwidth}
       \centering
@@ -434,21 +437,22 @@
         \toprule
         2Mu2E, 500 GeV & gen $e$ within 0.1 & $\gamma$ per $e$ in LJs \\
         \midrule
-        0.019 mm & 54\% & 0.02 \\
+        0.019 mm & 55\% & 0.02 \\
         1.9 mm & 98\% & 1.7 \\
         19 mm & 98\% & 4.9 \\
         \bottomrule
       \end{tabular}}
 
-      \vspace{0.6em}
-      {\small
+      \vspace{0.3em}
+      {\footnotesize
       \begin{itemize}
         \item The more displaced the dark photon, the more often its $e^+e^-$ pair is
               reconstructed as a single photon; 97--100\% matched to a generator electron for a
               median \lxy{} of 5--50 cm, over the grid.
-        \item The photon ID and pixel-veto SFs were measured with real photons; our custom
-              photon ID has no SF anyway.
-        \item Hence \code{photon\_pixel\_veto} stays out of the default set.
+        \item The photon ID SFs do not apply (our custom ID has none).
+        \item The pixel-veto SF is applied: it corrects whether pixel hits match the
+              supercluster, the same for high- and low-$R_9$ barrel photons (0.964, 0.963).
+              Decays beyond the pixel detector leave no hits, like unconverted photons.
       \end{itemize}}
     \end{column}
   \end{columns}
@@ -504,7 +508,7 @@
     electron reconstruction & EGM Reco SF & \textcolor{accent}{approximate, applied} \\
     electron \texttt{mvaFall17V2noIso\_WPL} & none & \textcolor{warn}{missing} \\
     photon custom ID & none & \textcolor{warn}{missing} \\
-    photon pixel-seed veto & EGM PixVeto SF & \textcolor{warn}{not applicable}, monitored only \\
+    photon pixel-seed veto & EGM PixVeto SF & \textcolor{accent}{approximate, applied} \\
     lepton-jet isolation (matched jets) & JEC in NanoAOD; JES, JER tools & \textcolor{accent}{open}: definition, then a rerun per variation \\
     $t\bar t$ CR b-tagging & BTV DeepJet fixed-WP SF & \textcolor{good}{standard}, tool ready; needs MC efficiencies \\
     electron and photon energy & in NanoAOD & \textcolor{good}{standard}; scale variations empty \\
@@ -518,7 +522,7 @@
   \centering
   \includegraphics[width=\textwidth,height=0.77\textheight,keepaspectratio]{impact_yield_shifts_2Mu2E.pdf}
 
-  {\footnotesize Default \textbf{$-$2.2 to $+$0.7\%} (median $-$0.7\%); the pixel veto (not applied) would add up to $-$5.6\%.}
+  {\footnotesize Default \textbf{$-$6.0 to $+$0.3\%} (median $-$4.1\%), mostly the pixel veto (up to $-$5.6\%).}
 \end{frame}
 
 \begin{frame}{Effect on the SR signal yields: 4Mu}
@@ -534,7 +538,7 @@
   \centering
   \includegraphics[width=\textwidth,height=0.77\textheight,keepaspectratio]{impact_uncertainties_2Mu2E.pdf}
 
-  {\footnotesize Default set in quadrature \textbf{0.15--4.3\%} (median 0.6\%), largest from the electron SF at \mphi{} = 100 GeV.}
+  {\footnotesize Default set in quadrature \textbf{0.26--4.3\%} (median 0.6\%), largest from the electron SF at \mphi{} = 100 GeV.}
 \end{frame}
 
 \begin{frame}{Uncertainties from the corrections: 4Mu}
@@ -554,17 +558,17 @@
         \toprule
         & 2Mu2E & 4Mu \\
         \midrule
-        \textbf{all default} & \textbf{$-$2.2 to $+$0.7\%} & \textbf{$-$1.8 to $+$0.2\%} \\
+        \textbf{all default} & \textbf{$-$6.0 to $+$0.3\%} & \textbf{$-$1.8 to $+$0.2\%} \\
+        pixel veto$^*$ & $-$5.6 to $-$0.05\% & $-$0.2 to 0\% \\
         L1 prefiring & $-$0.7 to $-$0.1\% & $-$1.2 to $-$0.4\% \\
         muon ID & $-$0.2 to $-$0.05\% & $-$1.0 to $-$0.2\% \\
         electron reco & $-$1.3 to $+$1.8\% & 0 \\
         pileup & $-$0.3 to $+$1.0\% & $-$0.2 to $+$1.0\% \\
-        pixel veto$^*$ & $-$5.6 to $-$0.05\% & $-$0.2 to 0\% \\
         \bottomrule
       \end{tabular}}
 
-      {\scriptsize $^*$monitored, not applied. All 180 points, \texttt{2mu2e\_sr} and
-      \texttt{4mu\_sr}, full samples.}
+      {\scriptsize $^*$on top of the others, as the campaign monitored it. All 180 points,
+      \texttt{2mu2e\_sr} and \texttt{4mu\_sr}, full samples.}
     \end{column}
     \begin{column}{0.49\textwidth}
       \textbf{Uncertainty (half-width of up/down)}\\[0.3em]
@@ -577,7 +581,8 @@
         L1 prefiring & 0.04--0.16\% & 0.10--0.29\% \\
         muon ID & 0.01--0.19\% & 0.11--1.7\% \\
         electron reco & 0.05--4.2\% & 0 \\
-        \textbf{in quadrature} & \textbf{0.15--4.3\%} & \textbf{0.2--3.0\%} \\
+        pixel veto & 0.0--0.32\% & 0.0--0.01\% \\
+        \textbf{in quadrature} & \textbf{0.26--4.3\%} & \textbf{0.2--3.0\%} \\
         \bottomrule
       \end{tabular}}
     \end{column}
@@ -586,9 +591,10 @@
   \vspace{0.5em}
   {\footnotesize
   \begin{itemize}
-    \item With the background fixed, the expected limits move by the same fraction, mostly $\sim$1\%.
-    \item The extremes are all at \mphi{} = 100 GeV: soft electrons (the reco SF below 20 GeV can be
-          above one, 6\% uncertainty) and soft muons (J/$\psi$-based SFs).
+    \item With the background fixed, the expected limits move by the same fraction (medians: 4\% for
+          2Mu2E, 1.4\% for 4Mu).
+    \item Extremes: the most negative 2Mu2E shifts at the longest lifetimes (pixel veto), the rest at
+          \mphi{} = 100 GeV (soft electrons and muons, whose SFs carry larger uncertainties).
     \item For the datacards: one lnN per correction, correlated across channels and points;
           values per point in \code{tables/sr\_correction\_nuisances.csv}.
   \end{itemize}}
@@ -611,14 +617,14 @@
     \toprule
     & \texttt{base} & \texttt{2mu2e\_sr} & \texttt{4mu\_sr} & SR yields, 2Mu2E / 4Mu \\
     \midrule
-    DY$\to\mu\mu$ & $-0.9\pm0.2$\% & $-1.8\pm0.7$\% & $+1.2\pm8.6$\% & 824 / 390 \\
-    DY$\to\ell\ell$ & $-0.9\pm0.2$\% & $+0.2\pm5.3$\% & $+1.6\pm10$\% & 586 / 438 \\
-    QCD & $-0.8\pm0.5$\% & $-1.7\pm0.6$\% & $-0.6\pm4.1$\% & 17400 / 14100 \\
-    $t\bar t$ & $-1.0\pm0.2$\% & $-1.9\pm0.8$\% & $-0.5\pm4.7$\% & 1100 / 173 \\
-    diboson & $-1.0\pm0.2$\% & $-0.8\pm2.4$\% & $-2.9\pm3.0$\% & 17 / 3.5 \\
+    DY$\to\mu\mu$ & $-0.9\pm0.2$\% & $-6.0\pm0.7$\% & $+1.2\pm8.6$\% & 789 / 390 \\
+    DY$\to\ell\ell$ & $-0.9\pm0.2$\% & $-2.0\pm5.3$\% & $+1.6\pm10$\% & 573 / 438 \\
+    QCD & $-0.9\pm0.5$\% & $-3.5\pm0.6$\% & $-0.6\pm4.1$\% & 17000 / 14100 \\
+    $t\bar t$ & $-1.1\pm0.2$\% & $-2.4\pm0.8$\% & $-0.6\pm4.7$\% & 1100 / 173 \\
+    diboson & $-1.0\pm0.2$\% & $-2.0\pm2.4$\% & $-2.9\pm3.0$\% & 16 / 3.5 \\
     \midrule
-    total, with DY$\to\mu\mu$ & $-0.9\pm0.2$\% & $-1.7\pm0.6$\% & $-0.5\pm4.3$\% & 19300 / 14600 \\
-    total, with DY$\to\ell\ell$ & $-0.9\pm0.2$\% & $-1.6\pm0.5$\% & $-0.5\pm4.3$\% & 19100 / 14700 \\
+    total, with DY$\to\mu\mu$ & $-0.9\pm0.2$\% & $-3.5\pm0.6$\% & $-0.6\pm4.3$\% & 18900 / 14600 \\
+    total, with DY$\to\ell\ell$ & $-0.9\pm0.2$\% & $-3.4\pm0.5$\% & $-0.6\pm4.3$\% & 18700 / 14700 \\
     \bottomrule
   \end{tabular}}
 
@@ -627,8 +633,9 @@
   \begin{itemize}
     \item Change $\pm$ the default corrections' uncertainty; yields for 59.8 fb$^{-1}$.
     \item At \code{base} the prefiring weight takes 0.6--0.7\% from every group and the muon ID SF
-          0.2--0.3\%; pileup and the electron SF almost nothing. The electron SF adds $-$0.6 to
-          $-$0.8\% in the 2Mu2E channels.
+          0.2--0.3\%; pileup, the electron SF and the pixel veto almost nothing. In
+          \code{2mu2e\_sr} the electron SF adds $-$0.3 to $-$0.8\% and the pixel veto $-$0.6 to
+          $-$4.2\%.
     \item The large 4Mu variations come from a few simulated events with large weights (QCD bins
           with large cross sections, DY generator weights): statistics of the weights.
     \item QCD is nine tenths of the SR background. The SR yields are before the isolation and
@@ -648,7 +655,7 @@
       \begin{itemize}
         \item Every histogram carries the \code{syst} axis: here the corrected/uncorrected ratio
               of the 4Mu benchmark with the correction uncertainty as a band.
-        \item 17 categories per histogram with the pixel veto monitored: use it with small
+        \item 17 categories per histogram with the default list: use it with small
               histogram collections.
         \item DY$\to\mu\mu$ and DY$\to\ell\ell$ overlap and are never added; which one the
               analysis uses is open, so the totals are given with each.
@@ -711,9 +718,10 @@
           (orthogonal triggers, cosmic-seeded paths) and enter it as our own correction.
     \item \textbf{DSA muon} identification and reconstruction efficiency (cosmics,
           standalone-track tag-and-probe).
-    \item \textbf{Displaced and close-by PF muons and electrons}: the applied SFs are
-          provisional; their per mille uncertainties describe prompt, isolated objects.
-    \item \textbf{Electron WPL ID, photon ID and pixel veto} for lepton-jet objects.
+    \item \textbf{Displaced and close-by PF muons, electrons, lepton-jet photons}: the applied
+          SFs are provisional; their per mille uncertainties describe prompt, isolated objects
+          and real photons.
+    \item \textbf{Electron WPL ID and photon ID} for lepton-jet objects.
     \item \textbf{Lepton-jet isolation}: raw or corrected jet energy; then JES/JER as shape
           systematics (a rerun of the selection per variation).
     \item \textbf{Data/MC validation} of the applied corrections, once the group decides which
@@ -753,9 +761,9 @@
     \midrule
     \texttt{sidm/configs/corrections.yaml} & \textbf{new}: per-year corrections, pinned snapshots, validity notes \\
     \texttt{sidm/tools/corrections.py} & \textbf{new}: \texttt{Corrections}, \texttt{EventWeights} (with the weight categories), jet and b-tag helpers \\
-    \texttt{sidm/tools/test\_corrections.py} & \textbf{new}: 49 standalone checks \\
-    \texttt{sidm/tools/sidm\_processor.py} & \texttt{corrections=}, \texttt{syst\_hists=}, \texttt{monitor\_corrections=} \\
-    \texttt{sidm/tools/selection.py}, \texttt{cutflow.py}, \texttt{histogram.py} & categories in every cutflow row and on the \texttt{syst} axis \\
+    \texttt{sidm/tools/test\_corrections.py} & \textbf{new}: 58 standalone checks \\
+    \texttt{sidm/tools/sidm\_processor.py} & \texttt{corrections=}, \texttt{syst\_hists=}, \texttt{monitor\_corrections=}; object SFs from the objects the event cuts use \\
+    \texttt{sidm/tools/selection.py}, \texttt{cutflow.py}, \texttt{histogram.py} & categories in every cutflow row and on the \texttt{syst} axis; what the event cuts read \\
     \texttt{sidm/definitions/hists.py}, \texttt{objects.py}, \texttt{hist\_collections.yaml} & \texttt{corrections\_study} histograms and collections \\
     \texttt{sidm/tools/metadata.py}, \texttt{merge\_coffea\_chunks\_eos.py} & provenance in the sidecars; \textbf{merge normalisation fix}, streaming \\
     \texttt{sidm/scripts/corrections\_campaign.py} & \textbf{new}: campaign status, retry, skipped files, merge \\

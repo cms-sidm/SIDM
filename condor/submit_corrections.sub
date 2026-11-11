@@ -1,6 +1,7 @@
 # Corrections study campaign (sidm/studies/corrections): every v10 signal point
-# and every skimmed background, simulation only, with the default corrections,
-# the photon pixel-veto SF monitored, and weighted histograms with a syst axis.
+# and every skimmed background, simulation only, with the default corrections of
+# the time, the photon pixel-veto SF monitored (it has joined the default list
+# since), and weighted histograms with a syst axis.
 #
 # Submit from condor/, once per job list:
 #
@@ -15,7 +16,7 @@ universe = vanilla
 
 executable = run_job.sh
 
-arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/CorrectionsChunks_v1 base,2mu2e,4mu,2mu2e_sr,4mu_sr,Z_to_mumu_control_region corrections_study default syst photon_pixel_veto
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/CorrectionsChunks_v1 base,2mu2e,4mu,2mu2e_sr,4mu_sr,Z_to_mumu_control_region corrections_study pileup,l1_prefiring,muon_id,electron_reco syst photon_pixel_veto
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT

@@ -167,9 +167,80 @@ def median_lxy():
     return {s: v["median_genA_lxy_cm"] for s, v in utilities.load_yaml(path).items()}
 
 
-def yields(out, channel):
-    """Weighted yield after the last cut of channel, for nominal and every weight category"""
+# The campaign ran before two changes to the default corrections (README, "The Condor
+# campaign"). It applied CAMPAIGN_APPLIED and monitored the photon pixel-veto SF, which
+# is in the default list now. And the object SFs now come from the objects the event
+# cuts use: in the campaign's channels whose event cuts use lepton jets (LJ_CHANNELS)
+# the photon SFs come from the lepton jets, as in the campaign, while
+# Z_to_mumu_control_region, whose event cuts use only muons, gets none. yields() and
+# syst_hist() give the campaign's outputs in the weight categories of the current default.
+CAMPAIGN_APPLIED = ["pileup", "l1_prefiring", "muon_id", "electron_reco"]
+CAMPAIGN_MONITORED = "photon_pixel_veto"
+LJ_CHANNELS = ["base", "2mu2e", "4mu", "2mu2e_sr", "4mu_sr"]
+
+
+def campaign_yields(out, channel):
+    """Weighted yield after the last cut of channel, in every weight category the output holds"""
     return out["cutflow"][channel].variation_yields()
+
+
+def _default_categories(stored, channel):
+    """{category of the current default: (stored category, times the veto factor?)}"""
+    veto = CAMPAIGN_MONITORED
+    if f"with_{veto}" not in stored:     # made with the current default
+        return {c: (c, False) for c in stored}
+    out = {c: (c, False) for c in stored if not c.startswith("with_")}
+    if channel in LJ_CHANNELS:
+        out["nominal"] = (f"with_{veto}", False)
+        out[f"only_{veto}"] = ("uncorrected", True)
+        for shift in ("Up", "Down"):
+            out[f"{veto}{shift}"] = (f"with_{veto}{shift}", False)
+            for name in CAMPAIGN_APPLIED:
+                out[f"{name}{shift}"] = (f"{name}{shift}", True)
+    else:
+        out[f"only_{veto}"] = ("uncorrected", False)
+        for shift in ("Up", "Down"):
+            out[f"{veto}{shift}"] = ("nominal", False)
+    return out
+
+
+def yields(out, channel):
+    """Weighted yield after the last cut of channel, in the categories of the default corrections
+
+    For the campaign, in LJ_CHANNELS: nominal is its with_photon_pixel_veto and
+    photon_pixel_vetoUp/Down its with_photon_pixel_vetoUp/Down, both exact. The
+    variations of the other corrections were stored without the veto; they are scaled
+    by the veto's mean factor in the channel (with_photon_pixel_veto over the stored
+    nominal), which keeps their relative shifts. only_photon_pixel_veto, which the
+    campaign does not have, is the uncorrected yield times that factor: the veto's
+    effect on top of the other corrections stands in for its effect alone. In the
+    other channels the veto is one and the stored nominal is kept. Outputs made with
+    the current default are returned as they are; campaign_yields() gives the stored
+    categories.
+    """
+    y = campaign_yields(out, channel)
+    veto = f"with_{CAMPAIGN_MONITORED}"
+    factor = y[veto] / y["nominal"] if veto in y and y["nominal"] else 1.0
+    return {c: y[src] * (factor if scaled else 1.0)
+            for c, (src, scaled) in _default_categories(y, channel).items()}
+
+
+def syst_hist(h, category, channel):
+    """h, a histogram with a syst axis, in one category of the default corrections
+
+    The categories are mapped as in yields(), with the veto factor taken bin by bin.
+    """
+    src, scaled = _default_categories(list(h.axes["syst"]), channel)[category]
+    out = h[{"syst": src}]
+    if scaled:
+        num = h[{"syst": f"with_{CAMPAIGN_MONITORED}"}].values(flow=True)
+        den = h[{"syst": "nominal"}].values(flow=True)
+        factor = np.divide(num, den, out=np.ones_like(num), where=den != 0)
+        out = out.copy()
+        view = out.view(flow=True)
+        view["value"] = view["value"] * factor
+        view["variance"] = view["variance"] * factor ** 2
+    return out
 
 
 def raw(out, channel):

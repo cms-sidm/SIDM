@@ -21,7 +21,7 @@ CORRECTIONS=${7:-default}
 # a syst axis with every weight category (needs corrections).
 HIST_MODE=${8:-unweighted}
 # Optional positional arg 9: corrections to evaluate without applying them
-# (comma-separated), e.g. photon_pixel_veto; needs corrections.
+# (comma-separated), e.g. electron_id; needs corrections.
 MONITOR_CORRECTIONS=${9:-}
 
 case "${HIST_MODE}" in

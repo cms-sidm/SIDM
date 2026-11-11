@@ -17,8 +17,11 @@ otherwise. The data/MC checks that normally go with these corrections are listed
   `corrections=None` the output is identical to `main`, cutflows and histograms bin
   by bin.
 * The default set is **pileup reweighting, the L1 prefiring weight, the PF-muon
-  Loose ID SF and the electron reconstruction SF**, read from dated CVMFS snapshots
-  pinned in [`sidm/configs/corrections.yaml`](../../configs/corrections.yaml).
+  Loose ID SF, the electron reconstruction SF and the photon pixel-veto SF**, read from
+  dated CVMFS snapshots pinned in [`sidm/configs/corrections.yaml`](../../configs/corrections.yaml).
+* A channel's event weight carries the SFs of the objects its event cuts use: the
+  selected muons where the cuts read muons, the lepton-jet constituents where they read
+  lepton jets, and none otherwise.
 * Every cutflow row carries the weighted count of every **weight category**
   (uncorrected, one correction at a time, every up/down variation), `syst_hists=True`
   adds a `syst` axis with the same categories to every histogram, and the output
@@ -27,10 +30,10 @@ otherwise. The data/MC checks that normally go with these corrections are listed
   v10 signal point (180) and every skimmed background (20 samples), 79k files and
   about 280M events. The merged outputs are on EOS for anyone in the group, and the
   notebooks read them from there.
-* In the SR the default corrections change the signal yields by $-2.2$ to $+0.7$%
-  (2Mu2E, median $-0.7$%) and $-1.8$ to $+0.2$% (4Mu, median $-1.4$%), mostly through
-  the prefiring weight, and bring uncertainties of 0.15–4.3% and 0.2–3.0% (median 0.6%
-  for both). The per-point lnN values are in
+* In the SR the default corrections change the signal yields by $-6.0$ to $+0.3$%
+  (2Mu2E, median $-4.1$%), mostly through the pixel-veto SF, and $-1.8$ to $+0.2$% (4Mu,
+  median $-1.4$%), mostly through the prefiring weight. They bring uncertainties of
+  0.26–4.3% and 0.2–3.0% (median 0.6% for both). The per-point lnN values are in
   [`tables/sr_correction_nuisances.csv`](tables/sr_correction_nuisances.csv).
 * The standard corrections miss most of what makes our objects special: 79–100% of
   the lepton-jet PF muons are outside the phase space the muon SFs were measured in
@@ -48,14 +51,13 @@ otherwise. The data/MC checks that normally go with these corrections are listed
 from sidm.tools import sidm_processor
 
 p = sidm_processor.SidmProcessor(["2mu2e_sr", "4mu_sr"], ["lj_lj_base"],
-                                 syst_hists=True,      # optional: syst axis on every hist
-                                 monitor_corrections=["photon_pixel_veto"])  # optional
+                                 syst_hists=True)      # optional: syst axis on every hist
 out = runner.run(fileset, treename="Events", processor_instance=p)["out"]
 
 cf = out[sample]["cutflow"]["2mu2e_sr"]
 cf.variation_yields()          # {"nominal": ..., "uncorrected": ..., "pileupUp": ..., ...}
 h = out[sample]["hists"]["lj_lj_invmass"][{"channel": "2mu2e_sr", "syst": "muon_idUp"}]
-out[sample]["metadata"]["object_corrections"]   # which object SFs each channel used
+out[sample]["metadata"]["object_corrections"]   # which object SFs each channel used, on which objects
 ```
 
 The weight categories, in the cutflows and on the `syst` axis:
@@ -71,17 +73,16 @@ The weight categories, in the cutflows and on the `syst` axis:
 * `corrections=True`, the default, applies the config's default list, and
   `corrections=None` the plain genWeight, as on `main`.
 * `corrections=["pileup", "l1_prefiring"]` applies a subset; any entry of the config
-  can be named, including ones that are not in the default list
-  (`photon_pixel_veto`, `electron_id`, `photon_id`).
+  can be named, including ones that are not in the default list (`electron_id`,
+  `photon_id`).
 * Data is never corrected. With `syst_hists=True` data fills only the `nominal`
   category.
 * The luminosity × cross section normalisation still uses the plain genWeight sum,
   so a correction that changes the total (pileup reweighting does, slightly) shows up
   in the yields. The metadata key `scaled_sum_weights_corrected` holds the sums with
   each event-level correction, before any selection.
-* `syst_hists=True` stores one copy of every histogram per category, 14 with the
-  default list and 17 with the pixel veto monitored, so use it with small
-  collections.
+* `syst_hists=True` stores one copy of every histogram per category, 17 with the
+  default list, so use it with small collections.
 * **Histograms of the corrections themselves**: with corrections on, fill functions
   can read `objs["weight_factors"]` (one column per factor and shift, e.g. `pileup`,
   `pileupUp`, for the selected events), `objs["object_corrections"]` (the working point
@@ -106,8 +107,9 @@ without processing anything.
 
 **What ran.** `condor/submit_corrections.sub`: `SidmProcessor` with the channels
 `base`, `2mu2e`, `4mu`, `2mu2e_sr`, `4mu_sr` and `Z_to_mumu_control_region`, the
-`corrections_study` histogram collection, `corrections=True`,
-`monitor_corrections=["photon_pixel_veto"]` and `syst_hists=True`, over
+`corrections_study` histogram collection, the default corrections of the time (pileup,
+prefiring, muon ID and electron reconstruction), `monitor_corrections=["photon_pixel_veto"]`
+and `syst_hists=True`, over
 
 * every v10 signal point (`signal_2mu2e_v10.yaml`, `signal_4mu_v10.yaml`,
   `llpNanoAOD_v2`): 180 points, 8,799 files, 25.7M events;
@@ -118,14 +120,29 @@ without processing anything.
 The jobs also had two speed-ups of `SidmProcessor` that are not part of this code (they
 come in a separate change): channels with the same object cuts sharing one lepton-jet
 clustering, and a vectorised mask in `make_constituent`. They change no output: with the
-campaign's options, this code and the code of the jobs give identical histograms and
-cutflows on a 4Mu signal file, so the outputs below are what this code produces, with one
-exception: the campaign ran before `sf_objects`, so in `Z_to_mumu_control_region` its
-weights also carry the electron reconstruction SF of the few events with a selected
-electron (0.2% of DY), which this code leaves out there (−0.01% on the DY yield of that
-region, on the file checked). Without
-them the processing takes about 3 times longer, so the job times quoted below are lower
-than a rerun with this code would see.
+campaign's options, the code of the jobs and this code before the two changes below give
+identical histograms and cutflows on a 4Mu signal file. Without them the processing takes
+about 3 times longer, so the job times quoted below are lower than a rerun with this code
+would see.
+
+**Two changes since the campaign.** The notebooks read its outputs in the weight categories
+of the current default, through `corrections_study.yields()` and `syst_hist()`:
+
+* **The photon pixel-veto SF has joined the default list.** The campaign monitored it, so in
+  the five channels whose event cuts use lepton jets its `with_photon_pixel_veto`
+  categories are the current nominal weight and the veto's variations, up to the second
+  change. The
+  variations of the other corrections are the campaign's times the veto's mean factor,
+  which keeps their relative shifts.
+* **The object SFs come from the objects the event cuts use** (see
+  [the corrections](#the-corrections)). The campaign took them from the lepton-jet
+  constituents in every channel. In the five lepton-jet channels the muon SFs now come
+  from all selected muons, which their event cuts count: −0.04% and −0.03% on the
+  `2mu2e_sr` and `4mu_sr` yields of a 2Mu2E and a 4Mu file. `Z_to_mumu_control_region`
+  keeps only the muon SFs: the campaign's weights there also carry the electron
+  reconstruction SF of the few events with a selected electron (0.2% of DY; −0.01% on
+  the DY yield of that region, on the file checked), and the notebooks use them as they
+  are.
 
 **Where the outputs are.** One `<sample>.coffea` and its `<sample>.meta.yaml` sidecar
 per sample in
@@ -202,18 +219,17 @@ hour-long EOS outage.
 | file | change |
 |---|---|
 | `sidm/configs/corrections.yaml` | **new.** Per year: which POG file and correction to use for each correction, the pinned snapshot, the selection cut an object SF corrects, the names of its variations, and a validity note |
-| `sidm/tools/corrections.py` | **new.** `Corrections` (loads the config and the JSON files, evaluates event and object corrections, records provenance), `EventWeights` (the event weight as a product of named factors with up/down variations, and the weight categories), jet and b-tagging helpers for studies, and `import_correctionlib()` (see [environment](#environment)) |
-| `sidm/tools/test_corrections.py` | **new.** Standalone test in the style of `test_gen.py`: 55 checks, with synthetic corrections and, when CVMFS is mounted, the pinned POG files. `python sidm/tools/test_corrections.py` |
-| `sidm/tools/sidm_processor.py` | `corrections=` (the default list by default; `None` for none), `syst_hists=` and `monitor_corrections=` options: builds the event weights for simulation, adds each channel's object SFs (from its lepton jets, or from the `sf_objects` collections), carries every weight category through the event selection, adds the `syst` axis, passes the factors to fill functions, and records the corrections in the metadata. |
-| `sidm/configs/selections.yaml` | optional `sf_objects` per selection; `sf_objects: [muons]` in `Z_to_mumu_control_region`, `ttjets_2j2btag` and `ttjets_4j2btag` |
-| `sidm/tools/selection.py` | the cutflow rows also record the weighted count of every category; a cut listed twice in a selection is still reported and skipped as before |
+| `sidm/tools/corrections.py` | **new.** `Corrections` (loads the config and the JSON files, evaluates event and object corrections, decides which objects' SFs a channel applies in `sf_sources`, records provenance), `EventWeights` (the event weight as a product of named factors with up/down variations, and the weight categories), jet and b-tagging helpers for studies, and `import_correctionlib()` (see [environment](#environment)) |
+| `sidm/tools/test_corrections.py` | **new.** Standalone test in the style of `test_gen.py`: 58 checks, with synthetic corrections and, when CVMFS is mounted, the pinned POG files. `python sidm/tools/test_corrections.py` |
+| `sidm/tools/sidm_processor.py` | `corrections=` (the default list by default; `None` for none), `syst_hists=` and `monitor_corrections=` options: builds the event weights for simulation, adds each channel's object SFs (from the objects its event cuts use), carries every weight category through the event selection, adds the `syst` axis, passes the factors to fill functions, and records the corrections in the metadata. |
+| `sidm/tools/selection.py` | the cutflow rows also record the weighted count of every category; a cut listed twice in a selection is still reported and skipped as before; `Selection.collections_read()` finds which collections the event cuts read by running them on zero events |
 | `sidm/tools/cutflow.py` | `SimpleCutflow` rows can carry `variations`, which add, scale and survive `identity()`; new `variation_yields()` |
 | `sidm/tools/histogram.py` | optional `syst` axis: `make_hist(..., systematics=[...])`, and `fill()` takes `{category: weights}` |
 | `sidm/definitions/hists.py`, `sidm/configs/hist_collections.yaml` | **new histograms and collections** `corrections_weights`, `corrections_objects`, `corrections_applicability`, `corrections_study`: pileup and vertex distributions, the weight factors, the SF of every lepton-jet constituent, the inputs of the applicability study, and the lepton-jet isolation recomputed with raw, JES-shifted and JER-smeared jets |
 | `sidm/definitions/cuts.py` | `Keep all evts` now gives one value per event. It gave one per primary-vertex list, which could not slim any per-event array, so the `barrelE`/`endcapE` family never applied it and the chain report counted each new per-event column (`pileup`, `event_number`, the weights) as a new cut failure |
 | `sidm/definitions/objects.py` | `pileup` (simulation only) and `event_number` as standard objects; `genPhotons` as a derived object |
 | `sidm/tools/metadata.py` | `write_run_metadata(..., corrections=..., monitor_corrections=...)` records the corrections, with file checksums; `corrections` defaults to the processor's default |
-| `tests/_e2e_common.py`, `tests/data/corrections/`, `tests/README.md` | the CI chain report runs with the default corrections, from copies of the six correction files the processor and the `corrections_*` histograms read (800 kB; GitHub's runners have no CVMFS) |
+| `tests/_e2e_common.py`, `tests/data/corrections/`, `tests/README.md` | the CI chain report runs with the default corrections, from copies of the seven correction files the processor and the `corrections_*` histograms read (820 kB; GitHub's runners have no CVMFS) |
 | `sidm/scripts/merge_coffea_chunks_eos.py` | **bug fix**: the per-chunk normalisation correction was never applied to real chunk files ([found along the way](#found-along-the-way)). Also: accumulates one chunk at a time (a sample of 1,000 chunks no longer needs 16 GB of memory), frees each sample's local chunks once merged, `--samples` to merge a subset, and forwards the corrections to the sidecar |
 | `sidm/scripts/corrections_campaign.py` | **new.** Status, retry, skipped-file and merge steps of the campaign above |
 | `condor/run_sidm_chunk.py` | reads `skim_factor`, `is_data` and `year` from the location YAML of the files (it used `skim_factor = 1` for every sample); refuses collision data unless `--allow-data`; `--corrections` (`default` unless given, or `none`), `--syst-hists`, `--monitor-corrections` |
@@ -241,7 +257,7 @@ the CMS analysis-corrections area that replaced jsonpog-integration.
 | `l1_prefiring` | yes | NanoAOD `L1PreFiringWeight_Nom/Up/Dn` | L1 prefiring; in 2018 muons only | standard; DSA-only lepton jets do not enter it |
 | `muon_id` | yes | MUO `muon_JPsi` below 20 GeV, `muon_Z` above (2024-07-02) | PF muon `looseID` (or `tightID`, picked from the channel's cuts) | approximate: measured on prompt, isolated muons |
 | `electron_reco` | yes | EGM `electron`, RecoBelow20/RecoAbove20 (2024-07-02) | GSF electron reconstruction | approximate: measured on prompt electrons |
-| `photon_pixel_veto` | **no** (monitored in the campaign) | EGM `photon`, PixVeto, Loose (2024-07-02) | photon pixel-seed veto | not applicable: our "photons" are mostly electron pairs |
+| `photon_pixel_veto` | yes | EGM `photon`, PixVeto, Loose (2024-07-02) | photon pixel-seed veto | approximate: measured on real photons; ours are mostly electron pairs, for which the veto asks the same question (see below) |
 | `electron_id` | no | EGM `electron`, Loose (2024-07-02) | cut-based Loose ID | not used by the lepton-jet selections |
 | `photon_id` | no | EGM `photon`, Loose (2024-07-02) | cut-based Loose ID | not used by the lepton-jet selections |
 | `jet_energy` | helper | JME `jet_jerc` (2026-06-10), `jer_smear` (2026-09-18) | JEC check, JES uncertainty, JER smearing | see below |
@@ -249,18 +265,28 @@ the CMS analysis-corrections area that replaced jsonpog-integration.
 | `btag` | helper | BTV `btagging` (2025-08-19) | DeepJet fixed-WP SFs | standard, needs MC efficiencies |
 
 **How object SFs are applied.** Each object SF is tied to the selection cut whose
-efficiency it corrects (`working_points` in the config). In a channel whose `muons`
-cuts include `looseID`, every PF muon inside the channel's lepton jets (after the
-lepton-jet cuts) gets the Loose ID SF, and the event weight is the product over those
-muons. Every selected muon, electron and photon is clustered into a lepton jet, so in a
-selection without lepton-jet cuts these are all its selected objects. A selection that
-is not built from lepton jets names the objects its SFs belong to with `sf_objects` in
-`selections.yaml`: with `sf_objects: [muons]` the SFs come from the selected muons, and
-the SFs of other collections are not applied. The Z→μμ and the two $t\bar t$ control
-regions have it, so the electrons they select but never use get no reconstruction SF.
-A channel asking for `tightID` gets the Tight SF instead. Objects outside the
+efficiency it corrects (`working_points` in the config): a channel whose `muons` cuts
+include `looseID` gets the Loose ID SF, one asking for `tightID` the Tight SF. The event
+weight carries the SFs of the objects the channel's event cuts use, so that it depends
+only on objects the event selection looks at (`Corrections.sf_sources`):
+
+* if the event cuts read the collection the cut is on, directly or through a collection
+  built from it (`allMuons` from `muons`), every selected object of it gets its SF;
+* otherwise, if they read lepton jets (`ljs`, or `mu_ljs`, `egm_ljs` and the others built
+  from them), the constituents of the lepton jets that pass the lepton-jet cuts get it;
+* otherwise none does, and the correction is not applied in that channel.
+
+The processor finds what the event cuts read by running them on zero events, which
+costs nothing, with a dict that records each lookup (`Selection.collections_read`). The
+signal selections count the selected muons (`>=2 muons (pf or dsa) pT > 26 GeV`, the
+cosmic veto) and the lepton jets, so their muon SFs come from every selected muon and
+their electron and photon SFs from the lepton jets. The Z→μμ and $t\bar t$ control
+regions read muons but no lepton jets, so they get only the muon SFs, and selections
+that read neither, such as the generator-level ones, get none. Objects outside the
 measured range get an SF of one. Up and down move all the SFs of an event together.
-`out[sample]["metadata"]["object_corrections"]` lists what each channel used.
+`out[sample]["metadata"]["object_corrections"]` lists for each channel
+`<correction>:<working point>:<source>`, the source being the collection whose selected
+objects gave the SFs, or `ljs`.
 
 **Already in NanoAODv9, not to be applied again:** the jet energy corrections
 (`Summer19UL18_V5`, the current tag; notebook 00 recomputes them and finds agreement
@@ -286,9 +312,15 @@ compared with DY muons in the Z $\to\mu\mu$ control region:
   shortest benchmark lifetime, 24–31% at the longer ones).
 * **Photons.** For displaced decays, 97–100% of the lepton-jet "photons" are within
   $\Delta R$ < 0.1 of a generator electron, and they outnumber the electrons (1.7 to
-  4.9 per electron at the displaced benchmark points). The photon SFs, measured with
-  real photons, do not apply, which is why the pixel-veto SF (0.96 in the barrel, 0.88
-  in the endcap) is not in the default list.
+  4.9 per electron at the displaced benchmark points). The photon ID SFs, measured with
+  real photons, do not apply (and our custom ID has none). The pixel-veto SF (0.96 in
+  the barrel, 0.88 in the endcap) is applied all the same: the veto only asks whether
+  pixel hits line up with the supercluster, and in the barrel EGM finds the same SF for
+  high- and low-$R_9$ photons (0.964 and 0.963) and for every ID working point
+  (0.962–0.963), so it does not depend on what the photon did. A dark photon that
+  decays beyond the pixel detector leaves no pixel hits of its own, like an unconverted
+  photon, and that is where the SF matters most. For decays inside the pixel volume,
+  whose pairs can leave pixel hits of their own, it is an extrapolation.
 * **Lepton-jet isolation** is computed from the JEC-corrected energy of the matched
   AK4 jet. For the 4Mu benchmark at $c\tau$ = 1.9 mm, nine in ten of those jets are
   more than 90% leptons (46–98% over the grid), and the JEC scales them up by about 7%.
@@ -306,12 +338,17 @@ From `03_impact_on_results.ipynb`: all 180 signal points in `2mu2e_sr` and `4mu_
 
 | | 2Mu2E | 4Mu |
 |---|---|---|
-| **all default corrections** | **−2.2 to +0.7%** (median −0.7%) | **−1.8 to +0.2%** (median −1.4%) |
+| **all default corrections** | **−6.0 to +0.3%** (median −4.1%) | **−1.8 to +0.2%** (median −1.4%) |
+| photon pixel-veto SF | −5.6 to −0.05% (median −3.5%) | −0.2 to 0% |
 | L1 prefiring | −0.7 to −0.1% | −1.2 to −0.4% |
 | muon ID SF | −0.2 to −0.05% | −1.0 to −0.2% |
 | electron reconstruction SF | −1.3 to +1.8% | 0 |
 | pileup | −0.3 to +1.0% | −0.2 to +1.0% |
-| photon pixel veto (monitored, not applied) | −5.6 to −0.05% | −0.2 to 0% |
+
+The pixel-veto SF grows with the displacement: −3.1 to −5.6% at the 2Mu2E points where
+most dark photons decay beyond the pixel detector (median $L_{xy}$ above 16 cm, the last
+barrel layer), −0.05 to −1.8% (median −0.35%) where most decay inside it. Its row is its
+effect on top of the other corrections, which is what the campaign has.
 
 Uncertainties (half-width of the up/down variation of the SR yield):
 
@@ -321,11 +358,16 @@ Uncertainties (half-width of the up/down variation of the SR yield):
 | L1 prefiring | 0.04 to 0.16% | 0.10 to 0.29% |
 | muon ID SF | 0.01 to 0.19% | 0.11 to 1.7% |
 | electron reconstruction SF | 0.05 to 4.2% | 0 |
-| **default, in quadrature** | **0.15 to 4.3%** (median 0.6%) | **0.2 to 3.0%** (median 0.6%) |
+| photon pixel-veto SF | 0.0 to 0.32% (median 0.18%) | 0.0 to 0.01% |
+| **default, in quadrature** | **0.26 to 4.3%** (median 0.6%) | **0.2 to 3.0%** (median 0.6%) |
 
 * With the background fixed, a cross-section limit scales as the inverse of the
-  signal yield, so the expected limits move by the same fraction, mostly by about 1%.
-* The extreme values are all at low mass. At $m_\Phi$ = 100 GeV the electrons are
+  signal yield, so the expected limits move by the same fraction: by about 4% for 2Mu2E
+  (3–6% at the displaced points) and 1.4% for 4Mu (medians).
+* The pixel-veto uncertainty is EGM's, for real photons; like the other lepton-jet SFs
+  it needs an uncertainty of its own for our objects (open items).
+* The most negative 2Mu2E shifts are at the longest lifetimes, from the pixel veto;
+  the other extremes are at low mass. At $m_\Phi$ = 100 GeV the electrons are
   soft, and the reconstruction SF below 20 GeV can be above one and has a 6%
   uncertainty per electron (0.6% above), hence the positive 2Mu2E shifts and the 4.2%;
   the 4Mu muons are soft too, hence the 1.7% from the J/$\psi$-based muon SF.
@@ -334,9 +376,9 @@ Uncertainties (half-width of the up/down variation of the SR yield):
   with 133–1610 SR events, only 1.4–3 times.
 * The effects of prefiring and the muon SF shrink at long lifetimes, where more of the
   muons are DSA muons, which enter neither.
-* The simulated backgrounds go down by 0.8–1.0% at the `base` selection (DY, QCD,
-  $t\bar t$ and diboson alike) and by 1.7% (`2mu2e_sr`) and 0.5% (`4mu_sr`) in the
-  SRs, whichever DY sample is used; QCD is nine tenths of the SR background. The pileup
+* The simulated backgrounds go down by 0.9–1.1% at the `base` selection (DY, QCD,
+  $t\bar t$ and diboson alike) and by 3.5% (`2mu2e_sr`; 3.4% with DY→ℓℓ) and 0.6%
+  (`4mu_sr`) in the SRs; QCD is nine tenths of the SR background. The pileup
   variations of 4–11% in the `4mu` channels come from a few events with large
   weights. The two DY samples overlap and are never added; which one the analysis uses
   is open, so notebook 03 gives the total with each.
@@ -346,16 +388,17 @@ from notebook 03, which also shows them per channel in `impact_backgrounds`):
 
 | | `base` | `2mu2e_sr` | `4mu_sr` | SR yields, 2Mu2E / 4Mu (59.8 fb⁻¹) |
 |---|---|---|---|---|
-| DY→μμ | −0.9 ± 0.2% | −1.8 ± 0.7% | +1.2 ± 8.6% | 824 / 390 |
-| DY→ℓℓ | −0.9 ± 0.2% | +0.2 ± 5.3% | +1.6 ± 10% | 586 / 438 |
-| QCD | −0.8 ± 0.5% | −1.7 ± 0.6% | −0.6 ± 4.1% | 17400 / 14100 |
-| $t\bar t$ | −1.0 ± 0.2% | −1.9 ± 0.8% | −0.5 ± 4.7% | 1100 / 173 |
-| diboson | −1.0 ± 0.2% | −0.8 ± 2.4% | −2.9 ± 3.0% | 17 / 3.5 |
-| **total, with DY→μμ** | **−0.9 ± 0.2%** | **−1.7 ± 0.6%** | **−0.5 ± 4.3%** | 19300 / 14600 |
-| **total, with DY→ℓℓ** | **−0.9 ± 0.2%** | **−1.6 ± 0.5%** | **−0.5 ± 4.3%** | 19100 / 14700 |
+| DY→μμ | −0.9 ± 0.2% | −6.0 ± 0.7% | +1.2 ± 8.6% | 789 / 390 |
+| DY→ℓℓ | −0.9 ± 0.2% | −2.0 ± 5.3% | +1.6 ± 10% | 573 / 438 |
+| QCD | −0.9 ± 0.5% | −3.5 ± 0.6% | −0.6 ± 4.1% | 17000 / 14100 |
+| $t\bar t$ | −1.1 ± 0.2% | −2.4 ± 0.8% | −0.6 ± 4.7% | 1100 / 173 |
+| diboson | −1.0 ± 0.2% | −2.0 ± 2.4% | −2.9 ± 3.0% | 16 / 3.5 |
+| **total, with DY→μμ** | **−0.9 ± 0.2%** | **−3.5 ± 0.6%** | **−0.6 ± 4.3%** | 18900 / 14600 |
+| **total, with DY→ℓℓ** | **−0.9 ± 0.2%** | **−3.4 ± 0.5%** | **−0.6 ± 4.3%** | 18700 / 14700 |
 
 At `base` the prefiring weight takes 0.6–0.7% from every group and the muon ID SF
-0.2–0.3%; the electron SF adds −0.6 to −0.8% in the 2Mu2E channels. The large 4Mu
+0.2–0.3%; in `2mu2e_sr` the electron SF adds −0.3 to −0.8% and the pixel-veto SF −0.6
+to −4.2%. The large 4Mu
 variations come from a few simulated events with large weights. The SR yields are
 large because the SR selections do not apply their isolation and displacement cuts to
 the lepton jets the categories count (found along the way).
@@ -370,25 +413,34 @@ but they are driven by the lepton content and should be similar.
 
 ## Validation
 
-* `sidm/tools/test_corrections.py`: 55 checks, including a zero factor that must not
+* `sidm/tools/test_corrections.py`: 58 checks, including a zero factor that must not
   produce NaN variations, the pT stitching of the muon SFs, the working-point
-  selection from cuts, SFs from selected objects (`sf_objects`), cutflow variations
-  through `add`/`scale`/`identity`, the `syst` axis, and the processor's default.
+  selection from cuts, the rule for which objects' SFs a channel applies, the
+  zero-event check of what the event cuts read, cutflow variations through
+  `add`/`scale`/`identity`, the `syst` axis, and the processor's default.
 * The chain report's two passes over the MC fixture (every channel, then the
   representative channels with every valid collection), with the default corrections
   on: the raw cutflows of all 127 channels are identical to `corrections=None`, the
   copies in `tests/data/corrections` give the same results as CVMFS, and no cut fails
-  that does not fail on `main`. The final weighted yields move by −0.6% (median).
-* In the Z→μμ and $t\bar t$ control regions, the muon SFs from the selected muons
-  (`sf_objects`) equal those from the lepton-jet constituents in every event of a DY,
-  a $t\bar t$ and a 4Mu file. The only change is that the electrons these regions select
-  but never use no longer get the reconstruction SF: 0.2% of DY events in the Z→μμ
-  region (yield −0.01%), 16% of $t\bar t$ events in `ttjets_2j2btag` (−0.16%).
+  that does not fail on `main`. The final weighted yields move by −0.5% (median); the
+  extremes are single events.
+* What the event cuts read: run on zero events, they find exactly the collections the
+  real event selection reads, in all 127 channels of the MC fixture.
+* The object SFs this gives. In the Z→μμ and $t\bar t$ control regions they are, in
+  every event of a DY, a $t\bar t$, a 2Mu2E and a 4Mu file, exactly those of the
+  per-channel `sf_objects: [muons]` setting this rule replaced. In `2mu2e_sr` and
+  `4mu_sr` the SFs of every selected muon move the yields by −0.04% and −0.03% on the
+  2Mu2E and 4Mu files. On the fixture, the muon-only selections (the `baseNoLj` family)
+  lose the electron reconstruction SF (0 to +0.1%), and the generator-level,
+  `ljsource_cuts` and `barrelE`/`endcapE` selections lose every object SF (−0.04 to
+  +0.25%).
 * With `corrections=None` the branch reproduces `main` exactly (see above), including
-  all 812 histograms of `main` in the chain report's histogram pass.
-* With the campaign's options, this code and the code the campaign jobs ran (which had
-  the processor speed-ups, see [the Condor campaign](#the-condor-campaign)) give identical
-  histograms and cutflows on the MC fixture and a 4Mu signal file.
+  all 812 histograms of `main` in the chain report's histogram pass; the SF rule changes
+  nothing there (identical cutflows and warnings on the fixture).
+* With the campaign's options, the code the campaign jobs ran (which had the processor
+  speed-ups, see [the Condor campaign](#the-condor-campaign)) and this code before the two
+  changes listed there give identical histograms and cutflows on the MC fixture and a 4Mu
+  signal file.
 * Closure (notebook 00): the event weights the processor applies are rebuilt from
   their inputs (the NanoAOD branches and the correction files) with the `Corrections`
   API, to machine precision.
@@ -434,11 +486,12 @@ In rough order of how much they matter for the limits:
    entered as a correction of our own.
 2. **DSA muons**: identification and reconstruction efficiency, e.g. from cosmics or
    standalone-track tag-and-probe.
-3. **Displaced and close-by PF muons, displaced electrons**: the applied SFs are
-   provisional and their quoted uncertainties (per mille level) describe prompt,
-   isolated objects. Until a dedicated measurement exists, they need an uncertainty
-   of their own.
-4. **Electron ID (WPL) and the photon ID and pixel veto** for lepton-jet objects.
+3. **Displaced and close-by PF muons, displaced electrons, lepton-jet photons**: the
+   applied SFs (muon ID, electron reconstruction, pixel veto) are provisional, and
+   their quoted uncertainties (per mille level) describe prompt, isolated objects and
+   real photons. Until a dedicated measurement exists, they need an uncertainty of
+   their own.
+4. **Electron ID (WPL) and photon ID** for lepton-jet objects.
 5. **Jets and lepton-jet isolation**: decide whether the isolation should use the raw
    jet energy; then propagate JES and JER, which needs a rerun of the selection per
    variation (the processor varies only weights today).

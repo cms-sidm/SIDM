@@ -15,8 +15,8 @@ From a notebook:
     from sidm.tools import corrections
     corr = corrections.Corrections("2018")
     weights = corr.event_weights(events)             # genWeight, pileup, prefiring
-    corr.add_object_weights(weights, ljs, obj_cuts)  # SFs for the objects in the lepton jets
-    corr.add_object_weights(weights, None, obj_cuts, {"muons": muons})  # or for selected objects
+    sources = corr.sf_sources(obj_cuts, {"ljs"})     # where each object SF comes from
+    corr.add_object_weights(weights, {"ljs": ljs}, sources)  # here the lepton-jet constituents
     weights.weight(), weights.weight("pileupUp")
 
 Only event-weight corrections are applied by the processor. The jet and
@@ -397,33 +397,45 @@ class Corrections:
         return {name: self.working_point(name, obj_cuts)
                 for name in self.names if self.config[name]["kind"] == "object"}
 
-    def add_object_weights(self, weights, ljs, obj_cuts, selected=None):
-        """Multiply in the object SFs that apply to one channel
+    def sf_sources(self, obj_cuts, read):
+        """{object correction: (working point, source)} for one channel
 
-        By default the SFs are evaluated for the constituents of the channel's
-        lepton jets after the lepton-jet cuts, i.e. the objects the signal
-        selections are built from. selected, {collection: objects} keyed like
-        obj_cuts (e.g. {"muons": sel_objs["muons"]}), evaluates them for those
-        objects instead and skips the corrections of every other collection,
-        for selections built from objects rather than lepton jets (sf_objects in
-        selections.yaml). The SFs are multiplied over each event; up and down
-        move every object's SF together (fully correlated). Returns
-        {correction: working point} for the corrections that were applied.
+        The rule for which objects' SFs enter the event weight: those of the
+        objects the event cuts use. obj_cuts is the channel's {object: [cut
+        names]}, as built by SidmProcessor.build_cuts, and read names the
+        collections its event cuts read (Selection.collections_read). An object
+        correction whose working point the channel selects takes its SFs from
+          * the selected objects of its cut_object, if the event cuts read that
+            collection: source "muons" for the muon ID SF;
+          * otherwise the constituents of the lepton jets that pass the
+            lepton-jet cuts, if the event cuts read lepton jets: source "ljs";
+          * otherwise nowhere, and the correction is not applied.
         """
-        applied = {}
+        sources = {}
         for name, wp in self.coverage(obj_cuts).items():
-            entry = self.config[name]
-            if wp is None or (selected is not None and entry["cut_object"] not in selected):
+            if wp is None:
                 continue
-            if selected is None:
-                objs = ak.flatten(ljs[entry["collection"]], axis=2)
+            cut_object = self.config[name]["cut_object"]
+            if cut_object in read:
+                sources[name] = (wp, cut_object)
+            elif "ljs" in read:
+                sources[name] = (wp, "ljs")
+        return sources
+
+    def add_object_weights(self, weights, objs, sources):
+        """Multiply in the object SFs of one channel, from the objects sf_sources chose
+
+        objs holds the channel's selected collections and its lepton jets
+        (sel_objs in the processor). The SFs are multiplied over each event; up
+        and down move every object's SF together (fully correlated).
+        """
+        for name, (wp, source) in sources.items():
+            if source == "ljs":
+                selected = ak.flatten(objs["ljs"][self.config[name]["collection"]], axis=2)
             else:
-                objs = selected[entry["cut_object"]]
-            per_event = [ak.prod(self.object_sf(name, objs, wp, which), axis=1)
-                         for which in ("nominal", "up", "down")]
-            weights.add(name, *per_event)
-            applied[name] = wp
-        return applied
+                selected = objs[source]
+            weights.add(name, *[ak.prod(self.object_sf(name, selected, wp, which), axis=1)
+                                for which in ("nominal", "up", "down")])
 
     def object_sf(self, name, objs, working_point, which="nominal"):
         """Per-object SFs, jagged like objs; objects outside the measured range get 1"""

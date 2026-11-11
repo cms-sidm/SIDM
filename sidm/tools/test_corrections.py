@@ -132,30 +132,46 @@ def test_object_sfs():
         check("wp from cuts", corr.working_point("toy_id", {"muons": ["looseID", "pT > 5 GeV"]}) == "looseID")
         check("no wp without the cut", corr.working_point("toy_id", {"muons": ["pT > 5 GeV"]}) is None)
 
+        # where the SFs come from: the objects the event cuts read
+        loose = {"muons": ["looseID"]}
+        check("SFs from selected objects the cuts read",
+              corr.sf_sources(loose, {"muons", "ljs"}) == {"toy_id": ("looseID", "muons")})
+        check("else from lepton jets the cuts read",
+              corr.sf_sources(loose, {"ljs", "dsaMuons"}) == {"toy_id": ("looseID", "ljs")})
+        check("else none", corr.sf_sources(loose, {"pvs", "hlt"}) == {})
+        check("none without the cut", corr.sf_sources({"muons": []}, {"muons", "ljs"}) == {})
+
         # lepton jets: events -> LJs -> constituents, as built by the processor
-        ljs = ak.Array([
-            [{"pfMuons": [{"pt": 30.0, "eta": 0.5}]}, {"pfMuons": [{"pt": 60.0, "eta": 2.0}]}],
-            [{"pfMuons": []}],
-        ])
+        objs = {
+            "ljs": ak.Array([
+                [{"pfMuons": [{"pt": 30.0, "eta": 0.5}]}, {"pfMuons": [{"pt": 60.0, "eta": 2.0}]}],
+                [{"pfMuons": []}],
+            ]),
+            "muons": ak.Array([[{"pt": 30.0, "eta": 0.5}], [{"pt": 30.0, "eta": 1.5}]]),
+        }
         w = corrections.EventWeights(2)
         w.add("genWeight", [1.0, 1.0])
-        applied = corr.add_object_weights(w, ljs, {"muons": ["looseID"]})
-        check("applied reported", applied == {"toy_id": "looseID"})
+        corr.add_object_weights(w, objs, {"toy_id": ("looseID", "ljs")})
         check("per-event product", np.allclose(w.weight(), [0.95 * 0.92, 1.0]))
         check("correlated up", np.allclose(w.weight("toy_idUp"), [1.05 * 1.02, 1.0]))
         w2 = corrections.EventWeights(2)
-        check("not applied without the cut", not corr.add_object_weights(w2, ljs, {"muons": []}))
+        corr.add_object_weights(w2, objs, {"toy_id": ("looseID", "muons")})
+        check("SFs of the selected objects", np.allclose(w2.weight(), [0.95, 0.90]))
         check("provenance lists the file", "toy.json" in corr.provenance()["corrections"]["toy_id"]["files"])
 
-        # selected objects instead of the constituents, as with sf_objects
-        selected = {"muons": ak.Array([[{"pt": 30.0, "eta": 0.5}], [{"pt": 30.0, "eta": 1.5}]])}
-        w3 = corrections.EventWeights(2)
-        applied = corr.add_object_weights(w3, ljs, {"muons": ["looseID"]}, selected)
-        check("SFs of the selected objects", applied == {"toy_id": "looseID"}
-              and np.allclose(w3.weight(), [0.95, 0.90]))
-        w4 = corrections.EventWeights(2)
-        check("other collections skipped",
-              not corr.add_object_weights(w4, ljs, {"muons": ["looseID"]}, {"electrons": selected["muons"]}))
+
+def test_collections_read():
+    """Selection.collections_read finds what the event cuts read, without the events"""
+    from sidm.tools.selection import Selection  # pylint: disable=import-outside-toplevel
+    objs = {"ljs": ak.Array([[{"pt": 30.0}], []]), "mu_ljs": ak.Array([[{"pt": 30.0}], []]),
+            "muons": ak.Array([[{"pt": 30.0}, {"pt": 20.0}], []]), "dsaMuons": ak.Array([[], []]),
+            "pvs": ak.Array([[{"npvs": 20}], [{"npvs": 30}]])}
+    check("cuts read", Selection([">=2 LJs", "n_mu == 2"]).collections_read(objs) == {"ljs", "muons"})
+    check("sources of what they read",
+          Selection([">=1 mu_ljs"]).collections_read(objs, {"mu_ljs": {"ljs"}}) == {"mu_ljs", "ljs"})
+    check("a cut that fails still records its reads",
+          Selection(["no such cut", "Keep all evts"]).collections_read(objs) == {"pvs"})
+    check("no cuts, nothing read", Selection([]).collections_read(objs) == set())
 
 
 def test_evaluate_structure():
@@ -207,14 +223,11 @@ def test_hist_syst_axis():
 
 
 def test_processor_config():
-    """The processor applies the default list unless told otherwise; sf_objects is read per channel"""
+    """The processor applies the default list unless told otherwise"""
     from sidm.tools.sidm_processor import SidmProcessor  # pylint: disable=import-outside-toplevel
     p = SidmProcessor(["Z_to_mumu_control_region", "base"], [])
     check("default list by default", p.corrections == corrections.resolve_names(True))
     check("None turns them off", SidmProcessor(["base"], [], corrections=None).corrections == [])
-    cuts = p.build_cuts()
-    check("sf_objects read", cuts["Z_to_mumu_control_region"]["sf_objects"] == ["muons"])
-    check("lepton jets without sf_objects", cuts["base"]["sf_objects"] is None)
 
 
 def test_pog_files():
@@ -245,6 +258,7 @@ def test_pog_files():
 if __name__ == "__main__":
     test_event_weights()
     test_object_sfs()
+    test_collections_read()
     test_evaluate_structure()
     test_cutflow_variations()
     test_hist_syst_axis()

@@ -7,6 +7,25 @@ from sidm.definitions.cuts import evt_cut_defs, obj_cut_defs
 from sidm.tools.cutflow import SimpleCutflow
 import traceback
 
+class CollectionRecorder(dict):
+    """A copy of a dict of collections that records which entries are looked up
+
+    Used to find which collections a cut or an object definition reads.
+    """
+
+    def __init__(self, objs):
+        super().__init__(objs)
+        self.looked_up = set()
+
+    def __getitem__(self, name):
+        self.looked_up.add(name)
+        return super().__getitem__(name)
+
+    def get(self, name, default=None):
+        self.looked_up.add(name)
+        return super().get(name, default)
+
+
 class Selection:
     """Class to represent the collection of cuts that define a Selection
 
@@ -28,6 +47,38 @@ class Selection:
         if variations is None:
             return None
         return {name: ak.sum(variations[name]) for name in variations.fields}
+
+    def collections_read(self, objs, built_from=None):
+        """Names of the collections in objs that the event cuts read
+
+        Every cut runs on zero events of each collection, which costs next to
+        nothing, with a dict that records what it looks up. built_from,
+        {collection: names of the collections it was built from} (e.g.
+        allMuons from muons and dsaMuons), adds the sources of each collection
+        read, recursively. A cut that fails on zero events still records what
+        it read before failing; apply_evt_cuts reports the failure if it also
+        fails on the events.
+        """
+        empty = {}
+        for name, obj in objs.items():
+            try:
+                empty[name] = obj[:0]
+            except Exception:  # pylint: disable=broad-exception-caught
+                empty[name] = obj  # not an array
+        recorder = CollectionRecorder(empty)
+        for cut in self.evt_cuts:
+            try:
+                evt_cut_defs[cut](recorder)
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
+        built_from = built_from or {}
+        read, todo = set(), list(recorder.looked_up)
+        while todo:
+            name = todo.pop()
+            if name not in read:
+                read.add(name)
+                todo.extend(built_from.get(name, ()))
+        return read
 
     def apply_evt_cuts(self, objs):
         """Evaluate all event cuts and apply results to object collections"""
