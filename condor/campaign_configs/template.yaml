@@ -1,0 +1,56 @@
+# Template for a Condor campaign driven by condor/campaign.py. Copy it to
+# condor/campaign_configs/<name>.yaml, fill in the keys marked "required", and run
+#
+#     python condor/campaign.py <name> jobs      # make the job lists
+#     python condor/campaign.py <name> submit    # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py <name> status    # then retry --submit / skipped --submit until done
+#     python condor/campaign.py <name> merge
+#
+# Paths may use environment variables such as $USER. Every key without "required" can be
+# left out; the value shown is its default. corrections_v1.yaml is a complete example.
+
+# required: names the campaign; its working state goes to condor/campaigns/<name>/
+name: my_study_v1
+# required: where the jobs write their chunk outputs
+chunk_dir: /store/user/$USER/sidm_condor/MyStudyChunks_v1
+# required: where `merge` writes one <sample>.coffea and its .meta.yaml per sample. The
+# group area, where sidm/test_notebooks/output_browser.ipynb finds outputs, is
+# /store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/; writing there needs lpcmetx
+# write access: https://www.uscms.org/uscms_at_work/computing/LPC/EOSgroups.shtml#RequestLPCGroupAdd
+merged_dir: /store/group/lpcmetx/SIDM/coffea_outputs/$USER/my_study_v1
+redirector: root://cmseos.fnal.gov
+
+# What every job runs (condor/run_job.sh, arguments 5 to 9)
+channels: [base]                  # required: selections from sidm/configs/selections.yaml
+hist_collections: [muon_base]     # required: collections from sidm/configs/hist_collections.yaml
+corrections: default              # default, none, or a list from sidm/configs/corrections.yaml
+hist_mode: unweighted             # unweighted, weighted, or syst (a syst axis; needs corrections)
+monitor_corrections: []           # corrections evaluated but not applied
+
+# Files in condor/: Condor logs, filelists, and the prefix of the retry and extra job lists
+logs_dir: logs_my_study_v1              # default: logs_<name>
+filelists_dir: filelists_my_study_v1    # default: filelists_<name>
+job_list_prefix: job_args_my_study_v1   # default: job_args_<name>
+
+# required: one job list per entry, made by `jobs` with condor/make_job_args.py
+job_lists:
+  - job_args: job_args_my_study_v1_signal.txt     # required: the job list, in condor/
+    samples_file: samples_my_study_signal.txt     # required: one sample per line, in condor/
+    dataset: llpNanoAOD_v2                        # required: a dataset of the location config
+    location_cfg: signal_4mu_v10.yaml             # required: in sidm/configs/ntuples/
+    files_per_job: 1
+    files_per_job_map: null       # YAML of {sample: files per job} in condor/, to even out job lengths
+    census_skip: null             # census skip list (a path, or a name in sidm/configs/census/)
+    replace_xcache: false         # true on LPC, where root://xcache// does not resolve
+    max_files: null               # files per sample, for a quick test
+
+# At most this many input files per job, whatever files_per_job says: each file costs a
+# fixed ~30 s, so a job of a few hundred tiny files runs for hours.
+max_files_per_job: 100
+
+request_memory: 2GB
+oom_memory: 8GB       # what `retry` asks for when it resubmits chunks killed for memory
+max_retries: 2        # Condor reruns a failed job this many times; `retry` drops a file
+                      # that failed in every run, at least twice
+stall_hours: 12       # a job running longer than this is held and released onto another
+stall_restarts: 1     # node this many times, then removed so that `retry` resubmits it

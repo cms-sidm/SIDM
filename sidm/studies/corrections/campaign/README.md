@@ -9,7 +9,7 @@ Bookkeeping of the Condor campaign described in `../README.md` ("The Condor camp
   code of the job tarball and the same options, because their Condor jobs kept landing
   on slow worker nodes.
 
-The job lists are `condor/job_args_corrections_*.txt` and the submit file
-`condor/submit_corrections.sub`; `sidm/scripts/corrections_campaign.py` keeps its working
-state (logs, reports, retry lists) under `condor/campaigns/corrections_v1/`, which is not
-committed.
+The campaign is `condor/campaign_configs/corrections_v1.yaml`, with the job lists
+`condor/job_args_corrections_*.txt`. `condor/campaign.py` keeps its working state
+(bad-file lists, the files skipped per chunk, merge scratch space) under
+`condor/campaigns/corrections_v1/`, which is not committed.

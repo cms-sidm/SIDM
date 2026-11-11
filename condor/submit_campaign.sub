@@ -1,0 +1,44 @@
+# Job description for every campaign driven by condor/campaign.py. The campaign config
+# (condor/campaign_configs/<name>.yaml) gives each $(MACRO) below its value, and
+# campaign.py passes them to condor_submit:
+#
+#     python condor/campaign.py <config> submit
+#
+# run from the repository root. run_sidm_chunk.py refuses collision data unless given
+# --allow-data, which campaign.py never passes.
+
+universe = vanilla
+
+executable = run_job.sh
+
+arguments = $(sample) $(chunk) $(filelist) $(CHUNK_URL) $(CHANNELS) $(HIST_COLLECTIONS) $(CORRECTIONS) $(HIST_MODE) $(MONITOR)
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = sidm_code.tar.gz, requirements.txt, constraints.txt, $(filelist)
+transfer_output_files = ""
+
+output = $(LOGS)/$(sample)_$(chunk)_$(Cluster)_$(Process).out
+error  = $(LOGS)/$(sample)_$(chunk)_$(Cluster)_$(Process).err
+log    = $(LOGS)/$(sample)_$(chunk)_$(Cluster)_$(Process).log
+
+request_cpus = 1
+request_memory = $(MEMORY)
+request_disk = 4GB
+
+# transient EOS read failures: rerun a failed job up to MAX_RETRIES times
+max_retries = $(MAX_RETRIES)
+
+# A job reading from a stuck EOS node can hang. After STALL_HOURS of running it is held
+# and released onto another node, up to STALL_RESTARTS times; after that it is removed,
+# which `campaign.py status` reports as STALLED and `campaign.py retry` resubmits.
+# (Hold reason code 3 is a hold by this periodic_hold expression.)
+periodic_hold = (JobStatus == 2) && ((time() - EnteredCurrentStatus) > $(STALL_HOURS) * 3600)
+periodic_hold_reason = "SIDM_STALL: running for more than $(STALL_HOURS) hours"
+periodic_release = (HoldReasonCode == 3) && (NumHolds <= $(STALL_RESTARTS))
+periodic_remove = (JobStatus == 5) && (HoldReasonCode == 3) && (NumHolds > $(STALL_RESTARTS))
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+queue sample, chunk, filelist from $(JOB_ARGS)

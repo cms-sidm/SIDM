@@ -1,10 +1,9 @@
-# Files per Condor job for the corrections campaign (submit_corrections.sub), chosen so
+# Files per Condor job for the corrections campaign (campaign_configs/corrections_v1.yaml), chosen so
 # that a job processes about 100k events: events per file vary from a few (low-pT QCD
 # skims) to ~18k (DYJetsToMuMu_M50). Estimated from 15 random files per sample on
 # 2026-10-01. Signal points have ~4k events per file and use --files-per-job 25.
-# The 300-file chunks of tiny files took 2-3.5 hours (a fixed ~30 s per file, with the
-# processor speed-ups noted in submit_corrections.sub); a cap
-# of ~100 files per job would shorten the tail of the next campaign.
+# The 300-file chunks of tiny files took 2-3.5 hours (a fixed ~30 s per file);
+# campaign.py now caps new campaigns at 100 files per job (max_files_per_job).
 DYJetsToLL_M10to50: 300   # ~79 events/file, 29 jobs
 DYJetsToLL_M50: 14   # ~7082 events/file, 386 jobs
 DYJetsToMuMu_M10to50: 300   # ~117 events/file, 4 jobs

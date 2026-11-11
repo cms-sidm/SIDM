@@ -1,0 +1,52 @@
+# The corrections-study campaign (sidm/studies/corrections/README.md, "The Condor
+# campaign"): every v10 signal point and every skimmed background, simulation only.
+# This is the record of what ran in October 2026; template.yaml documents every key.
+# The merged outputs of that run are in /store/user/scampbel/sidm_coffea_outputs/corrections_v1/
+# (corrections_study.CAMPAIGN_DIR).
+#
+#     python condor/campaign.py corrections_v1 status
+
+name: corrections_v1
+chunk_dir: /store/user/$USER/sidm_condor/CorrectionsChunks_v1
+merged_dir: /store/user/$USER/sidm_coffea_outputs/corrections_v1
+
+channels: [base, 2mu2e, 4mu, 2mu2e_sr, 4mu_sr, Z_to_mumu_control_region]
+hist_collections: [corrections_study]
+# the default list of the time; the photon pixel-veto SF has joined it since
+corrections: [pileup, l1_prefiring, muon_id, electron_reco]
+hist_mode: syst
+monitor_corrections: [photon_pixel_veto]
+
+logs_dir: logs_corrections
+filelists_dir: filelists_corrections
+job_list_prefix: job_args_corrections
+job_lists:
+  - job_args: job_args_corrections_2mu2e.txt
+    samples_file: samples_corrections_2mu2e.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_2mu2e_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_corrections_4mu.txt
+    samples_file: samples_corrections_4mu.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_4mu_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_corrections_background.txt
+    samples_file: samples_corrections_background.txt
+    dataset: skimmed_llpNanoAOD_v2
+    location_cfg: backgrounds.yaml
+    files_per_job: 25
+    files_per_job_map: files_per_job_corrections.yaml
+    census_skip: backgrounds_skimmed.skip.json
+    replace_xcache: true
+# The job lists were made before the cap: some background jobs have 300 tiny files and
+# took hours. A new campaign keeps the default of 100.
+max_files_per_job: null
+
+request_memory: 2GB
+oom_memory: 8GB
+max_retries: 2
+stall_hours: 12
+stall_restarts: 1

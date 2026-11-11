@@ -105,7 +105,7 @@ The weight categories, in the cutflows and on the `syst` axis:
 Notebooks 01–03 read the merged outputs of one campaign, so that anyone can rerun them
 without processing anything.
 
-**What ran.** `condor/submit_corrections.sub`: `SidmProcessor` with the channels
+**What ran.** [`condor/campaign_configs/corrections_v1.yaml`](../../../condor/campaign_configs/corrections_v1.yaml): `SidmProcessor` with the channels
 `base`, `2mu2e`, `4mu`, `2mu2e_sr`, `4mu_sr` and `Z_to_mumu_control_region`, the
 `corrections_study` histogram collection, the default corrections of the time (pileup,
 prefiring, muon ID and electron reconstruction), `monitor_corrections=["photon_pixel_veto"]`
@@ -166,27 +166,26 @@ A Kerberos ticket is enough to read them on LPC. `study.load` also takes the
 generator-weight outlier of `DYJetsToMuMu_M50` out of the normalisation (see
 [found along the way](#found-along-the-way)); a plain `coffea.util.load` does not.
 
-**How it was run** (to rerun it, or to run another collection the same way):
+**How it was run** (to rerun it, or to run another collection the same way): the
+config above, driven by `condor/campaign.py` ([`condor/README.md`](../../../condor/README.md),
+section 23), from the repository root:
 
 ```bash
-# job lists: files per job chosen for ~100k events per job
-python3 condor/make_job_args.py --samples-file condor/samples_corrections_2mu2e.txt \
-    --dataset llpNanoAOD_v2 --location-cfg signal_2mu2e_v10.yaml --files-per-job 25 \
-    --replace-xcache --outdir condor/filelists_corrections --job-args condor/job_args_corrections_2mu2e.txt
-#   (the same for 4mu; backgrounds with --dataset skimmed_llpNanoAOD_v2 --location-cfg backgrounds.yaml
-#    --files-per-job-map condor/files_per_job_corrections.yaml --census-skip backgrounds_skimmed.skip.json)
-# package the code (condor/README.md section 8), then from condor/:
-condor_submit JOB_ARGS=job_args_corrections_2mu2e.txt submit_corrections.sub   # and 4mu, background
-# then, from the repository root, until nothing is left:
-python sidm/scripts/corrections_campaign.py status
-python sidm/scripts/corrections_campaign.py retry --submit
-python sidm/scripts/corrections_campaign.py skipped --submit
-python sidm/scripts/corrections_campaign.py merge
+python condor/campaign.py corrections_v1 jobs     # job lists, ~100k events per job (committed; kept unless --force)
+# package the code (condor/README.md section 8), then:
+python condor/campaign.py corrections_v1 submit
+# then, until nothing is left:
+python condor/campaign.py corrections_v1 status
+python condor/campaign.py corrections_v1 retry --submit
+python condor/campaign.py corrections_v1 skipped --submit
+python condor/campaign.py corrections_v1 merge
 ```
 
-`corrections_campaign.py` reconciles the job lists against the Condor logs and the
-chunk outputs (`condor/condor_campaign.py`), resubmits failed chunks, finds input files
-that coffea skipped, and merges every complete sample.
+`campaign.py` reconciles the job lists against the Condor logs and the chunk outputs
+(`condor/campaign_lib.py`), resubmits failed chunks, finds input files that coffea
+skipped, and merges every complete sample. The campaign itself ran with a script and a
+submit file of its own, which this config and `condor/submit_campaign.sub` replaced; they
+give the jobs the same arguments.
 
 **What it took.** 2,955 jobs and six resubmission rounds. 99% of the chunks were done in
 six hours; the rest took another six, a tail of slow chunks on slow worker nodes and an
@@ -205,14 +204,14 @@ hour-long EOS outage.
 * A handful of jobs were slow on a few worker nodes (up to six times slower than
   elsewhere) and were restarted on other nodes. Four chunks that stayed stuck were
   processed on an interactive node with the code of the job tarball and the same options
-  (`campaign/local_chunks.txt`). The submit file now holds and restarts a job that runs
-  for more than twelve hours (six during the campaign, raised for the slower processing
-  without the speed-ups).
+  (`campaign/local_chunks.txt`). `condor/submit_campaign.sub` now holds a job that runs
+  for more than twelve hours (six during the campaign), restarts it once on another node,
+  and removes it if it stalls again, so that `campaign.py retry` resubmits it.
 * The tail of the campaign was the chunks of 300 tiny files (low-pT QCD, DY→ℓℓ
   M10–50, a few events per file): each file is a separate work item with a fixed cost
   of about 30 seconds, so these took 2 to 3.5 hours while 100k-event chunks of large
-  files took 10 to 40 minutes. Next time, cap the files per job at about 100
-  (`condor/files_per_job_corrections.yaml`).
+  files took 10 to 40 minutes. `campaign.py` now caps new campaigns at 100 files per job
+  (`max_files_per_job`).
 
 ## What changed in the repository
 
@@ -231,11 +230,11 @@ hour-long EOS outage.
 | `sidm/tools/metadata.py` | `write_run_metadata(..., corrections=..., monitor_corrections=...)` records the corrections, with file checksums; `corrections` defaults to the processor's default |
 | `tests/_e2e_common.py`, `tests/data/corrections/`, `tests/README.md` | the CI chain report runs with the default corrections, from copies of the seven correction files the processor and the `corrections_*` histograms read (820 kB; GitHub's runners have no CVMFS) |
 | `sidm/scripts/merge_coffea_chunks_eos.py` | **bug fix**: the per-chunk normalisation correction was never applied to real chunk files ([found along the way](#found-along-the-way)). Also: accumulates one chunk at a time (a sample of 1,000 chunks no longer needs 16 GB of memory), frees each sample's local chunks once merged, `--samples` to merge a subset, and forwards the corrections to the sidecar |
-| `sidm/scripts/corrections_campaign.py` | **new.** Status, retry, skipped-file and merge steps of the campaign above |
+| `condor/campaign.py`, `condor/campaign_configs/`, `condor/submit_campaign.sub`, `condor/test_campaign.py` | **new.** Condor campaigns driven by one YAML config: job lists, submission, status, retry, skipped files and merge. `corrections_v1.yaml` is the campaign above |
 | `condor/run_sidm_chunk.py` | reads `skim_factor`, `is_data` and `year` from the location YAML of the files (it used `skim_factor = 1` for every sample); refuses collision data unless `--allow-data`; `--corrections` (`default` unless given, or `none`), `--syst-hists`, `--monitor-corrections` |
 | `condor/run_job.sh` | optional 7th (corrections, `default` unless given), 8th (`unweighted`, `weighted` or `syst`) and 9th (monitored corrections) arguments |
-| `condor/make_job_args.py` | `--files-per-job-map`: files per job per sample |
-| `condor/submit_corrections.sub`, `condor/samples_corrections_*.txt`, `condor/job_args_corrections_*.txt`, `condor/files_per_job_corrections.yaml` | **new.** The campaign above |
+| `condor/make_job_args.py` | `--files-per-job-map`: files per job per sample; `--max-files-per-job`: a cap on them |
+| `condor/samples_corrections_*.txt`, `condor/job_args_corrections_*.txt`, `condor/files_per_job_corrections.yaml` | **new.** The job lists of the campaign above |
 | `requirements.txt`, `condor/requirements.txt` | `correctionlib==2.9.0` pinned as a direct dependency (it was already in both constraints files) |
 | `sidm/scripts/install_correctionlib_cmssw.sh` | **new.** Builds correctionlib into `.python_userbase` for the CMSSW_17 kernel (see [environment](#environment)) |
 | `README.md`, `condor/README.md` | the corrections and how to turn them off; the new job arguments; the merge fix |
