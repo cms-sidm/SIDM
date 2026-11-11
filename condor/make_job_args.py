@@ -12,6 +12,12 @@ if str(repo_parent) not in sys.path:
 from sidm.tools import utilities
 
 
+def files_per_job_for(sample, files_per_job_map, default, cap=None):
+    """Files per job for one sample: its value in the map, else the default, at most cap"""
+    step = int(files_per_job_map.get(sample, default))
+    return min(step, cap) if cap else step
+
+
 def read_samples(path):
     with open(path) as f:
         return [
@@ -31,6 +37,10 @@ def main():
     parser.add_argument("--files-per-job-map", default=None,
                         help="YAML of {sample: files per job} overriding --files-per-job for the "
                              "samples it lists, to even out job lengths when events per file vary")
+    parser.add_argument("--max-files-per-job", type=int, default=None,
+                        help="cap on the files per job, after --files-per-job and the map: each "
+                             "file costs a fixed ~30 s, so a job of a few hundred tiny files runs "
+                             "for hours")
     parser.add_argument("--outdir", default="condor/filelists")
     parser.add_argument("--job-args", default="condor/job_args.txt")
     parser.add_argument("--replace-xcache", action="store_true",
@@ -70,7 +80,8 @@ def main():
             else:
                 files = list(sample_info)
 
-            step = int(files_per_job.get(sample, args.files_per_job))
+            step = files_per_job_for(sample, files_per_job, args.files_per_job,
+                                     args.max_files_per_job)
             for i in range(0, len(files), step):
                 chunk = i // step
                 chunk_files = files[i:i + step]

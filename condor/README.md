@@ -222,7 +222,9 @@ This creates multiple Condor jobs per signal point. The chunks are merged afterw
 Events per file vary a lot between samples (from a few in the low-pT QCD skims to ~18k in
 `DYJetsToMuMu_M50`). `--files-per-job-map` takes a YAML of `{sample: files per job}` that
 overrides `--files-per-job` for the samples it lists; `condor/files_per_job_corrections.yaml`
-is the one the corrections campaign uses (about 100k events per job).
+is the one the corrections campaign uses (about 100k events per job). `--max-files-per-job`
+caps the result: every file costs a fixed ~30 s, so a job of a few hundred tiny files runs
+for hours. `campaign.py` (section 23) passes 100 unless its config says otherwise.
 
 ---
 
@@ -728,6 +730,8 @@ git add condor/make_job_args.py
 git add condor/run_sidm_chunk.py
 git add condor/run_job.sh
 git add condor/submit.sub
+git add condor/campaign.py condor/submit_campaign.sub
+git add condor/campaign_configs/<your campaign>.yaml
 git add condor/requirements.txt
 git add condor/signal_samples.txt
 git add condor/background_samples.txt
@@ -762,6 +766,9 @@ condor/filelists/
 condor/filelists_retry/
 condor/job_args.txt
 condor/sidm_code.tar.gz
+condor/campaigns/
+condor/filelists_<campaign>/, condor/logs_<campaign>/
+condor/job_args_<campaign>_retry*.txt, condor/job_args_<campaign>_extra*.txt
 actual_outputs.txt
 expected_outputs.txt
 missing_outputs.txt
@@ -886,3 +893,57 @@ Chunks still queued or running are reported `IN_PROGRESS` and are **not** counte
 failures, so the reconcile is safe to run mid-campaign. `--eos-chunk-dir` takes a bare
 `/store/...` path (a full `root://…` URL is accepted and stripped); a typo is reported
 as a "not-found" directory, not an EOS outage.
+
+---
+
+## 23. Campaigns from one YAML config (`campaign.py`)
+
+`condor/campaign.py` runs a whole campaign from one config in `condor/campaign_configs/`:
+it makes the job lists, submits them, reconciles them against the logs and EOS (with
+`campaign_lib.py`, as `condor_campaign.py` does), resubmits what failed, and merges the
+complete samples. A new study writes a config instead of a script:
+[`template.yaml`](campaign_configs/template.yaml) documents every key, and
+[`corrections_v1.yaml`](campaign_configs/corrections_v1.yaml) is the campaign of the
+corrections study (`sidm/studies/corrections/README.md`). Run it from the repository root;
+the config is a path or a name in `condor/campaign_configs/`:
+
+```bash
+python condor/campaign.py my_study_v1 jobs       # job lists, with condor/make_job_args.py
+# package the code (section 8) and set up the proxy (section 11), then:
+python condor/campaign.py my_study_v1 submit     # with condor/submit_campaign.sub
+python condor/campaign.py my_study_v1 status     # then, until every chunk is DONE:
+python condor/campaign.py my_study_v1 retry --submit
+python condor/campaign.py my_study_v1 skipped --submit
+python condor/campaign.py my_study_v1 merge      # into merged_dir, with .meta.yaml sidecars
+```
+
+What it takes care of, from the lessons of the corrections campaign:
+
+- **Even job lengths.** `max_files_per_job` (100 by default) caps the files per job on top
+  of `files_per_job` and `files_per_job_map`.
+- **Stalled jobs.** A job that runs longer than `stall_hours` (12) is held and released onto
+  another node `stall_restarts` times (once). After that it is removed: `status` reports it
+  as `STALLED` and `retry` resubmits it.
+- **Failed chunks.** `retry` writes a job list of the failed chunks, without the input files
+  confirmed missing on EOS, and submits it with `--submit`; chunks killed for memory get
+  `oom_memory`. A file that failed in every run of its job, at least twice, is dropped and
+  recorded in `condor/campaigns/<name>/bad_files.txt`. Chunks that need a human (a
+  `CODE_BUG`, a manual `condor_rm`) are listed instead.
+- **Skipped files.** coffea skips an input file it cannot read (`skipbadfiles=True`), so a
+  chunk can finish without some of its files. `skipped` compares what each finished chunk
+  processed with its filelist and resubmits the missing files as extra chunks; a file
+  skipped twice is listed as bad, and files without events are left out.
+- **Merging.** `merge` merges only the samples whose chunks are all done, with
+  `merge_coffea_chunks_eos.py` (section 17), and its sidecar lists every input file that
+  went in.
+
+Merged outputs belong in `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/`, where
+`sidm/test_notebooks/output_browser.ipynb` finds them. Writing there needs `lpcmetx` write
+access, which can be requested on the
+[LPC EOS groups page](https://www.uscms.org/uscms_at_work/computing/LPC/EOSgroups.shtml#RequestLPCGroupAdd);
+until it is granted, point `merged_dir` at your user area.
+
+A campaign's working state (the bad-file lists, the files skipped per chunk, merge scratch
+space) is kept in `condor/campaigns/<name>/`, and its filelists, logs and retry job lists in
+`condor/`; all of them are git-ignored. The tests are in `condor/test_campaign.py`
+(`python condor/test_campaign.py`, no Condor or EOS needed).
