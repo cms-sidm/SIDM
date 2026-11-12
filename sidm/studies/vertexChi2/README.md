@@ -132,8 +132,12 @@ Rerunning `vtxResp2_2018Full/DoubleMuon_2018D_22` and
 the corrected code reproduced every histogram and cutflow of the stored outputs exactly, as did the
 code with `dR_outer` as it was before the fix: the 1 (data) and 4 (signal) DSA muons whose
 cross-cleaning decision the wrap flips are below the DSA pT cut, matched to a PF muon that fails the
-loose ID, or removed through another match, and no pair has both outer tracks missing. Nothing else
-has been rerun.
+loose ID, or removed through another match, and no pair has both outer tracks missing. A third
+rerun does change: in chunk 0 of `vtxLxyDr_signal_2018/2Mu2E_500GeV_1p2GeV_1p9mm` (ten files) the
+corrected `dR_outer` removes 2 of the 12,905 DSA muons in muon LJs and moves 2 of the 21,857 muon
+LJs to another bin, with every cutflow count unchanged, and the code with `dR_outer` as it was
+before the fix reproduces the stored histograms exactly. So the stored outputs can differ from a
+rerun at the 10^-4 level in the DSA-muon content. Nothing else has been rerun.
 
 Every stored output also predates the standard corrections (PR #58, merged 2026-11-12), which
 `SidmProcessor` applies to simulation unless it is given `corrections=None`. The run notebooks do
