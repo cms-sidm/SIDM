@@ -33,6 +33,12 @@ every histogram and cutflow exactly; the few pairs the wrap moves across the 0.1
 DSA pT cut or the loose ID of the matched PF muon, or are removed anyway. The campaigns here have
 not been rerun.
 
+The inputs also predate the standard corrections (PR #58, merged 2026-11-12), which `SidmProcessor`
+applies to simulation unless it is given `corrections=None`, and `condor/run_job.sh` unless its
+seventh argument is `none`. The submit files pass `none`, which is how the campaigns ran.
+`00_produce_inputs.ipynb` does not set `corrections`, so a rerun of it on main weights the
+simulation cutflows with them; its histograms are unweighted either way.
+
 ## Contents
 
 | file | what it is |
@@ -148,7 +154,7 @@ SidmProcessor(channels, collections,
 ```
 
 or pass `--selections-cfg configs/selections_mulj_decay_angle_as_run.yaml` to
-`condor/run_sidm_chunk.py`, which `condor/run_job.sh` forwards as its ninth argument. The
+`condor/run_sidm_chunk.py`, which `condor/run_job.sh` forwards as its tenth argument. The
 study's submit files and `00_produce_inputs.ipynb` already do. Without it the processor reads
 `configs/selections.yaml`, whose channels of the same names select different events.
 
@@ -275,6 +281,10 @@ condor_submit submit_mulj_data.sub      # 4,278 jobs
 Each submit file is `condor/submit.sub` with its `job_args` and `filelists` paths pointed
 at one category, and carries the channel list, the histogram collections and the as-run
 selections file as arguments.
+Since PR #58, `condor/run_sidm_chunk.py` stops on collision data unless it is given
+`--allow-data`, which `condor/run_job.sh` does not pass. The three data submit files
+(`submit_mulj_data.sub` here, `submit_muljpair_data.sub` and `submit_ljangle_data.sub` in step 6)
+therefore do not run as they are on main; they record how the data inputs were made.
 The sample lists, the three submit files, the job-argument generator and the merge script
 are all in the repository; only the generated file lists and job-argument files are not,
 which is why the step above regenerates them. A drained queue is not success: read the
