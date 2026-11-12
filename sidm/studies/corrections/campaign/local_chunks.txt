@@ -1,0 +1,4 @@
+2Mu2E_150GeV_5p0GeV_2p7mm_0 processed locally on cmslpc359.fnal.gov on Thu Oct  1 18:13:43 CDT 2026 (Condor job stuck on slow nodes three times)
+QCD_Pt470To600_79 processed locally with the job tarball code (Condor job slow on cmswn2187)
+DYJetsToLL_M10to50_11 processed locally with the job tarball code (Condor job slow on cmswn2187)
+DYJetsToLL_M10to50_23 processed locally with the job tarball code (Condor job slow on cmswn2187)

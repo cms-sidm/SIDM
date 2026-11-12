@@ -20,6 +20,7 @@ class Histogram:
         # Allow all events to pass if no mask is explicitly provided
         self.evt_mask = (lambda objs: slice(None)) if evt_mask is None else evt_mask
         self.hist = None
+        self.systematics = None
 
     @classmethod
     def simple_hist(cls, obj, attr, absval, nbins, xmin, xmax, label):
@@ -36,10 +37,12 @@ class Histogram:
             Axis(hist.axis.Regular(nbins, xmin, xmax, name=f"{obj}_{attr}", label=label), f)
             ])
 
-    def make_hist(self, name, channels=None, lj_reco_choices=None):
+    def make_hist(self, name, channels=None, lj_reco_choices=None, systematics=None):
         """Build associated hist.Hist
 
         Perform outside __init__ because channels aren't known until runtime.
+        systematics optionally adds a "syst" axis with one category per weight
+        variation, "nominal" included.
         """
         self.name = name
 
@@ -54,31 +57,59 @@ class Histogram:
             self.axes = [Axis(lj_reco_axis, lambda objs, mask: objs["lj_reco"])] + self.axes
 
         axes = [a.axis for a in self.axes]
+
+        # optionally add a syst axis after the category axes. It has no fill
+        # function: fill() sets it once per variation.
+        if systematics is not None:
+            self.systematics = list(systematics)
+            n_category_axes = (channels is not None) + (lj_reco_choices is not None)
+            axes.insert(n_category_axes, hist.axis.StrCategory(self.systematics, name="syst"))
+
         self.hist = hist.Hist(*axes, storage=self.storage)
 
     def fill(self, objs, evt_weights, verbose=False):
-        """Fill associated hist.Hist"""
+        """Fill associated hist.Hist
+
+        evt_weights is one weight per event or {syst category: weights}. A hist
+        with a syst axis is filled once per category given; categories left out
+        stay empty, which is how data fills only "nominal". A hist without one
+        uses the "nominal" weights.
+        """
         # Create fill args, warning user and skipping hists that cannot be filled
         try:
-            fill_args = {a.name: a.fill_func(objs, self.evt_mask(objs)) for a in self.axes}
+            mask = self.evt_mask(objs)
+            fill_args = {a.name: a.fill_func(objs, mask) for a in self.axes}
         except (AttributeError, KeyError, ValueError) as e:
             print(f"Warning: the fill function of a histogram with the name {self.name} could not be evaluated and will be skipped ({e!r})")
             if verbose:
                 print(traceback.format_exc())
             return
 
+        if not isinstance(evt_weights, dict):
+            evt_weights = {"nominal": evt_weights}
+        if self.systematics is None:
+            weight_sets = {None: evt_weights["nominal"]}
+        else:
+            weight_sets = {s: evt_weights[s] for s in self.systematics if s in evt_weights}
+
         # Use last axis to define weight structure to avoid channels axis
-        masked_weights = evt_weights[self.evt_mask(objs)]
-        fill_args["weight"] = masked_weights*ak.ones_like(fill_args[self.axes[-1].name])
+        shape = fill_args[self.axes[-1].name]
         for name in fill_args.keys():
             if name not in ("channel", "lj_reco"):
                 fill_args[name] = ak.flatten(fill_args[name], axis=None)
 
-        # Fill hist, warning user and skipping hists that cannot be filled
-        try:
-            self.hist.fill(**fill_args)
-        except ValueError:
-            print(f"Warning: a histogram with the name {self.name} could not be filled and will be skipped")
+        for syst, weights in weight_sets.items():
+            args = dict(fill_args)
+            masked_weights = weights[mask]
+            args["weight"] = ak.flatten(masked_weights*ak.ones_like(shape), axis=None)
+            if syst is not None:
+                args["syst"] = syst
+            # Fill hist, warning user and skipping hists that cannot be filled
+            try:
+                self.hist.fill(**args)
+            except ValueError:
+                print(f"Warning: a histogram with the name {self.name} could not be filled and will be skipped")
+                return
 
 class Axis:
     """Class to represent histogram axes

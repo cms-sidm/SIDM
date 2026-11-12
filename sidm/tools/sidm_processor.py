@@ -15,6 +15,7 @@ import vector
 #local
 from sidm import BASE_DIR
 from sidm.tools import selection, cutflow, utilities
+from sidm.tools.corrections import Corrections, resolve_names, weight_categories
 from sidm.definitions.hists import hist_defs, counter_defs
 from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC
 
@@ -84,6 +85,9 @@ class SidmProcessor(processor.ProcessorABC):
         debug_branches=None,
         include_default_debug_branches=True,
         debug_suppress_failures=True,
+        corrections=True,
+        syst_hists=False,
+        monitor_corrections=None,
     ):
         self.channel_names = channel_names
         self.hist_collection_names = hist_collection_names
@@ -118,6 +122,30 @@ class SidmProcessor(processor.ProcessorABC):
             self.debug_branches.update(self.default_debug_branches())
         if debug_branches is not None:
             self.debug_branches.update(debug_branches)
+
+        # Standard CMS corrections from configs/corrections.yaml, applied to
+        # simulation only. True (the default) applies the config's default
+        # list; a list names the corrections to apply; None keeps the plain
+        # genWeight. Each
+        # channel's cutflow then also holds the weighted count of every weight
+        # category (corrections.weight_categories: the uncorrected and
+        # one-correction references and the up/down variations), and
+        # syst_hists=True adds a "syst" axis with the same categories to every
+        # histogram. monitor_corrections are evaluated but not applied; they
+        # add with_<name> categories showing what applying them would do.
+        self.corrections = resolve_names(corrections)
+        self.monitored = resolve_names(monitor_corrections)
+        self.weight_categories = weight_categories(self.corrections, self.monitored)
+        self.syst_hists = syst_hists
+        if syst_hists and not self.corrections:
+            raise ValueError("syst_hists=True needs corrections to vary")
+        if syst_hists and unweighted_hist:
+            raise ValueError("syst_hists=True needs weighted histograms")
+        if self.monitored and not self.corrections:
+            raise ValueError("monitor_corrections needs corrections to compare with")
+        if set(self.monitored) & set(self.corrections):
+            raise ValueError(f"{sorted(set(self.monitored) & set(self.corrections))} "
+                             "cannot be both applied and monitored")
 
     def process(self, events):
         """Apply selections, make histograms and cutflow"""
@@ -174,9 +202,14 @@ class SidmProcessor(processor.ProcessorABC):
         # define pre-lj object, lj, post-lj obj, and event cuts per channel
         ch_cuts = self.build_cuts()
 
-        # define event weights
+        # define event weights. evt_weights stays the plain genWeight: it sets
+        # the lumi*xs normalization, which must not include the corrections.
+        weights, corrector, object_corrections = None, None, {}
         if not is_data:
             evt_weights = self.obj_defs["weight"](events)
+            if self.corrections:
+                corrector = Corrections(year, self.corrections + self.monitored)
+                weights = corrector.event_weights(events)
         else:
             evt_weights = ak.broadcast_arrays(1.0, self.obj_defs["met"](events))[0]
 
@@ -203,19 +236,49 @@ class SidmProcessor(processor.ProcessorABC):
                 lj_selection = selection.JaggedSelection(cuts["lj"], self.verbose)
                 sel_objs = lj_selection.apply_obj_cuts(sel_objs)
 
-                # add post-lj objects to sel_objs
+                # add post-lj objects to sel_objs, recording which collections
+                # each one is built from (e.g. mu_ljs from ljs)
                 if not is_data:
                     self.postLj_objs = {**self.postLj_objs, **self.postLj_objs_MC}
+                built_from = {}
                 for obj in self.postLj_objs:
-                    sel_objs[obj] = self.postLj_objs[obj](sel_objs)
+                    recorder = selection.CollectionRecorder(sel_objs)
+                    sel_objs[obj] = self.postLj_objs[obj](recorder)
+                    built_from[obj] = recorder.looked_up
 
                 # apply post-lj obj selection
                 postLj_selection = selection.JaggedSelection(cuts["postLj_obj"], self.verbose)
                 sel_objs = postLj_selection.apply_obj_cuts(sel_objs)
- 
-                # build Selection objects and apply event selection
-                sel_objs["evt_weights"] = evt_weights
+
                 evt_selection = selection.Selection(cuts["evt"], self.verbose)
+
+                # attach event weights. With corrections, the object SFs come
+                # from the objects the event cuts use (Corrections.sf_sources):
+                # the selected objects of a collection the cuts read, else the
+                # lepton-jet constituents if they read lepton jets, else none.
+                # Every weight category rides along so the event cuts slim it
+                # with the rest, as do the factors themselves (weight_factors,
+                # one column per factor and shift) for histograms of the
+                # corrections.
+                applied = {}
+                if weights is None:
+                    sel_objs["evt_weights"] = evt_weights
+                else:
+                    ch_weights = weights.copy()
+                    sources = corrector.sf_sources(
+                        cuts["obj"], evt_selection.collections_read(sel_objs, built_from))
+                    corrector.add_object_weights(ch_weights, sel_objs, sources)
+                    applied = {name: wp for name, (wp, _) in sources.items()}
+                    object_corrections[channel] = processor.set_accumulator(
+                        f"{name}:{wp}:{source}" for name, (wp, source) in sources.items())
+                    sel_objs["evt_weights"] = ak.Array(ch_weights.category("nominal", self.monitored))
+                    sel_objs["evt_weight_variations"] = ak.zip({
+                        c: ch_weights.category(c, self.monitored) for c in self.weight_categories
+                    })
+                    sel_objs["weight_factors"] = ak.zip(ch_weights.factor_columns(
+                        ["genWeight"] + self.corrections + self.monitored))
+
+                # apply event selection
                 sel_objs = evt_selection.apply_evt_cuts(sel_objs)
 
                 # optional debug output (no effect unless debug=True).
@@ -238,12 +301,23 @@ class SidmProcessor(processor.ProcessorABC):
                     cutflows[str(lj_reco)] = {}
                 cutflows[str(lj_reco)][channel] = evt_selection.cutflow
 
-                # fill histograms for this channel+lj_reco pair
+                # fill histograms for this channel+lj_reco pair. year and
+                # object_corrections ({correction: working point}) let fill
+                # functions evaluate the SFs this channel applied.
                 sel_objs["ch"] = channel
                 sel_objs["lj_reco"] = lj_reco
+                sel_objs["year"] = year
+                sel_objs["object_corrections"] = applied
                 hist_weights = sel_objs["evt_weights"]
                 if self.unweighted_hist:
                     hist_weights =  ak.ones_like(hist_weights)
+                if self.syst_hists:
+                    # a variation that does not apply here equals the nominal
+                    # weight; data fills "nominal" only
+                    hist_weights = {"nominal": hist_weights}
+                    if "evt_weight_variations" in sel_objs:
+                        hist_weights.update({c: sel_objs["evt_weight_variations"][c]
+                                             for c in self.weight_categories})
                 for h in hists.values():
                     h.fill(sel_objs, hist_weights, self.verbose)
 
@@ -277,6 +351,30 @@ class SidmProcessor(processor.ProcessorABC):
                 "n_removed_golden_json": n_removed,
             },
         }
+
+        # Record what was corrected. scaled_sum_weights_corrected is the sum of
+        # genWeight times each event-level correction, so its ratio to
+        # scaled_sum_weights shows how much a correction changes the total
+        # before any selection. Only added when corrections were requested, so
+        # an uncorrected run keeps the old output layout.
+        if self.corrections:
+            out["metadata"]["corrections"] = processor.set_accumulator(
+                [] if is_data else self.corrections)
+            if self.monitored:
+                out["metadata"]["monitored_corrections"] = processor.set_accumulator(
+                    [] if is_data else self.monitored)
+            if weights is not None:
+                skim = events.metadata["skim_factor"]
+                genweight = weights.factor("genWeight")
+                corrected = {name: float(np.sum(genweight * weights.factor(name))) / skim
+                             for name in weights.names if name != "genWeight"}
+                corrected["all_event_level"] = float(np.sum(
+                    weights.category("nominal", self.monitored))) / skim
+                out["metadata"]["scaled_sum_weights_corrected"] = corrected
+                # {channel: {"<correction>:<working point>:<source>"}}, source
+                # being the collection whose selected objects gave the SFs
+                # (e.g. "muons") or "ljs" for the lepton-jet constituents
+                out["metadata"]["object_corrections"] = object_corrections
 
         # optional debug output: keep the standard return shape, add one key
         if self.debug:
@@ -579,6 +677,7 @@ class SidmProcessor(processor.ProcessorABC):
     def build_histograms(self):
         """Create dictionary of Histogram objects"""
         hist_menu = utilities.load_yaml(f"{BASE_DIR}/{self.histograms_cfg}")
+        systematics = ["nominal"] + self.weight_categories if self.syst_hists else None
         # build dictionary and create hist.Hist objects
         hists = {}
         for collection in self.hist_collection_names:
@@ -587,7 +686,8 @@ class SidmProcessor(processor.ProcessorABC):
                 hists[hist_name] = copy.deepcopy(hist_defs[hist_name])
                 # Add lj_reco axis only when more than one reco is run
                 lj_reco_names = self.lj_reco_choices if len(self.lj_reco_choices) > 1 else None
-                hists[hist_name].make_hist(hist_name, self.channel_names, lj_reco_names)
+                hists[hist_name].make_hist(hist_name, self.channel_names, lj_reco_names,
+                                           systematics=systematics)
         return hists
 
     def order(self, obj):

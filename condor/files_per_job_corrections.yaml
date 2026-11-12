@@ -1,0 +1,27 @@
+# Files per Condor job for the corrections campaign (submit_corrections.sub), chosen so
+# that a job processes about 100k events: events per file vary from a few (low-pT QCD
+# skims) to ~18k (DYJetsToMuMu_M50). Estimated from 15 random files per sample on
+# 2026-10-01. Signal points have ~4k events per file and use --files-per-job 25.
+# The 300-file chunks of tiny files took 2-3.5 hours (a fixed ~30 s per file, with the
+# processor speed-ups noted in submit_corrections.sub); a cap
+# of ~100 files per job would shorten the tail of the next campaign.
+DYJetsToLL_M10to50: 300   # ~79 events/file, 29 jobs
+DYJetsToLL_M50: 14   # ~7082 events/file, 386 jobs
+DYJetsToMuMu_M10to50: 300   # ~117 events/file, 4 jobs
+DYJetsToMuMu_M50: 6   # ~17676 events/file, 1026 jobs
+QCD_Pt1000: 20   # ~5108 events/file, 155 jobs
+QCD_Pt120To170: 300   # ~307 events/file, 7 jobs
+QCD_Pt15To20: 300   # ~2 events/file, 2 jobs
+QCD_Pt170To300: 202   # ~494 events/file, 35 jobs
+QCD_Pt20To30: 300   # ~7 events/file, 13 jobs
+QCD_Pt300To470: 105   # ~954 events/file, 66 jobs
+QCD_Pt30To50: 300   # ~33 events/file, 12 jobs
+QCD_Pt470To600: 59   # ~1686 events/file, 82 jobs
+QCD_Pt50To80: 300   # ~95 events/file, 9 jobs
+QCD_Pt600To800: 35   # ~2836 events/file, 136 jobs
+QCD_Pt800To1000: 10   # ~9922 events/file, 495 jobs
+QCD_Pt80To120: 300   # ~243 events/file, 10 jobs
+TTJets: 9   # ~10936 events/file, 25 jobs
+WW: 43   # ~2351 events/file, 24 jobs
+WZ: 57   # ~1769 events/file, 13 jobs
+ZZ: 95   # ~1050 events/file, 4 jobs

@@ -70,6 +70,10 @@ preLj_objs["rho_PFIso"]  = lambda evts: evts.fixedGridRhoFastjetAll
 preLj_objs["jets"]       = lambda evts: evts.Jet
 preLj_objs["flags"]       = lambda evts: evts.Flag
 preLj_objs["bjets"]      = lambda evts: evts.Jet
+# simulation only (absent from data): the pileup truth that the pileup weights use
+preLj_objs["pileup"]     = lambda evts: evts.Pileup
+# the event number seeds the reproducible JER smearing
+preLj_objs["event_number"] = lambda evts: evts.event
 # define objects whose that will be added to objs by the sidm_processor after LJs are clustered
 # and LJ cuts are applied. postLj_obj cuts can be applied to these
 postLj_objs = {}
@@ -109,3 +113,5 @@ derived_objs["genA_from_genEs"]  = lambda objs: withMass(fromPid(pid(objs["gens"
 derived_objs["genBSs"]           = lambda objs: pid(objs["gens"], 35)
 derived_objs["genBSs_toA"]       = lambda objs: toPid(derived_objs["genBSs"](objs), 32)
 derived_objs["genBS_from_genAs"] = lambda objs: pid(objs["gens"], 32).sum()
+# final-state generator photons above 5 GeV, to tell real photons from electrons
+derived_objs["genPhotons"] = lambda objs: (lambda g: g[(g.status == 1) & (g.pt > 5)])(pid(objs["gens"], 22))
