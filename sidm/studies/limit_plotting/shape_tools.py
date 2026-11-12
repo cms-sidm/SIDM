@@ -556,16 +556,93 @@ class Selection:
     # halfway house that keeps far more statistics than requiring both and so
     # lets the m_ljlj shape be compared with and without the cut.
     disp_legs: str = "both"
+    # Control-side boundaries, for a plane with a buffer band between region A
+    # and the control regions.  ``iso_cut``/``dphi_cut`` then bound the signal
+    # side only.  None means "same as the signal boundary", which is the
+    # contiguous plane every campaign before the buffered one used.
+    iso_cr: float | None = None
+    dphi_cr: float | None = None
+    # Isolation cut on the lepton jet that is not a plane axis: the EGM LJ in
+    # 2mu2e, the subleading muon LJ in 4mu.  None ties it to ``iso_cut``, which
+    # is what every earlier campaign did.
+    other_iso_cut: float | None = None
+    # Lower bound on the isolation of both LJs (the plane axis's signal side
+    # and the other LJ's cut).  None keeps the below-range sentinel values,
+    # which every earlier campaign counted as isolated; 0.0 drops them, for a
+    # working point defined as 0 <= iso < cut.
+    iso_floor: float | None = None
+    # Legs whose displacement requirement is inverted: "leg0" (muon-LJ pixel
+    # hits) and/or "leg1" (the second LJ).  An inverted leg takes exactly the
+    # complement of its normal slice, flow bins included, so the normal and
+    # inverted selections partition the events.  This builds the validation
+    # regions.
+    invert_disp: tuple = ()
+    # Exclusive upper edge of the m_ljlj window.  None runs into the overflow,
+    # which is folded into the top bin.
+    mass_ceiling: float | None = None
+
+    def __post_init__(self):
+        # Isolation is signal-like low and |dphi| signal-like high, so a buffer
+        # must push each control side *away* from region A.  The other way round
+        # the regions would overlap and the closure relation would double count.
+        if self.iso_cr is not None and self.iso_cr < self.iso_cut:
+            raise ShapeError(f"iso_cr ({self.iso_cr}) must be >= iso_cut "
+                             f"({self.iso_cut}): the control side is high isolation")
+        if self.dphi_cr is not None and self.dphi_cr > self.dphi_cut:
+            raise ShapeError(f"dphi_cr ({self.dphi_cr}) must be <= dphi_cut "
+                             f"({self.dphi_cut}): the control side is low |dphi|")
+        cut_legs = (() if not self.apply_disp else
+                    ("leg0", "leg1") if self.disp_legs == "both" else (self.disp_legs,))
+        stray = set(self.invert_disp) - set(cut_legs)
+        if stray:
+            raise ShapeError(f"cannot invert {sorted(stray)}: no displacement cut is "
+                             f"applied to it (apply_disp={self.apply_disp}, "
+                             f"disp_legs={self.disp_legs!r})")
+        if self.mass_ceiling is not None and self.mass_floor is not None \
+                and self.mass_ceiling <= self.mass_floor:
+            raise ShapeError(f"mass_ceiling ({self.mass_ceiling}) must be above "
+                             f"mass_floor ({self.mass_floor})")
+
+    @property
+    def iso_control(self):
+        return self.iso_cut if self.iso_cr is None else self.iso_cr
+
+    @property
+    def dphi_control(self):
+        return self.dphi_cut if self.dphi_cr is None else self.dphi_cr
+
+    @property
+    def iso_other(self):
+        return self.iso_cut if self.other_iso_cut is None else self.other_iso_cut
 
     def describe(self):
-        bits = [f"iso<{self.iso_cut:g}", f"|dphi|>={self.dphi_cut:g}",
-                f"m>={self.mass_floor:g}"]
+        iso = (f"iso<{self.iso_cut:g}" if self.iso_floor is None
+               else f"{self.iso_floor:g}<=iso<{self.iso_cut:g}")
+        if self.iso_cr is not None:
+            iso += f" (CR iso>={self.iso_cr:g})"
+        dphi = f"|dphi|>={self.dphi_cut:g}"
+        if self.dphi_cr is not None:
+            dphi += f" (CR |dphi|<{self.dphi_cr:g})"
+        bits = [iso, dphi]
+        if self.other_iso_cut is not None:
+            bits.append(f"other-LJ iso<{self.other_iso_cut:g}" if self.iso_floor is None
+                        else f"other-LJ {self.iso_floor:g}<=iso<{self.other_iso_cut:g}")
+        bits.append(f"m>={self.mass_floor:g}" if self.mass_ceiling is None
+                    else f"{self.mass_floor:g}<=m<{self.mass_ceiling:g}")
         if not self.apply_disp:
             bits.append("disp OFF")
+        elif self.invert_disp:
+            legs = ("leg0", "leg1") if self.disp_legs == "both" else (self.disp_legs,)
+            bits.append("disp " + ", ".join(
+                f"{leg} {'inverted' if leg in self.invert_disp else 'normal'}"
+                for leg in legs))
         elif self.disp_legs == "both":
             bits.append("disp both LJs")
         else:
             bits.append(f"disp {self.disp_legs} only")
+        if self.apply_disp and self.pixel_hit_max != PIXEL_HIT_MAX:
+            # only a non-default cut is spelled out, so existing descriptions are unchanged
+            bits.append(f"pixel hits<={self.pixel_hit_max - 0.5:g}")
         return ", ".join(bits)
 
 
@@ -652,20 +729,27 @@ def _sr_slices(hist, channel_name, selection=NOMINAL):
     out = {}
     want0 = selection.disp_legs in ("both", "leg0")
     want1 = selection.disp_legs in ("both", "leg1")
+    inv0 = "leg0" in selection.invert_disp
+    inv1 = "leg1" in selection.invert_disp
+
+    def cut(axis, value, signal_low, inverted):
+        # the passing side, or its exact complement: under/overflow go with
+        # whichever side they belong to normally, so the two never overlap
+        low = signal_low != inverted
+        return _side(axis, value, low=low, keep_under=low, keep_over=not low)
+
     # pixel hits: displaced muons cross fewer layers, so signal is the low side
     if want0:
-        out["disp0"] = _side(ax["disp0"], selection.pixel_hit_max, low=True,
-                             keep_under=True, keep_over=False)
+        out["disp0"] = cut(ax["disp0"], selection.pixel_hit_max, True, inv0)
     if want1:
         if channel_name == "SR_2mu2e":
             # electron lost hits: signal-like is high, and photon-only EGM
             # lepton jets carry a sentinel value that lands in the overflow --
-            # keep it, it is 65% of the signal in this channel
-            out["disp1"] = _side(ax["disp1"], selection.lost_hit_min, low=False,
-                                 keep_under=False, keep_over=True)
+            # it passes the normal cut (65% of the signal in this channel), so
+            # an inverted cut excludes it
+            out["disp1"] = cut(ax["disp1"], selection.lost_hit_min, False, inv1)
         else:
-            out["disp1"] = _side(ax["disp1"], selection.pixel_hit_max, low=True,
-                                 keep_under=True, keep_over=False)
+            out["disp1"] = cut(ax["disp1"], selection.pixel_hit_max, True, inv1)
     return out
 
 
@@ -707,8 +791,16 @@ def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
     mass_axis = ax["ljlj_mass"]
     mass_floor = selection.mass_floor
     first = 0 if mass_floor is None else _edge_index(mass_axis, mass_floor)
-    mass_slice = slice(first + 1, len(mass_axis) + 2)
-    edges = np.asarray(mass_axis.edges)[first:]
+    if selection.mass_ceiling is None:
+        mass_slice = slice(first + 1, len(mass_axis) + 2)
+        edges = np.asarray(mass_axis.edges)[first:]
+        fold_overflow = True
+    else:
+        # a closed window: it stops at an edge, so there is no overflow to fold
+        last = _edge_index(mass_axis, selection.mass_ceiling)
+        mass_slice = slice(first + 1, last + 1)
+        edges = np.asarray(mass_axis.edges)[first:last + 1]
+        fold_overflow = False
 
     # Any plane axis that is not in this plane stays an SR cut on its
     # signal-like side; that is what keeps region A identical between planes.
@@ -717,18 +809,32 @@ def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
         fixed["abs_dphi"] = _side(ax["abs_dphi"], selection.dphi_cut, low=False,
                                   keep_under=False, keep_over=True)
     if plane.axis_b != "iso1" and plane.axis_a != "iso1":
-        fixed["iso1"] = _side(ax["iso1"], selection.iso_cut, low=True,
+        fixed["iso1"] = _side(ax["iso1"], selection.iso_other, low=True,
                               keep_under=True, keep_over=False)
+        if selection.iso_floor is not None:
+            # a defined lower bound holds for the other LJ too: 0 <= iso < cut
+            fixed["iso1"] = slice(_edge_index(ax["iso1"], selection.iso_floor) + 1,
+                                  fixed["iso1"].stop)
 
     blind_sr = not allow_data_sr and not dt.is_simulation(sample_name, sample_out)
 
     def side(axis_name, cut, low_is_signal, signal_side):
         low = low_is_signal if signal_side else not low_is_signal
-        return _side(ax[axis_name], cut, low=low,
-                     keep_under=low, keep_over=not low)
+        sl = _side(ax[axis_name], cut, low=low, keep_under=low, keep_over=not low)
+        if low and axis_name.startswith("iso") and selection.iso_floor is not None:
+            # a defined lower bound replaces "everything below", sentinels included
+            sl = slice(_edge_index(ax[axis_name], selection.iso_floor) + 1, sl.stop)
+        return sl
 
-    cut_for = {"iso0": selection.iso_cut, "iso1": selection.iso_cut,
-               "abs_dphi": selection.dphi_cut}
+    # With a buffer the signal side and the control side of an axis sit on
+    # different edges, and the band between them belongs to no region at all.
+    signal_cut = {"iso0": selection.iso_cut, "iso1": selection.iso_cut,
+                  "abs_dphi": selection.dphi_cut}
+    control_cut = {"iso0": selection.iso_control, "iso1": selection.iso_control,
+                   "abs_dphi": selection.dphi_control}
+
+    def cut_for(axis_name, default, signal_side):
+        return (signal_cut if signal_side else control_cut).get(axis_name, default)
 
     quadrants = {
         0: (True, True),     # A
@@ -742,9 +848,9 @@ def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
         if region == SR_ABCD_REGION and blind_sr:
             continue
         sel = dict(fixed)
-        sel[plane.axis_a] = side(plane.axis_a, cut_for.get(plane.axis_a, plane.cut_a),
+        sel[plane.axis_a] = side(plane.axis_a, cut_for(plane.axis_a, plane.cut_a, a_sig),
                                  plane.low_is_signal_a, a_sig)
-        sel[plane.axis_b] = side(plane.axis_b, cut_for.get(plane.axis_b, plane.cut_b),
+        sel[plane.axis_b] = side(plane.axis_b, cut_for(plane.axis_b, plane.cut_b, b_sig),
                                  plane.low_is_signal_b, b_sig)
         sel["ljlj_mass"] = mass_slice
         index = tuple(sel.get(name, slice(None)) for name in order)
@@ -754,9 +860,11 @@ def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
         axes_to_sum = tuple(i for i in range(len(order)) if i != mass_pos)
         sumw = block_v.sum(axis=axes_to_sum)
         sumw2 = block_w2.sum(axis=axes_to_sum)
-        sumw[-2] += sumw[-1]        # fold the overflow into the top mass bin
-        sumw2[-2] += sumw2[-1]
-        out[region] = Shape(edges, sumw[:-1], sumw2[:-1])
+        if fold_overflow:
+            sumw[-2] += sumw[-1]        # fold the overflow into the top mass bin
+            sumw2[-2] += sumw2[-1]
+            sumw, sumw2 = sumw[:-1], sumw2[:-1]
+        out[region] = Shape(edges, sumw, sumw2)
     return out
 
 

@@ -74,17 +74,26 @@ def cmd_extract(args):
             print(f"    [{i + 1}/{n}] {name}", flush=True)
 
     planes = args.plane.split(",") if args.plane else [None]
+    chans = [c for c in args.channels.split(",") if c] or None
+    if args.tag and len(planes) > 1:
+        raise SystemExit("--tag names one output set; pass a single --plane with it")
     for plane in planes:
-        tag = plane or args.observable
+        # --tag keeps a new selection from overwriting an earlier one that used
+        # the same plane: the output names are derived from it
+        tag = args.tag or plane or args.observable
         print(f"\n=== {args.campaign}: {tag}")
 
         if plane:                                    # 6D inclusive layout
             sel = st.Selection(
                 args.selection_name, iso_cut=args.iso_cut, dphi_cut=args.dphi_cut,
                 mass_floor=args.mass_floor, apply_disp=not args.no_disp,
-                disp_legs=args.disp_legs)
+                disp_legs=args.disp_legs, iso_cr=args.iso_cr, dphi_cr=args.dphi_cr,
+                other_iso_cut=args.other_iso_cut, iso_floor=args.iso_floor,
+                invert_disp=tuple(x for x in args.invert_disp.split(",") if x),
+                mass_ceiling=args.mass_ceiling)
             print(f"  selection: {sel.describe()}")
-            get = lambda d: st.collect_6d(d, plane, selection=sel, progress=progress)
+            get = lambda d: st.collect_6d(d, plane, channels=chans, selection=sel,
+                                          progress=progress)
             observable = st.Observable(
                 name=f"ljlj_mass_{plane}", hists={}, axis="ljlj_mass",
                 label=r"$m_{LJLJ}$ [GeV]",
@@ -117,7 +126,8 @@ def cmd_extract(args):
         path = outdir / f"shapes_{tag}.json"
         st.export_shapes(path, bkg, signal, observable,
                          meta={"normalisation": "signal normalised to 1 fb at "
-                                                "59.83 /fb, so r = sigma / 1 fb",
+                                                "59.83 /fb (production cross section "
+                                                "divided out), so r = sigma / 1 fb",
                                "background_groups": sorted(bkg), **meta_extra})
         print(f"  -> {path.name}")
 
@@ -132,11 +142,11 @@ def cmd_extract(args):
                   f"| B*C/D {pred}")
 
         if args.datacards:
-            _write_datacards(dt, st, bkg, signal, outdir, tag, args)
+            _write_datacards(dt, st, bkg, signal, outdir, tag, args, chans)
     return 0
 
 
-def _write_datacards(dt, st, bkg_shapes, signal_shapes, outdir, tag, args):
+def _write_datacards(dt, st, bkg_shapes, signal_shapes, outdir, tag, args, chans=None):
     """Counting and rateParam ABCD cards from the integral of the same shapes.
 
     Building both from one extraction is what keeps the methods comparable:
@@ -161,7 +171,10 @@ def _write_datacards(dt, st, bkg_shapes, signal_shapes, outdir, tag, args):
             ("abcd_theory", dt.write_abcd_datacards, signal_theory,
              dt.DatacardConfig(use_theory_xs=True))):
         name = f"datacards_{suffix}_{tag}"
-        written, warnings = writer(points, bkg, outdir / name, config=cfg)
+        channels = ({k: v for k, v in dt.CHANNELS.items() if k in chans}
+                    if chans else None)
+        written, warnings = writer(points, bkg, outdir / name, channels=channels,
+                                   config=cfg)
         note = f", {len(warnings)} warnings" if warnings else ""
         print(f"  {name}: {len(written)} cards{note}")
         for w in warnings[:2]:
@@ -198,8 +211,32 @@ def main(argv=None):
                         "or mljlj_two_bin")
     e.add_argument("--datacards", action="store_true",
                    help="also write the counting and ABCD cards")
-    e.add_argument("--iso-cut", type=float, default=0.25)
-    e.add_argument("--dphi-cut", type=float, default=2.0)
+    e.add_argument("--iso-cut", type=float, default=0.25,
+                   help="signal-side isolation boundary (region A is below it)")
+    e.add_argument("--dphi-cut", type=float, default=2.0,
+                   help="signal-side |dphi| boundary (region A is at or above it)")
+    e.add_argument("--iso-cr", type=float, default=None,
+                   help="control-side isolation boundary, for a buffer band; "
+                        "default: same as --iso-cut")
+    e.add_argument("--dphi-cr", type=float, default=None,
+                   help="control-side |dphi| boundary, for a buffer band; "
+                        "default: same as --dphi-cut")
+    e.add_argument("--other-iso-cut", type=float, default=None,
+                   help="isolation cut on the LJ that is not a plane axis (EGM LJ "
+                        "in 2mu2e, subleading muon LJ in 4mu); default: --iso-cut")
+    e.add_argument("--tag", default="",
+                   help="output name stem; default: the plane name")
+    e.add_argument("--iso-floor", type=float, default=None,
+                   help="lower bound on the isolation axis's signal side, e.g. 0 for "
+                        "0 <= iso < cut; default keeps the below-range sentinels")
+    e.add_argument("--invert-disp", default="",
+                   help="comma-separated legs whose displacement cut is inverted "
+                        "(leg0 = muon-LJ pixel hits, leg1 = second LJ), for a "
+                        "validation region")
+    e.add_argument("--mass-ceiling", type=float, default=None,
+                   help="exclusive upper edge of the m_ljlj window")
+    e.add_argument("--channels", default="",
+                   help="comma-separated channels, e.g. SR_2mu2e; default: all")
     e.add_argument("--mass-floor", type=float, default=150.0)
     e.add_argument("--no-disp", action="store_true",
                    help="drop the displacement requirements (buys the most stats)")

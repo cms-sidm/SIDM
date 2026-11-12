@@ -10,9 +10,14 @@ Two details matter for getting the count right:
 
 * The histograms are already scaled to ``lumi * xs`` by
   ``sidm_processor.postprocess``, so the sums are yields, not raw entries.
-  Signal has no entry in ``configs/cross_sections.yaml``, so
-  ``utilities.get_xs`` falls back to 1 fb -- signal yields (and therefore the
-  Combine signal strength ``r``) are relative to a 1 fb reference cross section.
+  For signal the productions take ``xs`` from ``configs/cross_sections.yaml``
+  where the point has an entry (its model cross section) and fall back to 1 fb
+  otherwise.  ``read_coffea`` divides that production cross section back out,
+  so every signal yield from this module is at the 1 fb reference and the
+  Combine signal strength ``r`` on a 1 fb card is the limit on sigma in fb.
+  Before 2026-11 the 1 fb reference was assumed, not imposed: limits from that
+  time carry the label ``1fb`` (new ones ``1fb_ref``) and are relative to the
+  production cross section, which ``plot_tools.load_limits`` corrects.
 * The observable axis is ``Regular`` and does overflow (a few percent for the
   pt axes), so sums must use ``flow=True``.  With flow included the SR sum
   reproduces the final row of the corresponding cutflow exactly.
@@ -24,6 +29,7 @@ statistical nuisance in the datacards is built from.
 
 from __future__ import annotations
 
+import functools
 import math
 import re
 from dataclasses import dataclass, field, fields
@@ -433,9 +439,59 @@ def sr_yield(sample_out, channel, sample_name="", flow=True, allow_data_sr=False
     return None if regions is None else regions[SR_ABCD_REGION]
 
 
+@functools.lru_cache(maxsize=1)
+def _xs_menu():
+    from sidm.tools import utilities
+    return utilities.load_yaml(f"{BASE_DIR}/configs/cross_sections.yaml")
+
+
+def production_xs_pb(sample_name, sample_out=None):
+    """Cross section, in pb, that the production scaled a signal sample to.
+
+    ``sidm_processor.postprocess`` scales every simulated sample to lumi * xs.
+    For signal the productions behind every campaign here took xs from
+    ``cross_sections.yaml`` where the point has an entry, i.e. its model cross
+    section, and the 1 fb reference otherwise: what
+    ``utilities.get_xs(name, use_signal_xs=True)`` returns.  Given the sample's
+    output, the weighted pre-selection cutflow row (lumi * xs for an unskimmed
+    sample) is checked against that, so a production normalised any other way
+    fails loudly instead of being silently mis-normalised.
+    """
+    xs = _xs_menu().get(sample_name, SIGNAL_REF_XS_PB)
+    if sample_out is not None:
+        for cutflow in sample_out.get("cutflow", {}).values():
+            rows = getattr(cutflow, "rows", None)
+            if not rows:
+                continue
+            first = next(iter(rows.values()))["weighted"]
+            if not math.isclose(first, LUMI_PB * xs, rel_tol=1e-4):
+                raise ValueError(
+                    f"{sample_name}: the pre-selection cutflow row is {first:g}, not "
+                    f"lumi * xs = {LUMI_PB * xs:g} for xs = {xs:g} pb, so the "
+                    f"production normalised this sample some other way")
+            break
+    return xs
+
+
 def read_coffea(path):
-    """Load a merged coffea file and return ``{sample: sample_output}``."""
-    return load(str(path))["out"]
+    """Load a merged coffea file and return ``{sample: sample_output}``.
+
+    Signal samples come back at the 1 fb reference.  The production scaled each
+    one to its own cross section (``production_xs_pb``), while every datacard,
+    limit and contamination figure here is written for 1 fb, so that cross
+    section is divided out of the histograms and cutflows of signal samples.
+    """
+    out = load(str(path))["out"]
+    for sample, sample_out in out.items():
+        if parse_signal_name(sample) is None:
+            continue
+        k = SIGNAL_REF_XS_PB / production_xs_pb(sample, sample_out)
+        if k != 1.0:
+            for name in sample_out.get("hists", {}):
+                sample_out["hists"][name] *= k     # Weight storage: variance * k**2
+            for cutflow in sample_out.get("cutflow", {}).values():
+                cutflow.scale(k)
+    return out
 
 
 def collect_yields(directory, channels=None, flow=True, progress=None,
@@ -514,7 +570,9 @@ def total_background(grouped, channel_name, region):
 class DatacardConfig:
     """Knobs for the counting-experiment datacards.
 
-    ``lumi_unc`` is the 2018 integrated-luminosity uncertainty (2.5%).
+    ``lumi_unc`` is the 2018 integrated-luminosity uncertainty: 0.83% from the
+    Run 2 legacy measurement (CMS-LUM-20-001, arXiv:2606.26832), which replaced
+    the 2.5% of CMS-PAS-LUM-18-002.
     ``bkg_norm_unc`` is an optional flat normalisation uncertainty applied to
     every background process -- a placeholder for the ABCD closure/transfer
     uncertainty, which is not derivable from the SR count alone.  Set it to
@@ -540,7 +598,7 @@ class DatacardConfig:
     its relative MC error is at the sub-percent level.
     """
 
-    lumi_unc: float = 0.025
+    lumi_unc: float = 0.0083
     # Luminosity the yields should be extrapolated to, in /pb.  The histograms
     # come out of sidm_processor scaled to LUMI_PB (2018), so setting this
     # rescales both signal and background by target/LUMI_PB.  None means "leave
@@ -611,9 +669,10 @@ def _norm_comment(signal_name, config):
     if config.use_theory_xs:
         xs_fb = signal_xs_scale(signal_name, config) * SIGNAL_REF_XS_PB * 1000
         return (f"# signal normalised to its theory cross section "
-                f"{xs_fb:g} fb at {lumi_fb:g} /fb, so r = sigma_limit/sigma_theory "
-                f"and r < 1 means excluded")
-    return (f"# signal normalised to {SIGNAL_REF_XS_PB * 1000:g} fb at {lumi_fb:g} /fb, "
+                f"{xs_fb:g} fb at {lumi_fb:g} /fb (production cross section divided "
+                f"out), so r = sigma_limit/sigma_theory and r < 1 means excluded")
+    return (f"# signal normalised to {SIGNAL_REF_XS_PB * 1000:g} fb at {lumi_fb:g} /fb "
+            f"(production cross section divided out), "
             f"so r = sigma / {SIGNAL_REF_XS_PB * 1000:g} fb")
 
 

@@ -136,10 +136,12 @@ def read_normalisation(card):
     for line in Path(card).read_text().splitlines():
         if not line.startswith("#"):
             break
+        # "divided out" marks cards written since read_coffea imposes the
+        # reference; older ones held signal at its production cross section
         if "theory cross section" in line:
-            return "theory"
+            return "theory_xs" if "divided out" in line else "theory"
         if "normalised to" in line:
-            return "1fb"
+            return "1fb_ref" if "divided out" in line else "1fb"
     return ""
 
 
@@ -347,6 +349,32 @@ def load_existing(csv_path):
     return out
 
 
+def data_header(cards):
+    """The first ``# DATA`` header line among ``cards``, or None.
+
+    Writers that put observed data (or a stand-in for it) into ``data_obs`` say
+    so in a ``# DATA`` header line; cards without one hold simulation.
+    """
+    for card in cards:
+        for line in Path(card).read_text().splitlines():
+            if not line.startswith("#"):
+                break
+            if line.startswith("# DATA"):
+                return line[2:].strip()
+    return None
+
+
+def observation_warning(cards, has_observed):
+    """What an observed limit from these cards is, for the metadata."""
+    if not has_observed:
+        return None
+    header = data_header(cards)
+    if header:
+        return f"Observed limits from the cards' observation: {header}"
+    return ("Observed limits here are the fit run against simulation standing in "
+            "for data -- a closure test, not a measurement.")
+
+
 def write_limit_metadata(outdir, args, rows, errors, cards):
     """Write ``limits.meta.yaml`` next to ``limits.csv``.
 
@@ -402,8 +430,7 @@ def write_limit_metadata(outdir, args, rows, errors, cards):
             "max_expected_r": round(max(exp), 6) if exp else None,
             "median_observed_r": round(sorted(obs)[len(obs) // 2], 6) if obs else None,
         },
-        "warning": ("Observed limits here are the fit run against simulation standing in "
-                    "for data -- a closure test, not a measurement.") if obs else None,
+        "warning": observation_warning(cards, bool(obs)),
         "datacards": datacard_meta,
     }
     path = Path(outdir) / "limits.meta.yaml"
