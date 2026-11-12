@@ -55,7 +55,7 @@ def test_merge_normalizes_to_full_sample(wrapped, unweighted):
     assert merged[SAMPLE]["metadata"]["scaled_sum_weights"] == pytest.approx(40.0)
 
 
-@pytest.mark.parametrize("kwargs", [{"eff": 0.5}, {"production": None}])
+@pytest.mark.parametrize("kwargs", [{"eff": 0.5}, {"production": None}, {"unweighted": True}])
 def test_merge_refuses_inconsistent_chunks(kwargs):
     """Chunks of one sample normalized with different settings raise instead of summing."""
     with pytest.raises(ValueError, match="chunks disagree"):
