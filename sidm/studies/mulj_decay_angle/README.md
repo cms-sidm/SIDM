@@ -506,7 +506,10 @@ These apply to every reading of the figures and are repeated in the notebook.
    and so overcounted the generated events by about ten. No generator filter is recorded in
    the files, and neither signal ntuple
    location file the campaigns read (`signal_4mu_v10.yaml`, `signal_2mu2e_v10.yaml`) sets a
-   `skim_factor`. Shapes are unaffected in any case, because the factor cancels in a
+   `skim_factor`. The samples were generated behind a generator-level filter all the same,
+   and its efficiency (0.36 to 0.90 for the samples with m_XX >= 200 GeV, PR #81) is not in
+   this normalisation, so an absolute signal yield computed this way is too large by one
+   over that efficiency. Shapes are unaffected in any case, because the factor cancels in a
    unit-area normalisation, and every comparison in this study is unit-area.
 6. **Signal-region channels evaluate their event cuts on unfiltered lepton jets**, so an
    event whose lepton jets are all prompt can pass a signal-region channel with no muon
@@ -575,7 +578,10 @@ These apply to every reading of the figures and are repeated in the notebook.
     is not counted), and 10.6436 percent in the decay-plane campaign's two-muon-two-electron
     validation region (2Mu2E_500GeV_5p0GeV_0p08mm). They scale with the assumed cross section;
     `cross_sections.yaml` lists 1.264 fb at m_XX = 500 GeV and 0.342 fb at 1000 GeV, at which
-    the last becomes 13.4536 percent.
+    the last becomes 13.4536 percent. None of these shares includes the generator-filter
+    efficiency of item 5, so each is an upper limit: with the efficiencies of PR #81 (0.74
+    for both 500 GeV, 5 GeV samples) the 10.6436 percent would be 7.86 percent and the 1.7289
+    percent 1.28 percent, and the signal contributions quoted below shrink likewise.
 
     That region holds 7,403 muon-lepton-jet entries in the first campaign but 86 events in the
     decay-plane campaign, because the decay-plane histograms are filled only for events with
