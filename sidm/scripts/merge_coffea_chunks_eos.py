@@ -115,7 +115,11 @@ def sample_outputs(out):
     return out
 
 
-def check_chunk_normalization(outputs, keys=("gen_filter_eff", "production"), settings=None):
+# what postprocess used to scale a chunk; the merge undoes and redoes that scaling per sample
+NORMALIZATION_KEYS = ("gen_filter_eff", "production", "unweighted_hist")
+
+
+def check_chunk_normalization(outputs, keys=NORMALIZATION_KEYS, settings=None):
     """Check each sample's settings before accumulation can hide a missing key.
 
     All-legacy chunks may omit a key, but cannot mix with chunks that record it.
@@ -152,10 +156,10 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
         sum_j(obj_j*sumw_j) / sum_j(sumw_j)  ==  lumi*xs*eff/sumw_full * sum_j raw_j   (the right answer).
     Data, and raw (unweighted) hists, are left to plain accumulation.
     Runner-wrapped chunks are unwrapped (sample_outputs), and chunks of one sample
-    that disagree on gen_filter_eff or production (including missing keys in only some chunks)
-    raise instead of merging: before any input is re-weighted when outputs is a list, and when
-    the odd chunk is read when outputs is a generator. Chunks that all lack a key remain
-    supported.
+    that disagree on gen_filter_eff, production or unweighted_hist (including missing keys in
+    only some chunks) raise instead of merging: before any input is re-weighted when outputs
+    is a list, and when the odd chunk is read when outputs is a generator. Chunks that all
+    lack a key remain supported.
 
     unweighted_override is only for OLD outputs whose metadata predates the 'unweighted_hist' key;
     newer runs store it, so the merge is self-describing.
