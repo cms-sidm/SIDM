@@ -31,7 +31,18 @@ here. A probe on the vertexChi2 study's inputs (one 2018 data skim and one 2Mu2E
 on the corrected code with that study's as-run selections, which apply the same cut) reproduced
 every histogram and cutflow exactly; the few pairs the wrap moves across the 0.1 threshold fail the
 DSA pT cut or the loose ID of the matched PF muon, or are removed anyway. The campaigns here have
-not been rerun.
+not been rerun, apart from one chunk as a check: chunk 0 of
+`MuljDecayAngle_Run2018_v1/4Mu_500GeV_1p2GeV_1p9mm` (five files). Run on this branch in the
+environment `condor/run_job.sh` builds (numpy 1.26.4, awkward 2.8.2, vector 1.6.2), it reproduces
+bin for bin every cutflow and every histogram of the stored chunk that the collection still fills
+(the stored chunk holds seven more, which the notebook does not read). Run in the notebook
+environment (numpy 2.3.2, awkward 2.8.7, vector 1.6.3), it keeps every event count and every
+histogram without the decay angle, and moves entries between |cos(theta*)| bins and along no other
+axis: summed over the channels, 0.2 percent of the entries of the generated angle and 0.6 percent
+of the reconstructed one change bin (25 bins; 1.6 percent in the 50 bins of
+`genMu_ptRatio_vs_absCosTheta`). The ratio of entries above to below 0.48 stays at 1.510 for the
+generated angle and goes from 1.372 to 1.369 for the reconstructed one. That points at the
+single-precision arithmetic of caveat 9; it was not traced further. The inputs are the condor ones.
 
 The inputs also predate the standard corrections (PR #58, merged 2026-11-12), which `SidmProcessor`
 applies to simulation unless it is given `corrections=None`, and `condor/run_job.sh` unless its
@@ -529,7 +540,10 @@ These apply to every reading of the figures and are repeated in the notebook.
    1000 GeV the dark photon's Lorentz factor is 1,000 to 2,000 and the boost into its rest
    frame pushes the generated |cos(theta*)| towards one, so that histogram is not a reference
    there; the reconstructed angle at that mass carries the same arithmetic. The plane angle,
-   and every generated reference at m_Zd = 1.2 and 5.0 GeV, are unaffected. The notebook's
+   and every generated reference at m_Zd = 1.2 and 5.0 GeV, are unaffected at the level this
+   study uses: the rerun of one chunk under two sets of libraries, described with the inputs
+   above, changes the high-to-low ratio of the reconstructed angle by 0.2 percent at
+   m_Zd = 1.2 GeV and that of the generated angle not at all. The notebook's
    section b gives a toy that sizes this point by point. The overflow bin of each angle
    histogram holds the entries this arithmetic places outside the axis: a few in a hundred
    thousand in data, at most 0.2 percent of the simulated entries at m_Zd = 1.2 and 5.0 GeV,
