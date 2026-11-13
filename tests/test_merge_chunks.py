@@ -11,7 +11,7 @@ import hist
 import pytest
 import yaml
 from coffea import processor
-from coffea.util import save
+from coffea.util import load, save
 
 from sidm.scripts import merge_coffea_chunks_eos
 from sidm.scripts.merge_coffea_chunks_eos import combine_normalized_chunks, sample_outputs
@@ -116,13 +116,22 @@ def test_merge_refuses_ambiguous_normalization_in_one_chunk(values):
         combine_normalized_chunks([output])
 
 
-@pytest.mark.parametrize("unweighted, flag", [(False, False), (True, False), (False, True)])
-def test_sidecar_records_the_hist_mode_of_the_chunks(unweighted, flag, tmp_path, monkeypatch):
-    """The sidecar of a merged sample says how its chunks were run, whatever the flag says."""
+@pytest.mark.parametrize("recorded, flag, unweighted", [
+    (False, False, False),
+    (True, False, True),
+    (False, True, False),    # the record wins over the flag
+    (None, True, True),      # chunks that predate the key: the flag decides
+])
+def test_sidecar_records_the_hist_mode_of_the_chunks(recorded, flag, unweighted, tmp_path,
+                                                     monkeypatch):
+    """The sidecar of a merged sample states the hist mode the merge used for it."""
     eos = tmp_path / "eos"
     eos.mkdir()
     for i, sumw in enumerate([10.0, 30.0]):
-        save(chunk(sumw, unweighted=unweighted), str(eos / f"{SAMPLE}_{i}.coffea"))
+        one = chunk(sumw, unweighted=unweighted)
+        if recorded is None:
+            del sample_outputs(one)[SAMPLE]["metadata"]["unweighted_hist"]
+        save(one, str(eos / f"{SAMPLE}_{i}.coffea"))
     filelists = tmp_path / "filelists"
     filelists.mkdir()
     (filelists / f"{SAMPLE}_0.txt").write_text("root://host//store/file.root\n")
@@ -141,5 +150,8 @@ def test_sidecar_records_the_hist_mode_of_the_chunks(unweighted, flag, tmp_path,
     ] + (["--unweighted-hist"] if flag else []))
     merge_coffea_chunks_eos.main()
 
+    merged = load(str(workdir / "merged" / f"{SAMPLE}.coffea"))
+    h = sample_outputs(merged)[SAMPLE]["hists"]["x"]
+    assert h.values()[0] == pytest.approx(2.0 if unweighted else 0.05)
     sidecar = yaml.safe_load((workdir / "merged" / f"{SAMPLE}.meta.yaml").read_text())
     assert sidecar["unweighted_hist"] is unweighted

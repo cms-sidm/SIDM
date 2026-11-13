@@ -637,9 +637,10 @@ a `WARNING: no gen filter efficiency` line.
 The correction mirrors `postprocess` and is conditional: **data** is never scaled; the **cutflow**
 (simulation) is always corrected; **hists** are corrected only for *weighted* runs — with
 `--unweighted-hist` the hists were never per-chunk-scaled, so they are left as a plain sum.
-So **`--unweighted-hist` must match how the chunks were produced** (the same flag also records this
-in the sidecar). Chunks produced after this change carry `unweighted_hist` in their metadata, so the
-merge is self-describing; the flag is then only needed to re-merge **older** outputs.
+Chunks record how they were run (`unweighted_hist` in their metadata), and the merge and the sidecar
+follow that record. The merge script's own `--unweighted-hist` flag is only for **older** outputs
+whose chunks lack that key: there it must match how the chunks were produced, and it sets both the
+hist normalization and the sidecar. It is ignored for chunks that carry the key.
 
 > Running a full sample over **dask** (a single `Runner.run` over the whole fileset, as in the dask
 > example notebook) does *not* need this: `postprocess` runs once there with the full `sumw`, so the
@@ -657,7 +658,7 @@ python sidm/scripts/merge_coffea_chunks_eos.py \
   --filelists-dir condor/filelists \
   --selections base \
   --hist-collections muon_base \
-  --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
+  --schema LLPNanoAODSchema --chunksize 50000
 ```
 
 ### Merge signals
@@ -670,12 +671,12 @@ python sidm/scripts/merge_coffea_chunks_eos.py \
   --filelists-dir condor/filelists \
   --selections base \
   --hist-collections muon_base \
-  --schema LLPNanoAODSchema --chunksize 50000 --unweighted-hist
+  --schema LLPNanoAODSchema --chunksize 50000
 ```
 
 ### What the sidecar contains
 
-Each `.meta.yaml` records the input ROOT file list, the full selection + hist-collection definitions, the schema, chunksize, `unweighted_hist` flag, the SIDM git commit, the coffea version, and a UTC timestamp. Loaded via `sidm.tools.metadata.load_run_metadata()`.
+Each `.meta.yaml` records the input ROOT file list, the full selection + hist-collection definitions, the schema, chunksize, the hist mode of the chunks (`unweighted_hist`), the SIDM git commit, the coffea version, and a UTC timestamp. Loaded via `sidm.tools.metadata.load_run_metadata()`.
 
 ### Check merged outputs
 
