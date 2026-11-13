@@ -4,10 +4,16 @@ Run from the repository root:
     python -m pytest tests/test_merge_chunks.py -v
 """
 
+import shutil
+import sys
+
 import hist
 import pytest
+import yaml
 from coffea import processor
+from coffea.util import save
 
+from sidm.scripts import merge_coffea_chunks_eos
 from sidm.scripts.merge_coffea_chunks_eos import combine_normalized_chunks, sample_outputs
 from sidm.tools.cutflow import SimpleCutflow
 
@@ -108,3 +114,32 @@ def test_merge_refuses_ambiguous_normalization_in_one_chunk(values):
     output["out"][SAMPLE]["metadata"]["gen_filter_eff"] = values
     with pytest.raises(ValueError, match="exactly one value"):
         combine_normalized_chunks([output])
+
+
+@pytest.mark.parametrize("unweighted, flag", [(False, False), (True, False), (False, True)])
+def test_sidecar_records_the_hist_mode_of_the_chunks(unweighted, flag, tmp_path, monkeypatch):
+    """The sidecar of a merged sample says how its chunks were run, whatever the flag says."""
+    eos = tmp_path / "eos"
+    eos.mkdir()
+    for i, sumw in enumerate([10.0, 30.0]):
+        save(chunk(sumw, unweighted=unweighted), str(eos / f"{SAMPLE}_{i}.coffea"))
+    filelists = tmp_path / "filelists"
+    filelists.mkdir()
+    (filelists / f"{SAMPLE}_0.txt").write_text("root://host//store/file.root\n")
+    workdir = tmp_path / "work"
+
+    # EOS is a local directory here
+    monkeypatch.setattr(merge_coffea_chunks_eos, "eos_ls",
+                        lambda eos_dir: sorted(str(path) for path in eos.glob("*.coffea")))
+    monkeypatch.setattr(merge_coffea_chunks_eos, "eos_mkdir", lambda eos_dir: None)
+    monkeypatch.setattr(merge_coffea_chunks_eos, "xrdcp_from_eos", shutil.copy)
+    monkeypatch.setattr(merge_coffea_chunks_eos, "xrdcp_to_eos", lambda local_path, eos_dir: None)
+    monkeypatch.setattr(sys, "argv", [
+        "merge_coffea_chunks_eos.py", "--input-eos-dir", str(eos),
+        "--output-eos-dir", "/store/merged", "--workdir", str(workdir), "--keep-local",
+        "--filelists-dir", str(filelists),
+    ] + (["--unweighted-hist"] if flag else []))
+    merge_coffea_chunks_eos.main()
+
+    sidecar = yaml.safe_load((workdir / "merged" / f"{SAMPLE}.meta.yaml").read_text())
+    assert sidecar["unweighted_hist"] is unweighted
