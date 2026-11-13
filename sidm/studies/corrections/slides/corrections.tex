@@ -183,8 +183,8 @@
               default corrections of the time, pixel veto monitored (default since),
               \code{syst} axis.
         \item \textbf{Jobs}: 2,955, sized to $\sim$100k events each; six resubmission rounds
-              with \code{sidm/scripts/corrections\_campaign.py} (status, retry, skipped files,
-              merge).
+              with \code{condor/campaign.py} and the campaign's YAML config (status, retry,
+              skipped files, merge).
         \item \textbf{Bad inputs}: 13 corrupt 4Mu files (branches that do not decompress) dropped;
               4 empty files. Lists in \code{campaign/}.
       \end{itemize}
@@ -221,8 +221,8 @@
           weighted / \code{syst} histograms and monitored corrections.
     \item \code{merge\_coffea\_chunks\_eos.py}: normalisation bug fixed (next slides); streams the
           chunks (1,000 chunks no longer need 16 GB); \code{-{}-samples}.
-    \item \code{make\_job\_args.py}: files per job per sample; \code{submit\_corrections.sub}: holds and
-          restarts a job running over 12 hours.
+    \item \code{make\_job\_args.py}: files per job per sample, with a cap; \code{campaign.py}: a
+          campaign from one YAML config, restarting jobs that run over 12 hours.
   \end{itemize}
 \end{frame}
 
@@ -766,9 +766,9 @@
     \texttt{sidm/tools/selection.py}, \texttt{cutflow.py}, \texttt{histogram.py} & categories in every cutflow row and on the \texttt{syst} axis; what the event cuts read \\
     \texttt{sidm/definitions/hists.py}, \texttt{objects.py}, \texttt{hist\_collections.yaml} & \texttt{corrections\_study} histograms and collections \\
     \texttt{sidm/tools/metadata.py}, \texttt{merge\_coffea\_chunks\_eos.py} & provenance in the sidecars; \textbf{merge normalisation fix}, streaming \\
-    \texttt{sidm/scripts/corrections\_campaign.py} & \textbf{new}: campaign status, retry, skipped files, merge \\
+    \texttt{condor/campaign.py}, \texttt{campaign\_configs/} & \textbf{new}: campaigns from a YAML config: status, retry, skipped files, merge \\
     \texttt{condor/run\_sidm\_chunk.py}, \texttt{run\_job.sh}, \texttt{make\_job\_args.py} & YAML metadata (skim factor), data guard, new arguments \\
-    \texttt{condor/submit\_corrections.sub} and job lists & \textbf{new}: the campaign \\
+    \texttt{condor/submit\_campaign.sub} and job lists & \textbf{new}: the campaign \\
     \texttt{requirements.txt}, \texttt{install\_correctionlib\_cmssw.sh} & \texttt{correctionlib==2.9.0}; build for the CMSSW\_17 kernel \\
     \texttt{sidm/studies/corrections/} & \textbf{new}: README, four notebooks, tables, campaign records, these slides \\
     \bottomrule
