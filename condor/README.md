@@ -678,6 +678,11 @@ python sidm/scripts/merge_coffea_chunks_eos.py \
 
 Each `.meta.yaml` records the input ROOT file list, the full selection + hist-collection definitions, the schema, chunksize, the hist mode of the chunks (`unweighted_hist`), the SIDM git commit, the coffea version, and a UTC timestamp. Loaded via `sidm.tools.metadata.load_run_metadata()`.
 
+A sidecar written by a merge whose `--unweighted-hist` flag did not match its chunks carries the
+wrong `unweighted_hist`. `sidm/scripts/fix_sidecar_hist_mode.py --eos-dir <dir>` compares every
+sidecar under an EOS directory with the output beside it and lists the wrong ones; with `--apply`
+it rewrites that one field in them.
+
 ### Check merged outputs
 
 ```bash
