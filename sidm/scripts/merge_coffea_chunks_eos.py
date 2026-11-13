@@ -145,10 +145,11 @@ def check_chunk_normalization(outputs, keys=NORMALIZATION_KEYS, settings=None):
 
 
 def hists_unweighted(meta, override=None):
-    """Whether a sample's hists are raw counts, i.e. postprocess did not scale them.
+    """The unweighted_hist setting SidmProcessor ran with, for one sample.
 
-    The value recorded in the chunk metadata, else override (the --unweighted-hist flag,
-    for outputs that predate the key). None when neither says.
+    meta is the sample's metadata, of one chunk or of the merged output. The processor
+    records the setting there as a set holding one bool; outputs that predate the key
+    fall back to override (the --unweighted-hist flag). None when neither says.
     """
     recorded = meta.get("unweighted_hist")
     if recorded:
@@ -396,8 +397,8 @@ def main():
                     print(f"  loading chunk {i+1}/{len(local_paths)}")
                 yield load(path)
 
-        merged = combine_normalized_chunks(
-            outputs(), unweighted_override=(True if args.unweighted_hist else None))
+        unweighted_override = True if args.unweighted_hist else None
+        merged = combine_normalized_chunks(outputs(), unweighted_override=unweighted_override)
 
         local_merged_path = os.path.join(local_merged_dir, f"{sample}.coffea")
         save(merged, local_merged_path)
@@ -428,8 +429,8 @@ def main():
                 hist_collections=hist_collections,
                 schema=args.schema,
                 chunksize=args.chunksize,
-                # the mode the merge used: the chunks' own record, else the flag
-                unweighted_hist=bool(hists_unweighted(sample_meta, args.unweighted_hist or None)),
+                # same rule as the merge: the chunks' record, else the flag, else weighted
+                unweighted_hist=bool(hists_unweighted(sample_meta, unweighted_override)),
                 corrections=corrections or None,
                 monitor_corrections=monitored or None,
                 output=sample_outputs(merged),
