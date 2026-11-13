@@ -28,7 +28,8 @@ jobs:
           pip install -c constraints.txt -r requirements.txt
           # distributed is imported by the analysis (scaleout.py) but is not in requirements.txt
           pip install -c constraints.txt "distributed==2025.3.0" scipy
-          pip install "pylint==4.0.6"
+          # pytest is imported by the unit tests; without it pylint reports an import error on them
+          pip install "pylint==4.0.6" "pytest==9.1.0"
 
       - name: coffea agrees across venv, freeze and worker image
         # Static consistency check, not a lint. Dask workers get coffea from the
