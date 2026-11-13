@@ -144,6 +144,18 @@ def check_chunk_normalization(outputs, keys=NORMALIZATION_KEYS, settings=None):
                 expected[key] = setting
 
 
+def hists_unweighted(meta, override=None):
+    """Whether a sample's hists are raw counts, i.e. postprocess did not scale them.
+
+    The value recorded in the chunk metadata, else override (the --unweighted-hist flag,
+    for outputs that predate the key). None when neither says.
+    """
+    recorded = meta.get("unweighted_hist")
+    if recorded:
+        return bool(next(iter(recorded)))
+    return None if override is None else bool(override)
+
+
 def combine_normalized_chunks(outputs, unweighted_override=None):
     """Combine per-chunk SidmProcessor outputs that were normalized PER CHUNK in postprocess.
 
@@ -172,12 +184,8 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
         is_data_set = meta.get("is_data")
         if is_data_set and bool(next(iter(is_data_set))):
             return False, False                       # data: nothing was scaled
-        uw_set = meta.get("unweighted_hist")
-        if uw_set:
-            unweighted = bool(next(iter(uw_set)))
-        elif unweighted_override is not None:
-            unweighted = bool(unweighted_override)
-        else:
+        unweighted = hists_unweighted(meta, unweighted_override)
+        if unweighted is None:
             print("  WARNING: chunk metadata lacks 'unweighted_hist' and no --unweighted-hist "
                   "override was given; assuming WEIGHTED. Pass --unweighted-hist if this run used "
                   "unweighted hists, else the hist normalization will be wrong.")
@@ -287,10 +295,11 @@ def main():
         "--unweighted-hist",
         action="store_true",
         help="The chunks were produced with unweighted hists (postprocess did NOT scale "
-             "hists per chunk in that mode). Recorded in the sidecar AND used by the merge "
-             "so the normalization correction hits the right objects (corrects the cutflow; "
-             "leaves raw hists alone). Must match how the chunks were run; only needed for "
-             "OLD outputs whose metadata predates the unweighted_hist key.",
+             "hists per chunk in that mode). Only needed for OLD outputs whose metadata "
+             "predates the unweighted_hist key, and must then match how the chunks were run: "
+             "the merge uses it so the normalization correction hits the right objects "
+             "(corrects the cutflow; leaves raw hists alone) and records it in the sidecar. "
+             "Chunks that store the key are merged, and described in the sidecar, as recorded.",
     )
 
     parser.add_argument(
@@ -419,7 +428,8 @@ def main():
                 hist_collections=hist_collections,
                 schema=args.schema,
                 chunksize=args.chunksize,
-                unweighted_hist=args.unweighted_hist,
+                # the mode the merge used: the chunks' own record, else the flag
+                unweighted_hist=bool(hists_unweighted(sample_meta, args.unweighted_hist or None)),
                 corrections=corrections or None,
                 monitor_corrections=monitored or None,
                 output=sample_outputs(merged),
