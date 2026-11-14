@@ -18,10 +18,21 @@ from sidm.tools import histogram as h
 from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs, dR_outer
 from sidm.definitions.objects import derived_objs, withMass
 from sidm.tools.corrections import Corrections
-from sidm.definitions.cuts import obj_cut_defs
+from sidm.definitions.cuts import obj_cut_defs, MET_FILTERS
 # always reload local modules to pick up changes during development
 importlib.reload(h)
 
+
+
+def met_filter_fail_mask(objs):
+    """Per event, the bit mask of failed MET filters: bit i is set if MET_FILTERS[i] failed."""
+    return sum(ak.values_astype(~objs["flags"][name], np.int64) << i
+               for i, name in enumerate(MET_FILTERS))
+
+
+def mu_lj_dsa_max_pt(objs):
+    """Per event, the highest pT of the DSA muons in mu-type LJs; -1 if there is none."""
+    return ak.fill_none(ak.max(ak.flatten(objs["mu_ljs"].dsaMuons.pt, axis=2), axis=1), -1)
 
 
 # define counters
@@ -5828,6 +5839,19 @@ hist_defs = {
             h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="mu_lj_dsaMuon_abseta",
                                       label=r"DSA $\mu$ $|\eta|$"),
                    lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.eta)),
+        ],
+    ),
+    # Failed-MET-filter bit mask (0 = all ten filters of "pass flags" passed), against the
+    # highest mu-LJ DSA muon pT of the event (underflow: no DSA muon in a mu-type LJ), with the
+    # pT edges of the halo diagnostics above. Meant for channels without "pass flags".
+    "met_filter_fail_mask": h.Histogram(
+        [
+            h.Axis(hist.axis.Integer(0, 1 << len(MET_FILTERS), name="met_filter_fail_mask",
+                                     label="Failed MET filter bit mask"),
+                   lambda objs, mask: met_filter_fail_mask(objs)),
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="mu_lj_dsaMuon_max_pt",
+                                      label=r"Highest $\mu$-type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: mu_lj_dsa_max_pt(objs)),
         ],
     ),
     # ------------------------------------------------------------------------------------
