@@ -66,10 +66,48 @@ class _AwkwardColumnAccumulator(processor.AccumulatorABC):
 class SidmProcessor(processor.ProcessorABC):
     """Class to apply selections, make histograms, and make cutflows
 
-    Accepts NanoEvents records that are assumed to have been produced by FFSchema. Selections are
-    chosen by supplying a list of selection names (as defined in selections.yaml), and histograms
-    are chosen by providing a list of histogram collection names (as definined in
-    hist_collections.yaml).
+    Accepts NanoEvents records built with LLPNanoAODSchema (sidm/tools/llpnanoaodschema.py).
+    Selections are chosen by supplying a list of selection names (as defined in
+    selections_cfg), and histograms are chosen by providing a list of histogram collection
+    names (as defined in histograms_cfg).
+
+    Arguments:
+        channel_names: selections to run; each is one cutflow and one entry of the
+            "channel" axis of every histogram.
+        hist_collection_names: histogram collections to fill.
+        lj_reco_choices: lepton-jet clustering distance parameters, as strings. With more
+            than one, histograms get an "lj_reco" axis and the cutflows an lj_reco level.
+        selections_cfg, histograms_cfg, run_periods_cfg: config files, relative to sidm/.
+        unweighted_hist: fill histograms with unit weights; postprocess then leaves them
+            unscaled (the weighted cutflow column is still scaled).
+        verbose: print each cut as it is applied, and the traceback of any histogram
+            that cannot be filled.
+        corrections, monitor_corrections, syst_hists: the standard corrections, see the
+            comment in __init__.
+        debug, debug_branches, include_default_debug_branches, debug_suppress_failures:
+            optional per-event output, see below.
+
+    process returns {dataset: out} with
+        out["cutflow"][channel]: SimpleCutflow (keyed by lj_reco first if several)
+        out["hists"][name]: hist.Hist
+        out["counters"][lj_reco][channel][name]: object counts in the selected events
+        out["metadata"]: n_evts, scaled_sum_weights, year, is_data, production,
+            unweighted_hist, n_removed_golden_json; when corrections are requested also
+            corrections (and monitored_corrections), plus scaled_sum_weights_corrected
+            and object_corrections for simulation
+    postprocess scales the cutflows and histograms of simulation by
+    lumi*xs*gen_filter_eff/scaled_sum_weights (utilities.get_lumixs_weight; signal at 1 fb)
+    and adds metadata["gen_filter_eff"].
+
+    Debug output: with debug=True, out["debug"][lj_reco][channel][branch] is an
+    accumulator whose .value is an awkward array concatenated over chunks. A branch is a
+    function (sel_objs, events) -> array. sel_objs holds the objects after the channel's
+    event selection, so branches reading it are over selected events; branches reading
+    the raw events stay full-chunk. default_debug_branches() gives passing_weights and
+    gen_weights; debug_branches adds or replaces branches, and
+    include_default_debug_branches=False drops the defaults. A branch that raises is
+    skipped with a warning unless debug_suppress_failures=False. Example:
+    sidm/test_notebooks/debug_branch_demo.ipynb.
     """
 
     def __init__(

@@ -24,11 +24,9 @@ name: scheduled-env-check
 #   * GitHub auto-disables scheduled workflows in a repository with 60 days of
 #     no activity. If this goes quiet rather than red, check that first.
 #   * How a failure reaches a human: the run goes red in the Actions tab, and
-#     GitHub emails whoever last committed to this file. There is deliberately
-#     no auto-filed issue -- Issues are disabled on this repository, so filing
-#     one is not possible without turning that on. If the team ever wants that,
-#     enable Settings -> General -> Features -> Issues first, then add a job
-#     with `issues: write` permission.
+#     GitHub emails whoever last committed to this file. There is no
+#     auto-filed issue. If the team ever wants one, add a job with
+#     `issues: write` permission.
 
 on:
   schedule:
