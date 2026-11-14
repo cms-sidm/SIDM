@@ -123,7 +123,8 @@ copies both to `root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/
 `sidm_path` is derived from the working directory, so run them from this directory. Per-sample
 outputs already on disk are skipped, so an interrupted run can be resumed.
 
-Every stored output predates the correction of `dR_outer` in `sidm/tools/utilities.py` (PR #65,
+Every stored histogram output except `vtxGenDr_signal_2018` predates the correction of `dR_outer`
+in `sidm/tools/utilities.py` (PR #65,
 merged 2026-11-02: the outer-track phi difference is wrapped across +-pi, and the (-5, -5)
 coordinates of a missing outer track count as missing). `dR_outer` enters the DSA cross-cleaning
 cut `all` of every channel here and the segment-matched control of the write-up's section 10.
@@ -138,12 +139,23 @@ corrected `dR_outer` removes 2 of the 12,905 DSA muons in muon LJs and moves 2 o
 LJs to another bin, with every cutflow count unchanged, and the code with `dR_outer` as it was
 before the fix reproduces the stored histograms exactly. So the stored outputs can differ from a
 rerun at the 10^-4 level in the DSA-muon content. Nothing else has been rerun.
+`vtxGenDr_signal_2018` (below) was produced with the correction, over the samples, files,
+channels and selections of `vtxLxyDr_signal_2018`. In the reference channel
+(`base_ljDisplacementIso_cosAlpha`, the selection without a cosmic veto) it holds 68 fewer
+mu-type LJs with >= 2 muons than that run, of 5,764,154 (57 of the 180 samples differ; summed
+over the samples, 82 fewer LJs pass, 7 more have no vertex and 7 more have chi2 >= 5), and 63
+fewer of 5,581,391 in the Spread-veto channel (`base_ljDisplacementIso_cosAlpha_ljSpread`, 53
+samples). These differences were not traced LJ by LJ. The per-LJ records of `dr_truth_match/`
+(below) were also produced with the correction: their LJ counts equal those of
+`vtxGenDr_signal_2018` in each of their 16 samples.
 
-Every stored output also predates the standard corrections (PR #58, merged 2026-11-12), which
+Every stored output but `vtxGenDr_signal_2018` also predates the standard corrections (PR #58,
+merged 2026-11-12), which
 `SidmProcessor` applies to simulation unless it is given `corrections=None`. The run notebooks do
 not set that argument, so a simulation notebook rerun on main weights its cutflows and weighted
 histograms with the corrections; `corrections=None` gives the weights of the stored outputs. Data
-are not affected.
+are not affected. The condor submission of `vtxGenDr_signal_2018` passes `none` for the
+corrections and books unweighted histograms, as that of `vtxLxyDr_signal_2018` does.
 
 Every run notebook passes `selections_cfg="configs/selections_vertexChi2_as_run.yaml"` to
 `SidmProcessor` and to `write_run_metadata`. That argument was added after the notebooks were
@@ -221,6 +233,31 @@ python sidm/scripts/merge_coffea_chunks_eos.py \
 where `<scratch>` is any local scratch directory (`--keep-local` leaves the chunk copies there),
 and the merged files are copied to `RunOutputFiles/vtxLxyDr_signal_2018/`.
 
+### Condor production of `vtxGenDr_signal_2018`
+
+`vtxGenDr_signal_2018` repeats that production with one more histogram: the vertex outcome
+against the generated dR of the matched dark photon's two daughter muons. The hist collection
+`mu_lj_vtx_outcome_gen_dr` holds it (`mu_lj_vtxChi2_genA_lxy_genMuMu_dR`: `vtx_chi2` x coarse
+generated Lxy x generated dR) together with `mu_lj_vtxChi2_genA_lxy_mumu_dR` and
+`mu_lj_vtx_chi2` for the closures. Samples, channels, selections file, census skip list and job
+layout are those of `vtxLxyDr_signal_2018`: `condor/submit_vtxgendr_signal.sub` over
+`condor/job_args_vtxgendr.txt`, 964 jobs of 10 files, unweighted, no standard corrections. The
+job list and the filelists are regenerated with the recipe above, with `vtxgendr` for `vtxlxydr`
+in `--outdir` and in the job-list names (the two sample lists `condor/samples_vtxlxydr_*.txt`
+serve both productions). The code was `main` at 9d9b387c plus the two changes that book the
+histogram and add the submission. The provenance sidecars record commit 78b7404b, which is not
+in this repository: it is 9d9b387c with those same two changes. The chunks are merged with
+
+```bash
+python sidm/scripts/merge_coffea_chunks_eos.py \
+  --input-eos-dir /store/user/$USER/sidm_condor/vtxGenDr_signal_2018 \
+  --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/vtxGenDr_signal_2018 \
+  --workdir <scratch>/merge_vtxgendr --keep-local --filelists-dir condor/filelists_vtxgendr \
+  --selections base_ljDisplacementIso_cosAlpha,base_ljDisplacementIso_cosAlpha_ljSpread \
+  --hist-collections mu_lj_vtx_outcome_gen_dr \
+  --selections-cfg configs/selections_vertexChi2_as_run.yaml --chunksize 50000 --unweighted-hist
+```
+
 ### Vertex outcome vs Lxy and dR, and the halo fractions (`vtx_outcome_lxy_dr/`)
 
 The tables in `vtx_outcome_lxy_dr/` are read from `vtxLxyDr_signal_2018` (signal), the existing
@@ -236,10 +273,11 @@ python $D/halo_data_mc.py $OUT
 python $D/condor_vs_dask.py $OUT/condor_vs_dask.txt
 ```
 
-They also write PNG figures, which are not committed. `an_figures.py OUTDIR` draws the two
-figures for the analysis note from `outcome_vs_lxy.csv` and `outcome_vs_dR.csv` (reference
-channel, mean over the samples): the outcome fractions against the generated Lxy and against
-the reconstructed dR, in the style of `truth_kinematics_forAN/an_style.py`, as vector PDF with
+They also write PNG figures, which are not committed. `an_figures.py OUTDIR` draws the
+figures for the analysis note from `outcome_vs_lxy.csv`, `outcome_vs_dR.csv` and
+`outcome_vs_gen_dR.csv` (next section), reference channel, mean over the samples: the outcome
+fractions against the generated Lxy, against the reconstructed dR and against the generated dR,
+in the style of `truth_kinematics_forAN/an_style.py`, as vector PDF with
 PNG previews (the "bound-state mass" of their legends is the mediator mass of this README). Outcome of a mu-type LJ: **no vertex**
 (`vtx_chi2 < 0`: the -1 sentinel of an LJ without a stored within-LJ vertex, and the three LJs
 in the grid whose stored normChi2 lies in [-0.5, 0), which the vertex cut and `mu_lj_vtx_chi2`
@@ -270,6 +308,105 @@ bin is vertical if its centre is within 0.5 rad of +-pi/2, horizontal if within 
 or +-pi. `halo_common.py` holds these index groups and the fraction and ratio helpers shared by
 `halo_signal.py` and `halo_data_mc.py`. A horizontal-over-vertical ratio with no horizontal
 entries is 0 with error 0; one with no vertical entries is left blank.
+
+### Vertex outcome against the generated dR, and tests of the trends (`vtx_outcome_lxy_dr/`)
+
+At mediator masses of 500 and 1000 GeV a reconstructed dR above 0.1 between the two leading muons
+is mostly not the opening angle of the decay pair (`dr_truth_match/` below), so the outcome is
+also tabulated against the generated dR of the matched dark photon's two daughter muons, from
+`vtxGenDr_signal_2018`. With `GENDR` and `LXYDR` local copies of the merged outputs of
+`vtxGenDr_signal_2018` and `vtxLxyDr_signal_2018`:
+
+```bash
+D=sidm/studies/vertexChi2/vtx_outcome_lxy_dr
+python $D/vtx_outcome_vs_gen_dr.py $GENDR $LXYDR $OUT     # reads outcome_by_sample.csv next to it
+python $D/physical_sense_tests.py $OUT $OUT/physical_sense
+python $D/trigger_vs_lxy.py $OUT/trigger_vs_lxy.csv condor/filelists_vtxgendr/<sample>_0.txt ...
+```
+
+Both condor productions are unweighted, so every number of these tables is a raw LJ count or a
+ratio of raw counts. A mass point is one pair (mediator mass, m_Zd), its lifetimes and both final
+states summed unless a table splits them. The generated dR is that of the dark photon the LJ is
+matched to (nearest `genAs_toMu` within dR < 0.4), between its own two daughters, from their
+momenta as generated.
+
+| file | what it holds | written by |
+|---|---|---|
+| `counts_gen_dr.csv.gz` | Per sample and channel: LJs by outcome in bins of the coarse generated Lxy ([0, 1), [1, 10), [10, 100), [100, 1000) cm) and of the generated dR (edges 0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5). Underflow and overflow are bins of their own; "< 0" is an LJ without a matched dark photon. | `vtx_outcome_vs_gen_dr.py` |
+| `counts_lxy.csv`, `counts_lxy_muonN.csv` | From `vtxLxyDr_signal_2018`: LJs by outcome per sample, channel and bin of the fine generated Lxy (the ten bins of `outcome_vs_lxy.csv`); the second file per muon multiplicity, for [100, 300) and [300, 1000) cm only. | `vtx_outcome_vs_gen_dr.py` |
+| `outcome_vs_gen_dR.csv` | `outcome_vs_dR.csv` with the generated dR in place of the reconstructed one: robust samples, gen-matched LJs of every Lxy, mean / sem and pooled, for all samples and per mediator mass, in both channels. | `vtx_outcome_vs_gen_dr.py` |
+| `closure_gen_dr_marginal.csv`, `gen_dr_checks.txt` | Per sample and channel, the new histogram summed over both generated axes against `mu_lj_vtx_chi2`, and summed over the generated dR against the reconstructed-dR histogram of the same run summed over the reconstructed dR. Both are exact in all 360 (sample, channel) pairs. No gen-matched LJ has fewer than two daughters. | `vtx_outcome_vs_gen_dr.py` |
+| `physical_sense/TC_floor.csv`, `TC_dr_mix.csv` | Decays within 10 cm: the no-vertex fraction against the generated dR, per mediator mass; and per mediator mass the fraction over all dR, the share of the LJs below 0.002, the fraction that its dR distribution gives with the fraction of each dR bin taken from all masses summed, and the measured fraction minus that, with the parts of the difference from the dR bin below 0.002 and from the bins between 0.002 and 0.01. | `physical_sense_tests.py` |
+| `physical_sense/TA_points.csv`, `TA_cells.csv`, `TA_order.csv`, `TA_final_state.csv` | Whether the mass points share one fraction inside a (coarse Lxy, generated dR) cell. Per cell and mass point (points with >= 200 LJs): the no-vertex and pass fractions; per cell their range over the mass points and the chi2 of one common fraction; the rank correlation of the fractions with the mediator mass at fixed m_Zd and with m_Zd at fixed mediator mass; 4Mu against 2Mu2E. The cells are coarse (one spans 10 to 100 cm), and a different Lxy or dR distribution inside a cell also makes the points disagree; tables 21 and 22 of `dr_truth_match/` repeat the test in finer cells. | `physical_sense_tests.py` |
+| `physical_sense/TB_samples.csv`, `TB_pooled.csv`, `TB_pooled_by_M.csv` | Lxy [100, 300) against [300, 1000) cm: the three outcome fractions in each bin and their difference, per sample with >= 50 LJs in both bins, and with the counts of those samples summed per mass point and per mediator mass. | `physical_sense_tests.py` |
+| `physical_sense/TB_final_state.csv` | The LJs and the no-vertex fraction of those two Lxy bins per final state and m_Zd, all samples summed. | `physical_sense_tests.py` |
+| `physical_sense/TD_widest.csv` | Generated dR [0.2, 0.5) against [0.1, 0.2) at a fixed mass point and coarse Lxy bin: the no-vertex fraction in each and their difference, for both final states together and for each (rows with >= 100 LJs in both dR bins). | `physical_sense_tests.py` |
+| `trigger_vs_lxy.csv` | Twelve samples (both final states at 150 and 500 GeV, m_Zd of 0.25, 1.2 and 5 GeV, the longest lifetime of each; the first two filelists, 20 files, 537,470 events): events and the fraction that pass the trigger (the OR of the "pass triggers" cut, no other selection) by the decay radius of the dark photons that decay to muons, in 4Mu the larger and the smaller of the two. | `trigger_vs_lxy.py` |
+
+Numbers, reference channel. The first, second and fourth items are from `vtxGenDr_signal_2018`
+(5,761,625 gen-matched LJs in the 180 samples), the third from `vtxLxyDr_signal_2018`
+(5,761,693).
+
+- **Collimated pairs.** Among the 1,288,870 LJs whose dark photon decays within 10 cm, the
+  no-vertex fraction is 0.18 to 0.27 for a generated dR below 0.002 at every mediator mass (239
+  of 1,059 at 100 GeV, 23,301 of 85,269 at 1000 GeV), 0.083 to 0.153 in [0.002, 0.005), 0.055
+  to 0.140 in [0.005, 0.01), 0.025 to 0.089 in [0.01, 0.02) and 0.004 to 0.011 in [0.1, 0.2)
+  (0.009 to 0.014 in [0.2, 0.5) at 100 to 200 GeV, 1 of 96 at 500 GeV). Over all dR inside
+  10 cm it is 0.050, 0.068, 0.075, 0.122, 0.157 and 0.139 at 100, 150, 200, 500, 800 and
+  1000 GeV, and the share of the LJs below 0.002 is 0.03, 0.06, 0.10, 0.39, 0.43 and 0.30
+  (`TC_dr_mix.csv`). With the fraction of each dR bin taken from all masses summed, the dR
+  distribution of each mass gives 0.074, 0.080, 0.081, 0.130, 0.147 and 0.125: the step from
+  100 to 200 GeV up to 500 to 1000 GeV, the maximum at 800 GeV, and 0.073 of the range of
+  0.108. The measured fraction is below that at 100 to 500 GeV (by 0.025, 0.012, 0.006 and
+  0.008) and above it at 800 and 1000 GeV (by 0.010 and 0.013): the fraction inside a dR bin
+  changes with the mediator mass as well. At 100 and 150 GeV the difference comes from the
+  bins between 0.002 and 0.01 (0.023 and 0.009 of it), where the fraction rises with the
+  mediator mass (0.083 at 100 GeV and 0.145 at 1000 GeV in [0.002, 0.005), 0.055 and 0.140 in
+  [0.005, 0.01)). From 200 GeV up it comes mostly from the bin below 0.002 itself (-0.006,
+  -0.010, +0.009 and +0.009 at 200, 500, 800 and 1000 GeV), where the fraction is 0.183 at
+  200 GeV and 0.273 at 1000 GeV. A bin holds a different m_Zd at each mediator mass (next
+  item).
+- **Mass points inside a cell.** Of the 32 (coarse Lxy, generated dR) cells, 26 reject one
+  common no-vertex fraction for all mass points at p < 0.001 (27 of 32 for the pass
+  fraction). In Lxy [10, 100) cm and dR [0.02, 0.05), the fraction runs from 0.071
+  (500 GeV, m_Zd = 5 GeV) to 0.150 (200 GeV, 1.2 GeV) over nine mass points and 891,217 LJs.
+  Within a cell the fraction is lower at the higher m_Zd in 26 of the 30 pairs of mass points
+  of equal mediator mass, and its rank correlation with the mediator mass at fixed m_Zd is
+  positive in 32 of 44 groups of three to six masses. These cells are coarse. In the sixteen
+  2Mu2E samples of `dr_truth_match/` the disagreement does not go away when each Lxy slice is
+  cut in up to eight: the spread of the fraction between mass points beyond the binomial
+  expectation stays at 0.03. It falls to between 0.013 and 0.021 with the muon content of the
+  pair as a further cell variable, or with the dR bin below 0.002 cut in three, and what is
+  left of it is in the DSA-DSA pairs (tables 21 and 22 there).
+- **Largest radii.** The no-vertex fraction falls from [100, 300) to [300, 1000) cm in 37 of the
+  43 samples with at least 50 LJs in both bins, in 20 of them by more than twice its error (it
+  rises by more than that in one), so the fall of `outcome_vs_lxy.csv` is not made by the change
+  of the samples that enter the bin (the fraction without a passing vertex falls in 30 of the
+  43). With the counts summed per mass point the change is -0.18 to -0.28 at m_Zd = 0.25 GeV
+  from 150 GeV up (-0.05 +- 0.03 at 100 GeV), -0.14 to -0.23 at 1.2 GeV from 500 GeV up
+  (+0.06 +- 0.03, -0.03 +- 0.02 and -0.04 +- 0.02 at 100, 150 and 200 GeV), and at 5 GeV 0.00
+  at 100 to 200 GeV and -0.04 to -0.06 from 500 GeV up. 35 of the 43 samples are 4Mu: beyond
+  300 cm, 3,785 of the 3,833 LJs at 0.25 and 1.2 GeV are 4Mu (`TB_final_state.csv`). At 5 GeV
+  both final states populate the bin and differ there, 0.059 (96 of 1,621) in 2Mu2E against
+  0.108 (1,403 of 12,944) in 4Mu, after 0.150 and 0.153 in [100, 300) cm. The trigger selects
+  differently in the two (`trigger_vs_lxy.csv`). A 2Mu2E event whose muon pair decays beyond
+  300 cm passes it in 0.001 to 0.004 of the cases at 0.25 and 1.2 GeV (10 of 11,333 to 39 of
+  8,938) and in 0.014 to 0.044 at 5 GeV, against 0.13 to 0.23 in [100, 300) cm. A 4Mu event
+  passes in 0.20 to 0.34 with both pairs beyond 300 cm and in 0.52 to 0.75 with the other pair
+  within 100 cm. The 2Mu2E LJs beyond 300 cm are therefore a small, trigger-selected part of
+  the decays there. Whether that selection makes their no-vertex fraction lower, and what
+  makes the fraction fall beyond 300 cm in 4Mu, is not established.
+- **The widest generated dR.** In `outcome_vs_gen_dR.csv` the no-vertex fraction (mean over the
+  samples) falls from 0.315 +- 0.010 below 0.002 to 0.046 +- 0.004 in [0.1, 0.2) and is
+  0.124 +- 0.017 in [0.2, 0.5). The 82,405 LJs of the last bin are from m_Zd = 5 GeV at 100 to
+  200 GeV but for 851. At a fixed mass point (`TD_widest.csv`) the last bin is above
+  [0.1, 0.2) beyond 100 cm: 0.164 (1168 of 7130) against 0.076 at 100 GeV, 0.192 against 0.078
+  at 150 GeV, 0.208 (383 of 1841) against 0.083 at 200 GeV. Within 100 cm the two bins agree to
+  0.018 with both final states summed. The final states differ. In 2Mu2E the last bin is high
+  in [10, 100) cm as well: 0.194 (75 of 386) against 0.055 at 100 GeV, 0.230 (38 of 165)
+  against 0.037 at 150 GeV (0.191 and 0.305 beyond 100 cm). In 4Mu, which
+  holds 13,109 of the 13,752 LJs of the last bin beyond 100 cm, it is high only there. These
+  tables do not establish the cause.
 
 ### Truth match of the two leading muons of a mu-type LJ (`dr_truth_match/`)
 
@@ -360,7 +497,9 @@ gen-matched LJs with every derived column) to `$OUT`; neither is committed.
 
 The records reproduce the histograms of `vtxLxyDr_signal_2018`: the LJ count equals that of
 `outcome_by_sample.csv` in 15 samples and is one LJ short in `2Mu2E_500GeV_0p25GeV_4p0mm`
-(17911 against 17912, not traced), the three outcome fractions agree to 3e-5 in that sample and
+(17911 against 17912; that run predates the `dR_outer` correction, and against
+`vtxGenDr_signal_2018`, made with it as the records are, the gen-matched LJ count is equal in
+all 16 samples), the three outcome fractions agree to 3e-5 in that sample and
 to 1e-6 in the others (`check_vs_outcome_by_sample.csv`), and the reco dR recomputed from the
 records equals `mu_lj_mumu_dr` to 4.17e-07 (`tables.md`). The records hold 85438 LJs, 85355 of
 them gen-matched (`tables.md`).

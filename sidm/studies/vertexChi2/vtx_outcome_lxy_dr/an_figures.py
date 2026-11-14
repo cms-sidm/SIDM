@@ -1,9 +1,11 @@
 """AN figures: vertex outcome of gen-matched muon-type lepton jets vs Lxy and vs dR.
 
-Reads outcome_vs_lxy.csv and outcome_vs_dR.csv next to this script, reference channel
-base_ljDisplacementIso_cosAlpha only, and only the unweighted mean over the signal samples
-(<outcome>_mean) and its standard error (<outcome>_sem). Writes vtx_outcome_vs_lxy.pdf and
-vtx_outcome_vs_dR.pdf (vector) plus .png previews at 100 dpi into OUTDIR.
+Reads outcome_vs_lxy.csv, outcome_vs_dR.csv and outcome_vs_gen_dR.csv next to this script,
+reference channel base_ljDisplacementIso_cosAlpha only, and only the unweighted mean over the
+signal samples (<outcome>_mean) and its standard error (<outcome>_sem). Writes
+vtx_outcome_vs_lxy.pdf, vtx_outcome_vs_dR.pdf (reconstructed dR of the two leading muons) and
+vtx_outcome_vs_gen_dR.pdf (generated dR of the matched dark photon's two daughter muons), vector,
+plus .png previews at 100 dpi into OUTDIR.
 
 Left panel: the three outcome fractions stacked per bin, all samples. Right panel: the fraction
 failing the vertex requirement, 1 - pass, per bound-state mass and for all samples.
@@ -36,6 +38,9 @@ FIGURES = [
     ("outcome_vs_dR.csv", "mumu_dR",
      r"Reconstructed $\Delta R$ of the two leading muons",
      "vtx_outcome_vs_dR", "upper left"),
+    ("outcome_vs_gen_dR.csv", "gen_mumu_dR",
+     r"Generated $\Delta R$ of the $Z_d$ daughter muons",
+     "vtx_outcome_vs_gen_dR", "upper right"),
 ]
 
 STACK = [   # bottom to top
@@ -50,7 +55,8 @@ LEGEND_PT = 20
 def read_table(path, bin_col):
     """Reference-channel rows as {group: {bin: {column: value}}}, and the bins in file order.
 
-    Rows whose n_samples_in_mean is empty or zero hold no mean and are dropped."""
+    Rows whose n_samples_in_mean is empty or zero hold no mean and are dropped. A bin with a
+    single sample in the mean has an empty sem, read as NaN (no error bar)."""
     groups, bins = {}, []
     with open(path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
@@ -61,7 +67,8 @@ def read_table(path, bin_col):
             if b not in bins:
                 bins.append(b)
             groups.setdefault(row["group"], {})[b] = {
-                f"{o}_{s}": float(row[f"{o}_{s}"]) for o in OUTCOMES for s in ("mean", "sem")}
+                f"{o}_{s}": float(row[f"{o}_{s}"].strip() or "nan")
+                for o in OUTCOMES for s in ("mean", "sem")}
     return groups, bins
 
 

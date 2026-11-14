@@ -1,0 +1,8 @@
+vtxGenDr samples read: 180; vtxLxyDr samples read: 180
+closure all_ljs: 360 of 360 (sample, channel) pairs exact; largest |difference| 0 (relative 0)
+closure matched_by_lxy: 360 of 360 (sample, channel) pairs exact; largest |difference| 0 (relative 0)
+'other' vtx_chi2 bin (below -1.5), total over samples and channels: 0
+gen-matched LJs with generated dR in the underflow (< 2 daughters): 0
+unmatched LJs outside the generated-dR underflow (expected 0): 0
+LJs with < 2 muons in vtxLxyDr (both channels, all samples): 0
+yield scale vs outcome_by_sample.csv: largest relative difference 2.64e-06 over 180 samples
