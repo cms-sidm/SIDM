@@ -52,7 +52,9 @@ for (ch, g), (pv, pw) in pooled.items():
         s = sub
         for k in KEY:
             s = s[s[k] == r[k]]
-        s = s[(s.neff >= 20) & s.value.notna()]
+        # N_eff of unit weights is the integer count, here a float ratio: the relative
+        # tolerance keeps a sample with exactly 20 entries in, whatever its yield scale
+        s = s[(s.neff >= 20 * (1 - 1e-9)) & s.value.notna()]
         rows.append(dict(selection=ch, group=("all" if g == "all" else f"m_med {g:g} GeV"),
                          **{k: r[k] for k in KEY}, pooled=r["value"], pooled_err=r["err"],
                          pooled_neff=r["neff"], mean=s.value.mean() if len(s) else np.nan,

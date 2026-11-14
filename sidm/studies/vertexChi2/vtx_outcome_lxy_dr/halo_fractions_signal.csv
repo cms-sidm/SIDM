@@ -7,10 +7,10 @@ base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT 100-200,nHits 0-20,|et
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT 100-200,nHits 20-30,|eta| all,0.0112187,0.000240341,313715,0.056988,0.00857779,141
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT 100-200,nHits >=30,|eta| all,0.00347413,0.000136337,317963,0.0262848,0.00528605,131
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT 100-200,nHits all,|eta| all,0.00760519,0.000132664,717127,0.0535207,0.00770422,149
-base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.00383947,0.000403212,39929,0.0113214,0.0031655,94
+base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.00383947,0.000403212,39929,0.0112022,0.00313427,95
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.00328124,0.000169615,195280,0.033973,0.00890921,111
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT >=200,nHits >=30,|eta| all,0.00117643,9.1182e-05,266269,0.0202079,0.00541391,104
-base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.00220386,8.78382e-05,501471,0.0387963,0.00813897,118
+base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.00220386,8.78382e-05,501471,0.0409913,0.00836346,119
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT all,nHits 0-20,|eta| all,0.0924763,0.000503103,416320,0.0722944,0.00570241,162
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT all,nHits 20-30,|eta| all,0.0903959,0.000274345,1.35721e+06,0.0755792,0.00611515,162
 base_ljDisplacementIso_cosAlpha,all,frac_absdxyBS_ge10,pT all,nHits >=30,|eta| all,0.0974306,0.000283822,1.33348e+06,0.0842232,0.00693469,162
@@ -23,7 +23,7 @@ base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT 100-200,nHits 0-20,|e
 base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT 100-200,nHits 20-30,|eta| all,0.293621,0.000813,313715,0.320662,0.00766652,141
 base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT 100-200,nHits >=30,|eta| all,0.0190142,0.0002468,317963,0.0247088,0.00149796,131
 base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT 100-200,nHits all,|eta| all,0.197022,0.000471828,717127,0.243103,0.0065992,149
-base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.53716,0.00249361,39929,0.590169,0.0101646,93
+base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.53716,0.00249361,39929,0.594587,0.0104501,95
 base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT >=200,nHits 20-30,|eta| all,0.279227,0.00101344,195280,0.320724,0.00953513,111
 base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT >=200,nHits >=30,|eta| all,0.0119496,0.000209888,266269,0.0173296,0.00138204,104
 base_ljDisplacementIso_cosAlpha,all,frac_zeroDT_cscOnly,pT >=200,nHits all,|eta| all,0.157196,0.00051274,501471,0.217473,0.00789114,119
@@ -35,13 +35,13 @@ base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 0-100,nHits all,barrel
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 0-100,nHits all,endcap 1.2-2.4,0.974182,0.00374229,528548,0.967379,0.0100027,162
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 0-100,nHits all,overlap 0.9-1.2,0.94149,0.00523765,257078,0.984714,0.0269376,155
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 0-100,nHits all,|eta| all,0.9916,0.00197667,1.98782e+06,0.988701,0.00753886,162
-base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.985497,0.0039645,498608,1.01811,0.0420274,141
-base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,0.940828,0.00706709,138630,0.99751,0.0273131,130
+base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.985497,0.0039645,498608,1.01622,0.0417731,142
+base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,0.940828,0.00706709,138630,1.00211,0.0274913,131
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 100-200,nHits all,overlap 0.9-1.2,0.951951,0.00960276,79992.3,0.988345,0.0289478,107
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT 100-200,nHits all,|eta| all,0.972764,0.00325426,717127,1.01039,0.0265249,149
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT >=200,nHits all,barrel |eta|<0.9,1.0138,0.00472358,374877,0.973606,0.0202988,114
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT >=200,nHits all,endcap 1.2-2.4,0.911706,0.00908106,78885.6,0.921463,0.0274805,104
-base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.910871,0.0119449,47768.2,1.05168,0.0520004,84
+base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.910871,0.0119449,47768.2,1.04872,0.0514702,85
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT >=200,nHits all,|eta| all,0.986788,0.00396333,501471,1.02362,0.0409245,119
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT all,nHits all,barrel |eta|<0.9,1.00588,0.00200938,2.00633e+06,1.03454,0.0134155,162
 base_ljDisplacementIso_cosAlpha,all,ratio_H_over_V_phi,pT all,nHits all,endcap 1.2-2.4,0.964489,0.00315986,727200,0.948421,0.0107403,162
@@ -58,7 +58,7 @@ base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT 100-200,nHit
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.301308,0.0699324,39.984,,,0
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.467701,0.0549985,81.6579,0.584348,0.0243478,2
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT >=200,nHits >=30,|eta| all,0.43985,0.0818933,36.8496,,,0
-base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.41813,0.0388981,158.231,0.492225,0.0604067,2
+base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.41813,0.0388981,158.231,0.42815,0.0729515,3
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT all,nHits 0-20,|eta| all,0.21893,0.00316001,19159.5,0.168077,0.023027,22
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT all,nHits 20-30,|eta| all,0.229309,0.00184996,56531.9,0.18314,0.0225847,22
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,frac_absdxyBS_ge10,pT all,nHits >=30,|eta| all,0.267589,0.0021106,46699,0.212131,0.0241131,22
@@ -83,7 +83,7 @@ base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 0-100,nHits 
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,endcap 1.2-2.4,1.00455,0.0146182,36618.3,1.01297,0.0279774,22
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,overlap 0.9-1.2,0.948016,0.0197466,17706.3,1.17356,0.138508,22
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,|eta| all,1.007,0.0080405,121195,1.03272,0.0244097,22
-base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.913668,0.104192,596.999,0.943273,0.0769262,9
+base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.913668,0.104192,596.999,0.923946,0.0714679,10
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,1.20654,0.204771,281.851,1.19333,0.182696,5
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,overlap 0.9-1.2,1.19607,0.270867,149.296,0.824675,0.461039,2
 base_ljDisplacementIso_cosAlpha,m_med 100 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,|eta| all,1.025,0.089356,1028.04,0.97024,0.0793889,14
@@ -119,7 +119,7 @@ base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 100-200,nH
 base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits 20-30,|eta| all,0.292844,0.00181043,63898.1,0.335297,0.0140438,29
 base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits >=30,|eta| all,0.0226536,0.000643509,54313.1,0.0247839,0.00285401,29
 base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits all,|eta| all,0.208081,0.00110232,136890,0.239509,0.0127746,29
-base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.531492,0.00429831,13492.1,0.5866,0.021068,27
+base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.531492,0.00429831,13492.1,0.596008,0.0223752,28
 base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 20-30,|eta| all,0.274061,0.00167237,70949.6,0.327359,0.0173607,29
 base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits >=30,|eta| all,0.0109697,0.00032909,102454,0.0135972,0.00171021,29
 base_ljDisplacementIso_cosAlpha,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits all,|eta| all,0.147967,0.000818924,186893,0.181678,0.0137935,29
@@ -180,7 +180,7 @@ base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 0-100,nHits 
 base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,overlap 0.9-1.2,0.953706,0.0105633,64890.1,1.00343,0.0486958,27
 base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,|eta| all,0.993661,0.00402356,475983,0.992287,0.0147642,27
 base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.920589,0.0339447,5659.08,0.964367,0.0474021,22
-base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,1.12296,0.0626236,2500.05,1.26431,0.0955694,18
+base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,1.12296,0.0626236,2500.05,1.28198,0.0921099,19
 base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,overlap 0.9-1.2,0.901241,0.0678272,1373.79,0.964721,0.0817396,13
 base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,|eta| all,0.96674,0.0274959,9532.02,0.988585,0.0485187,23
 base_ljDisplacementIso_cosAlpha,m_med 150 GeV,ratio_H_over_V_phi,pT >=200,nHits all,barrel |eta|<0.9,0.854676,0.0954203,643.574,0.808406,0.0794809,10
@@ -247,7 +247,7 @@ base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT 100-200,nHit
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT 100-200,nHits 20-30,|eta| all,0.00385421,0.000167973,145640,0.00400203,0.000741528,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT 100-200,nHits >=30,|eta| all,0.00111993,8.5897e-05,168413,0.000800059,0.000264078,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT 100-200,nHits all,|eta| all,0.00240428,8.58823e-05,351272,0.00219065,0.000435782,29
-base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.000961772,0.000284461,11627.7,0.00122591,0.000492534,25
+base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.000961772,0.000284461,11627.7,0.00117876,0.000475555,26
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.00144975,0.000177985,49225,0.00119722,0.000287925,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits >=30,|eta| all,0.000795128,0.000122929,59531.5,0.000670813,0.000164696,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.00107679,9.85763e-05,120373,0.000878132,0.000198105,29
@@ -263,7 +263,7 @@ base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT 100-200,nHi
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits 20-30,|eta| all,0.295631,0.00119431,145640,0.346065,0.0167157,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits >=30,|eta| all,0.0157574,0.000301472,168413,0.0211272,0.00257482,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits all,|eta| all,0.181599,0.000647612,351272,0.215515,0.0145436,29
-base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.530687,0.00462715,11627.7,0.570489,0.0181449,25
+base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.530687,0.00462715,11627.7,0.577394,0.0187505,26
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 20-30,|eta| all,0.286283,0.0020331,49225,0.350084,0.0202845,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits >=30,|eta| all,0.0137854,0.000471304,59531.5,0.0171411,0.00243155,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits all,|eta| all,0.173432,0.00108496,120373,0.215882,0.0170474,29
@@ -281,7 +281,7 @@ base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT 100-200,nHit
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,|eta| all,1.00442,0.00480344,351272,0.992468,0.015078,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,barrel |eta|<0.9,1.05417,0.0102408,85551.5,1.05983,0.0296762,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,endcap 1.2-2.4,0.940622,0.0180777,21055.1,0.875544,0.0310459,28
-base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.950292,0.0230832,13792.3,0.961005,0.0652126,24
+base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.950292,0.0230832,13792.3,0.954565,0.0628804,25
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,|eta| all,1.02133,0.00833789,120373,0.984809,0.0180547,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT all,nHits all,barrel |eta|<0.9,1.02057,0.00340468,722279,1.03256,0.0148017,29
 base_ljDisplacementIso_cosAlpha,m_med 500 GeV,ratio_H_over_V_phi,pT all,nHits all,endcap 1.2-2.4,0.959134,0.00558902,229842,0.927972,0.0166403,29
@@ -343,8 +343,8 @@ base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT 100-200,nHits
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT 100-200,nHits 20-30,|eta| all,0.010239,0.000229765,305128,0.0565035,0.00856772,141
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT 100-200,nHits >=30,|eta| all,0.00290602,0.000122643,316073,0.0242319,0.00489554,131
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT 100-200,nHits all,|eta| all,0.00669648,0.0001239,700658,0.0485996,0.00713817,147
-base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.00367884,0.000408596,37528.2,0.0106723,0.00313016,94
-base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.00316564,0.000166747,190302,0.0344976,0.00910829,110
+base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.00367884,0.000408596,37528.2,0.01056,0.00309907,95
+base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.00316564,0.000166747,190302,0.0346373,0.00902694,111
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT >=200,nHits >=30,|eta| all,0.00110592,8.79701e-05,264623,0.0200032,0.0053932,104
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.00209324,8.56215e-05,492443,0.0392522,0.00822727,118
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_absdxyBS_ge10,pT all,nHits 0-20,|eta| all,0.079477,0.000477571,384494,0.0685464,0.00518464,162
@@ -359,7 +359,7 @@ base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT 100-200,nHit
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT 100-200,nHits 20-30,|eta| all,0.293289,0.000823262,305128,0.317523,0.00768269,141
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT 100-200,nHits >=30,|eta| all,0.0186846,0.000243167,316073,0.0240499,0.00145953,131
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT 100-200,nHits all,|eta| all,0.194826,0.00047421,700658,0.235497,0.00595145,147
-base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.548665,0.00256667,37528.2,0.60159,0.0098395,93
+base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.548665,0.00256667,37528.2,0.605767,0.0100971,95
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT >=200,nHits 20-30,|eta| all,0.278815,0.00102597,190302,0.317509,0.00967061,111
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT >=200,nHits >=30,|eta| all,0.01175,0.00020884,264623,0.0169581,0.00137059,104
 base_ljDisplacementIso_cosAlpha_ljSpread,all,frac_zeroDT_cscOnly,pT >=200,nHits all,|eta| all,0.155108,0.000514305,492443,0.212167,0.00764114,118
@@ -371,13 +371,13 @@ base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 0-100,nHits a
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 0-100,nHits all,endcap 1.2-2.4,0.973249,0.0038796,491457,0.966724,0.0108649,162
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 0-100,nHits all,overlap 0.9-1.2,0.939661,0.00534411,246427,0.982445,0.0267999,154
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 0-100,nHits all,|eta| all,0.99187,0.00202177,1.90461e+06,0.987413,0.00791725,162
-base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.983519,0.00400573,487529,1.02059,0.042932,140
-base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,0.937204,0.00714823,134701,0.990566,0.0275918,129
+base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.983519,0.00400573,487529,1.01779,0.0427186,141
+base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,0.937204,0.00714823,134701,0.995254,0.0277772,130
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 100-200,nHits all,overlap 0.9-1.2,0.951583,0.00969527,78521,0.992004,0.0314807,105
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT 100-200,nHits all,|eta| all,0.9707,0.00328875,700658,1.01313,0.0274039,147
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT >=200,nHits all,barrel |eta|<0.9,1.01262,0.00475833,369152,0.974993,0.0208797,114
-base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT >=200,nHits all,endcap 1.2-2.4,0.909962,0.00920535,76505,0.921546,0.0288552,102
-base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.91049,0.0120619,46849.6,1.02193,0.046166,83
+base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT >=200,nHits all,endcap 1.2-2.4,0.909962,0.00920535,76505,0.919881,0.0286222,103
+base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.91049,0.0120619,46849.6,1.01929,0.0456896,84
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT >=200,nHits all,|eta| all,0.985819,0.0039984,492443,1.00254,0.0355751,118
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT all,nHits all,barrel |eta|<0.9,1.00554,0.0020349,1.95876e+06,1.03499,0.0145588,162
 base_ljDisplacementIso_cosAlpha_ljSpread,all,ratio_H_over_V_phi,pT all,nHits all,endcap 1.2-2.4,0.962461,0.00324557,687239,0.947233,0.0112209,162
@@ -455,7 +455,7 @@ base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 1
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits 20-30,|eta| all,0.295697,0.00184192,62106.8,0.338025,0.0144196,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits >=30,|eta| all,0.0225781,0.000644137,54039.1,0.0246978,0.00285026,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits all,|eta| all,0.208726,0.00111857,133391,0.239798,0.0131301,29
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.546874,0.00442351,12674.7,0.605744,0.0206126,27
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.546874,0.00442351,12674.7,0.614467,0.0216939,28
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 20-30,|eta| all,0.274807,0.00169547,69191.5,0.329086,0.0176779,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits >=30,|eta| all,0.0108455,0.000328597,101874,0.013477,0.00171984,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 1000 GeV,frac_zeroDT_cscOnly,pT >=200,nHits all,|eta| all,0.146625,0.000823115,183736,0.181166,0.0140888,29
@@ -488,7 +488,7 @@ base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT 100
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT 100-200,nHits >=30,|eta| all,0.0697948,0.00517318,2512.05,0.0884722,0.0111911,20
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT 100-200,nHits all,|eta| all,0.101659,0.00327454,8924.59,0.125197,0.0109203,23
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.1219,0.0217184,256.151,0.0792494,0.0267469,7
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.211723,0.0169137,597.911,0.198662,0.0245143,8
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.211723,0.0169137,597.911,0.182144,0.0272075,9
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT >=200,nHits >=30,|eta| all,0.182341,0.0229611,272.689,0.185677,0.0257391,7
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.18451,0.0117002,1126.38,0.190822,0.0210363,11
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,frac_absdxyBS_ge10,pT all,nHits 0-20,|eta| all,0.113985,0.00134634,63367,0.0888882,0.0122512,27
@@ -515,8 +515,8 @@ base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 0-1
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,endcap 1.2-2.4,0.967006,0.00781836,118587,0.94278,0.021746,27
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,overlap 0.9-1.2,0.950544,0.0109084,60638.5,0.990352,0.0391159,27
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 0-100,nHits all,|eta| all,0.993354,0.00415508,446678,0.996168,0.014025,27
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.928598,0.0350144,5410.7,1.02064,0.0622638,21
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,1.15674,0.0683805,2210.28,1.30033,0.0936505,18
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,barrel |eta|<0.9,0.928598,0.0350144,5410.7,1.00265,0.0620302,22
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,endcap 1.2-2.4,1.15674,0.0683805,2210.28,1.3161,0.0899777,19
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,overlap 0.9-1.2,0.927475,0.0715305,1305.11,1.01137,0.0963728,11
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,|eta| all,0.980151,0.0287726,8924.59,1.02017,0.0576474,23
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 150 GeV,ratio_H_over_V_phi,pT >=200,nHits all,barrel |eta|<0.9,0.891203,0.100607,626.379,0.820653,0.0977707,10
@@ -583,7 +583,7 @@ base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT 100
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT 100-200,nHits 20-30,|eta| all,0.003851,0.000170076,141654,0.00404767,0.000753546,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT 100-200,nHits >=30,|eta| all,0.00109369,8.50429e-05,167296,0.000786134,0.000257395,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT 100-200,nHits all,|eta| all,0.00237586,8.62408e-05,343771,0.00219234,0.000434904,29
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.000947659,0.000293038,10936.5,0.00127198,0.000523571,25
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits 0-20,|eta| all,0.000947659,0.000293038,10936.5,0.00122306,0.000505404,26
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits 20-30,|eta| all,0.00146994,0.000181827,47882,0.00122472,0.000297414,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits >=30,|eta| all,0.00080202,0.000123994,59033.7,0.000676282,0.000165927,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_absdxyBS_ge10,pT >=200,nHits all,|eta| all,0.00108483,0.000100121,117841,0.000890139,0.000201454,29
@@ -599,7 +599,7 @@ base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT 10
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits 20-30,|eta| all,0.295028,0.00121017,141654,0.3449,0.0166484,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits >=30,|eta| all,0.0155612,0.000300566,167296,0.0210528,0.00260324,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT 100-200,nHits all,|eta| all,0.17964,0.000651767,343771,0.213086,0.0145706,29
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.538563,0.00476572,10936.5,0.579472,0.0179957,25
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 0-20,|eta| all,0.538563,0.00476572,10936.5,0.58603,0.0184919,26
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits 20-30,|eta| all,0.284425,0.00205756,47882,0.347346,0.019612,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits >=30,|eta| all,0.0132988,0.000464328,59033.7,0.0168116,0.00242357,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,frac_zeroDT_cscOnly,pT >=200,nHits all,|eta| all,0.170517,0.00108917,117841,0.211094,0.0166405,29
@@ -616,8 +616,8 @@ base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT 100
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,overlap 0.9-1.2,0.964596,0.0145628,35728.1,0.990395,0.0547906,27
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT 100-200,nHits all,|eta| all,1.00302,0.00485359,343771,0.98796,0.0144129,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,barrel |eta|<0.9,1.05229,0.0103191,84121.1,1.05467,0.0291414,29
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,endcap 1.2-2.4,0.941594,0.0184435,20247.8,0.884684,0.0266918,27
-base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.947543,0.0232804,13498.2,0.959064,0.0637515,24
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,endcap 1.2-2.4,0.941594,0.0184435,20247.8,0.879874,0.0261668,28
+base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,overlap 0.9-1.2,0.947543,0.0232804,13498.2,0.952701,0.0614784,25
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT >=200,nHits all,|eta| all,1.02022,0.00842396,117841,0.985326,0.0172359,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT all,nHits all,barrel |eta|<0.9,1.02013,0.00344337,706707,1.03038,0.0141213,29
 base_ljDisplacementIso_cosAlpha_ljSpread,m_med 500 GeV,ratio_H_over_V_phi,pT all,nHits all,endcap 1.2-2.4,0.956892,0.00569514,220529,0.925542,0.018266,29

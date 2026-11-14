@@ -42,6 +42,7 @@ VTX = "base_ljDisplacementIso_cosAlpha_vtxChi2"
 SELS = {REF: "reference (no cosmic veto)", SPREAD: "Spread veto"}
 NEFF_MIN = 200          # robust subset, as in the write-up (section 4)
 NEFF_BIN_MIN = 20       # a sample enters a bin's unweighted mean only with N_eff >= this there
+NEFF_RTOL = 1e-9        # relative tolerance of that comparison
 H_LXY, H_DR, H_3D = ("mu_lj_vtxChi2_muonN_genA_lxy", "mu_lj_vtxChi2_muonN_mumu_dR",
                      "mu_lj_vtxChi2_genA_lxy_mumu_dR")
 V_NOVTX, V_PASS, V_FAIL, V_OTHER = [1, 2], [3, 4, 5], [6, 7, 8, 9, 10], [0]
@@ -228,7 +229,9 @@ def binned(sel, labels, getter):
             neff = np.divide(tot ** 2, totw, out=np.zeros_like(tot), where=totw > 0)
             for k, idx in OUTCOMES.items():
                 fr = np.divide(v[idx].sum(axis=0), tot, out=np.full_like(tot, np.nan), where=tot > 0)
-                fr[neff < NEFF_BIN_MIN] = np.nan
+                # N_eff of unit weights is the integer count, here a float ratio: the relative
+                # tolerance keeps a bin with exactly NEFF_BIN_MIN entries in, whatever the scale
+                fr[neff < NEFF_BIN_MIN * (1 - NEFF_RTOL)] = np.nan
                 per[k].append(fr)
         for j, lab in enumerate(labels):
             row = dict(selection=sel, group=glab, bin=lab)
