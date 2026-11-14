@@ -459,7 +459,8 @@ both on the full background stack). And over the signal grid it keeps 28% fewer 
 jets (0.690 vs 0.961). The signal efficiencies are for the Spread veto in its as-run `vxySpread`
 form; `main`'s `dxySpread` form was not run on signal. The one corner where the ordering
 reverses is m_Zd = 5 GeV, mediator mass 100-150 GeV, ctau >= 130 mm: 8 of the 180 signal
-samples when efficiency is counted per DSA muon (6 counted per lepton jet). There the
+samples when efficiency is counted per DSA muon (counted per lepton jet it is 6 samples, one
+of them at ctau = 40 mm). There the
 max-over-pairs Spread variables start failing on wide displaced pairs and the min-over-pairs
 vertex requirement does not.
 
