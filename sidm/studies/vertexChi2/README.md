@@ -236,7 +236,11 @@ python $D/halo_data_mc.py $OUT
 python $D/condor_vs_dask.py $OUT/condor_vs_dask.txt
 ```
 
-They also write PNG figures, which are not committed. Outcome of a mu-type LJ: **no vertex**
+They also write PNG figures, which are not committed. `an_figures.py OUTDIR` draws the two
+figures for the analysis note from `outcome_vs_lxy.csv` and `outcome_vs_dR.csv` (reference
+channel, mean over the samples): the outcome fractions against the generated Lxy and against
+the reconstructed dR, in the style of `truth_kinematics_forAN/an_style.py`, as vector PDF with
+PNG previews (the "bound-state mass" of their legends is the mediator mass of this README). Outcome of a mu-type LJ: **no vertex**
 (`vtx_chi2 < 0`: the -1 sentinel of an LJ without a stored within-LJ vertex, and the three LJs
 in the grid whose stored normChi2 lies in [-0.5, 0), which the vertex cut and `mu_lj_vtx_chi2`
 count as no vertex too), **chi2 >= 5** (a stored vertex with normChi2 >= 5), **pass**
