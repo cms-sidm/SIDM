@@ -21,8 +21,13 @@ CORRECTIONS=${7:-default}
 # a syst axis with every weight category (needs corrections).
 HIST_MODE=${8:-unweighted}
 # Optional positional arg 9: corrections to evaluate without applying them
-# (comma-separated), e.g. electron_id; needs corrections.
+# (comma-separated), e.g. electron_id; needs corrections. "none" is the same
+# as leaving it empty, for a caller that also passes arg 10.
 MONITOR_CORRECTIONS=${9:-}
+# Optional positional arg 10: the selections file the channels are read from,
+# relative to sidm/ (SidmProcessor's selections_cfg). A study frozen to the
+# definitions it ran with passes its own file.
+SELECTIONS_CFG=${10:-configs/selections.yaml}
 
 case "${HIST_MODE}" in
     unweighted) HIST_FLAGS=(--unweighted-hist) ;;
@@ -119,6 +124,7 @@ python condor/run_sidm_chunk.py \
     --hist-collections "${HIST_COLLECTIONS}" \
     --corrections "${CORRECTIONS}" \
     --monitor-corrections "${MONITOR_CORRECTIONS}" \
+    --selections-cfg "${SELECTIONS_CFG}" \
     ${HIST_FLAGS[@]+"${HIST_FLAGS[@]}"}
 
 echo "Output:"

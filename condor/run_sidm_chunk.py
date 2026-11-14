@@ -15,6 +15,7 @@ if str(repo_parent) not in sys.path:
 
 from sidm import BASE_DIR
 from sidm.tools import sidm_processor
+from sidm.tools import utilities
 from sidm.tools import llpnanoaodschema
 
 NTUPLE_DIR = Path(BASE_DIR) / "configs" / "ntuples"
@@ -39,8 +40,9 @@ def sample_metadata(sample, files):
 
     Every YAML under sidm/configs/ntuples is searched for an entry named sample
     whose directory holds the first file, the way make_job_args.py built the
-    filelist. Returns (metadata, "<yaml>:<ntuple version>"), or (None, None)
-    when no entry matches.
+    filelist. The metadata carries the gen-filter production tag of that YAML
+    (utilities.get_production). Returns (metadata, "<yaml>:<ntuple version>"),
+    or (None, None) when no entry matches.
     """
     import yaml
     first = store_path(files[0])
@@ -56,6 +58,8 @@ def sample_metadata(sample, files):
                     "skim_factor": entry.get("skim_factor", 1.0),
                     "is_data": entry.get("is_data", False) or cfg.name.startswith("data"),
                     "year": entry.get("year", "2018"),
+                    # selects the gen-filter efficiency in postprocess (get_gen_filter_eff)
+                    "production": utilities.get_production(cfg.name),
                 }
                 return metadata, f"{cfg.name}:{version}"
     return None, None
@@ -83,7 +87,11 @@ def main():
     parser.add_argument(
         "--monitor-corrections", default="",
         help="corrections to evaluate without applying them (comma-separated); they add "
-             "with_<name> weight categories")
+             "with_<name> weight categories. Empty or 'none' for none.")
+    parser.add_argument(
+        "--selections-cfg", default="configs/selections.yaml",
+        help="selections file the channels are read from, relative to sidm/ "
+             "(SidmProcessor's selections_cfg)")
     parser.add_argument(
         "--allow-data", action="store_true",
         help="process collision data. Off by default because the analysis is blinded: "
@@ -111,6 +119,7 @@ def main():
     print("Repo parent:", repo_parent)
     print("Sample:", args.sample)
     print("Number of files:", len(files))
+    print("Selections:", args.selections_cfg)
     print("Files:")
     for f in files:
         print("  ", f)
@@ -130,7 +139,8 @@ def main():
         corrections = None
     else:
         corrections = [x.strip() for x in args.corrections.split(",") if x.strip()]
-    monitored = [x.strip() for x in args.monitor_corrections.split(",") if x.strip()]
+    monitored = [x.strip() for x in args.monitor_corrections.split(",")
+                 if x.strip() and x.strip() != "none"]
 
     p = sidm_processor.SidmProcessor(
         channels,
@@ -139,6 +149,7 @@ def main():
         corrections=corrections,
         syst_hists=args.syst_hists,
         monitor_corrections=monitored or None,
+        selections_cfg=args.selections_cfg,
     )
 
     try:

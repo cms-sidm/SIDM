@@ -346,7 +346,8 @@ queue sample, chunk, filelist from job_args.txt
 | 6 | hist collections | `muon_base` | comma-separated collections from `hist_collections.yaml` |
 | 7 | corrections | `default` | standard corrections for simulation: `default`, names from `sidm/configs/corrections.yaml`, or `none` |
 | 8 | hist mode | `unweighted` | `unweighted` (unit weights, as before), `weighted`, or `syst` (weighted, plus a `syst` axis with every weight category; needs corrections) |
-| 9 | monitored corrections | empty | corrections evaluated but not applied, e.g. `electron_id` |
+| 9 | monitored corrections | empty | corrections evaluated but not applied, e.g. `electron_id`; `none` is the same as empty |
+| 10 | selections file | `configs/selections.yaml` | the file the channels are defined in, relative to `sidm/`; a study frozen to the definitions it ran with passes its own, e.g. `configs/selections_mulj_decay_angle_as_run.yaml` |
 
 With the defaults the job applies the default corrections, which reach the cutflows only (the histograms stay unweighted); `none` as the 7th argument runs it as before the corrections existed. See [`sidm/studies/corrections/README.md`](../sidm/studies/corrections/README.md) for the corrections and the weight categories.
 
@@ -621,12 +622,19 @@ source sidm_venv/bin/activate
 
 `merge_coffea_chunks_eos.py` does more than concatenate: it **corrects the per-chunk
 normalization**. Each Condor job is its own `Runner.run`, so `SidmProcessor.postprocess()` scales
-that job's outputs by `lumi*xs / sumw` using only **that job's** sum of weights — as if its files
+that job's outputs by `lumi*xs*gen_filter_eff / sumw` using only **that job's** sum of weights — as if its files
 were the whole sample. A naive add of those pieces inflates yields by ~the number of jobs (and more
 files-per-job → more inflation). The merge instead re-weights each chunk by its own `sumw`,
 accumulates, and divides by the **total** `sumw`, recovering the correct
-`lumi*xs/sumw_full × Σ_chunks(raw)`. **Always go through this script — never hand-add chunk
+`lumi*xs*gen_filter_eff/sumw_full × Σ_chunks(raw)`. **Always go through this script — never hand-add chunk
 `.coffea` files.**
+
+The signal generator-filter efficiency in that factor is chosen by a production tag (`v10`, or
+`central` for the Firefighter ntuples; `utilities.get_production`). `utilities.make_fileset` sets it
+from the location config, and on the Condor path `run_sidm_chunk.py` sets it from the location YAML
+the chunk's files come from, with the skim factor (§10). A signal chunk whose files match no
+location YAML, or a YAML without a tag, is scaled with an efficiency of 1.0 and the job log prints
+a `WARNING: no gen filter efficiency` line.
 
 The correction mirrors `postprocess` and is conditional: **data** is never scaled; the **cutflow**
 (simulation) is always corrected; **hists** are corrected only for *weighted* runs — with

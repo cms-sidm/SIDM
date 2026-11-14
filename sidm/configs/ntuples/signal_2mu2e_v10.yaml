@@ -1,4 +1,5 @@
-# 2mu2e signal samples with correct lifetime and no unwanted gen filters
+# 2mu2e signal samples with correct lifetime, produced with the generator filter: >= 4 prompt e/mu, pT > 4 GeV,
+# |eta| < 2.4, rho < 740 cm, |z| < 960 cm; per-point efficiency in sidm/configs/signal_gen_filter_eff.yaml
 llpNanoAOD_v2:
   path: root://xcache//store/group/lpcmetx/SIDM/ULSignalSamples/2018_v10/BsTo2DpTo2Mu2e/
   samples:

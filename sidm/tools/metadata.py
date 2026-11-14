@@ -21,7 +21,26 @@ import coffea
 import yaml
 
 from sidm.tools.corrections import Corrections
-from sidm.tools.utilities import get_xs, load_yaml
+from sidm.tools.utilities import get_gen_filter_eff, get_xs, load_yaml
+
+
+def _gen_filter_eff(name, info, output):
+    """Generator-filter efficiency applied to a sample: the value postprocess
+    recorded in the output when present, else the lookup in
+    sidm/configs/signal_gen_filter_eff.yaml with the fileset's production tag
+    (1.0 for non-signal samples, None when the lookup falls back)."""
+    try:
+        recorded = output[name]["metadata"]["gen_filter_eff"]
+    except (KeyError, TypeError):
+        recorded = None
+    if recorded:
+        return float(next(iter(recorded))) if len(recorded) == 1 else None
+    try:
+        eff = get_gen_filter_eff(name, info.get("metadata", {}).get("production"),
+                                 default=None, warn=False)
+    except KeyError:
+        return None
+    return None if eff is None else float(eff)
 
 
 def write_run_metadata(
@@ -35,8 +54,10 @@ def write_run_metadata(
     unweighted_hist=None,
     corrections=True,
     monitor_corrections=None,
+    output=None,
     extra=None,
     sidm_root=None,
+    selections_cfg="configs/selections.yaml",
 ):
     """Write a ``.meta.yaml`` sidecar describing what produced ``coffea_path``.
 
@@ -46,9 +67,8 @@ def write_run_metadata(
         fileset: coffea-style ``{sample_name: {"files": [...], "metadata":
             {...}}}`` dict, the same shape passed to ``processor.Runner.run``.
             Recorded under ``samples`` in the sidecar.
-        selections: list of selection names from
-            ``sidm/configs/selections.yaml``. The full nested definition of each
-            is copied into the sidecar.
+        selections: list of selection names from the selections file. The
+            full nested definition of each is copied into the sidecar.
         hist_collections: list of histogram-collection names from
             ``sidm/configs/hist_collections.yaml``. The full list of histogram
             names in each collection is expanded into the sidecar.
@@ -64,20 +84,25 @@ def write_run_metadata(
         monitor_corrections: optional, the ``monitor_corrections`` argument
             given to ``SidmProcessor`` (evaluated, not applied); recorded the
             same way under ``monitored_corrections``.
+        output: optional processor output ``{sample_name: {...}}``; the
+            gen-filter efficiency postprocess applied is read from its metadata.
         extra: optional dict of additional fields to merge into the sidecar
             (e.g. condor cluster ID, dask cluster dashboard URL).
         sidm_root: optional repo-root override; default walks up from this file.
+        selections_cfg: selections file the run used, relative to ``sidm/``
+            (the same value passed to ``SidmProcessor``). Recorded in the
+            sidecar, and the definitions are read from it.
 
     Returns:
         Path to the written sidecar.
     """
     sidm_root = Path(sidm_root) if sidm_root else _find_sidm_root()
 
-    selections_cfg = load_yaml(str(sidm_root / "sidm" / "configs" / "selections.yaml"))
+    selections_menu = load_yaml(str(sidm_root / "sidm" / selections_cfg))
     hists_cfg = load_yaml(str(sidm_root / "sidm" / "configs" / "hist_collections.yaml"))
 
     selections_used = [
-        {"name": s, "definition": _yaml_safe(selections_cfg.get(s, "<not found>"))}
+        {"name": s, "definition": _yaml_safe(selections_menu.get(s, "<not found>"))}
         for s in selections
     ]
     hist_collections_used = [
@@ -100,6 +125,7 @@ def write_run_metadata(
             "name": name,
             "n_files": len(files),
             "xsec_pb": xsec_pb,
+            "gen_filter_eff": _gen_filter_eff(name, info, output),
             "metadata": _yaml_safe(info.get("metadata", {})),
             "files": files,
         })
@@ -108,6 +134,7 @@ def write_run_metadata(
         "created_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "coffea_path": str(coffea_path),
         "n_samples": len(samples),
+        "selections_cfg": selections_cfg,
         "selections": selections_used,
         "hist_collections": hist_collections_used,
         "schema": schema,

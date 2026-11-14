@@ -1,0 +1,751 @@
+# Generator-filter efficiency of the 2018 signal productions, per sample.
+# The v10 samples were produced with a generator filter (>= 4 prompt final-state
+# e/mu with pT > 4 GeV, |eta| < 2.4, production vertex rho < 740 cm, |z| < 960 cm;
+# cut string "... && pt>4. && isLastCopy() && isPromptFinalState() &&
+# fromHardProcessFinalState()" in the GEN process PSet stored in the v10 files, read
+# back in sidm/studies/run3_signal_validation/gen_requirement.py on branch
+# run3-signal-validation). Failing events are not stored, so the normalization needs
+# eff_filter: utilities.get_lumixs_weight applies it, choosing the field by the
+# production tag make_fileset derives from the location config (v10 ntuples -> v10,
+# ffntuples.yaml -> central, anything else -> no factor, with a warning).
+# Fields:
+#   central:     {eff, err} of the central production's filter, per point, from
+#                phylsix/Firefighter ffConfig/python/production/Autumn18/sigmc/central/,
+#                copied in sidm/studies/truth_kinematics_forAN/central_genFilterEfficiencies.yml
+#   repass_5gev: {n_all, n_pass, value, err} stored v10 events before/after the
+#                central (5 GeV) cut string, the genFilterEmulation channel, from
+#                sidm/studies/truth_kinematics_forAN/v10_filter_repass.json; binomial err,
+#                which is 0 where value = 1
+#   v10:         {eff, err} = central.eff / repass_5gev.value, relative errors in quadrature
+# The central production (McM EXO-RunIIFall18wmLHEGS-02157) ran the same filter string
+# at pT > 5 GeV. Every event passing the 5 GeV string passes the 4 GeV one, so
+# eff_v10 = eff_central / repass_5gev; the re-pass deficit is the 4-5 GeV band.
+# The re-pass uses raw event counts while the normalization divides by the sum of
+# generator weights; the two agree because the v10 signal genWeight is constant (1.0 for
+# every event in the checked files, with Runs genEventSumw = genEventCount).
+# Values rounded to 4 significant figures.
+# Made by: python sidm/scripts/make_signal_gen_filter_eff.py, from the inputs (git blob ids)
+#   d52ccdea39e0 sidm/studies/truth_kinematics_forAN/central_genFilterEfficiencies.yml
+#   007987d46416 sidm/studies/truth_kinematics_forAN/v10_filter_repass.json
+#   0ba69c6d2a0d sidm/configs/ntuples/signal_2mu2e_v10.yaml
+#   3360ac66d5dd sidm/configs/ntuples/signal_4mu_v10.yaml
+2Mu2E_1000GeV_0p25GeV_0p002mm:
+  central: {eff: 0.8593, err: 0.0009447}
+  repass_5gev: {err: 0.0002014, n_all: 194971, n_pass: 193416, value: 0.992}
+  v10: {eff: 0.8662, err: 0.0009684}
+2Mu2E_1000GeV_0p25GeV_0p02mm:
+  central: {eff: 0.8604, err: 0.00104}
+  repass_5gev: {err: 0.0002598, n_all: 126281, n_pass: 125195, value: 0.9914}
+  v10: {eff: 0.8679, err: 0.001073}
+2Mu2E_1000GeV_0p25GeV_0p2mm:
+  central: {eff: 0.8608, err: 0.001039}
+  repass_5gev: {err: 0.0002063, n_all: 194623, n_pass: 192998, value: 0.9917}
+  v10: {eff: 0.868, err: 0.001063}
+2Mu2E_1000GeV_0p25GeV_1p0mm:
+  central: {eff: 0.7969, err: 0.001173}
+  repass_5gev: {err: 0.0002341, n_all: 147205, n_pass: 146008, value: 0.9919}
+  v10: {eff: 0.8034, err: 0.001198}
+2Mu2E_1000GeV_0p25GeV_2p0mm:
+  central: {eff: 0.5994, err: 0.001249}
+  repass_5gev: {err: 0.0003975, n_all: 55389, n_pass: 54900, value: 0.9912}
+  v10: {eff: 0.6047, err: 0.001283}
+2Mu2E_1000GeV_1p2GeV_0p0096mm:
+  central: {eff: 0.8453, err: 0.001054}
+  repass_5gev: {err: 0.0002817, n_all: 196092, n_pass: 192991, value: 0.9842}
+  v10: {eff: 0.8589, err: 0.001099}
+2Mu2E_1000GeV_1p2GeV_0p096mm:
+  central: {eff: 0.8458, err: 0.001083}
+  repass_5gev: {err: 0.000264, n_all: 218652, n_pass: 215268, value: 0.9845}
+  v10: {eff: 0.8591, err: 0.001124}
+2Mu2E_1000GeV_1p2GeV_0p96mm:
+  central: {eff: 0.8469, err: 0.00105}
+  repass_5gev: {err: 0.0003054, n_all: 161441, n_pass: 158973, value: 0.9847}
+  v10: {eff: 0.86, err: 0.001099}
+2Mu2E_1000GeV_1p2GeV_4p8mm:
+  central: {eff: 0.7782, err: 0.001103}
+  repass_5gev: {err: 0.0002801, n_all: 193469, n_pass: 190486, value: 0.9846}
+  v10: {eff: 0.7904, err: 0.001143}
+2Mu2E_1000GeV_1p2GeV_9p6mm:
+  central: {eff: 0.5842, err: 0.001257}
+  repass_5gev: {err: 0.0003487, n_all: 131048, n_pass: 128925, value: 0.9838}
+  v10: {eff: 0.5938, err: 0.001295}
+2Mu2E_1000GeV_5p0GeV_0p04mm:
+  central: {eff: 0.8242, err: 0.00111}
+  repass_5gev: {err: 0.0003517, n_all: 131702, n_pass: 129520, value: 0.9834}
+  v10: {eff: 0.8381, err: 0.001168}
+2Mu2E_1000GeV_5p0GeV_0p4mm:
+  central: {eff: 0.8247, err: 0.001008}
+  repass_5gev: {err: 0.00027, n_all: 217802, n_pass: 214288, value: 0.9839}
+  v10: {eff: 0.8382, err: 0.00105}
+2Mu2E_1000GeV_5p0GeV_20p0mm:
+  central: {eff: 0.7609, err: 0.001087}
+  repass_5gev: {err: 0.0002881, n_all: 194599, n_pass: 191403, value: 0.9836}
+  v10: {eff: 0.7736, err: 0.001128}
+2Mu2E_1000GeV_5p0GeV_40p0mm:
+  central: {eff: 0.5693, err: 0.001262}
+  repass_5gev: {err: 0.0003427, n_all: 135919, n_pass: 133713, value: 0.9838}
+  v10: {eff: 0.5787, err: 0.001299}
+2Mu2E_1000GeV_5p0GeV_4p0mm:
+  central: {eff: 0.8252, err: 0.001107}
+  repass_5gev: {err: 0.0003244, n_all: 154606, n_pass: 152048, value: 0.9835}
+  v10: {eff: 0.8391, err: 0.001159}
+2Mu2E_100GeV_0p25GeV_0p02mm:
+  central: {eff: 0.4605, err: 0.001118}
+  repass_5gev: {err: 0.0008049, n_all: 125720, n_pass: 114473, value: 0.9105}
+  v10: {eff: 0.5057, err: 0.001307}
+2Mu2E_100GeV_0p25GeV_0p2mm:
+  central: {eff: 0.4602, err: 0.001271}
+  repass_5gev: {err: 0.0008377, n_all: 115129, n_pass: 104922, value: 0.9113}
+  v10: {eff: 0.505, err: 0.00147}
+2Mu2E_100GeV_0p25GeV_10p0mm:
+  central: {eff: 0.4068, err: 0.001794}
+  repass_5gev: {err: 0.0008797, n_all: 105444, n_pass: 95992, value: 0.9104}
+  v10: {eff: 0.4469, err: 0.002017}
+2Mu2E_100GeV_0p25GeV_20p0mm:
+  central: {eff: 0.2912, err: 0.00085}
+  repass_5gev: {err: 0.001031, n_all: 79486, n_pass: 72085, value: 0.9069}
+  v10: {eff: 0.3211, err: 0.001006}
+2Mu2E_100GeV_0p25GeV_2p0mm:
+  central: {eff: 0.4631, err: 0.0009973}
+  repass_5gev: {err: 0.0008199, n_all: 120148, n_pass: 109499, value: 0.9114}
+  v10: {eff: 0.5081, err: 0.001186}
+2Mu2E_100GeV_1p2GeV_0p096mm:
+  central: {eff: 0.3214, err: 0.000934}
+  repass_5gev: {err: 0.001128, n_all: 103496, n_pass: 87354, value: 0.844}
+  v10: {eff: 0.3808, err: 0.001218}
+2Mu2E_100GeV_1p2GeV_0p96mm:
+  central: {eff: 0.3203, err: 0.0008082}
+  repass_5gev: {err: 0.001144, n_all: 99429, n_pass: 84133, value: 0.8462}
+  v10: {eff: 0.3785, err: 0.001084}
+2Mu2E_100GeV_1p2GeV_48p0mm:
+  central: {eff: 0.2826, err: 0.0007799}
+  repass_5gev: {err: 0.001227, n_all: 88591, n_pass: 74552, value: 0.8415}
+  v10: {eff: 0.3358, err: 0.001048}
+2Mu2E_100GeV_1p2GeV_96p0mm:
+  central: {eff: 0.1992, err: 0.0006315}
+  repass_5gev: {err: 0.001472, n_all: 62027, n_pass: 52107, value: 0.8401}
+  v10: {eff: 0.2371, err: 0.0008589}
+2Mu2E_100GeV_1p2GeV_9p6mm:
+  central: {eff: 0.3201, err: 0.0008672}
+  repass_5gev: {err: 0.001156, n_all: 98618, n_pass: 83227, value: 0.8439}
+  v10: {eff: 0.3793, err: 0.001151}
+2Mu2E_100GeV_5p0GeV_0p4mm:
+  central: {eff: 0.3042, err: 0.0007968}
+  repass_5gev: {err: 0.001221, n_all: 86913, n_pass: 73626, value: 0.8471}
+  v10: {eff: 0.3591, err: 0.001074}
+2Mu2E_100GeV_5p0GeV_200mm:
+  central: {eff: 0.2682, err: 0.0007004}
+  repass_5gev: {err: 0.001257, n_all: 83640, n_pass: 70545, value: 0.8434}
+  v10: {eff: 0.318, err: 0.000956}
+2Mu2E_100GeV_5p0GeV_400mm:
+  central: {eff: 0.1916, err: 0.0005703}
+  repass_5gev: {err: 0.001489, n_all: 60962, n_pass: 51135, value: 0.8388}
+  v10: {eff: 0.2284, err: 0.0007917}
+2Mu2E_100GeV_5p0GeV_40p0mm:
+  central: {eff: 0.3027, err: 0.0007982}
+  repass_5gev: {err: 0.001174, n_all: 94293, n_pass: 79804, value: 0.8463}
+  v10: {eff: 0.3577, err: 0.001066}
+2Mu2E_100GeV_5p0GeV_4p0mm:
+  central: {eff: 0.3023, err: 0.0007955}
+  repass_5gev: {err: 0.001166, n_all: 96654, n_pass: 81604, value: 0.8443}
+  v10: {eff: 0.3581, err: 0.001064}
+2Mu2E_150GeV_0p25GeV_0p013mm:
+  central: {eff: 0.5695, err: 0.001213}
+  repass_5gev: {err: 0.0005928, n_all: 148789, n_pass: 140555, value: 0.9447}
+  v10: {eff: 0.6029, err: 0.001339}
+2Mu2E_150GeV_0p25GeV_0p13mm:
+  central: {eff: 0.5673, err: 0.001263}
+  repass_5gev: {err: 0.0006048, n_all: 146225, n_pass: 137933, value: 0.9433}
+  v10: {eff: 0.6014, err: 0.001393}
+2Mu2E_150GeV_0p25GeV_13p0mm:
+  central: {eff: 0.3743, err: 0.0009679}
+  repass_5gev: {err: 0.000774, n_all: 89957, n_pass: 84815, value: 0.9428}
+  v10: {eff: 0.397, err: 0.001077}
+2Mu2E_150GeV_0p25GeV_1p3mm:
+  central: {eff: 0.5691, err: 0.001213}
+  repass_5gev: {err: 0.0006092, n_all: 140178, n_pass: 132460, value: 0.9449}
+  v10: {eff: 0.6023, err: 0.001341}
+2Mu2E_150GeV_0p25GeV_6p7mm:
+  central: {eff: 0.5053, err: 0.001118}
+  repass_5gev: {err: 0.0006581, n_all: 123104, n_pass: 116148, value: 0.9435}
+  v10: {eff: 0.5356, err: 0.001242}
+2Mu2E_150GeV_1p2GeV_0p064mm:
+  central: {eff: 0.4463, err: 0.001693}
+  repass_5gev: {err: 0.0009351, n_all: 105815, n_pass: 94897, value: 0.8968}
+  v10: {eff: 0.4976, err: 0.001958}
+2Mu2E_150GeV_1p2GeV_0p64mm:
+  central: {eff: 0.4472, err: 0.0009944}
+  repass_5gev: {err: 0.000866, n_all: 121318, n_pass: 109038, value: 0.8988}
+  v10: {eff: 0.4976, err: 0.001206}
+2Mu2E_150GeV_1p2GeV_32p0mm:
+  central: {eff: 0.3975, err: 0.0009964}
+  repass_5gev: {err: 0.000957, n_all: 101521, n_pass: 90988, value: 0.8962}
+  v10: {eff: 0.4435, err: 0.001208}
+2Mu2E_150GeV_1p2GeV_64p0mm:
+  central: {eff: 0.2847, err: 0.0007912}
+  repass_5gev: {err: 0.00115, n_all: 69709, n_pass: 62543, value: 0.8972}
+  v10: {eff: 0.3173, err: 0.0009712}
+2Mu2E_150GeV_1p2GeV_6p4mm:
+  central: {eff: 0.4473, err: 0.001055}
+  repass_5gev: {err: 0.000882, n_all: 118965, n_pass: 106689, value: 0.8968}
+  v10: {eff: 0.4988, err: 0.001275}
+2Mu2E_150GeV_5p0GeV_0p27mm:
+  central: {eff: 0.428, err: 0.0009896}
+  repass_5gev: {err: 0.0008561, n_all: 126301, n_pass: 113265, value: 0.8968}
+  v10: {eff: 0.4773, err: 0.001194}
+2Mu2E_150GeV_5p0GeV_130p0mm:
+  central: {eff: 0.3817, err: 0.0008419}
+  repass_5gev: {err: 0.0009597, n_all: 100871, n_pass: 90415, value: 0.8963}
+  v10: {eff: 0.4258, err: 0.001044}
+2Mu2E_150GeV_5p0GeV_270p0mm:
+  central: {eff: 0.271, err: 0.0007699}
+  repass_5gev: {err: 0.001114, n_all: 76615, n_pass: 68469, value: 0.8937}
+  v10: {eff: 0.3032, err: 0.0009407}
+2Mu2E_150GeV_5p0GeV_27p0mm:
+  central: {eff: 0.4208, err: 0.003582}
+  repass_5gev: {err: 0.0008766, n_all: 121491, n_pass: 108829, value: 0.8958}
+  v10: {eff: 0.4698, err: 0.004025}
+2Mu2E_150GeV_5p0GeV_2p7mm:
+  central: {eff: 0.4264, err: 0.001106}
+  repass_5gev: {err: 0.0008931, n_all: 114953, n_pass: 103214, value: 0.8979}
+  v10: {eff: 0.4749, err: 0.001319}
+2Mu2E_200GeV_0p25GeV_0p01mm:
+  central: {eff: 0.6293, err: 0.001231}
+  repass_5gev: {err: 0.0007114, n_all: 78428, n_pass: 75181, value: 0.9586}
+  v10: {eff: 0.6565, err: 0.001373}
+2Mu2E_200GeV_0p25GeV_0p1mm:
+  central: {eff: 0.63, err: 0.001183}
+  repass_5gev: {err: 0.0006525, n_all: 89633, n_pass: 86071, value: 0.9603}
+  v10: {eff: 0.6561, err: 0.00131}
+2Mu2E_200GeV_0p25GeV_10p0mm:
+  central: {eff: 0.4127, err: 0.0009846}
+  repass_5gev: {err: 0.001534, n_all: 16682, n_pass: 15999, value: 0.9591}
+  v10: {eff: 0.4303, err: 0.001236}
+2Mu2E_200GeV_0p25GeV_1p0mm:
+  central: {eff: 0.6283, err: 0.001232}
+  repass_5gev: {err: 0.000916, n_all: 45057, n_pass: 43284, value: 0.9606}
+  v10: {eff: 0.654, err: 0.001426}
+2Mu2E_200GeV_0p25GeV_5p0mm:
+  central: {eff: 0.565, err: 0.001163}
+  repass_5gev: {err: 0.0005703, n_all: 123555, n_pass: 118372, value: 0.9581}
+  v10: {eff: 0.5897, err: 0.001264}
+2Mu2E_200GeV_1p2GeV_0p048mm:
+  central: {eff: 0.5316, err: 0.001574}
+  repass_5gev: {err: 0.001317, n_all: 41057, n_pass: 37890, value: 0.9229}
+  v10: {eff: 0.576, err: 0.001893}
+2Mu2E_200GeV_1p2GeV_0p48mm:
+  central: {eff: 0.5283, err: 0.001273}
+  repass_5gev: {err: 0.0009548, n_all: 76668, n_pass: 70871, value: 0.9244}
+  v10: {eff: 0.5715, err: 0.001498}
+2Mu2E_200GeV_1p2GeV_24p0mm:
+  central: {eff: 0.4736, err: 0.0009986}
+  repass_5gev: {err: 0.001043, n_all: 66724, n_pass: 61469, value: 0.9212}
+  v10: {eff: 0.5141, err: 0.00123}
+2Mu2E_200GeV_1p2GeV_48p0mm:
+  central: {eff: 0.3429, err: 0.0008222}
+  repass_5gev: {err: 0.001999, n_all: 18011, n_pass: 16605, value: 0.9219}
+  v10: {eff: 0.3719, err: 0.001202}
+2Mu2E_200GeV_1p2GeV_4p8mm:
+  central: {eff: 0.5305, err: 0.00117}
+  repass_5gev: {err: 0.0009225, n_all: 84245, n_pass: 77696, value: 0.9223}
+  v10: {eff: 0.5752, err: 0.001393}
+2Mu2E_200GeV_5p0GeV_0p2mm:
+  central: {eff: 0.5091, err: 0.001275}
+  repass_5gev: {err: 0.0009627, n_all: 77664, n_pass: 71600, value: 0.9219}
+  v10: {eff: 0.5522, err: 0.001498}
+2Mu2E_200GeV_5p0GeV_100p0mm:
+  central: {eff: 0.4573, err: 0.001057}
+  repass_5gev: {err: 0.001029, n_all: 68631, n_pass: 63220, value: 0.9212}
+  v10: {eff: 0.4964, err: 0.001274}
+2Mu2E_200GeV_5p0GeV_200p0mm:
+  central: {eff: 0.3315, err: 0.0008807}
+  repass_5gev: {err: 0.001199, n_all: 51583, n_pass: 47422, value: 0.9193}
+  v10: {eff: 0.3606, err: 0.001067}
+2Mu2E_200GeV_5p0GeV_20p0mm:
+  central: {eff: 0.5074, err: 0.001118}
+  repass_5gev: {err: 0.001013, n_all: 69308, n_pass: 63968, value: 0.923}
+  v10: {eff: 0.5498, err: 0.001353}
+2Mu2E_200GeV_5p0GeV_2p0mm:
+  central: {eff: 0.5108, err: 0.001118}
+  repass_5gev: {err: 0.0009177, n_all: 84593, n_pass: 78062, value: 0.9228}
+  v10: {eff: 0.5535, err: 0.001331}
+2Mu2E_500GeV_0p25GeV_0p004mm:
+  central: {eff: 0.7796, err: 0.001172}
+  repass_5gev: {err: 0.0002768, n_all: 203851, n_pass: 200615, value: 0.9841}
+  v10: {eff: 0.7922, err: 0.001212}
+2Mu2E_500GeV_0p25GeV_0p04mm:
+  central: {eff: 0.7794, err: 0.001197}
+  repass_5gev: {err: 0.000288, n_all: 194235, n_pass: 191054, value: 0.9836}
+  v10: {eff: 0.7924, err: 0.001239}
+2Mu2E_500GeV_0p25GeV_0p4mm:
+  central: {eff: 0.7806, err: 0.001055}
+  repass_5gev: {err: 0.0002772, n_all: 208564, n_pass: 205165, value: 0.9837}
+  v10: {eff: 0.7935, err: 0.001096}
+2Mu2E_500GeV_0p25GeV_2p0mm:
+  central: {eff: 0.7111, err: 0.001156}
+  repass_5gev: {err: 0.0002927, n_all: 186966, n_pass: 183922, value: 0.9837}
+  v10: {eff: 0.7229, err: 0.001195}
+2Mu2E_500GeV_0p25GeV_4p0mm:
+  central: {eff: 0.5305, err: 0.001116}
+  repass_5gev: {err: 0.0003499, n_all: 138237, n_pass: 135856, value: 0.9828}
+  v10: {eff: 0.5398, err: 0.001152}
+2Mu2E_500GeV_1p2GeV_0p019mm:
+  central: {eff: 0.733, err: 0.001186}
+  repass_5gev: {err: 0.0003839, n_all: 204771, n_pass: 198393, value: 0.9689}
+  v10: {eff: 0.7566, err: 0.00126}
+2Mu2E_500GeV_1p2GeV_0p19mm:
+  central: {eff: 0.7345, err: 0.004036}
+  repass_5gev: {err: 0.0003949, n_all: 192396, n_pass: 186440, value: 0.969}
+  v10: {eff: 0.758, err: 0.004176}
+2Mu2E_500GeV_1p2GeV_19p0mm:
+  central: {eff: 0.5, err: 0.001118}
+  repass_5gev: {err: 0.000479, n_all: 138545, n_pass: 133992, value: 0.9671}
+  v10: {eff: 0.517, err: 0.001184}
+2Mu2E_500GeV_1p2GeV_1p9mm:
+  central: {eff: 0.7353, err: 0.00127}
+  repass_5gev: {err: 0.0003866, n_all: 205180, n_pass: 198681, value: 0.9683}
+  v10: {eff: 0.7594, err: 0.001346}
+2Mu2E_500GeV_1p2GeV_9p6mm:
+  central: {eff: 0.6702, err: 0.00131}
+  repass_5gev: {err: 0.0004081, n_all: 188746, n_pass: 182615, value: 0.9675}
+  v10: {eff: 0.6927, err: 0.001385}
+2Mu2E_500GeV_5p0GeV_0p08mm:
+  central: {eff: 0.7155, err: 0.001543}
+  repass_5gev: {err: 0.0003957, n_all: 195206, n_pass: 189044, value: 0.9684}
+  v10: {eff: 0.7388, err: 0.001622}
+2Mu2E_500GeV_5p0GeV_0p8mm:
+  central: {eff: 0.7136, err: 0.001279}
+  repass_5gev: {err: 0.000399, n_all: 190498, n_pass: 184534, value: 0.9687}
+  v10: {eff: 0.7367, err: 0.001355}
+2Mu2E_500GeV_5p0GeV_40p0mm:
+  central: {eff: 0.6532, err: 0.001213}
+  repass_5gev: {err: 0.0004325, n_all: 166571, n_pass: 161208, value: 0.9678}
+  v10: {eff: 0.6749, err: 0.001289}
+2Mu2E_500GeV_5p0GeV_80p0mm:
+  central: {eff: 0.4822, err: 0.001117}
+  repass_5gev: {err: 0.0004891, n_all: 132287, n_pass: 127960, value: 0.9673}
+  v10: {eff: 0.4985, err: 0.001182}
+2Mu2E_500GeV_5p0GeV_8p0mm:
+  central: {eff: 0.7081, err: 0.002383}
+  repass_5gev: {err: 0.0003981, n_all: 195420, n_pass: 189168, value: 0.968}
+  v10: {eff: 0.7315, err: 0.00248}
+2Mu2E_800GeV_0p25GeV_0p0025mm:
+  central: {eff: 0.8349, err: 0.001636}
+  repass_5gev: {err: 0.0002697, n_all: 137219, n_pass: 135835, value: 0.9899}
+  v10: {eff: 0.8434, err: 0.001669}
+2Mu2E_800GeV_0p25GeV_0p025mm:
+  central: {eff: 0.8368, err: 0.001077}
+  repass_5gev: {err: 0.0002398, n_all: 184245, n_pass: 182271, value: 0.9893}
+  v10: {eff: 0.8459, err: 0.001108}
+2Mu2E_800GeV_0p25GeV_0p25mm:
+  central: {eff: 0.8368, err: 0.001078}
+  repass_5gev: {err: 0.0002554, n_all: 157754, n_pass: 156114, value: 0.9896}
+  v10: {eff: 0.8456, err: 0.001111}
+2Mu2E_800GeV_0p25GeV_1p2mm:
+  central: {eff: 0.7753, err: 0.00119}
+  repass_5gev: {err: 0.0002472, n_all: 167188, n_pass: 165462, value: 0.9897}
+  v10: {eff: 0.7834, err: 0.001218}
+2Mu2E_800GeV_0p25GeV_2p5mm:
+  central: {eff: 0.5782, err: 0.001259}
+  repass_5gev: {err: 0.0002697, n_all: 152489, n_pass: 150779, value: 0.9888}
+  v10: {eff: 0.5848, err: 0.001283}
+2Mu2E_800GeV_1p2GeV_0p012mm:
+  central: {eff: 0.8127, err: 0.001104}
+  repass_5gev: {err: 0.0003504, n_all: 163722, n_pass: 160361, value: 0.9795}
+  v10: {eff: 0.8297, err: 0.001166}
+2Mu2E_800GeV_1p2GeV_0p12mm:
+  central: {eff: 0.8146, err: 0.001099}
+  repass_5gev: {err: 0.0003589, n_all: 152127, n_pass: 149086, value: 0.98}
+  v10: {eff: 0.8312, err: 0.001162}
+2Mu2E_800GeV_1p2GeV_12p0mm:
+  central: {eff: 0.5567, err: 0.001267}
+  repass_5gev: {err: 0.0003837, n_all: 137159, n_pass: 134331, value: 0.9794}
+  v10: {eff: 0.5684, err: 0.001313}
+2Mu2E_800GeV_1p2GeV_1p2mm:
+  central: {eff: 0.8144, err: 0.0011}
+  repass_5gev: {err: 0.0003323, n_all: 177722, n_pass: 174163, value: 0.98}
+  v10: {eff: 0.831, err: 0.001157}
+2Mu2E_800GeV_1p2GeV_6p0mm:
+  central: {eff: 0.7446, err: 0.001243}
+  repass_5gev: {err: 0.0003772, n_all: 141467, n_pass: 138560, value: 0.9795}
+  v10: {eff: 0.7602, err: 0.001302}
+2Mu2E_800GeV_5p0GeV_0p05mm:
+  central: {eff: 0.793, err: 0.001044}
+  repass_5gev: {err: 0.000333, n_all: 173803, n_pass: 170387, value: 0.9803}
+  v10: {eff: 0.8089, err: 0.0011}
+2Mu2E_800GeV_5p0GeV_0p5mm:
+  central: {eff: 0.7911, err: 0.004581}
+  repass_5gev: {err: 0.0003958, n_all: 126887, n_pass: 124312, value: 0.9797}
+  v10: {eff: 0.8075, err: 0.004687}
+2Mu2E_800GeV_5p0GeV_25p0mm:
+  central: {eff: 0.7273, err: 0.001135}
+  repass_5gev: {err: 0.0003668, n_all: 147273, n_pass: 144295, value: 0.9798}
+  v10: {eff: 0.7423, err: 0.001191}
+2Mu2E_800GeV_5p0GeV_50p0mm:
+  central: {eff: 0.5419, err: 0.001273}
+  repass_5gev: {err: 0.0003937, n_all: 129074, n_pass: 126438, value: 0.9796}
+  v10: {eff: 0.5532, err: 0.001318}
+2Mu2E_800GeV_5p0GeV_5p0mm:
+  central: {eff: 0.7928, err: 0.001305}
+  repass_5gev: {err: 0.0003267, n_all: 183026, n_pass: 179379, value: 0.9801}
+  v10: {eff: 0.8089, err: 0.001359}
+4Mu_1000GeV_0p25GeV_0p002mm:
+  central: {eff: 0.8957, err: 0.00088}
+  repass_5gev: {err: 0.0, n_all: 278639, n_pass: 278639, value: 1.0}
+  v10: {eff: 0.8957, err: 0.00088}
+4Mu_1000GeV_0p25GeV_0p02mm:
+  central: {eff: 0.8946, err: 0.0009213}
+  repass_5gev: {err: 0.0, n_all: 189736, n_pass: 189736, value: 1.0}
+  v10: {eff: 0.8946, err: 0.0009213}
+4Mu_1000GeV_0p25GeV_0p2mm:
+  central: {eff: 0.8941, err: 0.0008704}
+  repass_5gev: {err: 0.0, n_all: 157605, n_pass: 157605, value: 1.0}
+  v10: {eff: 0.8941, err: 0.0008704}
+4Mu_1000GeV_0p25GeV_1p0mm:
+  central: {eff: 0.8296, err: 0.001063}
+  repass_5gev: {err: 3.735e-05, n_all: 131162, n_pass: 131138, value: 0.9998}
+  v10: {eff: 0.8298, err: 0.001064}
+4Mu_1000GeV_0p25GeV_2p0mm:
+  central: {eff: 0.6253, err: 0.001234}
+  repass_5gev: {err: 6.343e-05, n_all: 109194, n_pass: 109146, value: 0.9996}
+  v10: {eff: 0.6256, err: 0.001235}
+4Mu_1000GeV_1p2GeV_0p0096mm:
+  central: {eff: 0.8682, err: 0.0009569}
+  repass_5gev: {err: 0.0002533, n_all: 236293, n_pass: 232654, value: 0.9846}
+  v10: {eff: 0.8818, err: 0.000998}
+4Mu_1000GeV_1p2GeV_0p096mm:
+  central: {eff: 0.8666, err: 0.0009914}
+  repass_5gev: {err: 0.0002606, n_all: 222807, n_pass: 219382, value: 0.9846}
+  v10: {eff: 0.8801, err: 0.001033}
+4Mu_1000GeV_1p2GeV_0p96mm:
+  central: {eff: 0.8681, err: 0.0009935}
+  repass_5gev: {err: 0.0002439, n_all: 247691, n_pass: 243987, value: 0.985}
+  v10: {eff: 0.8813, err: 0.001032}
+4Mu_1000GeV_1p2GeV_4p8mm:
+  central: {eff: 0.799, err: 0.00114}
+  repass_5gev: {err: 0.0002694, n_all: 201665, n_pass: 198668, value: 0.9851}
+  v10: {eff: 0.8111, err: 0.001178}
+4Mu_1000GeV_1p2GeV_9p6mm:
+  central: {eff: 0.6006, err: 0.001249}
+  repass_5gev: {err: 0.0003699, n_all: 114304, n_pass: 112487, value: 0.9841}
+  v10: {eff: 0.6103, err: 0.00129}
+4Mu_1000GeV_5p0GeV_0p04mm:
+  central: {eff: 0.8252, err: 0.001074}
+  repass_5gev: {err: 0.0002688, n_all: 213947, n_pass: 210587, value: 0.9843}
+  v10: {eff: 0.8384, err: 0.001115}
+4Mu_1000GeV_5p0GeV_0p4mm:
+  central: {eff: 0.8274, err: 0.001027}
+  repass_5gev: {err: 0.0002792, n_all: 195735, n_pass: 192701, value: 0.9845}
+  v10: {eff: 0.8404, err: 0.00107}
+4Mu_1000GeV_5p0GeV_20p0mm:
+  central: {eff: 0.7633, err: 0.001084}
+  repass_5gev: {err: 0.0002727, n_all: 213680, n_pass: 210229, value: 0.9838}
+  v10: {eff: 0.7758, err: 0.001123}
+4Mu_1000GeV_5p0GeV_40p0mm:
+  central: {eff: 0.5717, err: 0.001273}
+  repass_5gev: {err: 0.0003861, n_all: 104373, n_pass: 102723, value: 0.9842}
+  v10: {eff: 0.5809, err: 0.001313}
+4Mu_1000GeV_5p0GeV_4p0mm:
+  central: {eff: 0.8274, err: 0.001071}
+  repass_5gev: {err: 0.0002415, n_all: 270366, n_pass: 266033, value: 0.984}
+  v10: {eff: 0.8409, err: 0.001108}
+4Mu_100GeV_0p25GeV_0p02mm:
+  central: {eff: 0.6845, err: 0.001266}
+  repass_5gev: {err: 0.0003778, n_all: 115723, n_pass: 113779, value: 0.9832}
+  v10: {eff: 0.6962, err: 0.001315}
+4Mu_100GeV_0p25GeV_0p2mm:
+  central: {eff: 0.6841, err: 0.001185}
+  repass_5gev: {err: 0.0003407, n_all: 138553, n_pass: 136287, value: 0.9836}
+  v10: {eff: 0.6955, err: 0.001229}
+4Mu_100GeV_0p25GeV_10p0mm:
+  central: {eff: 0.603, err: 0.001247}
+  repass_5gev: {err: 0.0003841, n_all: 119039, n_pass: 116910, value: 0.9821}
+  v10: {eff: 0.614, err: 0.001292}
+4Mu_100GeV_0p25GeV_20p0mm:
+  central: {eff: 0.4384, err: 0.0009924}
+  repass_5gev: {err: 0.0004688, n_all: 88918, n_pass: 87145, value: 0.9801}
+  v10: {eff: 0.4473, err: 0.001035}
+4Mu_100GeV_0p25GeV_2p0mm:
+  central: {eff: 0.6866, err: 0.001183}
+  repass_5gev: {err: 0.0003074, n_all: 179987, n_pass: 176871, value: 0.9827}
+  v10: {eff: 0.6987, err: 0.001224}
+4Mu_100GeV_1p2GeV_0p096mm:
+  central: {eff: 0.3348, err: 0.0008923}
+  repass_5gev: {err: 0.001169, n_all: 94365, n_pass: 80020, value: 0.848}
+  v10: {eff: 0.3948, err: 0.001185}
+4Mu_100GeV_1p2GeV_0p96mm:
+  central: {eff: 0.334, err: 0.0008169}
+  repass_5gev: {err: 0.001143, n_all: 98939, n_pass: 83834, value: 0.8473}
+  v10: {eff: 0.3942, err: 0.001101}
+4Mu_100GeV_1p2GeV_48p0mm:
+  central: {eff: 0.2925, err: 0.0007955}
+  repass_5gev: {err: 0.001541, n_all: 54830, n_pass: 46388, value: 0.846}
+  v10: {eff: 0.3457, err: 0.001132}
+4Mu_100GeV_1p2GeV_96p0mm:
+  central: {eff: 0.2088, err: 0.0005748}
+  repass_5gev: {err: 0.001676, n_all: 46260, n_pass: 39158, value: 0.8465}
+  v10: {eff: 0.2467, err: 0.0008365}
+4Mu_100GeV_1p2GeV_9p6mm:
+  central: {eff: 0.3336, err: 0.0008946}
+  repass_5gev: {err: 0.001251, n_all: 83221, n_pass: 70410, value: 0.8461}
+  v10: {eff: 0.3943, err: 0.001207}
+4Mu_100GeV_5p0GeV_0p4mm:
+  central: {eff: 0.3093, err: 0.0008006}
+  repass_5gev: {err: 0.001322, n_all: 74086, n_pass: 62772, value: 0.8473}
+  v10: {eff: 0.365, err: 0.001103}
+4Mu_100GeV_5p0GeV_200mm:
+  central: {eff: 0.2717, err: 0.0007704}
+  repass_5gev: {err: 0.001585, n_all: 52742, n_pass: 44452, value: 0.8428}
+  v10: {eff: 0.3224, err: 0.001097}
+4Mu_100GeV_5p0GeV_400mm:
+  central: {eff: 0.194, err: 0.0005593}
+  repass_5gev: {err: 0.001782, n_all: 42021, n_pass: 35357, value: 0.8414}
+  v10: {eff: 0.2306, err: 0.0008248}
+4Mu_100GeV_5p0GeV_40p0mm:
+  central: {eff: 0.3085, err: 0.0008}
+  repass_5gev: {err: 0.001503, n_all: 57106, n_pass: 48411, value: 0.8477}
+  v10: {eff: 0.3639, err: 0.001143}
+4Mu_100GeV_5p0GeV_4p0mm:
+  central: {eff: 0.3085, err: 0.0008}
+  repass_5gev: {err: 0.00143, n_all: 63242, n_pass: 53584, value: 0.8473}
+  v10: {eff: 0.3641, err: 0.001127}
+4Mu_150GeV_0p25GeV_0p013mm:
+  central: {eff: 0.742, err: 0.001764}
+  repass_5gev: {err: 0.0001361, n_all: 227568, n_pass: 226604, value: 0.9958}
+  v10: {eff: 0.7452, err: 0.001774}
+4Mu_150GeV_0p25GeV_0p13mm:
+  central: {eff: 0.7402, err: 0.001118}
+  repass_5gev: {err: 0.0001694, n_all: 149238, n_pass: 148596, value: 0.9957}
+  v10: {eff: 0.7434, err: 0.00113}
+4Mu_150GeV_0p25GeV_13p0mm:
+  central: {eff: 0.4916, err: 0.001125}
+  repass_5gev: {err: 0.0001804, n_all: 152894, n_pass: 152129, value: 0.995}
+  v10: {eff: 0.4941, err: 0.001134}
+4Mu_150GeV_0p25GeV_1p3mm:
+  central: {eff: 0.7401, err: 0.001118}
+  repass_5gev: {err: 0.0001281, n_all: 251524, n_pass: 250481, value: 0.9959}
+  v10: {eff: 0.7432, err: 0.001127}
+4Mu_150GeV_0p25GeV_6p7mm:
+  central: {eff: 0.6632, err: 0.001205}
+  repass_5gev: {err: 0.0002068, n_all: 106480, n_pass: 105993, value: 0.9954}
+  v10: {eff: 0.6662, err: 0.001218}
+4Mu_150GeV_1p2GeV_0p064mm:
+  central: {eff: 0.4626, err: 0.001115}
+  repass_5gev: {err: 0.0008555, n_all: 125319, n_pass: 112517, value: 0.8978}
+  v10: {eff: 0.5152, err: 0.001335}
+4Mu_150GeV_1p2GeV_0p64mm:
+  central: {eff: 0.4628, err: 0.001115}
+  repass_5gev: {err: 0.001102, n_all: 75841, n_pass: 68063, value: 0.8974}
+  v10: {eff: 0.5157, err: 0.001394}
+4Mu_150GeV_1p2GeV_32p0mm:
+  central: {eff: 0.4109, err: 0.0009322}
+  repass_5gev: {err: 0.0008885, n_all: 117511, n_pass: 105353, value: 0.8965}
+  v10: {eff: 0.4583, err: 0.001135}
+4Mu_150GeV_1p2GeV_64p0mm:
+  central: {eff: 0.2953, err: 0.0007213}
+  repass_5gev: {err: 0.001052, n_all: 84693, n_pass: 75826, value: 0.8953}
+  v10: {eff: 0.3298, err: 0.000894}
+4Mu_150GeV_1p2GeV_6p4mm:
+  central: {eff: 0.4626, err: 0.001115}
+  repass_5gev: {err: 0.0008267, n_all: 133938, n_pass: 120288, value: 0.8981}
+  v10: {eff: 0.5151, err: 0.001329}
+4Mu_150GeV_5p0GeV_0p27mm:
+  central: {eff: 0.4329, err: 0.0009909}
+  repass_5gev: {err: 0.0008593, n_all: 125902, n_pass: 112842, value: 0.8963}
+  v10: {eff: 0.483, err: 0.001199}
+4Mu_150GeV_5p0GeV_130p0mm:
+  central: {eff: 0.3873, err: 0.001022}
+  repass_5gev: {err: 0.0009767, n_all: 96791, n_pass: 86828, value: 0.8971}
+  v10: {eff: 0.4317, err: 0.001232}
+4Mu_150GeV_5p0GeV_270p0mm:
+  central: {eff: 0.2744, err: 0.0007055}
+  repass_5gev: {err: 0.001258, n_all: 59593, n_pass: 53308, value: 0.8945}
+  v10: {eff: 0.3068, err: 0.000899}
+4Mu_150GeV_5p0GeV_27p0mm:
+  central: {eff: 0.4315, err: 0.001027}
+  repass_5gev: {err: 0.0008594, n_all: 123467, n_pass: 110937, value: 0.8985}
+  v10: {eff: 0.4802, err: 0.001232}
+4Mu_150GeV_5p0GeV_2p7mm:
+  central: {eff: 0.4296, err: 0.00105}
+  repass_5gev: {err: 0.0008563, n_all: 125226, n_pass: 112417, value: 0.8977}
+  v10: {eff: 0.4785, err: 0.001256}
+4Mu_200GeV_0p25GeV_0p01mm:
+  central: {eff: 0.7724, err: 0.001186}
+  repass_5gev: {err: 0.0001039, n_all: 128628, n_pass: 128449, value: 0.9986}
+  v10: {eff: 0.7735, err: 0.00119}
+4Mu_200GeV_0p25GeV_0p1mm:
+  central: {eff: 0.77, err: 0.00119}
+  repass_5gev: {err: 9.418e-05, n_all: 132966, n_pass: 132809, value: 0.9988}
+  v10: {eff: 0.7709, err: 0.001194}
+4Mu_200GeV_0p25GeV_10p0mm:
+  central: {eff: 0.5122, err: 0.0009997}
+  repass_5gev: {err: 0.0001186, n_all: 131584, n_pass: 131340, value: 0.9981}
+  v10: {eff: 0.5132, err: 0.001003}
+4Mu_200GeV_0p25GeV_1p0mm:
+  central: {eff: 0.7748, err: 0.005084}
+  repass_5gev: {err: 7.832e-05, n_all: 210055, n_pass: 209784, value: 0.9987}
+  v10: {eff: 0.7758, err: 0.005091}
+4Mu_200GeV_0p25GeV_5p0mm:
+  central: {eff: 0.6918, err: 0.001177}
+  repass_5gev: {err: 8.875e-05, n_all: 203273, n_pass: 202947, value: 0.9984}
+  v10: {eff: 0.6929, err: 0.00118}
+4Mu_200GeV_1p2GeV_0p048mm:
+  central: {eff: 0.5464, err: 0.001269}
+  repass_5gev: {err: 0.0007038, n_all: 142565, n_pass: 131663, value: 0.9235}
+  v10: {eff: 0.5916, err: 0.001446}
+4Mu_200GeV_1p2GeV_0p48mm:
+  central: {eff: 0.5493, err: 0.001269}
+  repass_5gev: {err: 0.0007952, n_all: 114173, n_pass: 105230, value: 0.9217}
+  v10: {eff: 0.596, err: 0.00147}
+4Mu_200GeV_1p2GeV_24p0mm:
+  central: {eff: 0.4889, err: 0.001118}
+  repass_5gev: {err: 0.0007311, n_all: 132900, n_pass: 122672, value: 0.923}
+  v10: {eff: 0.5297, err: 0.001282}
+4Mu_200GeV_1p2GeV_48p0mm:
+  central: {eff: 0.355, err: 0.0009117}
+  repass_5gev: {err: 0.0008642, n_all: 96829, n_pass: 89231, value: 0.9215}
+  v10: {eff: 0.3852, err: 0.001053}
+4Mu_200GeV_1p2GeV_4p8mm:
+  central: {eff: 0.5485, err: 0.001269}
+  repass_5gev: {err: 0.0007347, n_all: 131014, n_pass: 120979, value: 0.9234}
+  v10: {eff: 0.594, err: 0.001453}
+4Mu_200GeV_5p0GeV_0p2mm:
+  central: {eff: 0.5267, err: 0.009116}
+  repass_5gev: {err: 0.0006956, n_all: 145042, n_pass: 134026, value: 0.924}
+  v10: {eff: 0.57, err: 0.009875}
+4Mu_200GeV_5p0GeV_100p0mm:
+  central: {eff: 0.4593, err: 0.001056}
+  repass_5gev: {err: 0.0008776, n_all: 93001, n_pass: 85779, value: 0.9223}
+  v10: {eff: 0.498, err: 0.001239}
+4Mu_200GeV_5p0GeV_200p0mm:
+  central: {eff: 0.333, err: 0.0009521}
+  repass_5gev: {err: 0.0008747, n_all: 94262, n_pass: 86887, value: 0.9218}
+  v10: {eff: 0.3613, err: 0.001088}
+4Mu_200GeV_5p0GeV_20p0mm:
+  central: {eff: 0.5129, err: 0.001193}
+  repass_5gev: {err: 0.0007687, n_all: 120805, n_pass: 111458, value: 0.9226}
+  v10: {eff: 0.5559, err: 0.001373}
+4Mu_200GeV_5p0GeV_2p0mm:
+  central: {eff: 0.515, err: 0.001193}
+  repass_5gev: {err: 0.0008127, n_all: 107223, n_pass: 98998, value: 0.9233}
+  v10: {eff: 0.5578, err: 0.001382}
+4Mu_500GeV_0p25GeV_0p004mm:
+  central: {eff: 0.8434, err: 0.001713}
+  repass_5gev: {err: 8.721e-06, n_all: 280879, n_pass: 280873, value: 1.0}
+  v10: {eff: 0.8434, err: 0.001713}
+4Mu_500GeV_0p25GeV_0p04mm:
+  central: {eff: 0.8438, err: 0.001027}
+  repass_5gev: {err: 1.028e-05, n_all: 238163, n_pass: 238157, value: 1.0}
+  v10: {eff: 0.8438, err: 0.001027}
+4Mu_500GeV_0p25GeV_0p4mm:
+  central: {eff: 0.845, err: 0.001024}
+  repass_5gev: {err: 8.805e-06, n_all: 253940, n_pass: 253935, value: 1.0}
+  v10: {eff: 0.845, err: 0.001024}
+4Mu_500GeV_0p25GeV_2p0mm:
+  central: {eff: 0.7732, err: 0.001185}
+  repass_5gev: {err: 2.779e-05, n_all: 203539, n_pass: 203507, value: 0.9998}
+  v10: {eff: 0.7733, err: 0.001185}
+4Mu_500GeV_0p25GeV_4p0mm:
+  central: {eff: 0.5779, err: 0.001259}
+  repass_5gev: {err: 5.878e-05, n_all: 103459, n_pass: 103422, value: 0.9996}
+  v10: {eff: 0.5781, err: 0.00126}
+4Mu_500GeV_1p2GeV_0p019mm:
+  central: {eff: 0.7554, err: 0.001177}
+  repass_5gev: {err: 0.0003494, n_all: 240503, n_pass: 233221, value: 0.9697}
+  v10: {eff: 0.779, err: 0.001246}
+4Mu_500GeV_1p2GeV_0p19mm:
+  central: {eff: 0.7576, err: 0.001093}
+  repass_5gev: {err: 0.000333, n_all: 266173, n_pass: 258068, value: 0.9695}
+  v10: {eff: 0.7814, err: 0.001159}
+4Mu_500GeV_1p2GeV_19p0mm:
+  central: {eff: 0.5138, err: 0.001176}
+  repass_5gev: {err: 0.0004667, n_all: 144262, n_pass: 139577, value: 0.9675}
+  v10: {eff: 0.531, err: 0.001242}
+4Mu_500GeV_1p2GeV_1p9mm:
+  central: {eff: 0.7558, err: 0.001601}
+  repass_5gev: {err: 0.0003432, n_all: 250763, n_pass: 243125, value: 0.9695}
+  v10: {eff: 0.7795, err: 0.001674}
+4Mu_500GeV_1p2GeV_9p6mm:
+  central: {eff: 0.6894, err: 0.001267}
+  repass_5gev: {err: 0.0003653, n_all: 229638, n_pass: 222372, value: 0.9684}
+  v10: {eff: 0.7119, err: 0.001336}
+4Mu_500GeV_5p0GeV_0p08mm:
+  central: {eff: 0.7175, err: 0.001191}
+  repass_5gev: {err: 0.0003325, n_all: 274199, n_pass: 265620, value: 0.9687}
+  v10: {eff: 0.7407, err: 0.001255}
+4Mu_500GeV_5p0GeV_0p8mm:
+  central: {eff: 0.7192, err: 0.001146}
+  repass_5gev: {err: 0.0003583, n_all: 234641, n_pass: 227348, value: 0.9689}
+  v10: {eff: 0.7423, err: 0.001214}
+4Mu_500GeV_5p0GeV_40p0mm:
+  central: {eff: 0.653, err: 0.001214}
+  repass_5gev: {err: 0.0003623, n_all: 227005, n_pass: 220028, value: 0.9693}
+  v10: {eff: 0.6737, err: 0.001278}
+4Mu_500GeV_5p0GeV_80p0mm:
+  central: {eff: 0.4838, err: 0.00106}
+  repass_5gev: {err: 0.0005039, n_all: 122218, n_pass: 118299, value: 0.9679}
+  v10: {eff: 0.4998, err: 0.001126}
+4Mu_500GeV_5p0GeV_8p0mm:
+  central: {eff: 0.72, err: 0.001145}
+  repass_5gev: {err: 0.0004039, n_all: 188929, n_pass: 182916, value: 0.9682}
+  v10: {eff: 0.7437, err: 0.001223}
+4Mu_800GeV_0p25GeV_0p0025mm:
+  central: {eff: 0.8799, err: 0.0009195}
+  repass_5gev: {err: 0.0, n_all: 231736, n_pass: 231736, value: 1.0}
+  v10: {eff: 0.8799, err: 0.0009195}
+4Mu_800GeV_0p25GeV_0p025mm:
+  central: {eff: 0.8793, err: 0.001499}
+  repass_5gev: {err: 0.0, n_all: 208811, n_pass: 208811, value: 1.0}
+  v10: {eff: 0.8793, err: 0.001499}
+4Mu_800GeV_0p25GeV_0p25mm:
+  central: {eff: 0.8804, err: 0.0009177}
+  repass_5gev: {err: 0.0, n_all: 261211, n_pass: 261211, value: 1.0}
+  v10: {eff: 0.8804, err: 0.0009177}
+4Mu_800GeV_0p25GeV_1p2mm:
+  central: {eff: 0.8163, err: 0.0009872}
+  repass_5gev: {err: 2.955e-05, n_all: 203025, n_pass: 202989, value: 0.9998}
+  v10: {eff: 0.8164, err: 0.0009877}
+4Mu_800GeV_0p25GeV_2p5mm:
+  central: {eff: 0.6111, err: 0.001243}
+  repass_5gev: {err: 4.753e-05, n_all: 153152, n_pass: 153099, value: 0.9997}
+  v10: {eff: 0.6113, err: 0.001244}
+4Mu_800GeV_1p2GeV_0p012mm:
+  central: {eff: 0.8374, err: 0.001044}
+  repass_5gev: {err: 0.0003008, n_all: 206094, n_pass: 202177, value: 0.981}
+  v10: {eff: 0.8536, err: 0.001096}
+4Mu_800GeV_1p2GeV_0p12mm:
+  central: {eff: 0.8358, err: 0.0009678}
+  repass_5gev: {err: 0.0003247, n_all: 178213, n_pass: 174799, value: 0.9808}
+  v10: {eff: 0.8521, err: 0.001026}
+4Mu_800GeV_1p2GeV_12p0mm:
+  central: {eff: 0.5717, err: 0.001219}
+  repass_5gev: {err: 0.000365, n_all: 148161, n_pass: 145177, value: 0.9799}
+  v10: {eff: 0.5835, err: 0.001263}
+4Mu_800GeV_1p2GeV_1p2mm:
+  central: {eff: 0.836, err: 0.001014}
+  repass_5gev: {err: 0.0003786, n_all: 127518, n_pass: 125143, value: 0.9814}
+  v10: {eff: 0.8519, err: 0.001084}
+4Mu_800GeV_1p2GeV_6p0mm:
+  central: {eff: 0.7671, err: 0.001172}
+  repass_5gev: {err: 0.0003071, n_all: 202897, n_pass: 198938, value: 0.9805}
+  v10: {eff: 0.7824, err: 0.00122}
+4Mu_800GeV_5p0GeV_0p05mm:
+  central: {eff: 0.7971, err: 0.001207}
+  repass_5gev: {err: 0.0003468, n_all: 159876, n_pass: 156740, value: 0.9804}
+  v10: {eff: 0.813, err: 0.001264}
+4Mu_800GeV_5p0GeV_0p5mm:
+  central: {eff: 0.7962, err: 0.001139}
+  repass_5gev: {err: 0.0003616, n_all: 145276, n_pass: 142462, value: 0.9806}
+  v10: {eff: 0.8119, err: 0.001199}
+4Mu_800GeV_5p0GeV_25p0mm:
+  central: {eff: 0.7304, err: 0.001215}
+  repass_5gev: {err: 0.0003316, n_all: 180131, n_pass: 176489, value: 0.9798}
+  v10: {eff: 0.7455, err: 0.001265}
+4Mu_800GeV_5p0GeV_50p0mm:
+  central: {eff: 0.5454, err: 0.001117}
+  repass_5gev: {err: 0.000382, n_all: 136963, n_pass: 134169, value: 0.9796}
+  v10: {eff: 0.5568, err: 0.001161}
+4Mu_800GeV_5p0GeV_5p0mm:
+  central: {eff: 0.7953, err: 0.001902}
+  repass_5gev: {err: 0.0003505, n_all: 157050, n_pass: 153960, value: 0.9803}
+  v10: {eff: 0.8113, err: 0.001962}

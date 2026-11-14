@@ -6,16 +6,25 @@ with ``0 = A``, the signal region of the ABCD plane, so the SR count for a
 sample is simply that histogram summed over the observable axis at
 ``abcd_region == 0`` for the SR channel.
 
-Two details matter for getting the count right:
+These details matter for getting the count right:
 
-* The histograms are already scaled to ``lumi * xs`` by
-  ``sidm_processor.postprocess``, so the sums are yields, not raw entries.
-  For signal the productions take ``xs`` from ``configs/cross_sections.yaml``
-  where the point has an entry (its model cross section) and fall back to 1 fb
-  otherwise.  ``read_coffea`` divides that production cross section back out,
-  so every signal yield from this module is at the 1 fb reference and the
-  Combine signal strength ``r`` on a 1 fb card is the limit on sigma in fb.
-  Before 2026-11 the 1 fb reference was assumed, not imposed: limits from that
+* The histograms are already scaled by ``sidm_processor.postprocess``, so the
+  sums are yields, not raw entries. The current processor scales weighted
+  simulation to ``lumi * xs * gen_filter_eff`` and uses the 1 fb reference for
+  every signal point, even those listed in ``configs/cross_sections.yaml``; it
+  records the generator-filter efficiency it applied in the output metadata.
+  Older productions took ``xs`` from ``configs/cross_sections.yaml`` where the
+  point has an entry (its model cross section) and lack the filter correction.
+* ``read_coffea`` divides the production cross section back out
+  (``production_xs_pb`` tells the two conventions apart from the cutflow), so
+  every signal yield from this module is at the 1 fb reference and the Combine
+  signal strength ``r`` on a 1 fb card is the limit on sigma in fb.
+  ``use_theory_xs`` rescales those yields by ``sigma_theory / 1 fb``;
+  ``target_lumi_pb`` can also rescale all yields. Nothing here applies a
+  generator-filter correction: outputs made before the processor applied it
+  lack it, so verify the campaign and apply any missing factor exactly once.
+  ``region_yields`` reads the yields of the outputs it is given as stored.
+* Before 2026-11 the 1 fb reference was assumed, not imposed: limits from that
   time carry the label ``1fb`` (new ones ``1fb_ref``) and are relative to the
   production cross section, which ``plot_tools.load_limits`` corrects.
 * The observable axis is ``Regular`` and does overflow (a few percent for the
@@ -612,8 +621,8 @@ class DatacardConfig:
     ``min_bkg`` floors the total background so Combine has a non-zero
     expectation to build the Asimov dataset from.
 
-    ``use_theory_xs`` switches the signal normalisation from the 1 fb reference
-    to the point's own theory cross section, which turns Combine's signal
+    ``use_theory_xs`` requires signal inputs at the 1 fb reference and switches
+    their normalisation to the point's own theory cross section, which turns Combine's signal
     strength from "the limit on sigma in fb" into "the limit relative to
     theory".  The two are related by a constant factor per point, so they carry
     the same information -- but with the theory normalisation the exclusion
@@ -636,8 +645,8 @@ class DatacardConfig:
     # rescales both signal and background by target/LUMI_PB.  None means "leave
     # the yields at the luminosity they were produced with".
     target_lumi_pb: float | None = None
-    # How the signal is normalised.  False keeps the 1 fb reference the
-    # histograms were produced with, so Combine's r is the limit on sigma in fb.
+    # How the signal is normalised. Inputs must already be at the 1 fb reference.
+    # False keeps that reference, so Combine's r is the limit on sigma in fb.
     # True rescales each signal point to its own cross section from
     # cross_sections.yaml, so r is directly sigma_limit/sigma_theory and r < 1
     # means the point is excluded.
