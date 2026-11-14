@@ -156,6 +156,21 @@ base: &base
     - *evt_base
     - "2mu2e"
 
+# The analysis channels of the limits (sidm/studies/limit_plotting, sidm/studies/systematics):
+# the 2mu2e and 4mu categories with the MET filters. Isolation, |dphi|, displacement and
+# m_LJLJ are axes of the abcd6d_* histograms, which shape_tools slices into regions A to D.
+SR_2mu2e:
+  <<: *2mu2e
+  evt_cuts:
+    - *evt_2mu2e
+    - "pass flags"
+
+SR_4mu:
+  <<: *4mu
+  evt_cuts:
+    - *evt_4mu
+    - "pass flags"
+
 # add LJ iso, displacement, and lj-lj dPhi
 base_sr: &base_sr
   obj_cuts: &obj_sr
@@ -705,6 +720,16 @@ looseEndcapE_matched: &looseEndcapE_matched
     electrons:
       - *e_looseEndcapE
       - "dR(e, A) < 0.5"
+
+# denominator of the egamma-type LJ reconstruction efficiency, as baseNoLj_A_mumu is for
+# muon-type LJs (sidm/studies/systematics/lj_reco_efficiency.md)
+baseNoLj_A_ee: &baseNoLj_A_ee
+  <<: *baseNoLj
+  obj_cuts:
+    <<: *obj_baseNoLj
+  evt_cuts:
+    - *evt_baseNoLj
+    - "genAs_toE"
 
 baseNoLj_A_ee_matched_lj: &baseNoLj_A_ee_matched_lj
   <<: *baseNoLj

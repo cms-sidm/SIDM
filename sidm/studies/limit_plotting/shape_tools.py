@@ -516,11 +516,9 @@ def load_shapes(path):
 # of extractors return the same ``{region: Shape}`` structure, so everything
 # downstream -- grouping, closure, datacards, plots -- is shared.
 
+# The `channel`-axis value each channel is filled under is the active campaign's
+# (datacard_tools.CHANNELS), as for the pre-binned layout.
 SIXD_HISTS = {"SR_2mu2e": "abcd6d_2mu2e", "SR_4mu": "abcd6d_4mu"}
-SIXD_SELECTIONS = {
-    "SR_2mu2e": "abcd6d_inclusive_2mu2e_dxySpread_cosAlpha_mu_veto_eHEM",
-    "SR_4mu": "abcd6d_inclusive_4mu_dxySpread_cosAlpha_mu_veto_eHEM",
-}
 
 ISO_CUT = 0.25
 DPHI_CUT = 2.0
@@ -754,7 +752,7 @@ def _sr_slices(hist, channel_name, selection=NOMINAL):
 
 
 def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
-                     selection=NOMINAL, allow_data_sr=False):
+                     selection=NOMINAL, allow_data_sr=False, syst="nominal", variant=""):
     """``m_ljlj`` distributions in the four ABCD regions of one plane.
 
     Returns ``{region_index: Shape}`` over the ``ljlj_mass`` bins at or above
@@ -763,17 +761,22 @@ def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
 
     Region A is omitted unless the sample is positively identified as
     simulation, exactly as :func:`datacard_tools.region_yields` does.
+
+    ``syst`` picks one weight category of a histogram with a ``syst`` axis (a
+    run with ``syst_hists=True``); a histogram without one holds the nominal
+    weights only. ``variant`` is appended to the histogram name, e.g.
+    ``"_iso_up"`` for the isolation scaled for the jet energy uncertainty.
     """
     plane = PLANES[plane] if isinstance(plane, str) else plane
     hist_name = SIXD_HISTS.get(channel_name)
     if hist_name is None:
         return None
-    h = sample_out["hists"].get(hist_name)
+    h = sample_out["hists"].get(hist_name + variant)
     if h is None:
         return None
     # named channel_value, not `selection`: the Selection argument owns that
     # name, and shadowing it here silently disabled every cut
-    channel_value = SIXD_SELECTIONS[channel_name]
+    channel_value = dt.CHANNELS[channel_name].selection
     if channel_value not in list(h.axes["channel"]):
         return None
 
@@ -805,6 +808,18 @@ def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
     # Any plane axis that is not in this plane stays an SR cut on its
     # signal-like side; that is what keeps region A identical between planes.
     fixed = dict(base)
+    # A histogram holds every channel of the run (and every weight category of
+    # a syst_hists run); keep only this channel and the requested category.
+    # (Category axes have no underflow, so a category's flow index is its index.)
+    channel_index = list(ax["channel"]).index(channel_value)
+    fixed["channel"] = slice(channel_index, channel_index + 1)
+    if "syst" in ax:
+        if syst not in list(ax["syst"]):
+            raise ShapeError(f"{hist_name}{variant} has no weight category {syst!r}")
+        syst_index = list(ax["syst"]).index(syst)
+        fixed["syst"] = slice(syst_index, syst_index + 1)
+    elif syst != "nominal":
+        raise ShapeError(f"{hist_name}{variant} has no syst axis: only the nominal weights")
     if plane.axis_b != "abs_dphi":
         fixed["abs_dphi"] = _side(ax["abs_dphi"], selection.dphi_cut, low=False,
                                   keep_under=False, keep_over=True)
@@ -869,10 +884,11 @@ def region_shapes_6d(sample_out, channel_name, plane, sample_name="",
 
 
 def collect_6d(directory, plane, channels=None, selection=NOMINAL,
-               progress=None, allow_data_sr=False):
+               progress=None, allow_data_sr=False, syst="nominal", variant=""):
     """Per-region ``m_ljlj`` shapes for every ``.coffea`` file in ``directory``.
 
-    Returns ``{sample: {channel: {region: Shape}}}``.
+    Returns ``{sample: {channel: {region: Shape}}}``. ``syst`` and ``variant``
+    are passed to :func:`region_shapes_6d`.
     """
     resolved = str(Path(directory).resolve())
     for campaign in dt.CAMPAIGNS.values():
@@ -894,7 +910,8 @@ def collect_6d(directory, plane, channels=None, selection=NOMINAL,
             for ch_name in channels:
                 regions = region_shapes_6d(
                     sample_out, ch_name, plane, sample_name=sample,
-                    selection=selection, allow_data_sr=allow_data_sr)
+                    selection=selection, allow_data_sr=allow_data_sr,
+                    syst=syst, variant=variant)
                 if regions:
                     per_channel[ch_name] = regions
             if per_channel:

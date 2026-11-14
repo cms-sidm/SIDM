@@ -242,7 +242,14 @@ def build_command(card, workdir, args, rmax=None):
     if args.extra:
         combine += shlex.split(args.extra)
 
-    inner = f"cd {shlex.quote(str(workdir))} && {shlex.join(combine)}"
+    return in_combine_release(f"cd {shlex.quote(str(workdir))} && {shlex.join(combine)}", args)
+
+
+def in_combine_release(inner, args):
+    """``bash -c`` command running the shell command ``inner`` in the Combine release
+
+    ``args`` needs ``no_cmsenv`` and ``combine_cmssw``, as this script's options.
+    """
     if args.no_cmsenv:
         return ["bash", "-c", inner]
 
@@ -456,6 +463,17 @@ def write_results(rows, outdir):
     return csv_path, json_path
 
 
+def add_release_options(parser):
+    """The options that say where Combine is, as in_combine_release reads them, for this
+    script and the other Combine scripts in sidm/scripts"""
+    parser.add_argument("--combine-cmssw", default=os.environ.get(
+                            "COMBINE_CMSSW_BASE", DEFAULT_COMBINE_CMSSW),
+                        help="CMSSW release holding HiggsAnalysis/CombinedLimit "
+                             "(default: $COMBINE_CMSSW_BASE or %(default)s)")
+    parser.add_argument("--no-cmsenv", action="store_true",
+                        help="call combine directly instead of sourcing a CMSSW env")
+
+
 def parse_args(argv=None):
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -470,14 +488,9 @@ def parse_args(argv=None):
                         "(default: %(default)s)")
     p.add_argument("--logdir", default=None,
                    help="if set, save each combine log here")
-    p.add_argument("--combine-cmssw", default=os.environ.get(
-                       "COMBINE_CMSSW_BASE", DEFAULT_COMBINE_CMSSW),
-                   help="CMSSW release holding HiggsAnalysis/CombinedLimit "
-                        "(default: $COMBINE_CMSSW_BASE or %(default)s)")
+    add_release_options(p)
     p.add_argument("--combine", default="combine",
                    help="combine executable name (default: %(default)s)")
-    p.add_argument("--no-cmsenv", action="store_true",
-                   help="call combine directly instead of sourcing a CMSSW env")
     p.add_argument("--blind", action="store_true", default=True,
                    help="expected limits only, from the Asimov dataset (default)")
     p.add_argument("--unblind", dest="blind", action="store_false",

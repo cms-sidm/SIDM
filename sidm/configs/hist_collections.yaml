@@ -1209,3 +1209,22 @@ corrections_study: &corrections_study
   - "lj1_pt"
   - "lj_lj_absdphi"
   - "lj_lj_invmass"
+
+# ABCD limit inputs (sidm/studies/limit_plotting/shape_tools.py, sidm/studies/systematics):
+# the 6D histograms of the SR_2mu2e and SR_4mu channels, and the same with the isolation
+# scaled by 1.10 for the jet energy uncertainty. Run with syst_hists=True to get the weight
+# variations on the syst axis.
+abcd_limits: &abcd_limits
+  - "abcd6d_2mu2e"
+  - "abcd6d_4mu"
+  - "abcd6d_2mu2e_iso_up"
+  - "abcd6d_4mu_iso_up"
+
+# Lepton-jet reconstruction efficiency in signal simulation, step 1 of the study proposed in
+# sidm/studies/systematics/lj_reco_efficiency.md: the generator-level dark photons of the
+# denominator channels (baseNoLj_A_mumu, baseNoLj_A_ee) and of the channels requiring a
+# matched lepton jet (..._matched_lj), against L_xy, pT and the opening angle.
+lj_reco_effi_systematics: &lj_reco_effi_systematics
+  - *lj_reco_effi_base
+  - "genA_toMu_lxy_vs_daughters_dR"
+  - "genA_toE_lxy_vs_daughters_dR"

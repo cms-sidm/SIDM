@@ -118,9 +118,15 @@ def cmd_extract(args):
             meta_extra = {"observable": args.observable}
 
         print(f"  background: {dt.BKG_DIR}")
-        bkg = st.group_shapes(get(dt.BKG_DIR))
-        print(f"  signal: {dt.SIGNAL_DIR}")
-        signal = get(dt.SIGNAL_DIR)
+        samples = get(dt.BKG_DIR)
+        if dt.SIGNAL_DIR == dt.BKG_DIR:
+            # one merged directory for both (condor/campaign.py): split by name
+            signal = {s: v for s, v in samples.items() if dt.parse_signal_name(s)}
+            samples = {s: v for s, v in samples.items() if not dt.parse_signal_name(s)}
+        else:
+            print(f"  signal: {dt.SIGNAL_DIR}")
+            signal = get(dt.SIGNAL_DIR)
+        bkg = st.group_shapes(samples)
         print(f"  groups: {', '.join(sorted(bkg))}; {len(signal)} signal points")
 
         path = outdir / f"shapes_{tag}.json"

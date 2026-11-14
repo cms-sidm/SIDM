@@ -37,7 +37,8 @@ import math
 import sys
 from pathlib import Path
 
-import ROOT
+# ROOT comes with the Combine release this script runs in
+import ROOT  # pylint: disable=import-error
 
 ROOT.gROOT.SetBatch(True)
 ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
@@ -278,8 +279,18 @@ def _arglist(variables):
 # --------------------------------------------------------------------------- #
 # Datacards
 # --------------------------------------------------------------------------- #
+def lnn_value(kappa):
+    """A log-normal datacard entry: k, kDown/kUp for an asymmetric one, or - for none"""
+    if kappa is None:
+        return "-"
+    if isinstance(kappa, (list, tuple)):
+        return f"{kappa[0]:.6g}/{kappa[1]:.6g}"
+    return f"{kappa:.6g}"
+
+
 def write_datacard(path, ws_name, channel, point, bkg, signal, tf_model,
-                   normalisation, observable, campaign, shape_sys=None):
+                   normalisation, observable, campaign, shape_sys=None,
+                   signal_systematics=None):
     """One datacard spanning all four ABCD regions of one channel.
 
     The rate column is ``1`` for the background, whose normalisation comes from
@@ -288,6 +299,11 @@ def write_datacard(path, ws_name, channel, point, bkg, signal, tf_model,
     signal-strength scan from the rate column, and that column carries no
     yields here, the signal and background levels in region A are recorded in
     the header for it to read instead.
+
+    ``signal_systematics`` is ``{nuisance: {region name: kappa}}``, one
+    log-normal row per nuisance on the signal of each region, a kappa being a
+    number or ``[down, up]``; it replaces the default luminosity row, so
+    ``{}`` writes no systematic uncertainty at all.
     """
     order = [(1, "B"), (2, "C"), (3, "D"), (0, "A")]
     bin_names = [f"{channel}_{name}" for _, name in order]
@@ -351,8 +367,13 @@ def write_datacard(path, ws_name, channel, point, bkg, signal, tf_model,
     # The background has no rate parameter to attach a normalisation
     # uncertainty to -- it is defined by the free control-region bins -- so the
     # only nuisances are on the signal.
-    nuis = [("lumi_13TeV", "lnN",
-             [f"{LUMI_UNC}" if i == 0 else "-" for _, _, i in columns])]
+    if signal_systematics is None:
+        signal_systematics = {"lumi_13TeV": {name: LUMI_UNC for _, name in order}}
+    nuis = []
+    for source, kappas in signal_systematics.items():
+        values = [lnn_value(kappas.get(b[len(channel) + 1:])) if i == 0 else "-"
+                  for b, _, i in columns]
+        nuis.append((source, "lnN", values))
     for region, name in order:
         sumw, sumw2 = signal[region]
         total, var = sum(sumw), sum(sumw2)
@@ -386,13 +407,20 @@ def write_datacard(path, ws_name, channel, point, bkg, signal, tf_model,
 # --------------------------------------------------------------------------- #
 def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
           channels="", signals="", all_pairings=False, allow_vr_data=False,
-          shape_sys=None):
-    """Write one workspace per channel plus a datacard per signal point."""
+          shape_sys=None, signal_systematics=None):
+    """Write one workspace per channel plus a datacard per signal point.
+
+    ``signal_systematics`` is the path of a JSON file
+    ``{"sources": [nuisance, ...], "kappas": {point: {nuisance: {region: kappa}}}}``
+    (sidm/studies/systematics); its sources replace the default luminosity row.
+    """
     args = argparse.Namespace(
         shapes=shapes, outdir=outdir, tf_model=tf_model, rebin=rebin,
         empty_floor=empty_floor, channels=channels, signals=signals,
         all_pairings=all_pairings)
 
+    systematics = (json.loads(Path(signal_systematics).read_text())
+                   if signal_systematics else None)
     payload = load_payload(args.shapes, allow_vr_data=allow_vr_data)
     background = payload["background"]
     signal_block = payload["signal"]
@@ -455,9 +483,17 @@ def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
 
         for point in points:
             card = outdir / f"datacard_shape_{channel}_{point}.txt"
+            point_systematics = None
+            if systematics is not None:
+                missing = [s for s in systematics["sources"]
+                           if s not in systematics["kappas"].get(point, {})]
+                if missing:
+                    raise SystemExit(f"{signal_systematics}: no {missing} for {point}")
+                point_systematics = {s: systematics["kappas"][point][s]
+                                     for s in systematics["sources"]}
             write_datacard(card, ws_path.name, channel, point, bkg, points[point],
                            args.tf_model, normalisation, observable, campaign,
-                           shape_sys=shape_sys)
+                           shape_sys=shape_sys, signal_systematics=point_systematics)
             written.append(card)
         print(f"  {channel}: {len(edges) - 1} bins, {len(points)} signal points "
               f"-> {ws_path.name}")
@@ -469,7 +505,10 @@ def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
         "rebin": new_edges,
         "empty_floor": args.empty_floor,
         "shape_sys": shape_sys,
-        "lumi_unc": LUMI_UNC,
+        "lumi_unc": LUMI_UNC if systematics is None else None,
+        "signal_systematics": (None if systematics is None else
+                               {"file": str(Path(signal_systematics).resolve()),
+                                "sources": systematics["sources"]}),
         "n_cards": len(written),
         "mc_only": True,
         "source_shapes": str(Path(args.shapes).resolve()),
@@ -506,9 +545,13 @@ def main(argv=None):
     p.add_argument("--shape-sys", type=float, default=None,
                    help="relative per-bin uncertainty on the region-A prediction, "
                         "log-normal and uncorrelated between bins (e.g. 0.2)")
+    p.add_argument("--signal-systematics", default=None,
+                   help="JSON of per-point, per-region log-normal uncertainties of the signal "
+                        "(sidm/studies/systematics); replaces the default luminosity row")
     a = p.parse_args(argv)
     return build(a.shapes, a.outdir, a.tf_model, a.rebin, a.empty_floor,
-                 a.channels, a.signals, a.all_pairings, a.allow_vr_data, a.shape_sys)
+                 a.channels, a.signals, a.all_pairings, a.allow_vr_data, a.shape_sys,
+                 a.signal_systematics)
 
 
 if __name__ == "__main__":

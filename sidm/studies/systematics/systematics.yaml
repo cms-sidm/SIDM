@@ -1,0 +1,20 @@
+# The systematic uncertainties of the signal yield that enter the limits: one entry per
+# datacard nuisance. 03_limits.ipynb turns every entry into log-normal values per signal
+# point and ABCD region, so adding a systematic means adding an entry here and rerunning
+# that notebook. README.md says why each value is what it is.
+#
+# Each entry has exactly one of:
+#   flat:     relative uncertainty, the same for every point and region
+#   syst:     a correction whose <syst>Up and <syst>Down weight categories are on the syst
+#             axis of the campaign's histograms (asymmetric)
+#   variant:  suffix of a histogram filled with a varied input, abcd6d_<channel><variant>
+#             (symmetric, with its sign per region)
+
+lumi_13TeV:
+  flat: 0.0083
+CMS_pileup:
+  syst: pileup
+CMS_l1_prefiring:
+  flat: 0.01
+CMS_jet_energy:
+  variant: _iso_up

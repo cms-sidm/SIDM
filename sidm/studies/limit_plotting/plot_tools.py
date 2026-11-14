@@ -34,6 +34,7 @@ import csv
 import re
 from pathlib import Path
 
+import fsspec
 import hist
 import matplotlib
 import matplotlib.pyplot as plt
@@ -51,6 +52,7 @@ GRID_RC = {"font.size": 13, "axes.labelsize": 13, "axes.titlesize": 13,
            "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 10}
 BAND_STYLE = {"1sigma": "#5BC236", "2sigma": "#F5DF4D"}
 THEORY_COLOUR = "#C0392B"
+OVERLAY_COLOUR = "#2B5FAD"      # a second set of limits drawn over a Brazil band
 GROUP_COLOURS = {"QCD": "#4c72b0", "DY": "#dd8452", "TT": "#55a868",
                  "Diboson": "#c44e52", "other": "#8172b3"}
 GROUP_LABELS = {"DY": "DY+jets", "TT": r"$t\bar{t}$+jets", "QCD": "QCD",
@@ -290,10 +292,14 @@ def load_limits(path, with_bands=True):
     each signal at the cross section the production applied -- its model cross
     section where it has one, 1 fb otherwise -- so their r is relative to that
     and is converted here.  ``1fb_ref`` rows are at 1 fb already.
+
+    ``path`` may also be a URL such as ``root://cmseos.fnal.gov//store/...``,
+    read through fsspec as ``datacard_tools.read_coffea`` reads outputs, so
+    limits on EOS can be plotted where EOS is not mounted.
     """
     production_fb = None
     out = {}
-    with open(path) as fh:
+    with fsspec.open(str(path), "rt") as fh:
         for row in csv.DictReader(fh):
             if not row.get("exp"):
                 continue
@@ -389,33 +395,68 @@ def summary_table(sets):
 # --------------------------------------------------------------------------- #
 # Single result set
 # --------------------------------------------------------------------------- #
-def draw_brazil(ax, rows, theory=None, label_median="median expected", observed=False):
-    """Brazil bands against Lxy for rows that share a panel.
+def draw_brazil(ax, rows, theory=None, label_median="median expected", observed=False,
+                x="lxy", overlay=None, overlay_label=""):
+    """Brazil bands against Lxy, or against the field ``x`` of the rows, for rows
+    that share a panel.
 
     ``observed`` adds the observed limit as the usual solid black line, for
     results where one exists (the validation-region fits); it is drawn only if
-    every row in the panel has one.
+    every row in the panel has one.  ``theory`` is the model cross section: a
+    number, drawn as a horizontal line, or ``{x: sigma}``, drawn as a curve,
+    which is what it is against bound state mass.  ``overlay`` is a second set
+    of rows for the same panel, drawn over the bands (:func:`_draw_overlay`).
     """
-    rows = sorted([r for r in rows if r["lxy"] == r["lxy"]], key=lambda r: r["lxy"])
+    rows = sorted([r for r in rows if r[x] == r[x]], key=lambda r: r[x])
     if not rows:
         return False
-    x = np.array([r["lxy"] for r in rows])
+    xs = np.array([r[x] for r in rows])
     if all("exp_m2" in r and "exp_p2" in r for r in rows):
-        ax.fill_between(x, [r["exp_m2"] for r in rows], [r["exp_p2"] for r in rows],
+        ax.fill_between(xs, [r["exp_m2"] for r in rows], [r["exp_p2"] for r in rows],
                         color=BAND_STYLE["2sigma"], label=r"expected $\pm2\sigma$")
-        ax.fill_between(x, [r["exp_m1"] for r in rows], [r["exp_p1"] for r in rows],
+        ax.fill_between(xs, [r["exp_m1"] for r in rows], [r["exp_p1"] for r in rows],
                         color=BAND_STYLE["1sigma"], label=r"expected $\pm1\sigma$")
-    ax.plot(x, [r["exp"] for r in rows], color="black", ls="--", lw=1.8,
+    ax.plot(xs, [r["exp"] for r in rows], color="black", ls="--", lw=1.8,
             marker="o", ms=4, mfc="white" if observed else None, label=label_median)
     if observed and all("obs" in r for r in rows):
-        ax.plot(x, [r["obs"] for r in rows], color="black", ls="-", lw=1.8,
+        ax.plot(xs, [r["obs"] for r in rows], color="black", ls="-", lw=1.8,
                 marker="o", ms=5, label="observed")
-    if theory is not None and theory == theory:
+    if overlay:
+        _draw_overlay(ax, overlay, x, overlay_label)
+    if isinstance(theory, dict):
+        if theory:
+            masses = sorted(theory)
+            ax.plot(masses, [theory[m] for m in masses], color=THEORY_COLOUR, lw=1.8,
+                    marker="s", ms=3.5, label=r"$\sigma_\mathrm{theory}$")
+    elif theory is not None and theory == theory:
         ax.axhline(theory, color=THEORY_COLOUR, lw=1.8,
                    label=r"$\sigma_\mathrm{theory}$")
-    ax.set_xscale("log")
+    ax.set_xscale("log" if x == "lxy" else "linear")
     ax.set_yscale("log")
     return True
+
+
+def _draw_overlay(ax, rows, x, label=""):
+    """A second set of limits over a Brazil band, in one colour.
+
+    The median is a solid line under the band's dashed one, so where the two
+    sets agree the dashes show on top of it, and the edges of the +-1 and +-2
+    sigma bands are dotted lines, since a second filled band would hide the first.
+    """
+    rows = sorted([r for r in rows if r[x] == r[x]], key=lambda r: r[x])
+    if not rows:
+        return
+    xs = [r[x] for r in rows]
+    suffix = f", {label}" if label else ""
+    # zorder 1.9: above the bands (1), below the lines of the main set (2)
+    ax.plot(xs, [r["exp"] for r in rows], color=OVERLAY_COLOUR, lw=2.6, marker="s",
+            ms=5, zorder=1.9, label="median expected" + suffix)
+    edges = [q for q in ("exp_m2", "exp_m1", "exp_p1", "exp_p2")
+             if all(q in r for r in rows)]
+    for i, q in enumerate(edges):
+        ax.plot(xs, [r[q] for r in rows], color=OVERLAY_COLOUR, lw=1.1, ls=":",
+                zorder=1.9, label=(r"expected $\pm1\sigma$ and $\pm2\sigma$" + suffix
+                                   if i == 0 else None))
 
 
 def _data_label(data, text="Work in progress"):
@@ -423,21 +464,23 @@ def _data_label(data, text="Work in progress"):
     return {"data": True, "text": text} if data else {}
 
 
-def _legend_from_fullest(fig, axes, ncol=4, y=-0.04):
+def _legend_from_fullest(fig, axes, ncol=4, y=-0.04, loc="lower center"):
     """One figure legend, taken from the panel that has the most entries.
 
     A fixed corner panel may hold no points (or no observed line), which would
-    silently drop entries from the legend.
+    silently drop entries from the legend.  ``loc="upper center"`` hangs the
+    legend below ``y`` instead of standing it on ``y``, for a legend of several rows.
     """
     best = max((a.get_legend_handles_labels() for a in np.ravel(axes)),
                key=lambda hl: len(hl[1]))
-    fig.legend(*best, frameon=False, ncol=ncol, loc="lower center",
+    fig.legend(*best, frameon=False, ncol=ncol, loc=loc,
                bbox_to_anchor=(0.5, y))
 
 
 def brazil_grid(rows, fs, outdir, campaign, theory=None, name=None, title="",
                 observed=False, data=False, sharey=True, label_median="median expected",
-                data_text="Work in progress"):
+                data_text="Work in progress", against="lxy", overlay=None,
+                overlay_label=""):
     """Brazil bands across the grid, one panel per (m_bound, m_ZD).
 
     ``observed`` adds the observed limits; ``data`` labels the figure as data
@@ -445,35 +488,57 @@ def brazil_grid(rows, fs, outdir, campaign, theory=None, name=None, title="",
     panel its own range, which is what shows a factor of two between observed
     and expected when the limits span five decades across the grid.  Pass
     ``theory={}`` to leave out the model cross section.
+
+    ``against="m_bound"`` draws the limits against bound state mass instead, one
+    panel per (Lxy, m_ZD), with the model cross section as a curve.  ``overlay``
+    is a second set of rows, labelled ``overlay_label``, drawn over the bands of
+    every panel (:func:`draw_brazil`), to compare two sets of limits.
     """
     theory = theory if theory is not None else theory_by_mass()
     sub = [r for r in rows if r["fs"] == fs]
+    over = [r for r in overlay or [] if r["fs"] == fs]
+    column = "m_bound" if against == "lxy" else "lxy"     # what changes along a row
+    columns = sorted({r[column] for r in sub if r[column] == r[column]})
     masses = sorted({r["m_bound"] for r in sub})
     mzds = sorted({r["mzd"] for r in sub})
     with plt.rc_context(GRID_RC):
-        fig, axes = plt.subplots(len(mzds), len(masses), sharex=True, sharey=sharey,
-                                 figsize=(3.1 * len(masses), 2.5 * len(mzds)),
+        fig, axes = plt.subplots(len(mzds), len(columns), sharex=True, sharey=sharey,
+                                 figsize=(3.1 * len(columns), 2.5 * len(mzds)),
                                  squeeze=False, constrained_layout=True)
         for i, mzd in enumerate(mzds):
-            for j, mb in enumerate(masses):
+            for j, value in enumerate(columns):
                 ax = axes[i][j]
-                panel = [r for r in sub if r["mzd"] == mzd and r["m_bound"] == mb]
-                if not draw_brazil(ax, panel, theory.get(mb, np.nan),
-                                   label_median=label_median, observed=observed):
+                panel = [r for r in sub if r["mzd"] == mzd and r[column] == value]
+                panel_overlay = [r for r in over if r["mzd"] == mzd and r[column] == value]
+                if against == "lxy":
+                    panel_theory = theory.get(value, np.nan)
+                else:
+                    panel_theory = {m: theory[m] for m in masses if m in theory}
+                if not draw_brazil(ax, panel, panel_theory, label_median=label_median,
+                                   observed=observed, x=against, overlay=panel_overlay,
+                                   overlay_label=overlay_label):
                     ax.text(0.5, 0.5, "no points", transform=ax.transAxes,
                             ha="center", va="center", color="0.6")
                 if i == 0:
-                    ax.set_title(rf"$m_B={mb:g}$ GeV")
+                    ax.set_title(rf"$m_B={value:g}$ GeV" if against == "lxy"
+                                 else rf"$L_{{xy}}={value:g}$ cm")
                 if j == 0:
                     ax.set_ylabel(rf"$m_{{Z_d}}={mzd:g}$ GeV" + "\n"
                                   + r"$\sigma$ limit [fb]")
                 if i == len(mzds) - 1:
-                    ax.set_xlabel(r"$L_{xy}$ [cm]")
+                    ax.set_xlabel(r"$L_{xy}$ [cm]" if against == "lxy" else r"$m_B$ [GeV]")
+                if against != "lxy":
+                    ax.set_xticks(masses)
                 ax.grid(alpha=0.25, which="both")
-        _legend_from_fullest(fig, axes)
+        if over:
+            # one column for the set with the bands and one for the overlay, below the panels
+            _legend_from_fullest(fig, axes, ncol=2, y=0.0, loc="upper center")
+        else:
+            _legend_from_fullest(fig, axes)
         fig.suptitle(title or f"{fs}: expected 95% CL limit (MC only, blinded)")
         cms_label(axes, fontsize=11, **_data_label(data, data_text))
-        return save(fig, outdir, name or f"brazil_grid_{fs}", campaign)
+        default = f"brazil_grid_{fs}" if against == "lxy" else f"brazil_grid_vs_mass_{fs}"
+        return save(fig, outdir, name or default, campaign)
 
 
 def compare_limits_grid(sets, fs, outdir, campaign, name, title="", colours=None,
@@ -583,9 +648,15 @@ def limit_vs_mass(rows, fs, outdir, campaign, theory=None, name=None, title="",
         return save(fig, outdir, name or f"limit_vs_mass_{fs}", campaign)
 
 
-def exclusion_map(rows, fs, outdir, campaign, name=None, title=""):
-    """sigma_limit / sigma_theory across the grid; cells below 1 are outlined."""
-    sub = [r for r in rows if r["fs"] == fs and r["r_theory"] == r["r_theory"]]
+def exclusion_map(rows, fs, outdir, campaign, name=None, title="", field="r_theory",
+                  label=r"$\sigma_\mathrm{limit}/\sigma_\mathrm{theory}$", outline_below=1.0):
+    """sigma_limit / sigma_theory across the grid; cells below 1 are outlined.
+
+    ``field`` maps any other value of the rows instead, such as the size of a
+    systematic uncertainty, with ``label`` on the colour bar; ``outline_below=None``
+    outlines nothing.
+    """
+    sub = [r for r in rows if r["fs"] == fs and r[field] == r[field]]
     if not sub:
         return None
     masses = sorted({r["m_bound"] for r in sub})
@@ -598,7 +669,7 @@ def exclusion_map(rows, fs, outdir, campaign, name=None, title=""):
         for k, mzd in enumerate(mzds):
             for i, lxy in enumerate(lxys):
                 for j, mb in enumerate(masses):
-                    hit = [r["r_theory"] for r in sub if r["mzd"] == mzd
+                    hit = [r[field] for r in sub if r["mzd"] == mzd
                            and r["lxy"] == lxy and r["m_bound"] == mb]
                     if hit:
                         grid[k, i, j] = min(hit)
@@ -615,7 +686,7 @@ def exclusion_map(rows, fs, outdir, campaign, name=None, title=""):
                         continue
                     ax.text(j, i, f"{v:.2g}", ha="center", va="center", fontsize=8,
                             color="white" if v > np.sqrt(vmin * vmax) else "black")
-                    if v < 1:
+                    if outline_below is not None and v < outline_below:
                         ax.add_patch(plt.Rectangle((j - 0.5, i - 0.5), 1, 1,
                                                    fill=False, edgecolor="red", lw=2))
             ax.set_xticks(range(len(masses)))
@@ -626,11 +697,11 @@ def exclusion_map(rows, fs, outdir, campaign, name=None, title=""):
             if k == 0:
                 ax.set_ylabel(r"$L_{xy}$ [cm]")
             ax.set_title(rf"$m_{{Z_d}}={mzd:g}$ GeV")
-        fig.colorbar(im, ax=axes[0].tolist(),
-                     label=r"$\sigma_\mathrm{limit}/\sigma_\mathrm{theory}$")
-        n_excl = int(np.nansum(grid < 1))
-        fig.suptitle(title or f"{fs}: expected exclusion "
-                              f"(outlined: below 1, {n_excl} cells)")
+        fig.colorbar(im, ax=axes[0].tolist(), label=label)
+        if not title and field == "r_theory":
+            n_excl = int(np.nansum(grid < 1))
+            title = f"{fs}: expected exclusion (outlined: below 1, {n_excl} cells)"
+        fig.suptitle(title or f"{fs}: {label}")
         cms_label(axes, fontsize=11)
         return save(fig, outdir, name or f"exclusion_map_{fs}", campaign)
 
@@ -1356,3 +1427,252 @@ def compare_region_shapes(variants, channel, region, outdir, campaign,
         cms_label(ax)
         save(fig, outdir, name or f"shape_variants_{channel}", campaign)
     return stats
+
+
+# --------------------------------------------------------------------------- #
+# Systematic uncertainties and fit diagnostics
+# --------------------------------------------------------------------------- #
+VARIATION_COLOURS = {"up": THEORY_COLOUR, "down": OVERLAY_COLOUR}
+
+
+def variation_plot(nominal, varied, outdir, campaign, name, title=""):
+    """A template and its systematic variations in every region, with their ratio to it.
+
+    ``nominal`` is ``{region: Shape}`` and ``varied`` is ``{label: {region: Shape}}``,
+    such as the up and down variations of one nuisance.  The ratio panels shade the
+    statistical uncertainty of the nominal template, for scale: a variation that
+    follows the bin-to-bin fluctuations inside it is more likely noise than a shape.
+    """
+    regions = sorted(nominal)
+    with plt.rc_context(GRID_RC):
+        fig, axes = plt.subplots(2, len(regions), figsize=(3.6 * len(regions), 4.8),
+                                 sharex=True, squeeze=False, constrained_layout=True,
+                                 gridspec_kw={"height_ratios": [3, 1.4]})
+        for j, region in enumerate(regions):
+            top, bottom = axes[0][j], axes[1][j]
+            nom = nominal[region]
+            with np.errstate(divide="ignore", invalid="ignore"):
+                rel = np.where(nom.sumw > 0, np.sqrt(nom.sumw2) / nom.sumw, 0.0)
+                _band(bottom, nom.edges, 1 - rel, 1 + rel, color="0.85",
+                      label="statistical uncertainty of the nominal")
+                _step(top, nom.edges, nom.sumw, color="black", lw=1.6, label="nominal")
+                for i, (label, shapes) in enumerate(varied.items()):
+                    colour = VARIATION_COLOURS.get(label, style_for(i + 1)[0])
+                    values = shapes[region].sumw
+                    _step(top, nom.edges, values, color=colour, lw=1.2, ls="--", label=label)
+                    _step(bottom, nom.edges, np.where(nom.sumw > 0, values / nom.sumw, np.nan),
+                          color=colour, lw=1.2)
+            bottom.axhline(1.0, color="0.3", lw=0.8)
+            top.set_title(f"region {REGION_NAMES.get(region, region)}")
+            bottom.set_xlabel(r"$m_{LJLJ}$ [GeV]")
+            if j == 0:
+                top.set_ylabel("events")
+                bottom.set_ylabel("ratio to nominal")
+        handles, labels = axes[0][0].get_legend_handles_labels()
+        band_handles, band_labels = axes[1][0].get_legend_handles_labels()
+        fig.legend(handles + band_handles, labels + band_labels, frameon=False,
+                   ncol=len(labels) + len(band_labels), loc="upper center",
+                   bbox_to_anchor=(0.5, 0.0))
+        fig.suptitle(title)
+        cms_label(axes, fontsize=11)
+        return save(fig, outdir, name, campaign)
+
+
+def impact_plot(impacts, outdir, campaign, name, title=""):
+    """Pulls and impacts of the nuisances of one fit, from combineTool.py -M Impacts.
+
+    Left: each nuisance's best fit relative to its pre-fit value, with its post-fit
+    uncertainty, both in units of the pre-fit uncertainty.  Right: the shift of r when
+    the nuisance is fixed one post-fit standard deviation above (red) or below (blue)
+    its best fit, relative to the best-fit r.  The largest impact is at the top.
+    """
+    r_lo, r_best, r_hi = impacts["POIs"][0]["fit"]
+
+    def shifts(par):
+        return [100 * (par["r"][k] - par["r"][1]) / r_best for k in (2, 0)]
+
+    params = sorted(impacts["params"], key=lambda par: max(map(abs, shifts(par))))
+    with plt.rc_context(GRID_RC):
+        fig, (left, right) = plt.subplots(1, 2, sharey=True,
+                                          figsize=(11, 1.8 + 0.42 * len(params)),
+                                          gridspec_kw={"width_ratios": [1, 1.3]},
+                                          constrained_layout=True)
+        for width, shade in ((2, "0.93"), (1, "0.82")):
+            left.axvspan(-width, width, color=shade, lw=0)
+        for i, par in enumerate(params):
+            lo, best, hi = par["fit"]
+            pre_lo, pre, pre_hi = par["prefit"]
+            sigma = (pre_hi - pre_lo) / 2 or 1.0
+            left.errorbar([(best - pre) / sigma], [i],
+                          xerr=[[(best - lo) / sigma], [(hi - best) / sigma]],
+                          fmt="o", color="black", ms=4)
+            up, down = shifts(par)
+            right.barh(i, up, height=0.6, color=VARIATION_COLOURS["up"])
+            right.barh(i, down, height=0.6, color=VARIATION_COLOURS["down"])
+        left.set_xlim(-2.5, 2.5)
+        left.set_yticks(range(len(params)))
+        left.set_yticklabels([par["name"] for par in params])
+        left.set_xlabel(r"$(\hat\theta-\theta_0)/\Delta\theta$")
+        right.axvline(0, color="0.3", lw=0.8)
+        largest = max([abs(v) for par in params for v in shifts(par)] + [1e-3])
+        right.set_xlim(-1.15 * largest, 1.15 * largest)
+        right.set_xlabel(r"$\Delta r/\hat r$ [%]")
+        right.legend(handles=[matplotlib.patches.Patch(color=c, label=label)
+                              for label, c in ((r"$+1\sigma$", VARIATION_COLOURS["up"]),
+                                               (r"$-1\sigma$", VARIATION_COLOURS["down"]))],
+                     frameon=False, loc="lower right")
+        fig.suptitle(f"{title}\n" + rf"$\hat r = {r_best:.3g}"
+                     rf"^{{+{r_hi - r_best:.2g}}}_{{-{r_best - r_lo:.2g}}}$")
+        cms_label([left, right], fontsize=11)
+        return save(fig, outdir, name, campaign)
+
+
+def scan_plot(panels, outdir, campaign, name, title="", styles=None, ncols=3):
+    """Likelihood scans, one panel per scanned parameter.
+
+    ``panels`` is a list of ``(panel title, {label: scan}, prior)``, a scan being the
+    output of run_combine_scan.py.  ``prior`` adds theta^2, what the unit Gaussian
+    constraint of a nuisance contributes by itself: a scan on top of it means the
+    data add nothing to the constraint.  The dotted lines are at 1 and 3.84, where a
+    scan of one parameter crosses its 68% and 95% CL interval.
+    """
+    n = len(panels)
+    ncols = min(ncols, n)
+    nrows = -(-n // ncols)
+    with plt.rc_context(GRID_RC):
+        fig, axes = plt.subplots(nrows, ncols, figsize=(4.6 * ncols, 3.7 * nrows),
+                                 squeeze=False, constrained_layout=True)
+        for k in range(n, nrows * ncols):
+            axes[k // ncols][k % ncols].set_visible(False)
+        for k, (panel_title, scans, prior) in enumerate(panels):
+            ax = axes[k // ncols][k % ncols]
+            xs = []
+            for i, (label, scan) in enumerate(scans.items()):
+                kw = {**_series_kwargs(i, label, styles, lw=1.8), "marker": None}
+                ax.plot(scan["x"], scan["dnll2"], label=label, **kw)
+                xs += scan["x"]
+            if prior and xs:
+                x = np.linspace(min(xs), max(xs), 200)
+                ax.plot(x, x ** 2, color="0.45", ls=":", lw=1.6,
+                        label=r"constraint alone, $\theta^2$")
+            for level in (1.0, 3.84):
+                ax.axhline(level, color="0.6", lw=0.8, ls=(0, (1, 2)))
+            ax.set_ylim(0, 10)
+            poi = next(iter(scans.values()))["poi"] if scans else ""
+            ax.set_xlabel(r"$r$ [fb]" if poi == "r" else r"$\theta$")
+            ax.set_ylabel(r"$-2\Delta\ln L$")
+            ax.set_title(panel_title)
+            ax.legend(frameon=False, fontsize=8)
+        fig.suptitle(title)
+        cms_label(axes, fontsize=11)
+        return save(fig, outdir, name, campaign)
+
+
+def correlation_plot(names, matrix, outdir, campaign, name, title="", annotate=0.1):
+    """Correlation matrix of the parameters of a fit, in the order given; coefficients
+    at least ``annotate`` in size are printed."""
+    m = np.asarray(matrix, dtype=float)
+    n = len(names)
+    size = max(5.0, 0.3 * n + 2.0)
+    with plt.rc_context(GRID_RC):
+        fig, ax = plt.subplots(figsize=(size + 1.5, size), constrained_layout=True)
+        im = ax.imshow(m, cmap="RdBu_r", vmin=-1, vmax=1)
+        ax.set_xticks(range(n))
+        ax.set_xticklabels(names, rotation=90, fontsize=7)
+        ax.set_yticks(range(n))
+        ax.set_yticklabels(names, fontsize=7)
+        for i in range(n):
+            for j in range(n):
+                if i != j and abs(m[i, j]) >= annotate:
+                    ax.text(j, i, f"{m[i, j]:.2f}", ha="center", va="center", fontsize=5,
+                            color="white" if abs(m[i, j]) > 0.6 else "black")
+        fig.colorbar(im, ax=ax, label="correlation", shrink=0.8)
+        ax.set_title(title)
+        cms_label(ax, fontsize=11)
+        return save(fig, outdir, name, campaign)
+
+
+def bias_plot(toys, outdir, campaign, name, title=""):
+    """Signal-injection test of one card, from run_combine_toys.py.
+
+    Left: the fitted r of the toys, against the injected one, with its mean.  Middle:
+    its pull, (r - r_injected) over the uncertainty on the side of the injected value,
+    against a unit Gaussian (pulls beyond 4 in size are drawn in the outer bins), with
+    its median and the half-width of its central 68%, which are the mean and width for
+    a Gaussian but are not thrown off by a few toys with a broken uncertainty; toys
+    whose best fit would lie below the r = 0 boundary stop there and gather in the left
+    tail.  Right: the mean and spread over the toys of every fitted nuisance, against
+    the 0 +- 1 that a nuisance the data do not constrain follows.  Only converged fits
+    (status 0) are drawn.
+    """
+    injected = toys["injected"]
+    r, lo, hi, status = (np.asarray(toys[k], dtype=float) for k in ("r", "r_lo", "r_hi", "status"))
+    ok = status == 0
+    with np.errstate(divide="ignore", invalid="ignore"):
+        pull = np.where(r < injected, (r - injected) / hi, (r - injected) / lo)
+    pull = pull[ok & np.isfinite(pull)]
+    at_zero = int(np.sum(r[ok] <= 1e-6 * max(injected, 1.0)))
+    names = sorted(toys["nuisances"])
+    with plt.rc_context(GRID_RC):
+        fig, axes = plt.subplots(1, 3, figsize=(15.5, max(4.2, 1.5 + 0.35 * len(names))),
+                                 constrained_layout=True, gridspec_kw={"width_ratios": [1, 1, 1.15]})
+        fitted, pulls, nuisances = axes
+        fitted.hist(r[ok], bins=30, color="0.65",
+                    label=f"mean {r[ok].mean():.3g} $\\pm$ {r[ok].std() / np.sqrt(max(ok.sum(), 1)):.2g}")
+        fitted.axvline(injected, color=THEORY_COLOUR, lw=1.8, label=f"injected r = {injected:.3g}")
+        fitted.set_xlabel(r"fitted $r$ [fb]")
+        fitted.set_ylabel("toys")
+        fitted.legend(frameon=False, fontsize=9)
+        bins = np.linspace(-4, 4, 33)
+        if pull.size:
+            q16, q50, q84 = np.percentile(pull, [16, 50, 84])
+            pulls.hist(np.clip(pull, -3.99, 3.99), bins=bins, color="0.65",
+                       label=f"median {q50:.2f}\n68% half-width {(q84 - q16) / 2:.2f}\n"
+                             f"beyond $\\pm$4: {int(np.sum(np.abs(pull) > 4))}")
+        x = np.linspace(-4, 4, 200)
+        pulls.plot(x, pull.size * (bins[1] - bins[0]) * np.exp(-x ** 2 / 2) / np.sqrt(2 * np.pi),
+                   color="black", lw=1.4, label="unit Gaussian")
+        pulls.set_xlabel(r"$(\hat r - r_\mathrm{inj})/\sigma_r$")
+        pulls.legend(frameon=False, fontsize=9)
+        nuisances.axvspan(-1, 1, color="0.88", lw=0)
+        for i, nuisance in enumerate(names):
+            values = np.asarray(toys["nuisances"][nuisance], dtype=float)[ok]
+            nuisances.errorbar([values.mean()], [i], xerr=[values.std()], fmt="o",
+                               color="black", ms=4)
+        nuisances.set_yticks(range(len(names)))
+        nuisances.set_yticklabels(names, fontsize=9)
+        nuisances.set_xlim(-2.5, 2.5)
+        nuisances.set_xlabel(r"fitted $\theta$: mean $\pm$ spread over the toys")
+        fig.suptitle(f"{title}: {int(ok.sum())} of {len(r)} fits converged, {at_zero} at r = 0")
+        cms_label(axes, fontsize=11)
+        return save(fig, outdir, name, campaign)
+
+
+def breakdown_plot(changes, outdir, campaign, name, title="", ylabel="change of the limit [%]"):
+    """Per-point changes of the expected limit, one column per label and one panel per
+    final state: every signal point is a dot, spread sideways, and the median a bar.
+
+    ``changes`` is ``{final state: {label: [change at each signal point]}}``.
+    """
+    states = list(changes)
+    columns = max(len(per_label) for per_label in changes.values())
+    jitter = np.random.default_rng(0)
+    with plt.rc_context(GRID_RC):
+        fig, axes = plt.subplots(1, len(states), figsize=(1.1 * columns * len(states) + 2, 4.8),
+                                 sharey=True, squeeze=False, constrained_layout=True)
+        for ax, fs in zip(axes[0], states):
+            for i, (label, values) in enumerate(changes[fs].items()):
+                v = np.asarray(values, dtype=float)
+                ax.scatter(i + jitter.uniform(-0.25, 0.25, v.size), v, s=10,
+                           color=style_for(i)[0], alpha=0.6, lw=0, label=label)
+                if v.size:
+                    ax.plot([i - 0.32, i + 0.32], [np.median(v)] * 2, color="black", lw=2)
+            ax.set_xticks(range(len(changes[fs])))
+            ax.set_xticklabels(list(changes[fs]), rotation=30, ha="right")
+            ax.axhline(0, color="0.5", lw=0.8)
+            ax.set_title(fs)
+            ax.grid(alpha=0.25, axis="y")
+        axes[0][0].set_ylabel(ylabel)
+        fig.suptitle(title)
+        cms_label(axes, fontsize=11)
+        return save(fig, outdir, name, campaign)

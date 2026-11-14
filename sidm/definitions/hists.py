@@ -17,6 +17,7 @@ import numpy as np
 from sidm.tools import histogram as h
 from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs
 from sidm.definitions.objects import derived_objs, withMass
+from sidm.definitions.cuts import evt_cut_defs
 from sidm.tools.corrections import Corrections
 # always reload local modules to pick up changes during development
 importlib.reload(h)
@@ -301,6 +302,59 @@ def lj_isolation_flip_hist(variant):
 
 def log_axis(nbins, xmin, xmax, name, label):
     return hist.axis.Regular(nbins, xmin, xmax, transform=hist.axis.transform.log, name=name, label=label)
+
+
+# Inputs of the ABCD limits (sidm/studies/limit_plotting/shape_tools.py, "the 6D inclusive
+# layout"): every variable that splits regions A to D is an axis, so shape_tools slices the
+# regions and the m_LJLJ shape out of one histogram per final state. LJ0 is the muon-type
+# lepton jet of the two leading ones (the leading one in 4mu), LJ1 the other one (the
+# egamma-type one in 2mu2e, the subleading one in 4mu). The edges hold the cuts of every
+# working point used so far, so that each region is a sum of whole bins.
+ABCD_ISO_EDGES = [0, 0.25, 0.3, 0.5]
+ABCD_HITS_EDGES = [-0.5, 0.5, 2.5, 3.5]
+ABCD_DPHI_EDGES = [0, 2.0, 2.4, 2.6, math.pi]
+ABCD_MASS_EDGES = [0, 150, 200, 300, 400, 600, 800, 1000, 1500, 2500]
+
+def abcd_ljs(objs, mask):
+    """The two leading lepton jets of the masked events, muon-type first
+
+    The sort is stable, so in 4mu, where both are muon-type, they stay in pT order.
+    """
+    ljs = objs["ljs"][mask, :2]
+    return ljs[ak.argsort(ljs.muon_n >= 2, ascending=False, stable=True)]
+
+def lj_pixel_hits(lj):
+    """Most pixel hits of a muon of the lepton jet, as in the muon-type LJ "displaced" cut"""
+    return ak.max(lj.muons.trkNumPixelHits, axis=-1)
+
+def lj_lost_hits(lj):
+    """Fewest missing inner hits of an electron or photon of the lepton jet, as in the
+    egamma-type LJ "displaced" cut; photons carry 999, which lands in the overflow"""
+    return ak.min(lj.egamma.lostHits, axis=-1)
+
+def abcd6d_hist(final_state, iso_scale=1.0):
+    """The 6D ABCD histogram of the 2mu2e or 4mu events
+
+    iso_scale multiplies both isolations: 1.10 gives the jet energy uncertainty of the
+    signal yield (sidm/studies/systematics, 02_jet_energy.ipynb), since the isolation is
+    proportional to the energy of the matched jet.
+    """
+    disp1, disp1_label = ((lj_lost_hits, "LJ1 missing inner hits") if final_state == "2mu2e"
+                          else (lj_pixel_hits, "LJ1 pixel hits"))
+    return h.Histogram([
+        h.Axis(hist.axis.Variable(ABCD_ISO_EDGES, name="iso0", label="LJ0 isolation"),
+               lambda objs, mask: abcd_ljs(objs, mask)[:, 0].isolation * iso_scale),
+        h.Axis(hist.axis.Variable(ABCD_ISO_EDGES, name="iso1", label="LJ1 isolation"),
+               lambda objs, mask: abcd_ljs(objs, mask)[:, 1].isolation * iso_scale),
+        h.Axis(hist.axis.Variable(ABCD_HITS_EDGES, name="disp0", label="LJ0 pixel hits"),
+               lambda objs, mask: lj_pixel_hits(abcd_ljs(objs, mask)[:, 0])),
+        h.Axis(hist.axis.Variable(ABCD_HITS_EDGES, name="disp1", label=disp1_label),
+               lambda objs, mask: disp1(abcd_ljs(objs, mask)[:, 1])),
+        h.Axis(hist.axis.Variable(ABCD_DPHI_EDGES, name="abs_dphi", label=r"$|\Delta\phi|$ (LJ0, LJ1)"),
+               lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
+        h.Axis(hist.axis.Variable(ABCD_MASS_EDGES, name="ljlj_mass", label=r"$m_{LJLJ}$ (GeV)"),
+               lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+    ], evt_mask=evt_cut_defs[final_state])
 
 hist_defs = {
     # pv
@@ -3542,6 +3596,18 @@ hist_defs = {
                    lambda objs, mask: daughters_dR(objs, mask, "genAs_toMu")),
         ],
     ),
+    # the same for dark photons decaying to electrons
+    "genA_toE_lxy_vs_daughters_dR": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(50, 0, 500, name="genA_toE_lxy",
+                                     label=r"$Z_d \rightarrow ee$ $l_{xy}$ [cm]"),
+                   lambda objs, mask: lxy(decayed_daughter_pairs(objs, mask, "genAs_toE"))),
+            h.Axis(hist.axis.Regular(48, 1e-4, 1.0, name="genA_toE_daughters_dR",
+                                     label=r"$\Delta R(e, e)$ from same $Z_d$",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: daughters_dR(objs, mask, "genAs_toE")),
+        ],
+    ),
     "genA_toE_daughters_dR": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1.0, name="genA_toE_daughters_dR",
@@ -5764,4 +5830,11 @@ hist_defs = {
     "lj_isolation_jes_up_flips": lj_isolation_flip_hist("jes_up"),
     "lj_isolation_jes_down_flips": lj_isolation_flip_hist("jes_down"),
     "lj_isolation_jer_flips": lj_isolation_flip_hist("jer"),
+
+    # ABCD limit inputs (shape_tools, "the 6D inclusive layout"); the _iso_up ones have
+    # both isolations scaled by 1.10, for the jet energy uncertainty
+    "abcd6d_2mu2e": abcd6d_hist("2mu2e"),
+    "abcd6d_4mu": abcd6d_hist("4mu"),
+    "abcd6d_2mu2e_iso_up": abcd6d_hist("2mu2e", iso_scale=1.10),
+    "abcd6d_4mu_iso_up": abcd6d_hist("4mu", iso_scale=1.10),
 }

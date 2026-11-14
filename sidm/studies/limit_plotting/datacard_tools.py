@@ -40,6 +40,7 @@ import platform
 import socket
 from datetime import datetime, timezone
 
+import fsspec
 import hist
 import yaml
 from coffea.util import load
@@ -122,6 +123,7 @@ _LEGACY_CHANNELS = _channels(
 
 
 _EOS = "/eos/uscms/store/user/dlee3/sidm_condor"
+_EOS_SYST = "/eos/uscms/store/user/scampbel/sidm_coffea_outputs"
 
 CAMPAIGNS = {
     "cosmic_veto_v1": Campaign(
@@ -180,6 +182,22 @@ CAMPAIGNS = {
              "so regions are sliced by shape_tools and m_ljlj can be the fit "
              "observable. No abcd_region axis at all -- the counting and ABCD "
              "helpers keyed on it do not apply; use shape_tools.collect_6d instead.",
+    ),
+    "systematics_v1": Campaign(
+        name="systematics_v1",
+        # condor/campaign_configs/systematics_v1.yaml merges signal and background
+        # into one directory, so both are read from it and told apart by name
+        # (parse_signal_name); it has no data.
+        bkg_dir=f"{_EOS_SYST}/systematics_v1",
+        signal_dir=f"{_EOS_SYST}/systematics_v1",
+        data_dir=f"{_EOS_SYST}/systematics_v1_has_no_data",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="6D inclusive layout made in this repository (hists.abcd6d_hist, "
+             "SR_2mu2e/SR_4mu in selections.yaml), with the default corrections and "
+             "every weight variation on a syst axis, plus the abcd6d_*_iso_up "
+             "histograms for the jet energy uncertainty (sidm/studies/systematics). "
+             "Unlike sixd_inclusive_v1 it has no HEM electron veto and no mu_veto, "
+             "which are not defined in this repository.",
     ),
 }
 
@@ -449,28 +467,35 @@ def production_xs_pb(sample_name, sample_out=None):
     """Cross section, in pb, that the production scaled a signal sample to.
 
     ``sidm_processor.postprocess`` scales every simulated sample to lumi * xs.
-    For signal the productions behind every campaign here took xs from
+    For signal the productions behind the first campaigns here took xs from
     ``cross_sections.yaml`` where the point has an entry, i.e. its model cross
     section, and the 1 fb reference otherwise: what
-    ``utilities.get_xs(name, use_signal_xs=True)`` returns.  Given the sample's
-    output, the weighted pre-selection cutflow row (lumi * xs for an unskimmed
-    sample) is checked against that, so a production normalised any other way
-    fails loudly instead of being silently mis-normalised.
+    ``utilities.get_xs(name, use_signal_xs=True)`` returns.  This repository's
+    processor uses the 1 fb reference for every point (``get_xs`` without
+    ``use_signal_xs``).  Given the sample's output, the weighted pre-selection
+    cutflow row (lumi * xs for an unskimmed sample; its genWeight-only
+    ``uncorrected`` variation when the corrections were applied) picks one of
+    the two, so a production normalised any other way fails loudly instead of
+    being silently mis-normalised.
     """
-    xs = _xs_menu().get(sample_name, SIGNAL_REF_XS_PB)
-    if sample_out is not None:
-        for cutflow in sample_out.get("cutflow", {}).values():
-            rows = getattr(cutflow, "rows", None)
-            if not rows:
-                continue
-            first = next(iter(rows.values()))["weighted"]
-            if not math.isclose(first, LUMI_PB * xs, rel_tol=1e-4):
-                raise ValueError(
-                    f"{sample_name}: the pre-selection cutflow row is {first:g}, not "
-                    f"lumi * xs = {LUMI_PB * xs:g} for xs = {xs:g} pb, so the "
-                    f"production normalised this sample some other way")
-            break
-    return xs
+    model = _xs_menu().get(sample_name)
+    candidates = [xs for xs in (model, SIGNAL_REF_XS_PB) if xs is not None]
+    if sample_out is None:
+        return candidates[0]
+    for cutflow in sample_out.get("cutflow", {}).values():
+        rows = getattr(cutflow, "rows", None)
+        if not rows:
+            continue
+        row = next(iter(rows.values()))
+        first = row.get("variations", {}).get("uncorrected", row["weighted"])
+        for xs in candidates:
+            if math.isclose(first, LUMI_PB * xs, rel_tol=1e-4):
+                return xs
+        raise ValueError(
+            f"{sample_name}: the pre-selection cutflow row is {first:g}, not lumi * xs "
+            f"for xs = {' or '.join(f'{xs:g}' for xs in candidates)} pb, so the "
+            f"production normalised this sample some other way")
+    return candidates[0]
 
 
 def read_coffea(path):
@@ -480,8 +505,15 @@ def read_coffea(path):
     one to its own cross section (``production_xs_pb``), while every datacard,
     limit and contamination figure here is written for 1 fb, so that cross
     section is divided out of the histograms and cutflows of signal samples.
+
+    ``path`` may also be a URL such as ``root://cmseos.fnal.gov//store/...``,
+    read through fsspec, so outputs on EOS can be used where EOS is not mounted.
     """
-    out = load(str(path))["out"]
+    if "://" in str(path):
+        with fsspec.open(str(path), "rb") as f:
+            out = load(f)["out"]
+    else:
+        out = load(str(path))["out"]
     for sample, sample_out in out.items():
         if parse_signal_name(sample) is None:
             continue
