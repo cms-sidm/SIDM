@@ -48,6 +48,9 @@ H_LXY, H_DR, H_3D = ("mu_lj_vtxChi2_muonN_genA_lxy", "mu_lj_vtxChi2_muonN_mumu_d
 V_NOVTX, V_PASS, V_FAIL, V_OTHER = [1, 2], [3, 4, 5], [6, 7, 8, 9, 10], [0]
 OUTCOMES = {"no_vertex": V_NOVTX, "chi2_ge5": V_FAIL, "pass": V_PASS}
 MU_1, MU_GE2 = [1], [2, 3, 4]   # muonN axis [1, 2, 3, 11], flow view
+# The grid is the v10 production (signal_*_v10.yaml); the stored outputs predate the production
+# tag in the metadata, so this selects their generator-filter efficiency.
+STORED_PRODUCTION = "v10"
 
 
 def _num(s):
@@ -75,12 +78,22 @@ def hists(path, with_meta=False):
     return (n, o["hists"], o["metadata"]) if with_meta else (n, o["hists"])
 
 
+def production(md):
+    """Signal production of an output: its metadata's, else STORED_PRODUCTION."""
+    p = md.get("production", set())
+    return next(iter(p)) if len(p) == 1 and next(iter(p)) else STORED_PRODUCTION
+
+
 def yield_scale(n, md):
-    """lumi*xs/sumw for an unweighted (condor) output, 1 for a weighted one: the factor
-    postprocess would have applied, so pooled sums weight each sample by its yield."""
+    """lumi*xs*gen_filter_eff/sumw for an unweighted (condor) output; for a weighted one, the
+    generator-filter efficiency if postprocess did not apply it (no gen_filter_eff in the
+    metadata), else 1. Pooled sums then weight each sample by its yield."""
     if not bool(next(iter(md.get("unweighted_hist", {False})))):
-        return 1.0
-    return utilities.get_lumixs_weight(n, str(next(iter(md["year"]))), md["scaled_sum_weights"])
+        if "gen_filter_eff" in md:
+            return 1.0
+        return utilities.get_gen_filter_eff(n, production(md))
+    return utilities.get_lumixs_weight(n, str(next(iter(md["year"]))), md["scaled_sum_weights"],
+                                       production(md))
 
 
 def vv(h, ch):

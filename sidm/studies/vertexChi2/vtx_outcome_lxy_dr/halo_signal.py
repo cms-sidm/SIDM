@@ -1,6 +1,6 @@
 """Part B.3: halo-sensitive fractions of the mu-LJ DSA muons in signal MC (vtxLxyDr_signal_2018),
 both selections, robust subset (N_eff >= 200 as in the write-up), per mediator-mass group.
-pooled = all samples of the group summed, each weighted to its yield at 1 fb (lumi*xs/sumw);
+pooled = all samples of the group summed, each weighted to its yield at 1 fb (lumi*xs*gen_filter_eff/sumw);
 mean/sem = unweighted mean over samples with N_eff >= 20 in that cell, standard error on it."""
 import glob
 import math
@@ -31,7 +31,7 @@ for f in sorted(glob.glob(f"{NEW}/*.coffea")):
     m = float(n.split("_")[1].replace("GeV", ""))
     o = coffea.util.load(f)["out"][n]
     H = o["hists"]
-    sc = float(BYS[(BYS["sample"] == n)].yield_scale.iloc[0])   # lumi*xs/sumw for unweighted runs
+    sc = float(BYS[(BYS["sample"] == n)].yield_scale.iloc[0])   # lumi*xs*gen_filter_eff/sumw for unweighted runs
     edges = H[HP].axes["mu_lj_dsaMuon_phi"].edges
     for ch in SELS:
         v = {hn: H[hn][{"channel": ch}].values(flow=True) * sc for hn in HALO_HISTS}

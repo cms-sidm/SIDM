@@ -246,10 +246,9 @@ empty. Every LJ of the two channels has >= 2 muons (`Mu >= 2`). The
 reference channel's `mu_lj_dsaMuon_pt_relPtErr`, flow included. Two ways of combining samples:
 **mean** / **sem** is the unweighted mean of the per-sample fractions, and its standard error,
 over the samples with `N_eff >= 20` in that bin; **pooled** sums the LJs of all samples, each
-sample weighted to its yield at 1 fb (`lumi*xs/sumw`, since the condor histograms are raw
-counts). That weight leaves out the efficiency of the generator-level filter the samples were
-made with (0.23 to 0.90 across the v10 samples, PR #81), which changes how much each sample
-counts in the pooled numbers; the mean and sem do not depend on it.
+sample weighted to its yield at 1 fb (`lumi*xs*eff/sumw`, since the condor histograms are raw
+counts; `eff` is the efficiency of the generator-level filter the samples were made with, 0.23
+to 0.90 across the v10 samples, PR #81). The mean and sem do not depend on that weight.
 
 | file | what it holds | written by |
 |---|---|---|
