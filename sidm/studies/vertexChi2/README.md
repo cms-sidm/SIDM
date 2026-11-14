@@ -582,6 +582,81 @@ Caveats:
   vertex it is empty by construction; the propagated match compares with directions at the
   beamline, while the gen dR is the opening angle at the decay.
 
+#### Muon content of the pair (`pair_content.py`, tables 15 to 22)
+
+`pair_content.py` reads the `lj_classified.parquet` that `analyze.py` writes and tabulates the
+vertex outcome by the muon content of the LJ:
+
+```bash
+python $D/pair_content.py $OUT/lj_classified.parquet $OUT     # tables 15 to 22, pair_content.md
+```
+
+**Content** is defined for an LJ with exactly two muons, from its PF and DSA muon counts: PF-PF
+(35,602 LJs), PF-DSA (18,319), DSA-DSA (26,768); the other 4,666 of the 85,355 gen-matched LJs
+have three or more muons and enter only the shares of table 17. **Charge** is that of the two
+muons, opposite or same: table 15 splits by it, tables 19 and 20 take the opposite-charge pairs,
+and tables 16, 18, 21 and 22 take both together. The **region** of tables 20 and 22 is from the
+mean eta of d1 and d2: barrel below 0.9, endcap above 1.2 in absolute value. LJs are raw counts,
+the three mediator masses (eight mass points) pooled unless a table is per mass.
+
+| table | what it holds |
+|---|---|
+| 15 | No-vertex fraction by content and charge. |
+| 16 | No-vertex fraction by Lxy slice and content. |
+| 17 | Share of each content, and of the LJs with three or more muons, per mediator mass and Lxy slice. |
+| 18 | No-vertex fraction by gen dR and content. |
+| 19 | DSA-DSA LJs of opposite charge: the three outcomes per Lxy slice. |
+| 20 | DSA-DSA LJs of opposite charge: the no-vertex fraction per Lxy slice and region. |
+| 21 | Whether the mass points share one no-vertex fraction inside cells of (Lxy, gen dR), and with the content, the lower generated pT of d1 and d2, or both as further cell variables: chi2 and ndf summed over the cells, the LJs in the test, and the spread of the fraction between mass points beyond the binomial expectation (`extra`; definitions in the script's docstring). One row per cell size (each Lxy slice of table 16 cut in 1, 2, 4 or 8), set of gen dR edges (those of table 18, or the same with the bin below 0.002 cut at 0.0005 and 0.001) and minimum number of LJs of a mass point in a cell (100 or 50). |
+| 22 | The same test for each content separately (Lxy slices cut in 4 and 8, at least 50 LJs), with the cells alone and with the charge, the region, the lower generated pT or the class of `analyze.py` as a further cell variable. |
+
+- Opposite-charge pairs have no stored vertex in 0.067 of the PF-PF LJs (2360 of 35,444), 0.446
+  of the PF-DSA LJs (7246 of 16,256) and 0.357 of the DSA-DSA LJs (9341 of 26,167) (table 15).
+- Against the gen dR (table 18) the PF-PF fraction is 0.165 below 0.002, 0.108 in
+  [0.002, 0.005) and 0.011 to 0.022 from 0.005 to 0.2. With a DSA muon in the pair it is 0.39 to
+  0.52 below 0.02 and 0.07 to 0.23 from 0.02 to 0.2 (67 PF-DSA and 352 DSA-DSA LJs in
+  [0.1, 0.2)).
+- The content follows the decay radius (table 17): at 500 GeV the PF-PF share is 0.863 within
+  1 cm and 0.011 in [60, 110) cm, where DSA-DSA holds 0.818. It also changes with the mass at a
+  given radius. Within 1 cm the PF-DSA share is 0.115 at 500 GeV (1179 of 10,266) and 0.179 at
+  1000 GeV (1284 of 7173) (the 100 GeV samples have 39 LJs there), and there 0.460 of the PF-DSA
+  LJs have no vertex (1134 of 2464) against 0.079 of the PF-PF LJs (1153 of 14,628; table 16).
+- For DSA-DSA pairs of opposite charge the no-vertex fraction falls with the decay radius: 0.502
+  within 30 cm (129 of 257), 0.414 in [60, 110) cm, 0.277 in [150, 200), 0.048 in [250, 300) and
+  0.018 in [300, 350) (3 of 168), while the pass fraction rises from 0.471 to 0.911 (table 19).
+  In the barrel it is 0.588 (97 of 165), 0.447, 0.292, 0.045 and 0.020 in those slices, and in
+  the endcap 0.341 (28 of 82), 0.242, 0.158 and 0.042 (2 of 48) in the first four; the barrel is
+  above the endcap out to 200 cm (table 20). Neither the fall with the radius nor the
+  difference between barrel and endcap is explained here.
+- In cells of (Lxy, gen dR) the mass points do not share one no-vertex fraction (table 21).
+  With the Lxy slices of table 16, the dR bins of table 18 and mass points of at least 100 LJs,
+  chi2 = 167.3 for 33 degrees of freedom (97.8 for 41 with the content as a third cell
+  variable, 132.7 for 43 with the lower generated pT of the two daughters instead, 84.9 for 41
+  with both), and the spread of the fraction between mass points beyond the binomial
+  expectation is 0.028. Cutting each Lxy slice in 2, 4 and 8 leaves that spread at 0.027 to
+  0.029, so it is not made by different Lxy distributions inside a slice. Two changes reduce
+  it: the content as a further cell variable (0.019, 0.017, 0.017 and 0.013 for the four cell
+  sizes), and the dR bin below 0.002 cut at 0.0005 and 0.001 (0.021, 0.020, 0.020 and 0.014).
+  With those finer dR bins the content adds nothing (0.016 to 0.021).
+- Per content (table 22) the PF-PF mass points agree: chi2 = 54.2 for
+  42 degrees of freedom with the Lxy slices cut in 4 and the dR bins of table 18, 36.6 for 42
+  with the finer dR bins, 38.8 for 38 and 39.7 for 39 with the slices cut in 8. The PF-DSA
+  mass points agree in every case (15.9 for 20, 10.3 for 17). The DSA-DSA mass points do not:
+  74.6 for 30, 72.5 for 26, 47.3 for 21 and 44.3 for 19, a spread of 0.029 to 0.035, and it
+  stays at 0.027 to 0.038 with the charge, the region, the lower generated pT or the class as
+  a further cell variable. What separates the mass points for DSA-DSA pairs is not identified
+  by these tables.
+
+The producer of the vertex tables (`MuonVertexTableProducer` of `cms-sidm/LLPNanoAOD`, read at
+the head of its main branch, commit 14c5287454) writes no vertex for a pair in two cases: the
+Kalman vertex fit of the two tracks is not valid, or the distance of closest approach of the
+two tracks, where its calculation succeeds, is above 15 cm. Which case applies to an LJ is not
+stored. That the 2018 v10 samples were made with this version of the producer was not checked.
+
+These tables have the limits of the caveats above: sixteen 2Mu2E samples, three mediator
+masses, two lifetimes per mass point, raw counts. They give fractions with their counts and no
+errors.
+
 ### Slides (`slides/`)
 
 `slides/dsa_tail.tex` is a group-meeting deck on sections 8 and 10 of the write-up, with context
