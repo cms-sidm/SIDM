@@ -406,7 +406,8 @@ Numbers, reference channel. The first, second and fourth items are from `vtxGenD
   in [10, 100) cm as well: 0.194 (75 of 386) against 0.055 at 100 GeV, 0.230 (38 of 165)
   against 0.037 at 150 GeV (0.191 and 0.305 beyond 100 cm). In 4Mu, which
   holds 13,109 of the 13,752 LJs of the last bin beyond 100 cm, it is high only there. These
-  tables do not establish the cause.
+  tables do not establish the cause; a truth match of these pairs is in
+  `dr_truth_match/wide_pair/` (below).
 
 ### Truth match of the two leading muons of a mu-type LJ (`dr_truth_match/`)
 
@@ -425,11 +426,13 @@ Terms used below and in `tables.md`:
 
 - **m0, m1**: the LJ's two highest-pT muons, PF and DSA pooled (m2 is the third). **reco dR** =
   dR(m0, m1), the quantity of `mu_lj_mumu_dr` and of `outcome_vs_dR.csv`.
-- **d1, d2**: the two generated muons whose first ancestor with a different pdgId is a Zd. Every
-  gen-matched LJ's event has exactly these two (`tables.md`, line above table 7). **gen dR** =
-  dR(d1, d2) at the decay vertex. **Lxy**: transverse decay length (cm) of the generated dark
-  photon matched to the LJ. **Gen-matched**: a generated dark photon decaying to muons (the
-  `genAs_toMu` collection) within dR < 0.4 of the LJ, as in `outcome_vs_lxy.csv`.
+- **d1, d2**: the two generated muons from the decay of the dark photon matched to the LJ (the
+  generated muons whose first ancestor with a different pdgId is that Zd). In 2Mu2E they are the
+  event's only Zd daughter muons (`tables.md`, line above table 7); a 4Mu event has four, two per
+  dark photon (`wide_pair/` below). **gen dR** = dR(d1, d2) at the decay vertex. **Lxy**:
+  transverse decay length (cm) of the generated dark photon matched to the LJ. **Gen-matched**:
+  a generated dark photon decaying to muons (the `genAs_toMu` collection) within dR < 0.4 of the
+  LJ, as in `outcome_vs_lxy.csv`.
 - **Propagated match**: a reco muon is compared with the direction a daughter has at the point of
   closest approach of its helix to the beamline, where a track quotes its momentum (helix in a
   uniform 3.8 T field along z, from the generated decay vertex; no material, no field map). The
@@ -561,9 +564,9 @@ the generated pair is narrow. Against the generated dR the no-vertex fraction fa
 Caveats:
 
 - Sixteen 2Mu2E samples, no 4Mu; two dark-photon masses per mediator mass at 100 GeV, three at
-  500 and 1000 GeV (`condor/samples.txt`), reference channel only. d1 and d2 are the two
-  highest-pT Zd daughter muons of the event, which is the decay pair only when one Zd decays to
-  muons; a 4Mu sample needs the daughters assigned per LJ.
+  500 and 1000 GeV (`condor/samples.txt`), reference channel only. In these samples one Zd
+  decays to muons, so d1 and d2 are the event's only Zd daughter muons; for 4Mu `extract.py`
+  assigns the daughters per LJ, which the tables 1 to 22 do not use.
 - The propagation places the decay vertex at Lxy along the dark photon's momentum from the
   origin, so the beam-spot offset is ignored.
 - LJs are pooled by raw count, without cross-section weights, so each sample counts by its number
@@ -656,6 +659,212 @@ stored. That the 2018 v10 samples were made with this version of the producer wa
 These tables have the limits of the caveats above: sixteen 2Mu2E samples, three mediator
 masses, two lifetimes per mass point, raw counts. They give fractions with their counts and no
 errors.
+
+#### Widest generated pairs (`wide_pair.py`, `wide_pair/`)
+
+In `vtx_outcome_lxy_dr/counts_gen_dr.csv.gz` (m_Zd = 5 GeV, reference channel), at Lxy >= 100 cm
+the LJs whose generated pair has gen dR in [0.2, 0.5) lose the vertex more often than those in
+[0.1, 0.2): 0.164 against 0.076 at 100 GeV, 0.192 against 0.078 at 150 GeV, 0.208 against 0.083
+at 200 GeV (both final states summed, `T0_counts_gen_dr_by_final_state.csv`). This study asks
+which property of the LJ goes with it, from the per-LJ truth records.
+
+**Samples.** m_Zd = 5 GeV, mediator 100, 150 and 200 GeV, the three longest lifetimes of each
+(100 GeV: 40, 200, 400 mm; 150 GeV: 27, 130, 270 mm; 200 GeV: 20, 100, 200 mm), in both final
+states: 2Mu2E (`condor/samples_wide_pair_2mu2e.txt`, 19 jobs in
+`condor/job_args_wide_pair_2mu2e.txt`) and 4Mu (`condor/samples_4mu.txt`, 23 jobs in
+`condor/job_args_4mu.txt`). Signal MC only, reference channel `base_ljDisplacementIso_cosAlpha`.
+
+**Records.** In `extract.py`, d1 and d2 are the final-state (status-1) daughter muons of the dark
+photon matched to the LJ, and o1, o2 (with `n_other_dau`, and `o_a_lxy`, `o_a_phi` of that dark
+photon) the Zd daughter muons of the event that are not d1, d2. In 2Mu2E d1 and d2 are the
+event's only two Zd daughter muons, so the committed tables do not change (`analyze.py
+--propagate` and `pair_content.py` reproduce all 25 committed outputs byte for byte from the new
+records). In 4Mu, where the event has four Zd daughter muons, d1 and d2 are those of the dark
+photon matched to the LJ and o1, o2 those of the other one. Absent generated muons have pt -1,
+eta and phi -99 and charge 0 (d1, d2, o1, o2); without another dark photon `o_a_lxy` is -1 and
+`o_a_phi` -99.
+
+`extract.py` now also writes, per muon of the LJ, the DSA track parameters at the reference point
+and the DSA track-quality branches (the list `DSA_TRACK`), the PF muon's inner-track reference
+point and momentum and its muon-type flags (`PF_TRACK`), each -999 for a muon of the other type,
+and for the two leading muons the stored vertex of that pair (`pv_n`, `pv_dca`, `pv_dcaStatus`,
+`pv_isValid`, `pv_normChi2`; `pv_n` is 0 and the others -999 without one). No table in this
+directory uses these fields.
+
+From the repository root:
+
+```bash
+D=sidm/studies/vertexChi2/dr_truth_match
+python condor/make_job_args.py --samples-file $D/condor/samples_4mu.txt --dataset llpNanoAOD_v2 \
+  --location-cfg signal_4mu_v10.yaml --files-per-job 25 --replace-xcache \
+  --census-skip sidm/studies/vertexChi2/signal_skip.json \
+  --outdir $D/condor/filelists --job-args /tmp/job_args_4mu.txt
+while read s c f; do
+  python $D/extract.py $s $D/condor/$f $REC/${s}_${c}.parquet --chunksize 50000 --workers 1
+done < $D/condor/job_args_4mu.txt
+python $D/analyze.py $REC $AN --propagate
+python $D/wide_pair.py $AN sidm/studies/vertexChi2/vtx_outcome_lxy_dr/counts_gen_dr.csv.gz \
+  $D/wide_pair/4mu
+```
+
+and the same for 2Mu2E with `samples_wide_pair_2mu2e.txt`, `signal_2mu2e_v10.yaml`,
+`job_args_wide_pair_2mu2e.txt` and `$D/wide_pair/2mu2e`. Rerun on 2026-11-14, the make_job_args
+command writes the same filelists (23 and 19 files, identical byte for byte) as those the records
+were made from, and the job lists here are its output with the filelist paths relative to
+`dr_truth_match/condor/`. The records were made by hand on cmslpc, not on condor. `analyze.py`
+stops at table 7, which needs the 500 and 1000 GeV samples, after writing `lj_truth.parquet`,
+`lj_classified.parquet` and `table3.csv`, which `wide_pair.py` reads. Its match radii, computed
+from these samples: 2Mu2E PF 0.0510, DSA 0.1106; 4Mu PF 0.0607, DSA 0.1355.
+
+Terms:
+
+- **narrow** = gen dR [0.1, 0.2), **wide** = gen dR [0.2, 0.5); no vertex = `vtx_chi2 < 0`.
+- **gen dR** here is that of the final-state daughters d1, d2. `counts_gen_dr.csv.gz` bins the
+  dark photon's own children (`hists.mu_lj_gen_a_mumu_dr`), before final-state radiation; see
+  "Records against counts_gen_dr.csv.gz" below.
+- **soft_dau_unreco**: no muon of the LJ, PF or DSA, within its radius of the softer daughter
+  (lower generated pT of d1, d2), compared with the daughter's direction at the point of closest
+  approach to the beamline (the propagated match of `analyze.py`).
+- **acceptance**: both daughters in abs(eta) < 2.4 and the softer above 10 GeV of generated pT.
+- **lead_on_other**: m0 or m1 within its radius of a daughter of another dark photon (o1, o2,
+  propagated from that dark photon's Lxy and phi).
+- **Standardisation**: the wide bin's no-vertex fraction predicted from the narrow bin's fraction
+  in each cell of a variable, weighted by the wide bin's cell shares. **gap closed** =
+  (predicted - narrow) / (observed wide - narrow).
+- **Errors**: `err_*` are binomial with the wide bin's cell shares held fixed; `*_bs_err` are the
+  standard deviations of a bootstrap (1000 replicas, fixed seed, the LJs of the narrow and of the
+  wide bin resampled separately), and `gap_closed_bs_q16`, `_q84` its 16 % and 84 % quantiles.
+  Values below quote gap closed +- its bootstrap standard deviation, or its 16 to 84 % range where
+  that is asymmetric.
+
+| file (in `wide_pair/2mu2e/` and `wide_pair/4mu/`) | what it holds |
+|---|---|
+| `T0_counts_gen_dr_by_final_state.csv` | From `counts_gen_dr.csv.gz`: no-vertex fraction of narrow and wide, Lxy [10, 100) and [100, 1000), per mediator mass, for both final states, each final state, and the samples of this run. |
+| `T1_records_vs_counts_gen_dr.csv`, `T1_records_vs_counts_gen_dr_by_sample.csv` | The records binned as `counts_gen_dr.csv.gz`, per sample, Lxy, gen dR and outcome, with the differences. |
+| `T2_composition.csv` | Per Lxy range, mass and gen dR bin ([0.05, 0.1), narrow, wide): LJs, no-vertex fraction, class shares A to E, content shares, same-charge share, median soft reco and gen pT, generated acceptance (both daughters in abs(eta) < 2.4 and softer pT > 5 or > 10 GeV), soft_dau_unreco, lead_on_other. |
+| `T2_dr_to_other.csv` | Quantiles (minimum, 1, 5, 16, 50 %) of the smallest dR between m0, m1 and a daughter of the other dark photon. |
+| `T3_cells.csv`, `T3_summary.csv`; `T3_cells_lxy10_100.csv`, `T3_summary_lxy10_100.csv` | Standardisation by one variable at a time (class, content, number of muons, charge, soft reco pT, soft gen pT, region), Lxy [100, 1000) and [10, 100). |
+| `T4_cells.csv`, `T4_summary.csv` | The two variables of T3 closing most of the gap together (4Mu: class x soft gen pT; 2Mu2E: soft gen pT x class). |
+| `T4_alt_cells.csv`, `T4_alt_summary.csv` | class x charge. |
+| `T5_cells.csv`, `T5_summary.csv` | soft_dau_unreco alone, both Lxy ranges, per mass. |
+| `T5_acceptance_cells.csv` | soft_dau_unreco x acceptance per bin: LJs, share of the bin, no-vertex fraction. |
+| `tables.txt` | All tables as printed. |
+
+**4Mu, Lxy >= 100 cm, masses summed**
+
+- Narrow 0.0834 (4994 of 59,863), wide 0.178 (2317 of 13,003): a gap of 0.095 (`T5_summary.csv`,
+  `T2_composition.csv`).
+- The softer daughter has no LJ muon within its radius in 0.054 of the narrow and 0.308 of the
+  wide LJs; per mass 0.054 to 0.251 (100 GeV), 0.054 to 0.339 (150), 0.054 to 0.440 (200)
+  (`T2_composition.csv`).
+- No-vertex fraction, narrow to wide: with the softer daughter found 0.071 (4008 of 56,613) to
+  0.097 (873 of 9000); without it 0.303 (986 of 3250) to 0.361 (1444 of 4003) (`T5_cells.csv`).
+- Standardised by soft_dau_unreco the wide bin is predicted at 0.142 +- 0.003, closing
+  0.62 +- 0.03 of the gap; per mass 0.54 +- 0.12, 0.59 +- 0.05, 0.74 +- 0.07 (`T5_summary.csv`).
+- Missing daughter and acceptance (`T5_acceptance_cells.csv`): of the 4003 wide LJs with the
+  softer daughter missing, 2820 (0.70) are outside the acceptance (no-vertex fraction 0.385) and
+  1183 (0.30; 0.091 of the bin) inside it (0.303). In the narrow bin 544 of 3250 (0.17) are
+  outside. The wide LJs outside the acceptance with the daughter found, 1323 (0.102 of the bin),
+  lose the vertex at 0.106, those inside it with the daughter found at 0.096. So most of the
+  missing-daughter share of the wide bin (0.217 of its 0.308) is a daughter outside the acceptance,
+  and the no-vertex fraction goes with the missing daughter, inside the acceptance or not.
+- Other variables (`T3_summary.csv`): class closes 0.44 +- 0.02 (0.26 +- 0.07, 0.37 +- 0.03,
+  0.51 +- 0.05 per mass); soft gen pT 0.36 +- 0.04; content 0.18 +- 0.01; charge 0.17 +- 0.01;
+  soft reco pT 0.11 +- 0.01; region 0.03 +- 0.004; number of muons -0.05 +- 0.004. class x charge
+  0.47 +- 0.02 (`T4_alt_summary.csv`); class x soft gen pT 0.60 +- 0.05, with 3 of 15 cells on
+  narrow cells under 50 LJs, 0.023 of the wide bin on narrow cells under 20 and 0.009 without a
+  narrow cell (`T4_summary.csv`).
+- Class A share 0.841 to 0.548, class D 0.103 to 0.343 (`T2_composition.csv`); no-vertex
+  fraction in class A 0.063 (3156 of 50,319) to 0.097 (692 of 7125), class D 0.220 (1353 of
+  6139) to 0.307 (1367 of 4460) (`T3_cells.csv`).
+- The softer generated pT has median 23.9 GeV (narrow) and 12.1 GeV (wide); in the acceptance:
+  0.979 and 0.681 (`T2_composition.csv`).
+- lead_on_other is 0 in every row (`T2_composition.csv`). That is fixed by the event topology:
+  the smallest dR between m0, m1 and a daughter of the other dark photon is at least 0.39 in
+  every 4Mu LJ, 1.84 at the 1 % quantile and 2.98 at the median (`T2_dr_to_other.csv`), far
+  beyond the match radii (at most 0.14). It shows that the other dark photon is far away, nothing
+  more.
+
+**4Mu, Lxy [10, 100) cm.** Narrow 0.0488 (8145 of 166,759), wide 0.0553 (2772 of 50,164), a gap
+of 0.0064. The soft_dau_unreco share rises from 0.031 to 0.094 (`T2_composition.csv`), and the
+standardised prediction, 0.0619 +- 0.0008, is above the observed 0.0553 +- 0.0010
+(`T5_summary.csv`; gap closed 2.04, 16 to 84 % range 1.76 to 2.51): with the softer daughter
+found the fraction falls from 0.042 to 0.033, without it 0.251 to 0.268 (`T5_cells.csv`). Of the
+4703 wide LJs with the softer daughter missing, 3623 (0.77) are outside the acceptance
+(`T5_acceptance_cells.csv`).
+
+**2Mu2E.** At Lxy >= 100 cm narrow 0.0615 (516 of 8385), wide 0.218 (139 of 638), a gap of 0.156;
+at [10, 100) cm 0.0376 (719 of 19,127) and 0.217 (127 of 586) (`T3_summary.csv`,
+`T3_summary_lxy10_100.csv`). soft_dau_unreco 0.049 to 0.492 at >= 100 cm and 0.033 to 0.369 at
+[10, 100) cm (`T2_composition.csv`).
+
+- Standardised by soft_dau_unreco: 0.140 +- 0.010 at >= 100 cm, closing 0.50 +- 0.08 of the gap
+  (100 GeV 0.62, range 0.36 to 0.90; 150 GeV 0.33 +- 0.07; the 200 GeV value rests on 47 wide
+  LJs, range 0.62 to 2.40, and is not quoted), and 0.097 +- 0.007 at [10, 100) cm against the
+  observed 0.217 +- 0.017, closing 0.33 +- 0.05 (`T5_summary.csv`).
+- No-vertex fraction, narrow to wide, at >= 100 cm: with the softer daughter found 0.053 (422 of
+  7975) to 0.049 (16 of 324), without it 0.229 (94 of 410) to 0.392 (123 of 314). At
+  [10, 100) cm: with the softer daughter found 0.032 (589 of 18,504) to 0.124 (46 of 370), without
+  it 0.209 (130 of 623) to 0.375 (81 of 216) (`T5_cells.csv`).
+- Missing daughter and acceptance: of the wide LJs with the softer daughter missing, 169 of 314
+  (0.54) at >= 100 cm and 116 of 216 (0.54) at [10, 100) cm are outside the acceptance, with
+  no-vertex fractions 0.49 (outside) and 0.28 (inside) at >= 100 cm (`T5_acceptance_cells.csv`).
+- By class 0.39 +- 0.07 (>= 100 cm) and 0.22 +- 0.03 ([10, 100) cm) (`T3_summary.csv`,
+  `T3_summary_lxy10_100.csv`). By soft gen pT 0.96 (range 0.71 to 1.23) at >= 100 cm is not
+  quoted as a result: 0.26 of the wide bin sits on narrow cells under 20 LJs and 0.024 has no
+  narrow cell; the same holds for soft gen pT x class (1.01, 0.25 on cells under 20, 0.033 without
+  a cell; `T4_summary.csv`). At [10, 100) cm soft gen pT closes 0.70 +- 0.17, with 0.022 of the
+  wide bin without a narrow cell.
+- In `counts_gen_dr.csv.gz` the 2Mu2E wide pairs lose the vertex more often already at
+  [10, 100) cm (0.194, 0.230, 0.312 against 0.055, 0.037, 0.033), 4Mu wide pairs do not (0.063,
+  0.050, 0.042 against 0.048, 0.046, 0.046) (`T0_counts_gen_dr_by_final_state.csv`).
+
+**Records against counts_gen_dr.csv.gz** (`T1_records_vs_counts_gen_dr.csv`)
+
+Every LJ is in both (330,322 in 4Mu, 34,325 in 2Mu2E), but the gen dR bin differs for a few: of
+the 1080 cells (sample x Lxy x gen dR x outcome) 956 agree exactly in 4Mu (largest difference
+106 LJs) and 1036 in 2Mu2E (largest 26). The records use the final-state daughters, the histogram
+the dark photon's own children before final-state radiation. In 4Mu at Lxy [10, 100) cm the
+records hold 266 more LJs in gen dR [0.05, 0.1) and 201 fewer in [0.2, 0.5); at >= 100 cm the wide
+bin holds 13,003 LJs against 13,050 (2Mu2E: 638 against 640). A test extraction of
+4Mu_200GeV_5p0GeV_20p0mm that also stored `hists.mu_lj_gen_a_mumu_dr` (not a staged file)
+reproduced all 120 cells of that sample with it, against 99 of 120 with the final-state
+daughters; the two dR differ by more than 10 % in 0.75 % of its LJs, and in 70 % of those the
+final-state dR is the smaller.
+
+**What is and is not explained**
+
+- In 4Mu at Lxy >= 100 cm the softer daughter is missing from the LJ far more often in the wide
+  bin (0.308 against 0.054), and those LJs lose the vertex at 0.30 to 0.36. Standardising for it
+  alone closes 0.62 +- 0.03 of the gap (0.54 to 0.74 by mass); the class of `analyze.py` closes
+  0.44 +- 0.02. About 70 % of the missing daughters are outside the acceptance (0.217 of the wide
+  bin, against 0.319 of the wide bin outside the acceptance in all).
+- Inside each group the wide bin is still higher (0.071 to 0.097 with the softer daughter found,
+  0.303 to 0.361 without); that part is not explained.
+- In 2Mu2E at Lxy >= 100 cm the same variable closes 0.50 +- 0.08 of a larger gap (0.156); there
+  the LJs with the softer daughter found do not rise (0.053 to 0.049), and the rest of the gap is
+  inside the group without it (0.229 to 0.392).
+- At Lxy [10, 100) cm the two final states differ. In 4Mu the missing-daughter share rises in the
+  wide bin without a matching rise of the no-vertex fraction (prediction 0.062 above observation
+  0.055). In 2Mu2E the prediction is below the observation (0.097 against 0.217, closing 0.33),
+  and the no-vertex fraction rises inside the group with the softer daughter found (0.032 to
+  0.124, 46 of 370 wide LJs).
+- The standardisation is arithmetic over two groups and does not show that the missing daughter
+  causes the vertex loss.
+- lead_on_other = 0 says only that the other dark photon's daughters are far from the LJ's
+  leading muons (dR >= 0.39 in every 4Mu LJ).
+
+**Limits**
+
+- The match radii are computed from these samples by `analyze.py` and differ from those of the
+  committed tables (PF 0.0556, DSA 0.0761); soft_dau_unreco and the classes depend on them.
+- Values per mass rest on few wide LJs at 200 GeV in 2Mu2E (47 at >= 100 cm, 45 at [10, 100) cm)
+  and on 532 (2Mu2E) and 2146 (4Mu) narrow LJs at 100 GeV, >= 100 cm; read them with the
+  bootstrap ranges.
+- A daughter reconstructed as a muon outside the LJ, or matched beyond its radius, counts as
+  missing.
+- The gen dR of the records is the final-state one, so a few LJs sit in a neighbouring gen dR bin
+  of `counts_gen_dr.csv.gz` (above).
 
 ### Slides (`slides/`)
 
