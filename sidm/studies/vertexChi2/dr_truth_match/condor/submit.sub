@@ -1,0 +1,29 @@
+# Per-LJ truth records of the 16 2Mu2E signal samples of samples.txt: 32 jobs of up to 25 files
+# (job_args.txt), one parquet file each in out/. Submit from this directory, after building
+# condor/sidm_code.tar.gz at the repository root (condor/README.md, "Package the SIDM code"),
+# regenerating filelists/ and creating logs/ and out/ (see the study README).
+universe = vanilla
+executable = run.sh
+arguments = $(sample) $(chunk) $(filelist)
+
+# repository root, relative to this directory
+REPO = ../../../../..
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = $(REPO)/condor/sidm_code.tar.gz, $(REPO)/condor/requirements.txt, \
+                       $(REPO)/condor/constraints.txt, ../extract.py, $(filelist)
+transfer_output_files = $(sample)_$(chunk).parquet
+transfer_output_remaps = "$(sample)_$(chunk).parquet = out/$(sample)_$(chunk).parquet"
+
+output = logs/$(sample)_$(chunk).out
+error  = logs/$(sample)_$(chunk).err
+log    = logs/$(sample)_$(chunk).log
+
+request_cpus = 1
+request_memory = 3GB
+request_disk = 4GB
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+JOBARGS = job_args.txt
+queue sample, chunk, filelist from $(JOBARGS)

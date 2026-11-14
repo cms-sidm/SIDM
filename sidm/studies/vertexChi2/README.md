@@ -258,7 +258,7 @@ to 0.90 across the v10 samples, PR #81). The mean and sem do not depend on that 
 |---|---|---|
 | `outcome_by_sample.csv` | Per sample and channel: mass point, `N_eff` from this run and from `vtxChi2_signal_2018`, robust flag, LJ count and yield, 1-muon and >= 2-muon fractions, the three outcome fractions among >= 2-muon LJs, the gen-matched fraction, pass/all, the old run's per-LJ vertex-veto efficiency (reference channel), and the input-file and event counts of both runs. | `vtx_outcome_vs_lxy_dr.py` |
 | `outcome_vs_lxy.csv` | Robust samples, gen-matched LJs (nearest `genAs_toMu` within dR < 0.4): outcome fractions in bins of the dark photon's Lxy (cm), mean / sem and pooled with its error, for all samples and per mediator mass, in both channels. | `vtx_outcome_vs_lxy_dr.py` |
-| `outcome_vs_dR.csv` | The same in bins of dR between the LJ's two highest-pT muons (PF and DSA pooled). | `vtx_outcome_vs_lxy_dr.py` |
+| `outcome_vs_dR.csv` | The same in bins of dR between the LJ's two highest-pT muons (PF and DSA pooled). At mediator masses of 500 and 1000 GeV a reconstructed dR above 0.1 is mostly not the opening angle of the decay pair: one of the two muons lies away from both generated daughters, while the generated pair is narrow (`dr_truth_match/` below). | `vtx_outcome_vs_lxy_dr.py` |
 | `outcome_vs_lxy_dR.csv` | The same in coarse Lxy x dR bins. | `vtx_outcome_vs_lxy_dr.py` |
 | `closure_checks.txt`, `closure_vtx_chi2_marginal.csv` | Closure checks. The marginal closure (the CSV, summarised in the text file): in every sample, channel and new histogram, the `vtx_chi2` marginal, grouped as no vertex / pass / chi2 >= 5, against `mu_lj_vtx_chi2`. The efficiency closure: per-sample pass/all against the old run's per-LJ efficiency, the samples whose input-file or event count differs between the two runs, and the robust means by mediator mass, m_Zd and ctau. | `vtx_outcome_vs_lxy_dr.py` |
 | `condor_vs_dask.txt` | `4Mu_100GeV_0p25GeV_0p02mm` from condor against the Dask run in `dask_check/`, every bin of the three new histograms and `mu_lj_vtx_chi2`, both channels. | `condor_vs_dask.py` |
@@ -270,6 +270,178 @@ bin is vertical if its centre is within 0.5 rad of +-pi/2, horizontal if within 
 or +-pi. `halo_common.py` holds these index groups and the fraction and ratio helpers shared by
 `halo_signal.py` and `halo_data_mc.py`. A horizontal-over-vertical ratio with no horizontal
 entries is 0 with error 0; one with no vertical entries is left blank.
+
+### Truth match of the two leading muons of a mu-type LJ (`dr_truth_match/`)
+
+Against the dR of the LJ's two leading muons, the no-vertex fraction at mediator masses 500 and
+1000 GeV is highest in the widest bins, [0.2, 0.3) and [0.3, 0.5) (`outcome_vs_dR.csv` above;
+table 13 here for the samples of this study). This study asks whether that dR measures the
+opening angle of the Zd decay pair. It writes one record per mu-type LJ, with its PF and DSA
+constituents and the generated Zd daughter muons of the event, and matches the two leading
+muons to the daughters in direction. Signal MC only: 16 2Mu2E samples of the 2018 v10 grid,
+listed in `condor/samples.txt` (mediator mass 100, 500 and 1000 GeV; m_Zd of 0.25, 1.2 and
+5 GeV, without the 0.25 GeV point at 100 GeV; two lifetimes each), reference channel
+`base_ljDisplacementIso_cosAlpha` of `configs/selections_vertexChi2_as_run.yaml` (no cosmic
+veto), no corrections.
+
+Terms used below and in `tables.md`:
+
+- **m0, m1**: the LJ's two highest-pT muons, PF and DSA pooled (m2 is the third). **reco dR** =
+  dR(m0, m1), the quantity of `mu_lj_mumu_dr` and of `outcome_vs_dR.csv`.
+- **d1, d2**: the two generated muons whose first ancestor with a different pdgId is a Zd. Every
+  gen-matched LJ's event has exactly these two (`tables.md`, line above table 7). **gen dR** =
+  dR(d1, d2) at the decay vertex. **Lxy**: transverse decay length (cm) of the generated dark
+  photon matched to the LJ. **Gen-matched**: a generated dark photon decaying to muons (the
+  `genAs_toMu` collection) within dR < 0.4 of the LJ, as in `outcome_vs_lxy.csv`.
+- **Propagated match**: a reco muon is compared with the direction a daughter has at the point of
+  closest approach of its helix to the beamline, where a track quotes its momentum (helix in a
+  uniform 3.8 T field along z, from the generated decay vertex; no material, no field map). The
+  committed tables use it (`--propagate`). The gen dR stays the opening angle at the decay.
+- **Outcome**: **no vertex** (`vtx_chi2 < 0`), **chi2 >= 5**, **pass** (`0 <= vtx_chi2 < 5`), as in
+  `vtx_outcome_lxy_dr/`; **not pass** = no vertex or chi2 >= 5.
+- **Match radius**: the 99% quantile of dR(reco muon, nearest daughter) in gen-matched LJs with
+  exactly two opposite-charge muons and a passing vertex, all three masses pooled: 0.0556 for PF
+  and 0.0761 for DSA muons (table 3). A muon is **within its radius** of a daughter when their dR
+  is below it.
+- **Classes** of a gen-matched LJ, from m0 and m1 (table 4): **D**, m0 or m1 is outside its radius
+  of both daughters; **A**, m0 and m1 are within their radii of different daughters, have
+  opposite charge, and the reco dR agrees with the gen dR (ratio within [1/2, 2], or a difference
+  of at most the sum of the two radii), i.e. the decay pair; **B**, as A but with the reco dR wider
+  than that tolerance; **C**, both nearest to the same daughter, with the same charge or a PF-DSA
+  pair sharing muon-system segments, i.e. two reconstructions of one daughter; **E**, the rest.
+
+From the repository root, with the `sidm_venv` active, the records are produced by 32 condor
+jobs of up to 25 files (`condor/job_args.txt`). Build `condor/sidm_code.tar.gz` as in
+`condor/README.md` (section 8), then
+
+```bash
+D=sidm/studies/vertexChi2/dr_truth_match
+python condor/make_job_args.py --samples-file $D/condor/samples.txt --dataset llpNanoAOD_v2 \
+  --location-cfg signal_2mu2e_v10.yaml --files-per-job 25 --replace-xcache \
+  --census-skip sidm/studies/vertexChi2/signal_skip.json \
+  --outdir $D/condor/filelists --job-args /tmp/job_args_dr_truth.txt
+cd $D/condor && mkdir -p logs out && condor_submit submit.sub && cd -
+```
+
+The filelists are not committed; this command writes the same lists the committed tables were
+made from. The job list it writes is discarded: its paths are relative to `condor/`, and
+`condor/job_args.txt` here is the same list relative to `dr_truth_match/condor/`. `run.sh`
+builds the worker environment as `condor/run_job.sh` does, from the repository's
+`condor/requirements.txt` and `condor/constraints.txt`, and runs `extract.py` on one filelist;
+each job writes one parquet file to `out/`. `extract.py` also runs by hand on a single filelist
+(`python $D/extract.py SAMPLE FILELIST OUT.parquet`, from the repository root). The tables are
+then made, in under a minute, by
+
+```bash
+python $D/analyze.py $D/condor/out $OUT --propagate
+```
+
+which also writes `lj_truth.parquet` (the merged records) and `lj_classified.parquet` (the
+gen-matched LJs with every derived column) to `$OUT`; neither is committed.
+
+| file | what it holds |
+|---|---|
+| `tables.md` | Every table below with its caption, the input counts and the check against the histograms of `vtxLxyDr_signal_2018`. |
+| `check_vs_outcome_by_sample.csv` | Per sample: the LJ count and the three outcome fractions from the records, against `vtx_outcome_lxy_dr/outcome_by_sample.csv` (reference channel), and the largest difference. |
+| `table1.csv` | Per mass and reco-dR bin: 10/50/90% quantiles of the gen dR, the fraction with gen dR < 0.05, and the fraction whose gen dR falls in the same bin. |
+| `table2.csv` | Per mass and reco-dR bin: PF+PF / PF+DSA / DSA+DSA leading pair, 2 and >= 3 muons, same-charge leading pair. |
+| `table3.csv` | dR(reco muon, nearest daughter) quantiles for PF and DSA muons (pooled, by DSA Lxy range, per mass): the match radii. |
+| `table4.csv` | Per mass and reco-dR bin: class fractions A to E with binomial errors, the ambiguous fraction, and the A-or-B fraction with reco dR > 2 x gen dR. |
+| `table5.csv` | Per mass, reco-dR bin and class: outcome fractions and counts. |
+| `table6.csv` | Classes C and D at reco dR >= 0.1, 500 and 1000 GeV: the duplicate or extra muon (type, pT, \|eta\|, dR to its nearest daughter), the third muon, and how many daughters the LJ's muons cover. |
+| `table7.csv` | 500 and 1000 GeV pooled, reco dR >= 0.1 and >= 0.2: LJ count and share, class fractions, no-vertex fraction and share of all no-vertex LJs, and the class D split by which leading muon is outside. |
+| `table8.csv` | The class D LJs of table 7 at reco dR >= 0.1 with exactly one leading muon outside: what that muon is, by type (azimuth within 0.03 of a daughter, charge and pT match to it, \|eta\| difference, and the outcome and Lxy of those that match the other daughter). |
+| `table9.csv` | \|eta(reco) - eta(nearest daughter)\| quantiles of the two muons of two-muon class A LJs, 500 and 1000 GeV, by type and Lxy. |
+| `table10.csv` | Leading muons of all gen-matched LJs, 500 and 1000 GeV, within 0.03 in azimuth of a daughter: fraction with \|eta\| difference > 0.05, by type and Lxy. |
+| `table11.csv` | Outcome fractions against the gen dR, per mass (500, 1000). |
+| `table12.csv` | No-vertex and not-pass fractions against the gen dR per Lxy slice, 500 and 1000 GeV pooled. |
+| `table13.csv` | The same against the reco dR. |
+| `table14.csv` | Per mass and reco-dR bin, with per-mass match radii: decay-pair fraction and fraction with a leading muon outside, next to the class A and D fractions of table 4, and the median gen dR. |
+
+The records reproduce the histograms of `vtxLxyDr_signal_2018`: the LJ count equals that of
+`outcome_by_sample.csv` in 15 samples and is one LJ short in `2Mu2E_500GeV_0p25GeV_4p0mm`
+(17911 against 17912, not traced), the three outcome fractions agree to 3e-5 in that sample and
+to 1e-6 in the others (`check_vs_outcome_by_sample.csv`), and the reco dR recomputed from the
+records equals `mu_lj_mumu_dr` to 4.17e-07 (`tables.md`). The records hold 85438 LJs, 85355 of
+them gen-matched (`tables.md`).
+
+**Result.** At 500 and 1000 GeV a reconstructed dR above 0.1 is mostly not the opening angle
+of the decay pair: one of the two leading muons lies outside its radius of both daughters, while
+the generated pair is narrow. Against the generated dR the no-vertex fraction falls.
+
+- Such LJs are few: of the 84383 gen-matched LJs at 500 and 1000 GeV, 3016 (3.6%) have reco
+  dR >= 0.1 and 555 (0.7%) have reco dR >= 0.2. They hold 0.0535 of the no-vertex LJs of
+  those masses (table 7).
+- Most of them are class D: 0.647 at reco dR >= 0.1 and 0.941 at >= 0.2 (table 7); per bin
+  0.519, 0.897 and 1.000 in [0.1, 0.2), [0.2, 0.3) and [0.3, 0.5) at 500 GeV, and 0.806, 0.982
+  and 1.000 at 1000 GeV (table 4). The generated pairs in these bins are narrow: the median gen
+  dR of all LJs of the bin is 0.0447, 0.0110 and 0.0105 at 500 GeV, 0.0168, 0.0113 and 0.0081 at
+  1000 GeV (table 1). The rest at reco dR >= 0.1 is the decay pair (class A, 0.337), nearly all
+  of it in [0.1, 0.2).
+- What the outside muon is (table 8; the 1901 class D LJs at reco dR >= 0.1 with exactly one
+  leading muon outside, 1129 PF and 772 DSA). A PF outside muon sits at the azimuth of the
+  pair with a shifted eta: 0.959 are within 0.03 in azimuth of a daughter (0.041 of neither),
+  while by the class definition they are more than 0.0556 in dR from both. Which daughter it
+  is rests on the charge alone, since 0.836 are within 0.03 of both daughters: 0.663 have the
+  charge of the daughter not claimed by the other leading muon (0.541 also within 30% of its
+  pT; the pT window has no control sample), with an \|eta\| difference to it of 0.141
+  (median; 0.089 and 0.257 at 10% and 90%) and Lxy of 19.6 to 58.9 cm (10% to 90%, median
+  43.7), and 0.283 have the charge of the claimed daughter. Of the 772 DSA outside muons,
+  0.437 match the other daughter in azimuth and charge (\|eta\| difference 0.175, median),
+  0.088 the claimed one, and 0.475 neither; 0.935 of the first group have no vertex. Taken
+  together, the outside muon has the azimuth and charge of the other daughter in 1085 of the
+  1901 LJs (57%), which is 36% of the 3016 LJs at reco dR >= 0.1.
+- The PF eta measurement degrades with Lxy in the well-matched LJs too: the 90% quantile of
+  \|eta(reco) - eta(daughter)\| in class A grows from 0.0007 at Lxy <= 1 cm to 0.0054 at 20 to
+  30 cm and 0.018 to 0.025 from 30 to 100 cm (table 9). Class A requires dR < 0.0556, so table
+  9 cannot hold offsets of the size seen in table 8; it shows the core widening, not the tail.
+  The fraction of azimuth-matched PF muons with an \|eta\| difference above 0.05 grows from
+  0.0028 to 0.0136 and then 0.060 to 0.109 over the same ranges (table 10; this population
+  contains the class D muons themselves, so it restates table 8 against Lxy and is not an
+  independent check). The DSA eta width does not depend on Lxy: the 90% quantile stays at
+  0.0135 to 0.0155 below 300 cm (table 9).
+- Against the gen dR the no-vertex fraction falls (not monotonically in every bin): at 500 GeV
+  from 0.359 at gen dR < 0.002 to 0.073 in [0.05, 0.1) and 0.057 in [0.1, 0.2) (402 LJs); at
+  1000 GeV from 0.304 to 0.071 and 0.048 (21 LJs) (table 11). The highest fractions are those of
+  the most collimated pairs. In every Lxy slice below 300 cm it is lower in [0.05, 0.1) than
+  below 0.002: 0.062 against 0.424 at 10 to 100 cm, 0.117 against 0.480 at 100 to 300 cm
+  (table 12). Against the reco dR, in the same slices, it is 0.462 and 0.574 in [0.2, 0.3) and
+  [0.3, 0.5) at 10 to 100 cm, and 0.646 and 0.905 (21 LJs) at 100 to 300 cm (table 13).
+- With per-mass match radii (500 GeV: 0.0614 PF, 0.0667 DSA; 1000 GeV: 0.0409, 0.0603) the
+  fraction with a leading muon outside both daughters is 0.532 and 0.848 in [0.1, 0.2) at 500
+  and 1000 GeV, against class D fractions of 0.519 and 0.806 with the pooled radii, and 0.897 and
+  0.991 in [0.2, 0.3) against 0.897 and 0.982 (table 14).
+- At 100 GeV the generated pairs are themselves wide: the median gen dR is 0.162 in [0.1, 0.2)
+  and 0.216 in [0.2, 0.3), and 0.49 and 0.58 of the LJs have their gen dR in the same bin as
+  their reco dR (table 1; 321 and 139 LJs). There the reco dR does follow the opening angle for
+  about half of the LJs. The class fractions at this mass depend on the match radius: with the
+  pooled radii class A is 0.586 and 0.317 and class D 0.396 and 0.647 (table 4); with the
+  100 GeV radii, 0.120 for PF and 0.183 for DSA, which come from 269 and 857 muons and are as
+  large as the gen dR itself, the decay-pair fraction is 0.766 and 0.597 (table 14).
+
+Caveats:
+
+- Sixteen 2Mu2E samples, no 4Mu; two dark-photon masses per mediator mass at 100 GeV, three at
+  500 and 1000 GeV (`condor/samples.txt`), reference channel only. d1 and d2 are the two
+  highest-pT Zd daughter muons of the event, which is the decay pair only when one Zd decays to
+  muons; a 4Mu sample needs the daughters assigned per LJ.
+- The propagation places the decay vertex at Lxy along the dark photon's momentum from the
+  origin, so the beam-spot offset is ignored.
+- LJs are pooled by raw count, without cross-section weights, so each sample counts by its number
+  of LJs, from 18 to 17911 (`check_vs_outcome_by_sample.csv`).
+- The match uses direction only. A muon with the right azimuth and a wrong eta is outside its
+  radius; table 8 is what ties such muons to the decay pair, with a fixed 0.03 azimuth window
+  and a 30% pT window. It does not show whether the outside muon is a daughter reconstructed
+  with a wrong eta or another track at the same azimuth; the 0.475 of DSA and 0.055 of PF
+  outside muons that match neither daughter are not identified. The radii come from LJs with a
+  passing vertex, so they describe well-measured muons.
+- Tables 7 to 14 give fractions with their counts and no errors; several bins hold a handful of
+  LJs (gen dR >= 0.2 holds 1 LJ per mass, table 11). Tables 12 and 13 pool 500 and 1000 GeV, and
+  the gen-dR dependence in them is not separated from the dark-photon mass and pT that set the
+  gen dR.
+- Class B holds 24 LJs over the three masses (table 5). With daughter directions at the decay
+  vertex it is empty by construction; the propagated match compares with directions at the
+  beamline, while the gen dR is the opening angle at the decay.
 
 ### Slides (`slides/`)
 
