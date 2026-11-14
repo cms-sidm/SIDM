@@ -6,7 +6,9 @@ beside it can say otherwise when the merge that wrote it was run with an --unwei
 flag that did not match the chunks. This script compares the two for every sidecar under
 an EOS directory and reports the ones that disagree. With --apply it rewrites that one
 field in those sidecars; without it nothing is written. Sidecars that state no mode
-(a null field), and outputs that record none, are listed and left alone.
+(a null field) are listed and left alone; with --fill-missing the mode their output records
+is written into them, the same one-field rewrite. The two flags are independent. Outputs
+that record no mode are only listed.
 
     python sidm/scripts/fix_sidecar_hist_mode.py \\
       --eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/my_study
@@ -80,6 +82,9 @@ def main():
     parser.add_argument("--apply", action="store_true",
                         help="Rewrite the field in the sidecars that disagree with their "
                              "output. Default: only report them.")
+    parser.add_argument("--fill-missing", action="store_true",
+                        help="Write the mode the output records into the sidecars that state "
+                             "none (a null field). Default: only report them.")
     args = parser.parse_args()
 
     paths = set(eos_find(args.eos_dir.rstrip("/")))
@@ -112,13 +117,23 @@ def main():
                     xrdcp_to_eos(local_sidecar, os.path.dirname(sidecar))
             elif status != "consistent":
                 print(f"{status.upper()}: {sidecar}")
+                if status == "sidecar states no mode" and args.fill_missing:
+                    with open(local_sidecar, "w", encoding="utf8") as f:
+                        f.write(with_hist_mode(text, recorded))
+                    xrdcp_to_eos(local_sidecar, os.path.dirname(sidecar))
+                    print(f"FILLED: {sidecar} (the output records unweighted_hist = {recorded})")
             os.remove(local_sidecar)
 
     print("=" * 80)
     print("\n".join(f"{label:>24}: {n}" for label, n in counts.items()))
     if counts["wrong"]:
         print("The wrong sidecars were rewritten." if args.apply
-              else "Nothing was written. Run again with --apply to rewrite the wrong sidecars.")
+              else "The wrong sidecars were not written. Run again with --apply to rewrite them.")
+    if counts["sidecar states no mode"]:
+        print("The sidecars that state no mode were filled with the mode their output records."
+              if args.fill_missing
+              else "The sidecars that state no mode were not written. Run again with "
+                   "--fill-missing to write the mode their output records into them.")
 
 
 if __name__ == "__main__":

@@ -72,3 +72,13 @@ def test_apply_rewrites_only_the_field_of_the_wrong_sidecar(eos, monkeypatch):
     assert texts["right"] == SIDECAR.format(mode="false")
     assert texts["alone"] == SIDECAR.format(mode="false")
     assert texts["unstated"] == SIDECAR.format(mode="null")
+
+
+def test_fill_missing_writes_the_mode_into_the_sidecar_that_states_none(eos, monkeypatch):
+    """With --fill-missing the sidecar with a null field gets the output's mode, every
+    other sidecar stays byte for byte"""
+    before = {name: (eos / f"{name}.meta.yaml").read_bytes()
+              for name in ("wrong", "right", "alone")}
+    texts = run(eos, monkeypatch, "--fill-missing")
+    assert texts["unstated"] == SIDECAR.format(mode="true")
+    assert {name: (eos / f"{name}.meta.yaml").read_bytes() for name in before} == before
