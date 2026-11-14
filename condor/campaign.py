@@ -454,8 +454,11 @@ def local_copy(camp, eos_path):
 
 def processed_files(camp, eos_path):
     """Input files a chunk output says it processed"""
-    # only this command needs coffea
+    # only this command needs coffea; unpickling an output needs the sidm package, which
+    # running from the repository root does not put on the path of a script in condor/
     from coffea.util import load   # pylint: disable=import-outside-toplevel
+    if REPO not in sys.path:
+        sys.path.insert(0, REPO)
     out = load(local_copy(camp, eos_path))
     return {item.filename for item in out.get("processed", ())}
 
