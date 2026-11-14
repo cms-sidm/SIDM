@@ -472,6 +472,20 @@ def _xs_menu():
     return utilities.load_yaml(f"{BASE_DIR}/configs/cross_sections.yaml")
 
 
+def recorded_gen_filter_eff(sample_name, sample_out):
+    """The generator-filter efficiency the production applied to a sample, as
+    ``sidm_processor.postprocess`` records it in the output metadata; 1.0 for
+    outputs made before the processor applied one."""
+    recorded = sample_out.get("metadata", {}).get("gen_filter_eff")
+    if not recorded:
+        return 1.0
+    values = {float(v) for v in recorded}
+    if len(values) != 1:
+        raise ValueError(f"{sample_name}: the output records several generator-filter "
+                         f"efficiencies, {sorted(values)}")
+    return values.pop()
+
+
 def production_xs_pb(sample_name, sample_out=None):
     """Cross section, in pb, that the production scaled a signal sample to.
 
@@ -485,18 +499,21 @@ def production_xs_pb(sample_name, sample_out=None):
     cutflow row (lumi * xs for an unskimmed sample; its genWeight-only
     ``uncorrected`` variation when the corrections were applied) picks one of
     the two, so a production normalised any other way fails loudly instead of
-    being silently mis-normalised.
+    being silently mis-normalised.  The current processor also multiplies in the
+    generator-filter efficiency it records in the output metadata; it is
+    divided out of that row before the comparison, and stays in the yields.
     """
     model = _xs_menu().get(sample_name)
     candidates = [xs for xs in (model, SIGNAL_REF_XS_PB) if xs is not None]
     if sample_out is None:
         return candidates[0]
+    eff = recorded_gen_filter_eff(sample_name, sample_out)
     for cutflow in sample_out.get("cutflow", {}).values():
         rows = getattr(cutflow, "rows", None)
         if not rows:
             continue
         row = next(iter(rows.values()))
-        first = row.get("variations", {}).get("uncorrected", row["weighted"])
+        first = row.get("variations", {}).get("uncorrected", row["weighted"]) / eff
         for xs in candidates:
             if math.isclose(first, LUMI_PB * xs, rel_tol=1e-4):
                 return xs
