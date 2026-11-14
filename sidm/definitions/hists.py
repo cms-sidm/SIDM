@@ -321,6 +321,16 @@ def mu_lj_gen_a_lxy(objs, r=0.4):
     gen_a, dr_gen = objs["mu_ljs"].nearest(objs["genAs_toMu"], return_metric=True)
     return ak.fill_none(ak.where(dr_gen < r, lxy(gen_a), -1), -1)
 
+def mu_lj_gen_a_mumu_dr(objs, r=0.4):
+    """Per mu-type LJ: dR between the two daughter muons of the gen dark photon matched as in
+    mu_lj_gen_a_lxy, from their momenta as generated. The daughters are that dark photon's own
+    children (by mother index), so in a 4Mu event they are never the other dark photon's muons.
+    -1 for an LJ with no matched dark photon or one with fewer than two children."""
+    gen_a, dr_gen = objs["mu_ljs"].nearest(objs["genAs_toMu"], return_metric=True)
+    daughters = ak.pad_none(gen_a.children, 2, axis=-1)
+    dr_daughters = daughters[:, :, 0].delta_r(daughters[:, :, 1])
+    return ak.fill_none(ak.where(dr_gen < r, dr_daughters, -1), -1)
+
 # Histograms that read mu_ljs.vtx_chi2 or objs["dsaMuonsRaw"]. SidmProcessor loads dsaMuonsRaw
 # and the dimuon-vertex tables, and computes vtx_chi2, only when a requested histogram is listed
 # here or a requested channel cuts on vtx_chi2. tests/test_vtx_chi2_inputs.py checks the list.
@@ -333,7 +343,7 @@ vtx_chi2_or_raw_dsa_hists = {
     "dsaSegMatch_ptPf_ptDsa_nPartners", "dsaSegMatch_ptPfFewest_ptDsa",
     "dsaSegMatch_ptDsa_absdxyBS_nHits", "dsaSegMatch_ptDsa_nDTHits_nHits",
     "mu_lj_vtxChi2_muonN_genA_lxy", "mu_lj_vtxChi2_muonN_mumu_dR",
-    "mu_lj_vtxChi2_genA_lxy_mumu_dR",
+    "mu_lj_vtxChi2_genA_lxy_mumu_dR", "mu_lj_vtxChi2_genA_lxy_genMuMu_dR",
 }
 
 
@@ -5901,6 +5911,25 @@ hist_defs = {
             h.Axis(hist.axis.Variable([0, 0.02, 0.1, 0.5, 1.0], name="mu_lj_mumu_dR",
                                       label=r"$\Delta R$ of the two leading LJ muons"),
                    lambda objs, mask: mu_lj_mumu_dr(objs)),
+        ],
+    ),
+    # The same outcome against the generated dR of the matched dark photon's two daughter
+    # muons, which the reconstructed muon directions mismeasure. An LJ without a matched dark
+    # photon fills the underflow of both gen axes, so the vtx_chi2 marginal over the flow bins
+    # equals mu_lj_vtx_chi2's and the gen-matched LJs are those with genA_lxy >= 0.
+    "mu_lj_vtxChi2_genA_lxy_genMuMu_dR": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([-1.5, -0.5, 0, 1, 2, 5, 10, 100, 1e4, 1e9],
+                                      name="vtx_chi2",
+                                      label="mu-type LJ best dimuon-vertex normChi2"),
+                   lambda objs, mask: objs["mu_ljs"].vtx_chi2),
+            h.Axis(hist.axis.Variable([0, 1, 10, 100, 1000], name="genA_lxy",
+                                      label=r"$L_{xy}$ of the matched $Z_d\rightarrow\mu\mu$ (cm)"),
+                   lambda objs, mask: mu_lj_gen_a_lxy(objs)),
+            h.Axis(hist.axis.Variable([0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5],
+                                      name="genA_mumu_dR",
+                                      label=r"Generated $\Delta R$ of the matched $Z_d$'s two muons"),
+                   lambda objs, mask: mu_lj_gen_a_mumu_dr(objs)),
         ],
     ),
     "dsaMu_pfMu_dR_closest": h.Histogram(

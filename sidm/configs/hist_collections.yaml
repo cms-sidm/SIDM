@@ -1192,6 +1192,14 @@ mu_lj_vtx_outcome_lxy_dr: &mu_lj_vtx_outcome_lxy_dr
   - "mu_lj_vtx_chi2"
   - "mu_lj_pt"
 
+# vertexChi2 study: the same outcome against the generated dR of the matched dark photon's two
+# daughter muons (coarse gen Lxy as the third axis), with the reconstructed-dR histogram and
+# mu_lj_vtx_chi2 for the marginal closures. Signal MC only.
+mu_lj_vtx_outcome_gen_dr: &mu_lj_vtx_outcome_gen_dr
+  - "mu_lj_vtxChi2_genA_lxy_genMuMu_dR"
+  - "mu_lj_vtxChi2_genA_lxy_mumu_dR"
+  - "mu_lj_vtx_chi2"
+
 cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - *cosAlpha
   - "egm_lj_pt"
