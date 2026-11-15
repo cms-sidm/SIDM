@@ -15,23 +15,21 @@ it with the 4mu working point at 3 pixel hits, their interpretations rewritten. 
 (`watch_v2.py` in the session's scratch directory), checking every 30 minutes as the user
 asked, moved 10 jobs off the slow nodes cmswn2236, cmswn2176 and cmswn2254.
 
-**Since the last commit (not committed yet):**
-- the 4mu working point takes at most 3 pixel hits on both lepton jets (`WORKING_POINTS`,
-  `pixel_hit_max=3.5`; the user's correction: the group loosened it from 2);
-- `condor/campaign_configs/systematics_v2.yaml`, and the `systematics_v2` Campaign in
-  `datacard_tools`;
-- notebooks 03 to 05 on `systematics_v2`, executed, with new interpretations;
-- `run_combine_pulls.py --expect-signal` runs only the signal-plus-background fit and starts
-  it from the injected r (`--skipBOnlyFit --customStartingPoint --setParameters r=R`): with
-  the 4mu working point at 3 pixel hits the 4Mu correlation fit of 05 failed, because
-  FitDiagnostics evaluates the likelihood at r = 0 first, where it is undefined in bins whose
-  only content is the injected signal;
-- the study README (results of 03 to 05, campaign names, open item 2), the limit_plotting
-  README (the `systematics_v2` rows and section, the pulls script) and this log.
+**Committed in `2a396f0`** (not pushed): the 4mu working point at 3 pixel hits
+(`WORKING_POINTS`, `pixel_hit_max=3.5`; the user's correction: the group loosened it from 2);
+`condor/campaign_configs/systematics_v2.yaml` and its Campaign in `datacard_tools`; notebooks
+03 to 05 on `systematics_v2`, executed, with new interpretations; `run_combine_pulls.py
+--expect-signal`, which now runs only the signal-plus-background fit and starts it from the
+injected r (`--skipBOnlyFit --customStartingPoint --setParameters r=R`), since FitDiagnostics
+evaluates the likelihood at r = 0 first, undefined in bins whose only content is the injected
+signal (the 4Mu correlation fit of 05 failed there); the READMEs and this log. The slides in
+`slides/` are rebuilt with the v2 figures and numbers (40 pages) and stay uncommitted until the
+user decides.
 
 **Next steps**
-1. Rebuild the slides with the v2 figures and numbers; commit by explicit path; give the user
-   the updated PR description.
+1. The user: push `systematicsStudy` and open the pull request (description given in the
+   session); decide whether `slides/systematics.tex` goes into the repository and whether the
+   PDF goes to EOS.
 2. Lepton-jet efficiency: wait on the group (open question 2 below, four parts).
 3. Offered to the user, not done: a campaign `lj_reco_eff_v2` that splits the muon-type lepton
    jets by constituent (PF, DSA, both; the channels exist), to see which control sample covers
@@ -106,7 +104,9 @@ weight variations, `CMS_l1_prefiring` flat 1%, `CMS_jet_energy` from the isolati
 
 **Committed** (2026-11-14, branch `systematicsStudy`, for a pull request to `main`): the study
 folder, the framework and limit-tool changes it needs, the campaign configs, and AGENTS.md and
-CLAUDE.md. The branch sits on the campaign-configs commit `430542a`, not yet in `main`. Left
+CLAUDE.md; upstream `main` merged in (`39a2883`), the fix for its normalization (`8e337fc`) and
+the rerun (`2a396f0`). The branch also carries the campaign-configs commit `430542a`, not yet
+in `main`. Left
 out on purpose (AGENTS.md): job lists, filelists, logs, `condor/campaigns/`, outputs, and the
 local notes in `sidm/studies/limit_plotting/`. Later changes: stage by explicit path only.
 
@@ -124,6 +124,8 @@ local notes in `sidm/studies/limit_plotting/`. Later changes: stage by explicit 
 
 ### 2026-11-14
 
+- Slides rebuilt with the v2 figures (21 replaced) and numbers, 40 pages, no overfull frames.
+  The rerun committed as `2a396f0`.
 - Notebooks 03, 04 and 05 rerun on `systematics_v2` with the 4mu working point at 3 pixel hits
   (20:03 to 20:38), interpretations and README rewritten. 03: background unchanged from v1 (4mu
   B·C/D 0.38; region A 20.9 events, 19.3 Drell-Yan, which no control region sees); every limit
