@@ -409,6 +409,106 @@ Numbers, reference channel. The first, second and fourth items are from `vtxGenD
   tables do not establish the cause; a truth match of these pairs is in
   `dr_truth_match/wide_pair/` (below).
 
+### MET filters and the beam-halo filter in the 1-LJ control region (`vtx_outcome_lxy_dr/halo_filter_counts/`)
+
+A direct count of what the ten MET filters of "pass flags" remove in the 1-LJ control region,
+with the beam-halo filter (`globalSuperTightHalo2016Filter`) counted separately, and of what
+they would cost the signal. `configs/selections_vertexChi2_halo.yaml` holds the channels: the
+control regions `cr_1egmOr1mu_lj` and `cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu` as they are
+(with "pass flags"), a `_noFlags` copy of each (no MET filter) and a `_failHalo` copy (the
+other nine filters passed, the halo filter failed); a control region with its two copies is a
+"channel family" in the tables. For the signal, `4mu` / `2mu2e` as on main and `4mu_flags` /
+`2mu2e_flags` with "pass flags" appended. `4mu` and `2mu2e` are the two-LJ preselections of the
+two final states: they do not have the LJ isolation, displacement and LJ-LJ dPhi requirements
+of the search regions `4mu_sr` / `2mu2e_sr`, which were not run. On main only control-region, Z
+and ttbar selections apply the filters; `4mu`, `2mu2e` and the `base*` selections do not. The
+histogram `met_filter_fail_mask` holds, per event, the bit mask of failed filters (bit i is
+`MET_FILTERS[i]` of `definitions/cuts.py`, bit 1 the halo filter, 0 means all ten passed)
+against the highest pT of the DSA muons in mu-type LJs.
+
+With `RUN` a directory for the run's outputs and `OUT` one for the tables:
+
+```bash
+D=sidm/studies/vertexChi2/vtx_outcome_lxy_dr
+python $D/run_halo_filter.py $RUN data mc signal     # Dask on the LPC condor pool, one sample at a time
+python $D/halo_filter_counts.py $RUN/halo_data_2018 $RUN/halo_mc_2018 $RUN/halo_signal_2018 $OUT
+```
+
+`run_halo_filter.py` skips a sample whose output exists, and `halo_filter_counts.py` reads
+whatever is in the three directories. The run skips input files that cannot be read
+(`skipbadfiles`); `checks.txt` lists the files processed per sample, to be compared with the
+file lists of the location configs. The stored outputs were produced by a copy of
+`run_halo_filter.py` that differed from it in the order of the samples, in fixed output paths
+and in a copy of each output to EOS; `run_halo_filter.py` reproduces the stored output of
+`2Mu2E_100GeV_5p0GeV_400mm`, every cutflow and every bin of the mask histogram. The committed
+tables are from the runs of 2026-11-13 and 2026-11-14: the 68 data skims of 2018,
+`QCD_Pt170To300` of the eight background samples (the other seven were not run), and 24 signal
+samples (2Mu2E and 4Mu at 100, 500 and 1000 GeV, m_Zd of 0.25 and 5 GeV, the shortest and the
+longest ctau, the first five files of each). Of the 127415 data files 127090 were processed;
+the 325 that could not be read are in 30 skims, at most 2.9% of the files of a skim that
+contributes events (8 of 274, `DoubleMuon_2018B_6`). Three skims contribute no event
+(`DoubleMuon_2018B_1`, `_10` and `_11`): they hold only runs 318816 and 317482, which are not
+in the certified list the processor applies to data
+(`data/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt`).
+
+| file | what it holds |
+|---|---|
+| `table1_counts.csv` | Per sample and pooled, per channel family: events without the filters, with all ten, failing any, failing the halo filter in any combination, failing only the halo filter, and the fractions with Clopper-Pearson 68% intervals. Data in raw counts. Background MC in weighted yields, with raw counts where a cutflow gives them and intervals on N_eff. Signal in raw counts; its weighted yields are raw counts times the sample's mean event weight in the channel, summed over the samples of a pooled row. |
+| `table2_counts_by_pt.csv` | The same per bin of the highest mu-LJ DSA muon pT: none, [0, 100), [100, 200), [200, 500), >= 500 GeV. |
+| `table3_per_filter.csv` | Events failing each of the ten filters, at all pT and per pT bin. An event failing two filters counts in both. |
+| `table4_signal.csv` | Signal: selected events in `4mu` / `2mu2e` and in the `_flags` variant, the fraction the filters remove with its interval, the fraction failing the halo filter, and the halo share of what is removed. |
+| `checks.txt` | The samples and file counts read and, per sample and channel family, the mask histogram against the cutflows: mask 0 against the channel with the filters, the total against `_noFlags`, mask 2 against `_failHalo`. All 162 pass. The last line tests the halo-only counts of the data skims against one common rate (Poisson deviance, p-value from toys). |
+| `tables.md` | The pooled rows of the four tables. |
+
+Numbers (all of 2018; data and signal in raw counts):
+
+- **Halo filter.** 117 of 2236644 control-region events fail it, a fraction of 5.23e-5 (68%
+  interval 4.75e-5 to 5.76e-5), and all 117 pass the other nine filters. The rate does not
+  change over the year within the counts: 27 of 512715 events in 2018A, 10 of 257284 in B, 16
+  of 262556 in C and 64 of 1204089 in D (3.9e-5 to 6.1e-5), and over the 65 skims with events
+  the Poisson deviance against one common rate is 50.3 for 64 degrees of freedom (p-value
+  0.315 from toys; the most in one skim is 7 of 41978, `DoubleMuon_2018D_28`). The fraction is
+  an upper bound on the beam halo this filter can tag in the control region, whatever share
+  of the 117 is halo. Simulation, which has no beam halo, gives the rate at which the filter
+  fails without it: 6.2e-5 of the weighted `QCD_Pt170To300` yield (4 raw events of 67129, 68%
+  interval 3.3e-5 to 1.1e-4), and 6 of 76226 events of the signal preselections. The data
+  rate is consistent with those, and a rate that is constant over the year at the simulated
+  level is what failures unrelated to halo would give. With 4 simulated events the comparison
+  is weak: at the lower edge of the simulation's interval, about 37% of the 117 could be halo.
+- **By DSA muon pT.** 97 of the 117 have no DSA muon in a mu-type LJ and 20 have one below
+  100 GeV. Above 100 GeV there is none, among 52864 events before the Spread and cosAlpha veto
+  and 13787 after it (20133 and 2965 above 200 GeV). At the inclusive rate 2.8 and 0.79 events
+  would be expected there (probability of none: 0.06 and 0.45), so the zero is at most a weak
+  sign that the failures fall with pT. It bounds the fraction of events above 200 GeV that
+  fail the halo filter: below 1.5e-4 before the veto and below 1.0e-3 after it (95% CL, 0 of
+  20133 and 0 of 2965). The veto removes 1 of the 117.
+- **Any filter.** 13222 events (0.59%) fail at least one filter before the veto and 8229
+  (0.41%) after it. `BadPFMuonDzFilter` fails in 9483, `BadPFMuonFilter` in 7204 and
+  `hfNoisyHitsFilter` in 2432 of the 13222 (an event can fail more than one), 5145, 3971 and
+  2201 of the 8229. Above 200 GeV, `HBHENoiseFilter` fails in 81 events and
+  `HBHENoiseIsoFilter` in 105 before the veto and in none after it. Of the 2965 events the
+  veto leaves above 200 GeV, 97 fail a filter, 89 of them `BadPFMuonDzFilter`.
+- **Signal.** In the preselections the ten filters would remove 1.2% of the 2Mu2E events and
+  1.5% of the 4Mu events, pooled by raw count over the samples; the shortest-lifetime samples
+  hold 93% and 95% of those events. Per sample it is at most 3% at the shortest lifetime of a
+  mass point, and up to 13% (2Mu2E) and 22% (4Mu) at the longest
+  (`4Mu_1000GeV_5p0GeV_40p0mm`: 279 of 357 events kept). At the long lifetimes the loss is from
+  `BadPFMuonDzFilter` and `BadPFMuonFilter` (700 and 309 of the 740 removed 4Mu events; an
+  event can fail both). In the short-lifetime 2Mu2E samples at m_Zd = 5 GeV
+  `EcalDeadCellTriggerPrimitiveFilter` removes more (11 of the 16 removed events of
+  `2Mu2E_1000GeV_5p0GeV_0p04mm`; 60 of the 345 removed 2Mu2E events overall). The halo filter
+  fails in 6 signal events, at most 3 in one sample (of 18556, 1.6e-4); the samples with few
+  selected events give no useful bound. Only the two lifetime extremes of each mass point were
+  run, and `BadPFMuonDzFilter` goes with displacement, so the cost in the search regions can
+  differ from these numbers.
+
+The halo filter needs a CSC segment matched to a halo-like cluster in ECAL or HCAL
+(`GlobalSuperTightHaloId2016`, set in CMSSW's `BeamHaloSummaryProducer`), so a halo muon that
+crosses only the muon chambers is not counted here. For those the only handle is indirect: the
+`halo_fractions_*` tables above (DSA muons without DT hits or at large `|dxy_BS|`, and the
+horizontal-over-vertical ratio in phi), which are sensitive to halo but give neither a tag nor
+a rate.
+
 ### Truth match of the two leading muons of a mu-type LJ (`dr_truth_match/`)
 
 Against the dR of the LJ's two leading muons, the no-vertex fraction at mediator masses 500 and
