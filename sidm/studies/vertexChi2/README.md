@@ -466,15 +466,15 @@ Numbers (all of 2018; data and signal in raw counts):
   interval 4.75e-5 to 5.76e-5), and all 117 pass the other nine filters. The rate does not
   change over the year within the counts: 27 of 512715 events in 2018A, 10 of 257284 in B, 16
   of 262556 in C and 64 of 1204089 in D (3.9e-5 to 6.1e-5), and over the 65 skims with events
-  the Poisson deviance against one common rate is 50.3 for 64 degrees of freedom (p-value
-  0.315 from toys; the most in one skim is 7 of 41978, `DoubleMuon_2018D_28`). The fraction is
-  an upper bound on the beam halo this filter can tag in the control region, whatever share
+  the Poisson deviance against one common rate is 50.3 for 64 degrees of freedom (p-value 0.315
+  from toys; the highest rate in one skim is 7 of 41978, `DoubleMuon_2018D_28`). The fraction
+  is an upper bound on the beam halo this filter can tag in the control region, whatever share
   of the 117 is halo. Simulation, which has no beam halo, gives the rate at which the filter
   fails without it: 6.2e-5 of the weighted `QCD_Pt170To300` yield (4 raw events of 67129, 68%
-  interval 3.3e-5 to 1.1e-4), and 6 of 76226 events of the signal preselections. The data
-  rate is consistent with those, and a rate that is constant over the year at the simulated
-  level is what failures unrelated to halo would give. With 4 simulated events the comparison
-  is weak: at the lower edge of the simulation's interval, about 37% of the 117 could be halo.
+  interval 3.3e-5 to 1.1e-4), and 6 of 76226 events of the signal preselections. The data rate
+  is consistent with those, and a rate that is constant over the year at the simulated level is
+  what failures unrelated to halo would give. With 4 simulated events the comparison is weak:
+  at the lower edge of the simulation's interval, about 37% of the 117 could be halo.
 - **By DSA muon pT.** 97 of the 117 have no DSA muon in a mu-type LJ and 20 have one below
   100 GeV. Above 100 GeV there is none, among 52864 events before the Spread and cosAlpha veto
   and 13787 after it (20133 and 2965 above 200 GeV). At the inclusive rate 2.8 and 0.79 events
@@ -748,13 +748,13 @@ the three mediator masses (eight mass points) pooled unless a table is per mass.
   74.6 for 30, 72.5 for 26, 47.3 for 21 and 44.3 for 19, a spread of 0.029 to 0.035, and it
   stays at 0.027 to 0.038 with the charge, the region, the lower generated pT or the class as
   a further cell variable. What separates the mass points for DSA-DSA pairs is not identified
-  by these tables.
+  by these tables; `lj_distance/` (below) takes it up.
 
 The producer of the vertex tables (`MuonVertexTableProducer` of `cms-sidm/LLPNanoAOD`, read at
 the head of its main branch, commit 14c5287454) writes no vertex for a pair in two cases: the
 Kalman vertex fit of the two tracks is not valid, or the distance of closest approach of the
 two tracks, where its calculation succeeds, is above 15 cm. Which case applies to an LJ is not
-stored. That the 2018 v10 samples were made with this version of the producer was not checked.
+stored; for DSA-DSA pairs `lj_distance.py` (below) reconstructs it. That the 2018 v10 samples were made with this version of the producer was not checked.
 
 These tables have the limits of the caveats above: sixteen 2Mu2E samples, three mediator
 masses, two lifetimes per mass point, raw counts. They give fractions with their counts and no
@@ -965,6 +965,554 @@ final-state dR is the smaller.
   missing.
 - The gen dR of the records is the final-state one, so a few LJs sit in a neighbouring gen dR bin
   of `counts_gen_dr.csv.gz` (above).
+
+#### Why a DSA-DSA pair has no stored vertex (`lj_distance.py`, `lj_distance/`)
+
+The vertex producer of LLPNanoAOD (`MuonVertexTableProducer`) stores no vertex for a muon pair
+in two cases: the Kalman vertex fit is invalid, or `TwoTrackMinimumDistance` (TTMD) between the
+two tracks succeeds and gives a distance above 15 cm. This study separates the two for DSA-DSA
+LJs, asks which properties of the pair go with the invalid fits, and tests four patterns of the
+tables above:
+
+- (a) at fixed (Lxy, gen dR) the mass points differ; tested as (1000, 5) against (500, 5) GeV
+  (tables 21 and 22);
+- (b) the no-vertex fraction falls with Lxy (table 19);
+- (c) the barrel is above the endcap (table 20);
+- (d) in 4Mu at Lxy >= 100 cm the widest generated pairs, gen dR [0.2, 0.5), lose the vertex
+  more often than [0.1, 0.2) (`wide_pair/`).
+
+Everything below is computed by `lj_distance.py` from the per-LJ records of `extract.py` and
+the `lj_classified.parquet` files of `analyze.py`; it reads no NanoAOD. The exceptions are
+numbers from a direct read of NanoAOD files by a script that is not in this repository; they
+are labelled where they appear.
+
+**Inputs.** Three sample sets: the sixteen 2Mu2E samples of the tables above (the 32 jobs of
+`condor/job_args.txt`), the nine 4Mu samples (23 jobs of `condor/job_args_4mu.txt`) and the
+nine wide-pair 2Mu2E samples at the mass points of the 4Mu samples (19 jobs of
+`condor/job_args_wide_pair_2mu2e.txt`; m_Zd = 5 GeV, mediator 100, 150 and 200 GeV), all
+records of the extended `extract.py` (DSA track parameters at the reference point and
+track-quality branches, PF inner-track parameters, and the stored vertex of the two leading
+muons, `pv_*`). `2Mu2E_100GeV_5p0GeV_400mm` is in both 2Mu2E sets (307 LJs of the population P
+below, 277 of them at 15 cm or less): those LJs count twice wherever the sets are pooled or
+compared.
+
+```bash
+python $D/lj_distance.py $D/condor/out $REC4MU $RECWP $OUT/lj_classified.parquet \
+  $OUT4MU/lj_classified.parquet $OUTWP/lj_classified.parquet $D/lj_distance
+```
+
+where `$REC4MU` and `$RECWP` hold the 4Mu and wide-pair 2Mu2E records, and `$OUT4MU`, `$OUTWP`
+the outputs of `analyze.py --propagate` on them (it stops at table 7, which needs the 500 and
+1000 GeV samples, after writing `lj_classified.parquet`). The run takes 18 minutes on one
+cmslpc core, most of it the global minimum distance below.
+
+**What the producer does.** `MuonVertexTableProducer.cc` in cms-sidm/LLPNanoAOD at commit
+14c5287454 (the commit the LLPNanoAOD README cites, set up for CMSSW_10_6_29). Each pair is fit
+with `KalmanVertexFitter vertexFitter(true)` (line 146); the DSA-DSA loop (lines 589-595; the
+PF-PF and PF-DSA loops have the same lines) reads
+
+```cpp
+TransientVertex transientMuonVertex = vertexFitter.vertex(muonTransientTracks);
+reco::Vertex muonVertex = reco::Vertex(transientMuonVertex);
+
+if (!transientMuonVertex.isValid()) continue;
+std::tuple<float,float,GlobalPoint> distanceTuple = getDistanceBetweenMuonTracks(muonTrack_i, muonTrack_j, magneticField);
+// if dca status is good but dca is more than 15 cm
+if(std::get<1>(distanceTuple) && std::get<0>(distanceTuple) > 15) continue;
+```
+
+and the distance (lines 1115-1124) is
+
+```cpp
+TwoTrackMinimumDistance ttmd;
+FreeTrajectoryState fts1(GlobalPoint(track1.vx(), track1.vy(), track1.vz()),
+                          GlobalVector(track1.px(), track1.py(), track1.pz()),
+                          track1.charge(), magneticField.product());
+FreeTrajectoryState fts2(GlobalPoint(track2.vx(), track2.vy(), track2.vz()),
+                          GlobalVector(track2.px(), track2.py(), track2.pz()),
+                          track2.charge(), magneticField.product());
+bool status = ttmd.calculate(fts1, fts2);
+if (!status) return std::tuple(-999.f, status, GlobalPoint(-999.f,-999.f,-999.f));
+return std::make_tuple(ttmd.distance(), status, ttmd.crossingPoint());
+```
+
+The stored `dca`, `dcaStatus` and `dcax`, `dcay`, `dcaz` are the three entries (lines 635-639,
+`ddDCA.push_back(std::get<0>(distanceTuple))` and so on); `crossingPoint()` is the mean of the
+two closest points TTMD found (`return mean ( points_ );`, `TwoTrackMinimumDistance.cc` line 187
+in CMSSW_10_6_29). TTMD starts from each track's reference point (vx, vy, vz) with the track's
+momentum there. The track of a DSA muon is its `displacedStandAloneMuons` track; that of a PF
+muon is the combined track of a global muon, the standalone track of a standalone muon, and
+`tunePMuonBestTrack()` otherwise (lines 198-200). Track 1 is the PF muon in a PF-DSA pair and
+the lower index in a pair of the same type.
+
+**When the fit is invalid in this production.** `KalmanVertexFitter` (CMSSW_10_6_29,
+`RecoVertex/KalmanVertexFit/src/KalmanVertexFitter.cc`) builds a `SequentialVertexFitter` with
+`FsmwLinearizationPointFinder(20, -2., 0.4, 10.)` (line 30) and the defaults
+`pSet.addParameter<double>("maxDistance", 0.01);` and
+`pSet.addParameter<int>("maxNbrOfIterations", 10); //10` (lines 47-48). For two tracks the
+linearization point is the TTMD crossing point of their impact-point states
+(`CrossingPtBasedLinearizationPointFinder.cc` line 169). The iteration in
+`SequentialVertexFitter.cc` reads (lines 287-303 and 321-335)
+
+```cpp
+      fVertex = theUpdator->add(fVertex,*i);
+      if (!fVertex.isValid()) break;
+    }
+
+    validVertex = fVertex.isValid();
+    // check tracker bounds and NaN in position
+    if (validVertex && hasNan(fVertex.position())) {
+      LogDebug("RecoVertex/SequentialVertexFitter") 
+	 << "Fitted position is NaN.\n";
+      validVertex = false;
+    }
+
+    if (validVertex && !insideTrackerBounds(fVertex.position())) {
+      LogDebug("RecoVertex/SequentialVertexFitter") 
+	 << "Fitted position is out of tracker bounds.\n";
+      validVertex = false;
+    }
+```
+
+```cpp
+  } while ( (step != theMaxStep) &&
+  	    (((previousPosition - newPosition).transverse() > theMaxShift) ||
+		(!validVertex) ) );
+
+  if (!validVertex) {
+    LogDebug("RecoVertex/SequentialVertexFitter") 
+       << "Fitted position is invalid (out of tracker bounds or has NaN). Returned vertex is invalid\n";
+    return CachingVertex<N>(); // return invalid vertex
+  }
+
+  if (step >= theMaxStep) {
+    LogDebug("RecoVertex/SequentialVertexFitter") 
+       << "The maximum number of steps has been exceeded. Returned vertex is invalid\n";
+    return CachingVertex<N>(); // return invalid vertex
+  }
+```
+
+An invalid step resets the vertex to (0, 0, 0) with a large error and forces another iteration
+(lines 305-313). `KalmanVertexUpdator::add` returns an invalid vertex when the position update
+fails or the chi2 increment fails (`KalmanVertexUpdator.cc` lines 21 and 26), and the position
+update fails when a matrix inversion fails (lines 92-95, "predictedState error matrix inversion
+failed", and 105-108, "S matrix inversion failed"). So in this code a pair has no vertex when,
+in the last of at most 10 iterations, an update step fails, the position is NaN or outside the
+bounds, or when 10 iterations end without the transverse position settling within 0.01 cm.
+
+The bounds differ between stock CMSSW and the files the LLPNanoAOD README tells the user to
+copy over it (`RecoVertex_corrections/`: "This will also extend the values of the
+`trackerBoundsRadius` and `trackerBoundsHalfLength` to: `trackerBoundsRadius = 740`,
+`trackerBoundsHalfLength = 960`"). Stock CMSSW_10_6_29 `SequentialVertexFitter.cc` (lines
+13-14):
+
+```cpp
+  const float TrackerBoundsRadius = 112;
+  const float TrackerBoundsHalfLength = 273.5;
+```
+
+the LLPNanoAOD copy of `SequentialVertexFitter.h` (lines 271-272), with that namespace commented
+out in its `.cc`:
+
+```cpp
+  float trackerBoundsRadius{740.};
+  float trackerBoundsHalfLength{960.};
+```
+
+Apart from these bounds (also in `SingleTrackVertexConstraint.cc`) the copied files differ from
+stock only in `PerigeeLinearizedTrackState.cc`, which flips the sign of the transverse curvature
+when the field changes sign between two states (lines 122-125). The iteration above is the same
+in both. The sample files do not record the LLPNanoAOD commit, but they cannot have been made
+with the stock bounds: in the direct NanoAOD read (not in this repository; six samples, 1800
+files) the median transverse position of the stored DSA-DSA vertices with stored dca below 0.1
+cm is 151 cm (12,753 vertices), above the stock 112 cm. Which of the conditions above makes the
+fit invalid for a given pair is not established here: the fit is not emulated.
+
+**The emulation and its validation.** `lj_distance.py` ports TTMD (FastMode, CMSSW_10_6_29) to
+numpy: Newton steps on the two helix phases from the two starting states, each helix in the
+field at the other state's position (`TwoTrackMinimumDistanceHelixHelix`); if they fail, the
+transverse crossing of the two circles (or their closest points) from `ClosestApproachInRPhi`,
+then Newton steps from there, the transverse points being kept when that gives a larger
+distance. It returns the distance, the crossing point and the path taken. The field is the
+parabolic parametrisation Bz(r, z) of CMSSW, evaluated where TTMD evaluates it. A DSA leg uses
+the stored DSA track, as the producer does. A PF leg uses the inner track: the producer's track
+for a tracker-only muon, a stand-in otherwise.
+
+- DSA-DSA pairs are reproduced. Of the pairs with a stored vertex whose two leading muons are
+  DSA, the emulated distance is within 0.1 cm of the stored dca for 0.999 of 17,983 (2Mu2E),
+  0.997 of 12,208 (wide-pair 2Mu2E) and 0.994 of 89,453 (4Mu); in every DSA-DSA group and
+  stored-dca bin with at least 20 pairs at most 0.029 are off by more than 1 cm in one direction
+  (`validation_dca.csv`).
+- Pairs with a PF leg are not: PF-DSA pairs are within 0.1 cm for 0.354 of 12,933 (2Mu2E) and
+  0.430 of 47,817 (4Mu). When every PF leg is a tracker-only muon, all 28 and 51 (2Mu2E PF-DSA,
+  PF-PF) and 339 and 77 (4Mu) pairs are within 0.1 cm, so the failure sits in the PF legs whose
+  producer track the records do not hold. Everything below uses DSA-DSA pairs only.
+- On all DSA-DSA pairs of the event, not only the leading pair of an LJ, the direct NanoAOD
+  read (not in this repository; six samples, 1800 files) finds the emulated distance more than
+  1 cm from the stored dca for 7096 of 388,266 stored vertices (1.8%) and more than 0.01 cm for
+  56,042. Of the leading pairs of the three sets above, 0.13% or less are off by more than 1 cm
+  (rows `all` of the three `all LJs, leading pair DSA-DSA` groups of `validation_dca.csv`; up
+  to 1.1% in the class D groups of (d)); why the other pairs of the event do worse was not
+  looked into.
+- Status (`summary.txt`): every DSA-DSA pair with a stored vertex has stored and emulated status
+  1; the emulated distance is above 15 cm for none of them in 2Mu2E, 3 of 12,208 in the
+  wide-pair set and 13 of 89,453 in 4Mu, all on the path that keeps the transverse points
+  (stored dca at most 10.8 and 15.0 cm). No pair without a stored vertex has emulated status 0.
+- Edge (`edge_1cm.csv`, all LJs whose leading pair is DSA-DSA): the no-vertex fraction is 0.474
+  (36 of 76) in [14, 15) cm and 1.000 (73 of 73) in [15, 16) cm in 2Mu2E; 0.064 (7 of 110) and
+  0.990 (97 of 98) in the wide-pair set; 0.102 (101 of 987) and 0.991 (897 of 905) in 4Mu.
+- The crossing point is a proxy for where the fit works. The direct NanoAOD read (not in this
+  repository) measured the stored crossing point against the stored vertex: median 3D offset
+  2.50 cm (388,256 pairs with dcaStatus 1), from 0.043 cm (stored dca below 0.1 cm, 12,753) to
+  6.23 cm (stored dca [10, 15) cm, 74,078), and 37.0 cm on the path that keeps the transverse
+  points (28,388). The emulated crossing point is within 1 cm of the stored one for 0.944 of the
+  pairs and within 0.01 cm for 0.686.
+
+**Per pair**, besides the distance and the crossing point: the 3D opening angle of the two
+helices at the crossing point (the TTMD helices; tangents where each circle passes the crossing
+point in the transverse plane); dR of the two momenta at the reference points; sin(theta_pair),
+the sine of the polar angle of the summed momentum of the two tracks at the crossing point
+(each helix tangent there times the track's momentum), and angle_eff = angle / sin(theta_pair);
+L = s / angle with s = 0.5 sqrt(dxyBSErr1^2 + dxyBSErr2^2 + dzBSErr1^2 + dzBSErr2^2) (the
+records hold the beam-spot dxy and dz errors of the DSA tracks, not dxyErr and dzErr; for these
+tracks the beam-spot width is negligible); and the global minimum distance of the two helices
+with both closest points inside r < 740 cm and |z| < 960 cm and a transverse arc of at most
+1500 cm (`global_min`: a 20 cm grid, exact one-parameter profiles at 5 cm steps and 2 cm grids
+around the best grid minima, each candidate refined by a pattern search and Newton steps).
+`gmin_stability` compares it with a finer variant and with an exhaustive 1 cm grid
+(`T7_minimiser_stability.csv`): on all cut pairs and 1000 random pairs with a stored vertex per
+set (1946, 2189 and 11,287 pairs) the variant moves the minimum by at most 0.036 cm (2 pairs
+above 0.01 cm, none above 0.1 cm, no cut pair changes class at 1, 5 or 15 cm); on 60 pairs per
+set the exhaustive grid agrees within 1e-11 cm; and for the 2726, 564 and 4344 pairs on the
+first Newton path, whose TTMD result is a local minimum of the same helices, the global minimum
+is never above the TTMD distance.
+
+**Populations and terms.** P(set): gen-matched LJs with exactly two muons, both DSA, of
+opposite charge: 26,167 LJs (9341 without a vertex) in 2Mu2E, 12,137 (837) in the wide-pair
+set, 91,174 (8485) in 4Mu (`summary.txt`). (a) to (c) use P(2Mu2E). The population of (d), "T6
+population" in the script and the tables: 4Mu, Lxy >= 100 cm, two-muon DSA-DSA LJs of class A
+or D with gen dR [0.1, 0.2) (narrow) or [0.2, 0.5) (wide), both charges unless stated; all
+class A LJs there have opposite charge. No vertex = `vtx_chi2 < 0`. For a group of LJs, **s15**
+is the share with emulated distance above 15 cm (all of them have no vertex, up to the 13 and 3
+pairs above), and **f_inv** the no-vertex fraction of the others (distance at most 15 cm: the
+invalid fits). The no-vertex fraction is s15 + (1 - s15) f_inv, and the difference of two
+groups splits exactly into term_s15 = (1 - mean f_inv) (s15_b - s15_a) and term_finv = (1 -
+mean s15) (f_inv_b - f_inv_a); the residual counts the cut LJs with a stored vertex.
+
+Comparison tests (as in `pair_content.py`): Mantel-Haenszel-style over cells with at least 5
+LJs of each group (30 where stated); `wdiff` is the weighted difference, `kept` the share of
+the two groups' LJs inside the cells used, and `base_wdiff` the same test on the same LJs
+without the added cell variable. Base cells: (a) Lxy slice cut in 8 x gen dR (table 18 edges);
+(b) none; (c) Lxy slice (below 200 cm); (d) none. Added cell variables: the distance bin ([0,
+0.1, 0.5, 1, 2, 5, 10, 15] cm), the angle bin ([0, 1e-4, 3e-4, 1e-3, 3e-3, 0.01, 0.03, 0.1,
+0.3, 1] rad and above), the angle bin x coarse distance ([0, 0.5, 2, 15] cm), the angle_eff bin
+(the angle edges with [1, 3) and 3 rad and above at the top; no LJ has angle_eff above 1, so
+both are empty) alone and x coarse distance, and each track-quality variable (worst of the two
+muons, quintile bins). The consistency test fits one f_inv per cell to all groups with at least
+10 (or 50) LJs in the cell; `extra` is the spread of f_inv between groups beyond the binomial
+one.
+
+How the angle was chosen: after the distance, four per-pair candidates were looked at against
+f_inv (the crossing-point position against the fitter bounds, the TTMD path, the opening angle
+at the crossing point, and dR of the momenta at the reference points;
+`invalid_fit_candidates.csv`), and 13 track-quality variables in the tests (12 give cells;
+displacedID is 1 for the DSA muons of these LJs, checked on one 2Mu2E record file with 592 DSA
+muons, and gives one bin). The angle was picked after seeing these. L and angle_eff were each
+written down before being computed and are reported whatever they give. The repository holds no
+dated record of that order, and angle_eff was proposed after (c) had been found unexplained at
+fixed angle: it tests one hypothesis made with the data in view. It comes from the fitter's
+loop condition: `SequentialVertexFitter` iterates while the transverse shift of the vertex
+between iterations exceeds 0.01 cm (or the vertex is invalid), at most 10 times. If the failing
+branch were non-convergence along the poorly constrained flight direction of a nearly parallel
+pair, a pair flying at polar angle theta would move less in the transverse plane per step by
+sin(theta), so f_inv would follow angle_eff rather than the angle, and inside the barrel and
+inside the endcap it would rise with sin(theta_pair) at fixed angle.
+
+**Results**
+
+- The two conditions (`T2_condition_share.csv`, `T2_same_mass_points.csv`). In P, 799 of the
+  9341 no-vertex LJs (0.086) of 2Mu2E have a distance above 15 cm, 574 of 837 (0.686) of the
+  wide-pair set and 6291 of 8485 (0.741) of 4Mu. Over all LJs whose leading pair is DSA-DSA:
+  946 of 9783 (0.097), 1189 of 1470 (0.809) and 10,287 of 12,664 (0.812). At the same mass
+  points the two final states agree when pooled (0.809 against 0.812) and per sample at 100 and
+  150 GeV. At 200 GeV the wide-pair set is lower: 0.649, 0.700 and 0.602 for its three
+  lifetimes (errors 0.03 to 0.04) against 0.751, 0.717 and 0.728 in 4Mu (errors 0.01). The
+  sixteen-sample 2Mu2E set differs because its mass points do. In P(2Mu2E) the invalid fits are
+  8542 of the 25,368 LJs at 15 cm or less (f_inv 0.337), against 263 of 11,563 (0.023) in the
+  wide-pair set and 2194 of 84,876 (0.026) in 4Mu (`invalid_fit_deviance.csv`).
+
+- Decomposition of (a) to (d) (`decomposition_cut_vs_invalid_fit.csv`; raw fractions, no
+  cells). The difference is the first-named group minus the second-named one, which is the
+  reference (group b minus group a of the file):
+
+  | comparison | reference: n, s15, f_inv | first-named: n, s15, f_inv | difference | term_s15 | term_finv |
+  |---|---|---|---|---|---|
+  | (a) (1000, 5) vs (500, 5), opposite | 6399, 0.028, 0.110 | 3735, 0.031, 0.207 | +0.097 | +0.002 | +0.094 |
+  | (b) [150, 300) vs [0, 60) cm | 1357, 0.066, 0.430 | 5999, 0.022, 0.201 | -0.249 | -0.030 | -0.219 |
+  | (c) endcap vs barrel, Lxy < 200 cm | 19,933, 0.026, 0.396 | 3422, 0.055, 0.178 | -0.189 | +0.021 | -0.209 |
+  | (d) class A, wide vs narrow | 46,996, 0.039, 0.022 | 6662, 0.092, 0.005 | +0.037 | +0.053 | -0.016 |
+  | (d) class D, wide vs narrow, both charges | 1588, 0.260, 0.119 | 1670, 0.410, 0.013 | +0.070 | +0.140 | -0.070 |
+  | (d) class D, opposite charge | 1208, 0.228, 0.129 | 889, 0.179, 0.018 | -0.133 | -0.045 | -0.088 |
+
+  Per Lxy slice below 200 cm, the endcap has the larger s15 and the smaller f_inv in every slice
+  (term_finv -0.165 to -0.273, term_s15 +0.016 to +0.031). (a) to (c) are carried by the invalid
+  fits. (d) in class A is carried by the distance cut, against a smaller f_inv in the wide bin.
+  In class D the two charge combinations go opposite ways. For opposite charge the wide bin
+  has the lower no-vertex fraction, 0.193 (172 of 889) against 0.326 (394 of 1208). The excess
+  of the wide bin in the both-charges row is in the same-charge pairs: by subtraction 524 of
+  781 have no vertex in the wide bin, all 524 with a distance above 15 cm, against 157 of 380
+  in the narrow bin. A same-charge pair is not a decay pair.
+
+- f_inv against the opening angle (`invalid_fit_candidates.csv`, P(set), distance at most 15
+  cm):
+
+  | angle (rad) | 2Mu2E: n, f_inv | wide-pair: n, f_inv | 4Mu: n, f_inv |
+  |---|---|---|---|
+  | [0, 1e-4) | 422, 0.626 | 4, 3 of 4 | 32, 0.750 |
+  | [1e-4, 3e-4) | 749, 0.734 | 11, 8 of 11 | 98, 0.745 |
+  | [3e-4, 1e-3) | 2179, 0.765 | 56, 0.679 | 248, 0.714 |
+  | [1e-3, 3e-3) | 3410, 0.742 | 90, 0.689 | 531, 0.635 |
+  | [3e-3, 0.01) | 4252, 0.503 | 111, 0.477 | 824, 0.555 |
+  | [0.01, 0.03) | 7552, 0.150 | 247, 0.105 | 2092, 0.163 |
+  | [0.03, 0.1) | 6440, 0.041 | 5445, 0.011 | 38,199, 0.015 |
+  | [0.1, 0.3) | 353, 0.006 | 5579, 0.003 | 42,385, 0.005 |
+  | [0.3, 1) | 11, 0 | 20, 0 | 467, 0 |
+
+  The sets differ mainly in how their pairs fill these bins: 0.73 of P(2Mu2E) lies below 0.03
+  rad, 0.045 of the wide-pair set and 0.045 of 4Mu. They do not share one curve, though
+  (`invalid_fit_angle_standardised.csv`): in [0.03, 0.1) rad the sixteen 2Mu2E samples have
+  0.041 against 0.011 (z -10.0) and 0.015 (z -13.8), and in [1e-3, 3e-3) rad 0.742 against
+  0.635 in 4Mu (z -5.2). With the sixteen samples' fraction in each angle bin the wide-pair set
+  would have f_inv 0.040 +- 0.003 and 4Mu 0.038 +- 0.002; observed are 0.023 and 0.026, 0.57 +-
+  0.04 and 0.69 +- 0.04 of that (bootstrap errors). At fixed angle f_inv rises with the
+  distance: from 0.01 rad up it is at most 0.012 (1 of 82) below 0.5 cm in every set, and up to
+  0.478 (983 of 2057; 2Mu2E, [0.01, 0.03) rad) in [2, 15) cm
+  (`invalid_fit_angle_x_distance.csv`). A crossing point outside the bounds is rare and does not
+  carry the invalid fits: 1 of 66 such LJs (2Mu2E), 2 of 105 (wide-pair), 31 of 665 (4Mu).
+
+- Tests on f_inv at fixed variable (`invalid_fit_tests.csv`; wdiff (z); base_wdiff on the same
+  LJs; kept):
+
+  | comparison | no added cells | distance bin | angle bin | angle bin x coarse distance |
+  |---|---|---|---|---|
+  | (a) opposite, >= 5 per group | +0.040 (4.23); kept 0.940 | +0.061 (5.02); +0.065; 0.524 | +0.009 (1.13); +0.041; 0.803 | +0.040 (2.36); +0.064; 0.232 |
+  | (a) opposite, >= 30 per group | +0.054 (5.03); 0.593 | +0.036 (1.91); +0.038; 0.153 | +0.023 (2.65); +0.030; 0.337 | no cells |
+  | (b) outer vs inner | -0.229 (-17.3); 1.000 | -0.147 (-10.6); -0.229; 1.000 | -0.049 (-4.09); -0.226; 0.979 | +0.013 (1.02); -0.195; 0.794 |
+  | (c) endcap vs barrel | -0.228 (-24.9); 1.000 | -0.247 (-28.2); -0.253; 0.931 | -0.244 (-31.2); -0.230; 0.982 | -0.282 (-34.4); -0.311; 0.746 |
+  | (d) class A, wide vs narrow | -0.017 (-8.87); 1.000 | -0.019 (-9.86); -0.017; 1.000 | -0.002 (-2.10); -0.011; 0.989 | -0.004 (-2.17); -0.015; 0.610 |
+  | (d) class D, both charges | -0.106 (-9.56); 1.000 | -0.113 (-8.83); -0.119; 0.842 | -0.036 (-4.77); -0.098; 0.912 | -0.038 (-3.56); -0.079; 0.482 |
+  | (d) class D, opposite | -0.111 (-8.26); 1.000 | -0.120 (-8.09); -0.127; 0.877 | -0.027 (-3.10); -0.100; 0.891 | -0.019 (-1.94); -0.078; 0.473 |
+
+  Both charges in (a) give the same picture (+0.007, z 0.90, against +0.038, kept 0.803, at
+  fixed angle). Of the track-quality variables, none removes a difference: the largest changes
+  are dxyBSErr in (c), -0.177 (z -19.6) against -0.228 (kept 0.999), and etaErr in (a), +0.032
+  (z 3.21) against +0.041 (kept 0.780).
+
+- Universality (`invalid_fit_universality.csv`): one f_inv per cell shared by the groups; chi2 /
+  ndf, extra, kept, with at least 50 LJs per group in a cell (at least 10 in brackets where the
+  extra differs):
+
+  | groups | no cells | distance bin | angle bin | angle bin x distance bin |
+  |---|---|---|---|---|
+  | (i) the 8 mass points (M, m_Zd) of 2Mu2E, lifetimes pooled | 3200 / 7, 0.194, 1.000 | 3723 / 36, 0.208, 0.986 | 368 / 33, 0.043, 0.990 | 443 / 69, 0.064, 0.670 (0.066) |
+  | (ii) barrel and endcap, 2Mu2E | 498 / 1, 0.095, 1.000 | 714 / 7, 0.111, 1.000 | 970 / 7, 0.120, 0.986 | 1257 / 22, 0.150, 0.689 (0.149) |
+  | (iii) Lxy slices, 2Mu2E | 985 / 7, 0.076, 0.998 (0.077) | 730 / 32, 0.063, 0.982 (0.067) | 313 / 29, 0.042, 0.980 | 315 / 51, 0.060, 0.651 (0.061) |
+  | (iv) the three sample sets | 23,687 / 2, 0.157, 1.000 | 28,785 / 14, 0.195, 1.000 | 270 / 13, 0.008, 0.992 | 674 / 36, 0.017, 0.748 |
+
+  At fixed angle the spread of f_inv between the sample sets falls from 0.157 to 0.008 (on
+  0.992 of 121,807 LJs), between mass points from 0.194 to 0.043 and between Lxy slices from
+  0.076 to 0.042. In no grouping is the chi2 consistent with one f_inv per cell (in this table
+  at best about 6 per degree of freedom, 315 for 51 for the Lxy slices at fixed angle x
+  distance; with angle_eff x distance, 306 for 71 between the mass points). Barrel and endcap
+  do not come together at fixed angle: the spread grows from 0.095 to 0.120. Adding the
+  distance bin to the angle does not lower the spread in any grouping.
+
+- Binned descriptions of f_inv ranked by binomial deviance (`invalid_fit_deviance.csv`; the same
+  LJs per row: P(set) at 15 cm or less, none excluded for a missing L; number of bins in
+  brackets):
+
+  | description | 2Mu2E (25,368) | wide-pair (11,563) | 4Mu (84,876) | pooled (121,807) |
+  |---|---|---|---|---|
+  | one bin | 32,412 (1) | 2510 (1) | 20,371 (1) | 73,871 (1) |
+  | distance | 26,158 (7) | 2172 (7) | 17,400 (7) | 69,347 (7) |
+  | angle | 22,180 (9) | 1366 (9) | 12,733 (9) | 36,507 (9) |
+  | L | 22,440 (8) | 1336 (8) | 12,541 (8) | 38,568 (8) |
+  | L x distance | 17,037 (54) | 1044 (52) | 9957 (55) | 32,168 (56) |
+  | angle x distance | 15,737 (57) | 1041 (54) | 9877 (61) | 27,358 (63) |
+  | angle_eff | 21,433 (9) | 1294 (9) | 11,552 (9) | 34,510 (9) |
+  | angle_eff x distance | 14,871 (59) | 974 (54) | 9014 (61) | 25,256 (63) |
+
+  Of the descriptions without angle_eff, angle x distance has the lowest deviance in every set
+  and pooled, L x distance the next; in the wide-pair set the two are level once the bins are
+  counted (1041 with 54 bins against 1044 with 52). Alone, L ranks above the angle in the
+  wide-pair set and 4Mu and below it in 2Mu2E. Pooled over the three sets
+  the angle loses 227 in deviance against the sum of the per-set fits (36,507 against 36,279), L
+  2251 (38,568 against 36,317) and the distance 23,618. The angle is the closest of the three
+  to one description for all sets, and 227 for the 18 extra parameters of the per-set fits is
+  still far from agreement. This compares descriptions of f_inv; it does not establish which
+  branch of the fitter fails.
+
+- angle_eff, the test described above (`invalid_fit_tests.csv`, `invalid_fit_universality.csv`,
+  `invalid_fit_deviance.csv`, `invalid_fit_sin_theta.csv`). It describes f_inv better than the
+  angle in every set (deviance above; pooled it loses 231 against the per-set fits, the angle
+  227) and with the distance as well. Standardised to the sixteen samples' fractions per
+  angle_eff bin, the wide-pair set is at 0.72 +- 0.07 of the prediction and 4Mu at 0.97 +-
+  0.11, but bin by bin 4Mu is off in both directions (z +14.1 in [0.01, 0.03), -2.8 in [1e-3,
+  3e-3)). At fixed angle_eff the endcap is below the barrel by 0.138 (z -19.6) against 0.226
+  without it on the same LJs (kept 0.984), and by 0.193 (z -23.0) against 0.280 at fixed
+  angle_eff x coarse distance (kept 0.712); at fixed angle it was 0.244. The barrel-endcap
+  spread at fixed angle_eff is 0.053 (chi2 394 for 7 ndf; 0.120 and 970 at fixed angle), 0.096
+  with the distance bin (0.150). Between mass points it is 0.032 (0.043 at fixed angle),
+  between Lxy slices 0.042 (0.042), between sample sets 0.009 (0.008); with the distance bin
+  0.043, 0.059 and 0.007 (0.064, 0.060, 0.017). (a) and (d) do not get worse: (a) +0.0075 (z
+  0.95) on 0.793, (d) class A +0.0001 (z 0.15), class D -0.017 (z -2.59). (b) is a little
+  larger at fixed angle_eff alone, -0.063 (z -5.29) against -0.049 at fixed angle, and still
+  removed with the coarse distance, +0.006 (z 0.44). Inside each region (P(2Mu2E), quintiles of
+  sin(theta_pair), last against first): in the barrel (sin(theta_pair) 0.68 to 1.00) f_inv
+  rises by +0.029 +- 0.008 at fixed angle bin and +0.039 +- 0.008 at fixed angle bin x coarse
+  distance. In the endcap (0.19 to 0.56, a sixth of the barrel's LJs) the same tests give
+  -0.023 +- 0.020 and +0.018 +- 0.028: no rise is seen, and one of the barrel's size is 2.4
+  sigma away at fixed angle and 0.7 sigma away with the coarse distance (errors taken as the
+  weighted difference divided by the z of the test).
+
+- The cut pairs and the global minimum (`T7_global_minimum_cut_pairs.csv`, all LJs whose
+  leading pair is DSA-DSA, no vertex and emulated distance above 15 cm): the global minimum of
+  the two helices inside the bounds is below 15 cm for 647 of 946 (2Mu2E), 1040 of 1189
+  (wide-pair) and 9004 of 10,287 (4Mu), and below 1 cm for 55, 494 and 3055 of them; in the
+  class A LJs of (d) below 15 cm for 1527 of 1811 (narrow) and 577 of 613 (wide). The medians
+  are 11.2, 2.3, 3.9, 5.3 and 3.8 cm, against median TTMD distances of 27.7, 27.4, 24.4, 19.9
+  and 21.1 cm. For the pairs with a stored vertex (`T7_stored_dca_vs_global_minimum.csv`) the
+  stored dca exceeds the global minimum by more than 1 cm for 2797 of 17,983 (2Mu2E), 2334 of
+  12,208 (wide-pair) and 18,801 of 89,453 (4Mu): never below a stored dca of 1 cm, and for 344
+  of 351, 576 of 606 and 5893 of 6233 in [10, 15) cm. For 63, 112 and 749 of them the stored
+  dca is more than 0.1 cm below the bounded global minimum, so away from the first Newton path
+  that minimum is not a lower bound on TTMD's distance (the reason was not looked into).
+
+- Where the global minimum lies (`T7_global_minimum_location.csv`): the transverse radius of
+  the midpoint of the two closest points against the generated Lxy of the matched dark photon.
+  For the pairs with a stored vertex (the control) the median difference is 8.2 cm in the
+  wide-pair set and 8.7 cm in 4Mu (0.78 and 0.76 within 20 cm), and 30.3 cm in the sixteen
+  2Mu2E samples (0.39 within 20 cm), where 0.73 of the pairs of P open by less than 0.03 rad.
+  For the cut pairs:
+
+  | set | cut pairs with global minimum | n | median difference (cm) | within 20 cm | beyond 100 cm | at r > 300 cm | TTMD crossing point: median (cm), within 20 cm |
+  |---|---|---|---|---|---|---|---|
+  | 2Mu2E | < 15 cm | 647 | 143 | 0.114 | 0.629 | 0.340 | 34, 0.365 |
+  | 2Mu2E | >= 15 cm | 299 | 321 | 0.010 | 0.953 | 0.806 | 40, 0.301 |
+  | wide-pair | < 15 cm | 1040 | 13.8 | 0.629 | 0.041 | 0.038 | 82, 0.137 |
+  | wide-pair | >= 15 cm | 149 | 108 | 0.040 | 0.517 | 0.362 | 20, 0.497 |
+  | 4Mu | < 15 cm | 9004 | 14.1 | 0.620 | 0.037 | 0.045 | 66, 0.140 |
+  | 4Mu | >= 15 cm | 1283 | 80 | 0.125 | 0.409 | 0.295 | 31, 0.392 |
+
+  The TTMD crossing point of the control pairs is a median 10.1 and 11.0 cm from the generated
+  radius in the wide-pair set and 4Mu, and 33.7 cm in the sixteen 2Mu2E samples. So in the
+  wide-pair set and 4Mu the cut pairs whose helices come within 15 cm do so at a radius a
+  median 14 cm from the generated decay radius (control 8 to 9 cm; 0.63 and 0.62 within 20 cm
+  against 0.78 and 0.76), while the point where TTMD ended is 66 to 82 cm from it in radius. In
+  the sixteen 2Mu2E samples it is the other way round: the radius of TTMD's point is as close
+  to the decay radius as for the pairs with a vertex (34 against 34 cm), and the global minimum
+  lies elsewhere, a third of the time beyond r = 300 cm.
+
+**What is and is not explained**
+
+- In the sixteen 2Mu2E samples 9% of the DSA-DSA LJs without a vertex are cut at 15 cm and 91%
+  have an invalid fit;
+  in the wide-pair 2Mu2E and 4Mu sets at the same mass points the shares are reversed (0.686 and
+  0.741 cut, in P). Patterns (a) to (c) are differences in f_inv (term_finv carries the
+  difference). Pattern (d) in class A, the pairs matched to both daughters, is a difference in
+  s15 (term_s15 +0.053), against a lower f_inv in the wide bin. In class D it is not one
+  pattern: the excess of the wide bin is in the same-charge pairs only, and opposite-charge
+  class D pairs lose the vertex less often in the wide bin (0.193 against 0.326).
+- f_inv follows the opening angle at the crossing point: 0.6 to 0.77 below 3 mrad and 0.006 or
+  less above 0.1 rad in every set. At fixed angle the spread of f_inv between the three sample
+  sets falls from 0.157 to 0.008, so most of the difference between the sixteen 2Mu2E samples
+  (0.337) and the wide-pair and 4Mu sets (0.023, 0.026) goes with the angles of their pairs.
+  Not all of it: at the same angles the wide-pair and 4Mu pairs fail 0.57 +- 0.04 and 0.69 +-
+  0.04 times as often as the sixteen samples' fractions predict (chi2 270 for 13 ndf).
+- (b) is explained by the angle and the distance: at fixed angle bin and coarse distance the
+  outer-inner difference is +0.013 (z 1.02) against -0.195 on the same LJs, on 0.794 of the LJs;
+  at fixed angle alone it falls from -0.226 to -0.049 (z -4.09) on 0.979.
+- (a) is reduced, and whether anything remains is not established. At fixed angle it falls
+  from +0.041 to +0.009 (z 1.13) on 0.803 of the LJs (at least 5 per group in a cell); with at
+  least 30 per group it is +0.023 (z 2.65) against +0.030 on 0.337, and at fixed angle and
+  coarse distance +0.040 (z 2.36) against +0.064 on 0.232. The two results above 2 sigma are
+  on a third and a quarter of the LJs, among 164 test rows. Between the 8 mass points
+  the spread at fixed angle is 0.043.
+- (c) is not explained by the angle, the distance or any track-quality variable: at fixed angle
+  the endcap is below the barrel by 0.244 (z -31.2; -0.230 without the angle on the same LJs,
+  kept 0.982), and the endcap has more cut pairs as well (larger s15 in every Lxy slice).
+  angle_eff, derived from the fitter's loop condition, reduces it (-0.138, z -19.6) but does
+  not reconcile barrel and endcap. f_inv rises with sin(theta_pair) inside the barrel; inside
+  the endcap the test has too few LJs to show or to exclude the same rise. (c) stays
+  unexplained, and the failing branch is not observed.
+- (d): in class A the wide bin's extra no-vertex LJs are cut pairs (term_s15). The lower f_inv
+  of the wide bin is mostly the angle: class A -0.002 (z -2.10) at fixed angle against -0.011
+  on 0.989 of the LJs, class D (both charges) -0.036 (z -4.77) against -0.098 on 0.912; not
+  removed in class D.
+- In the wide-pair set and 4Mu the 15 cm cut removes many pairs whose helices do come close.
+  For 0.875 of the cut pairs in both sets the global minimum is below 15 cm, at a radius a
+  median 14 cm from the generated decay radius (8 to 9 cm for the pairs with a vertex), while
+  TTMD, starting from the reference points, ends 66 to 82 cm from it in radius and returns more
+  than 15 cm. Counting only minima within 20 cm of the decay radius, that is about half of the
+  cut pairs (0.875 x 0.62 to 0.63). The other 0.125 are more than 15 cm apart everywhere inside
+  the bounds. Only radii are compared, so the distance between the two tracks at the decay
+  itself is not measured. For the cut pairs of the wide bin in (d), class A, the global minimum
+  is below 15 cm for 577 of 613; where it lies was not computed for that group. In the sixteen
+  2Mu2E samples the statement does not hold: the helices of 0.684 of the 946 cut pairs also
+  come within 15 cm, but at a radius a median 143 cm from the generated one, and the radius of
+  TTMD's own point is as close to the decay radius there as for the pairs with a vertex. A
+  close approach that far from the decay says nothing about a common vertex.
+
+**Limits**
+
+- DSA-DSA LJs only. Pairs with a PF leg are not reproduced, because the records hold the inner
+  track, not the combined or standalone track the producer uses. LJs with three or more muons
+  are not tested.
+- The Kalman fit is not emulated: "invalid fit" means a pair without a stored vertex whose
+  emulated TTMD distance is at most 15 cm. Which condition of the fitter (update step, NaN,
+  bounds, iteration count) fails is not established; the angle and L are descriptions of where
+  it fails, not of why.
+- The angle is taken at the TTMD crossing point, a proxy whose distance from the stored vertex
+  was measured only by the direct NanoAOD read, not in this repository (median 2.50 cm, 37.0 cm
+  on the path that keeps the transverse points). The fitter's linearization point is the
+  crossing point of the impact-point states, not of the reference-point states used here.
+- The angle was chosen after looking at four candidates and 13 track-quality variables; the
+  angle bins were fixed before the tests of this section and were not tuned. That, like the
+  order in which L and angle_eff were specified, is recorded nowhere but in this text.
+- L uses the beam-spot dxy and dz errors (dxyBSErr, dzBSErr), the only reference-point errors
+  in the records.
+- The parabolic parametrisation stands in for the producer's volume-based field map (with a
+  uniform 3.8 T field the DSA-DSA pairs within 0.1 cm fall from 0.999 to 0.992 in 2Mu2E and from
+  0.994 to 0.952 in 4Mu, `validation_dca.csv`).
+- The emulation is checked against the producer only on pairs with a stored vertex (stored dca
+  at most 15 cm); for the pairs without one the emulated distance is the same calculation on the
+  same kind of input.
+- The position of the global minimum is compared with the generated decay in radius only: the
+  records hold the dark photon's Lxy, eta and phi, not its decay vertex. They hold no position
+  of the stored vertex either, so the control rows use the same two points (global-minimum
+  midpoint, TTMD crossing point) for the pairs with a stored vertex.
+- Signal MC only; nothing here is a statement about data.
+
+| file | what it holds |
+|---|---|
+| `validation_dca.csv` | Emulated against stored dca for the pairs with a stored vertex, per group and stored-dca bin, for the parabolic and a uniform field. |
+| `table15_check.csv` | LJ and no-vertex counts by content and charge (table 15). |
+| `T1_novtx_vs_distance.csv`, `T1_distance_shares_by_point.csv` | P(2Mu2E): no-vertex fraction against the distance, all and per mass point; distance composition per mass point. |
+| `T2_condition_share.csv` | Per sample set, share of the no-vertex LJs of P(set) with distance > 15 cm, by Lxy slice, region and mass point. |
+| `T2_same_mass_points.csv` | All LJs whose leading pair is DSA-DSA, per sample set and sample: no-vertex LJs and those with distance > 15 cm. |
+| `decomposition_cut_vs_invalid_fit.csv` | s15 and f_inv of the two groups of (a) to (d), and the split of the difference. |
+| `invalid_fit_tests.csv` | Tests on f_inv for (a) to (d) with each added cell variable. |
+| `T4_standardised.csv` | P(2Mu2E): no-vertex fraction per region and Lxy slice, observed and standardised to the pooled distance composition. |
+| `invalid_fit_universality.csv` | Consistency of f_inv across mass points, regions, Lxy slices and sample sets, per cell choice. |
+| `invalid_fit_candidates.csv` | Per sample set, P(set) and all LJs, distance at most 15 cm: f_inv against crossing r and abs(z), the bounds, the TTMD path, the angle, dR at the reference points, the distance. |
+| `invalid_fit_angle_x_distance.csv` | The same against angle x distance (fine and coarse distance bins). |
+| `invalid_fit_deviance.csv` | Binomial deviance of the binned descriptions of f_inv. |
+| `invalid_fit_angle_standardised.csv` | P(set), distance at most 15 cm: f_inv per angle and angle_eff bin and set with the z against the sixteen 2Mu2E samples, and each set's f_inv against the one predicted from the sixteen samples' fractions per bin. |
+| `invalid_fit_sin_theta.csv` | P(2Mu2E), distance at most 15 cm, barrel and endcap: f_inv in quintiles of sin(theta_pair), and the last quintile against the first with no cells, at fixed angle bin and at fixed angle bin x coarse distance. |
+| `edge_1cm.csv` | No-vertex fraction in 1 cm bins of the distance from 10 to 20 cm. |
+| `T7_global_minimum_cut_pairs.csv`, `T7_stored_dca_vs_global_minimum.csv`, `T7_minimiser_stability.csv` | Global minimum distance of the cut pairs; stored dca against it; stability of the minimiser. |
+| `T7_global_minimum_location.csv` | Radius of the global-minimum midpoint and of the TTMD crossing point against the generated Lxy, for the cut pairs (all, global minimum below and above 15 cm) and for the pairs with a stored vertex. |
+| `summary.txt` | The checks and the main rows of every table. |
 
 ### Slides (`slides/`)
 

@@ -1,0 +1,633 @@
+files 2Mu2E: 32; LJs 85438
+pv check 2Mu2E: two-muon LJs 80772; (pv_n > 0) == (vtx_chi2 >= 0) in 80772; pv_n > 1 in 0; stored isValid != 1 in 0
+status 2Mu2E DSA-DSA pairs with a stored vertex 17983: stored dcaStatus 1 17983, emulated status 1 17983, emulated > 15 cm 0; without a stored vertex 9783: emulated status 0 0, status 1 and > 15 cm 946, status 1 and <= 15 cm 8837
+path 2Mu2E DSA-DSA (1 Newton from the states, 2 Newton qual 0.1, 3 Newton from the transverse points, 4 transverse points kept): {1: 2726, 3: 18555, 4: 6485}
+join 2Mu2E: gen-matched 85355, without analyze.py columns 0
+population P(2Mu2E): 26167, no vertex 9341, emulated distance missing 0
+files 2Mu2E wide-pair: 19; LJs 34325
+pv check 2Mu2E wide-pair: two-muon LJs 30225; (pv_n > 0) == (vtx_chi2 >= 0) in 30225; pv_n > 1 in 0; stored isValid != 1 in 0
+status 2Mu2E wide-pair DSA-DSA pairs with a stored vertex 12208: stored dcaStatus 1 12208, emulated status 1 12208, emulated > 15 cm 3; without a stored vertex 1470: emulated status 0 0, status 1 and > 15 cm 1189, status 1 and <= 15 cm 281
+path 2Mu2E wide-pair DSA-DSA (1 Newton from the states, 2 Newton qual 0.1, 3 Newton from the transverse points, 4 transverse points kept): {1: 564, 3: 9686, 4: 3428}
+join 2Mu2E wide-pair: gen-matched 34316, without analyze.py columns 0
+population P(2Mu2E wide-pair): 12137, no vertex 837, emulated distance missing 0
+files 4Mu: 23; LJs 330322
+pv check 4Mu: two-muon LJs 300433; (pv_n > 0) == (vtx_chi2 >= 0) in 300433; pv_n > 1 in 0; stored isValid != 1 in 0
+status 4Mu DSA-DSA pairs with a stored vertex 89453: stored dcaStatus 1 89453, emulated status 1 89453, emulated > 15 cm 13; without a stored vertex 12664: emulated status 0 0, status 1 and > 15 cm 10287, status 1 and <= 15 cm 2377
+path 4Mu DSA-DSA (1 Newton from the states, 2 Newton qual 0.1, 3 Newton from the transverse points, 4 transverse points kept): {1: 4344, 3: 69450, 4: 28323}
+join 4Mu: gen-matched 330272, without analyze.py columns 0
+population P(4Mu): 91174, no vertex 8485, emulated distance missing 0
+samples in both 2Mu2E record sets: ['2Mu2E_100GeV_5p0GeV_400mm']; LJs of P in them (counted in both sets in universality (iv) and the pooled deviance, not de-duplicated): 2Mu2E 307 (distance <= 15 cm 277), 2Mu2E wide-pair 307 (distance <= 15 cm 277)
+table 15 opposite-charge n: PF-PF 35444, PF-DSA 16256, DSA-DSA 26167
+T6 population: class A/D LJs at Lxy >= 100, narrow+wide 68043; two-muon DSA-DSA 56916; by class and bin {('A', 'narrow'): 46996, ('A', 'wide'): 6662, ('D', 'narrow'): 1588, ('D', 'wide'): 1670}
+emulated against stored dca, pairs with a stored vertex (all bins; worst stored-dca bin among those with >= 20 pairs)
+                                                                             n  within_0p1  within_10pc  low_gt1  high_gt1  failed  worst_low  worst_high
+group                                                    field                                                                                           
+2Mu2E all LJs, leading pair DSA-DSA                      parabolic       17983       0.999        0.995    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T   17983       0.992        0.954    0.000     0.000     0.0      0.003       0.001
+2Mu2E all LJs, leading pair PF-DSA                       parabolic       12933       0.354        0.346    0.081     0.253     0.0      0.295       0.415
+                                                         uniform 3.8 T   12933       0.354        0.345    0.082     0.254     0.0      0.295       0.416
+2Mu2E all LJs, leading pair PF-PF                        parabolic       33616       0.838        0.142    0.013     0.024     0.0      0.444       0.304
+                                                         uniform 3.8 T   33616       0.838        0.142    0.013     0.024     0.0      0.444       0.304
+2Mu2E all LJs, leading pair PF-DSA, PF legs tracker-only parabolic          28       1.000        1.000    0.000     0.000     0.0        NaN         NaN
+                                                         uniform 3.8 T      28       1.000        1.000    0.000     0.000     0.0        NaN         NaN
+2Mu2E all LJs, leading pair PF-PF, PF legs tracker-only  parabolic          51       1.000        0.824    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T      51       1.000        0.824    0.000     0.000     0.0      0.000       0.000
+4Mu all LJs, leading pair DSA-DSA                        parabolic       89453       0.994        0.986    0.001     0.001     0.0      0.003       0.001
+                                                         uniform 3.8 T   89453       0.952        0.896    0.003     0.002     0.0      0.009       0.004
+4Mu all LJs, leading pair PF-DSA                         parabolic       47817       0.430        0.483    0.080     0.236     0.0      0.212       0.394
+                                                         uniform 3.8 T   47817       0.429        0.483    0.080     0.236     0.0      0.212       0.394
+4Mu all LJs, leading pair PF-PF                          parabolic      165963       0.875        0.304    0.013     0.016     0.0      0.339       0.234
+                                                         uniform 3.8 T  165963       0.875        0.279    0.013     0.016     0.0      0.339       0.234
+4Mu all LJs, leading pair PF-DSA, PF legs tracker-only   parabolic         339       1.000        0.997    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T     339       1.000        0.979    0.000     0.000     0.0      0.000       0.000
+4Mu all LJs, leading pair PF-PF, PF legs tracker-only    parabolic          77       1.000        0.896    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T      77       1.000        0.883    0.000     0.000     0.0      0.000       0.000
+2Mu2E gen-matched DSA-DSA opposite                       parabolic       16826       0.999        0.995    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T   16826       0.994        0.953    0.000     0.000     0.0      0.002       0.001
+2Mu2E gen-matched DSA-DSA both charges                   parabolic       17319       0.999        0.995    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T   17319       0.994        0.954    0.000     0.000     0.0      0.002       0.001
+2Mu2E gen-matched DSA-DSA opposite, barrel               parabolic       13599       1.000        0.996    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T   13599       0.995        0.949    0.000     0.000     0.0      0.001       0.000
+2Mu2E gen-matched DSA-DSA opposite, endcap               parabolic        2850       0.996        0.994    0.000     0.000     0.0      0.000       0.002
+                                                         uniform 3.8 T    2850       0.991        0.973    0.001     0.001     0.0      0.004       0.005
+2Mu2E gen-matched DSA-DSA opposite, (500, 5)             parabolic        5539       0.999        0.997    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T    5539       0.990        0.945    0.001     0.000     0.0      0.003       0.001
+2Mu2E gen-matched DSA-DSA opposite, (1000, 5)            parabolic        2871       1.000        0.996    0.000     0.000     0.0      0.000       0.000
+                                                         uniform 3.8 T    2871       0.997        0.967    0.000     0.001     0.0      0.000       0.003
+4Mu gen-matched DSA-DSA opposite, barrel                 parabolic       51795       0.996        0.988    0.000     0.000     0.0      0.001       0.001
+                                                         uniform 3.8 T   51795       0.947        0.879    0.003     0.002     0.0      0.007       0.006
+4Mu gen-matched DSA-DSA opposite, endcap                 parabolic       21498       0.991        0.986    0.001     0.001     0.0      0.009       0.002
+                                                         uniform 3.8 T   21498       0.967        0.926    0.003     0.001     0.0      0.025       0.006
+4Mu class A narrow, all contents                         parabolic      204667       0.888        0.561    0.014     0.018     0.0      0.064       0.050
+                                                         uniform 3.8 T  204667       0.875        0.520    0.014     0.019     0.0      0.067       0.050
+4Mu class A wide, all contents                           parabolic       52334       0.918        0.501    0.005     0.007     0.0      0.042       0.030
+                                                         uniform 3.8 T   52334       0.908        0.443    0.006     0.008     0.0      0.045       0.032
+T6 population, class A narrow                            parabolic       44181       0.994        0.984    0.001     0.000     0.0      0.003       0.001
+                                                         uniform 3.8 T   44181       0.939        0.849    0.004     0.003     0.0      0.014       0.005
+T6 population, class A wide                              parabolic        6018       0.979        0.962    0.001     0.000     0.0      0.010       0.002
+                                                         uniform 3.8 T    6018       0.903        0.836    0.003     0.003     0.0      0.026       0.005
+T6 population, class D narrow                            parabolic        1037       0.958        0.954    0.004     0.007     0.0      0.029       0.029
+                                                         uniform 3.8 T    1037       0.862        0.844    0.010     0.007     0.0      0.044       0.023
+T6 population, class D wide                              parabolic         974       0.935        0.894    0.002     0.006     0.0      0.011       0.011
+                                                         uniform 3.8 T     974       0.881        0.813    0.004     0.002     0.0      0.022       0.011
+2Mu2E wide-pair all LJs, leading pair DSA-DSA            parabolic       12208       0.997        0.990    0.000     0.001     0.0      0.002       0.002
+                                                         uniform 3.8 T   12208       0.974        0.903    0.002     0.002     0.0      0.007       0.003
+T1 (all points)
+  dist_cm    n    k      f    err
+  [0,0.1) 4055    9 0.0022 0.0007
+[0.1,0.5) 6071  906 0.1492 0.0046
+  [0.5,1) 4078 1833 0.4495 0.0078
+    [1,2) 4491 2641 0.5881 0.0073
+    [2,5) 4382 2143 0.4890 0.0076
+   [5,10) 1731  757 0.4373 0.0119
+  [10,15)  560  253 0.4518 0.0210
+ [15,inf)  799  799 1.0000 0.0000
+T2 (all)
+            set  by value  n_novtx  n_gt15  share_gt15    err
+          2Mu2E all   all     9341     799      0.0855 0.0029
+2Mu2E wide-pair all   all      837     574      0.6858 0.0160
+            4Mu all   all     8485    6291      0.7414 0.0048
+T2 same mass points (all LJs)
+            set mass   mzd    ctau   n_lj  n_novtx  n_gt15  share_gt15   err
+          2Mu2E  100   1.2   0.096      1        0       0         NaN   NaN
+          2Mu2E  100   1.2    96.0    214       29       8       0.276 0.083
+          2Mu2E  100   5.0   400.0    385       77      77       1.000 0.000
+          2Mu2E  500  0.25   0.004     74       37       8       0.216 0.068
+          2Mu2E  500  0.25     4.0   7042     3607     189       0.052 0.004
+          2Mu2E  500   1.2   0.019     20       14       2       0.143 0.094
+          2Mu2E  500   1.2    19.0   5946     2614     213       0.081 0.005
+          2Mu2E  500   5.0    0.08      5        1       1       1.000 0.000
+          2Mu2E  500   5.0    80.0   6731      917     211       0.230 0.014
+          2Mu2E 1000  0.25   0.002     49       21       3       0.143 0.076
+          2Mu2E 1000  0.25     2.0    581      290      18       0.062 0.014
+          2Mu2E 1000   1.2  0.0096     23       13       0       0.000 0.000
+          2Mu2E 1000   1.2     9.6   2697     1259      80       0.064 0.007
+          2Mu2E 1000   5.0    0.04      3        0       0         NaN   NaN
+          2Mu2E 1000   5.0    40.0   3995      904     136       0.150 0.012
+          2Mu2E  all   all     all  27766     9783     946       0.097 0.003
+2Mu2E wide-pair  100   5.0    40.0    293       69      68       0.986 0.014
+2Mu2E wide-pair  100   5.0   200.0    542      119     117       0.983 0.012
+2Mu2E wide-pair  100   5.0   400.0    385       77      77       1.000 0.000
+2Mu2E wide-pair  150   5.0    27.0   1407      178     157       0.882 0.024
+2Mu2E wide-pair  150   5.0   130.0   2742      278     235       0.845 0.022
+2Mu2E wide-pair  150   5.0   270.0   1993      209     180       0.861 0.024
+2Mu2E wide-pair  200   5.0    20.0   1121      114      74       0.649 0.045
+2Mu2E wide-pair  200   5.0   100.0   3084      250     175       0.700 0.029
+2Mu2E wide-pair  200   5.0   200.0   2111      176     106       0.602 0.037
+2Mu2E wide-pair  all   all     all  13678     1470    1189       0.809 0.010
+            4Mu  100   5.0    40.0   2434      496     484       0.976 0.007
+            4Mu  100   5.0   200.0   4868      846     811       0.959 0.007
+            4Mu  100   5.0   400.0   3239      582     558       0.959 0.008
+            4Mu  150   5.0    27.0  10296     1595    1378       0.864 0.009
+            4Mu  150   5.0   130.0  19437     2360    1969       0.834 0.008
+            4Mu  150   5.0   270.0  10612     1117     952       0.852 0.011
+            4Mu  200   5.0    20.0  10834     1499    1126       0.751 0.011
+            4Mu  200   5.0   100.0  21127     2287    1639       0.717 0.009
+            4Mu  200   5.0   200.0  19270     1882    1370       0.728 0.010
+            4Mu  all   all     all 102117    12664   10287       0.812 0.003
+decomposition (no-vertex fraction = s15 + (1 - s15) f_inv)
+                    comparison              detail   n_a  s15_a  f_inv_a    f_a  n_b  s15_b  f_inv_b    f_b    diff  term_s15  term_finv  residual
+     (a) (1000, 5) vs (500, 5)            opposite  6399 0.0275   0.1099 0.1344 3735 0.0305   0.2071 0.2313  0.0969    0.0025     0.0944    0.0000
+     (a) (1000, 5) vs (500, 5)        both charges  6519 0.0291   0.1082 0.1342 3890 0.0319   0.2010 0.2265  0.0923    0.0023     0.0899    0.0000
+            (b) outer vs inner            opposite  1357 0.0656   0.4298 0.4672 5999 0.0220   0.2006 0.2182 -0.2490   -0.0298    -0.2192   -0.0000
+          (c) endcap vs barrel Lxy < 200 cm pooled 19933 0.0263   0.3959 0.4118 3422 0.0552   0.1779 0.2233 -0.1885    0.0206    -0.2091    0.0000
+          (c) endcap vs barrel          Lxy [0,30)   165 0.0909   0.5467 0.5879   82 0.1341   0.2394 0.3415 -0.2464    0.0262    -0.2727   -0.0000
+          (c) endcap vs barrel         Lxy [30,60)   792 0.0429   0.5053 0.5265  245 0.0776   0.2257 0.2857 -0.2408    0.0220    -0.2628   -0.0000
+          (c) endcap vs barrel        Lxy [60,110) 10191 0.0285   0.4309 0.4471 1774 0.0536   0.1995 0.2424 -0.2047    0.0172    -0.2219   -0.0000
+          (c) endcap vs barrel       Lxy [110,150)  5360 0.0235   0.3846 0.3991  890 0.0449   0.1506 0.1888 -0.2103    0.0157    -0.2260    0.0000
+          (c) endcap vs barrel       Lxy [150,200)  3425 0.0175   0.2790 0.2917  431 0.0557   0.1081 0.1578 -0.1339    0.0308    -0.1647    0.0000
+(d) 4Mu class A wide vs narrow        both charges 46996 0.0386   0.0222 0.0599 6662 0.0922   0.0051 0.0967  0.0368    0.0528    -0.0160   -0.0001
+(d) 4Mu class A wide vs narrow            opposite 46996 0.0386   0.0222 0.0599 6662 0.0922   0.0051 0.0967  0.0368    0.0528    -0.0160   -0.0001
+(d) 4Mu class D wide vs narrow        both charges  1588 0.2601   0.1191 0.3470 1670 0.4102   0.0132 0.4168  0.0698    0.1402    -0.0704    0.0001
+(d) 4Mu class D wide vs narrow            opposite  1208 0.2276   0.1286 0.3262  889 0.1789   0.0178 0.1935 -0.1327   -0.0452    -0.0883    0.0008
+invalid-fit tests (f_inv, distance <= 15 cm)
+                          test       charge  nmin                    cells_of  cells   n_a  n_b   kept    f_a    f_b   wdiff        z  base_wdiff   base_z
+     (a) (1000, 5) vs (500, 5)     opposite    30                        none     17  2699 3136 0.5927 0.1375 0.2197  0.0544   5.0320         NaN      NaN
+     (a) (1000, 5) vs (500, 5)     opposite    30                    distance     15   646  856 0.1526 0.1687 0.2126  0.0358   1.9140      0.0377   1.8670
+     (a) (1000, 5) vs (500, 5)     opposite    30                       angle     24  1512 1809 0.3374 0.0443 0.0790  0.0229   2.6546      0.0301   3.5304
+     (a) (1000, 5) vs (500, 5)     opposite    30     angle x coarse distance      0     0    0 0.0000    NaN    NaN     NaN      NaN         NaN      NaN
+     (a) (1000, 5) vs (500, 5)     opposite    30                   angle_eff     17  1434 1430 0.2909 0.0370 0.0615  0.0197   2.3900      0.0227   2.7781
+     (a) (1000, 5) vs (500, 5)     opposite    30 angle_eff x coarse distance      2    71   70 0.0143 0.1408 0.1429  0.0008   0.0137      0.0008   0.0137
+     (a) (1000, 5) vs (500, 5)     opposite     5                        none     34  5780 3473 0.9400 0.1166 0.2070  0.0400   4.2264         NaN      NaN
+     (a) (1000, 5) vs (500, 5)     opposite     5                    distance     92  2713 2441 0.5236 0.1681 0.2679  0.0614   5.0219      0.0650   5.0541
+     (a) (1000, 5) vs (500, 5)     opposite     5                       angle     90  4771 3135 0.8031 0.0801 0.1882  0.0090   1.1258      0.0413   4.4082
+     (a) (1000, 5) vs (500, 5)     opposite     5     angle x coarse distance     69  1195 1084 0.2315 0.1623 0.2869  0.0405   2.3555      0.0642   3.3357
+     (a) (1000, 5) vs (500, 5)     opposite     5                   angle_eff     78  4698 3104 0.7926 0.0771 0.1798  0.0075   0.9529      0.0361   3.9010
+     (a) (1000, 5) vs (500, 5)     opposite     5 angle_eff x coarse distance     69  1698 1025 0.2766 0.1390 0.2839  0.0288   1.8602      0.0641   3.5558
+     (a) (1000, 5) vs (500, 5) both charges    30                        none     18  3074 3279 0.6293 0.1340 0.2132  0.0495   4.7357         NaN      NaN
+     (a) (1000, 5) vs (500, 5) both charges    30                    distance     16   701  912 0.1598 0.1669 0.2083  0.0358   1.9809      0.0335   1.7269
+     (a) (1000, 5) vs (500, 5) both charges    30                       angle     24  1539 1894 0.3401 0.0442 0.0776  0.0218   2.5834      0.0286   3.4201
+     (a) (1000, 5) vs (500, 5) both charges    30     angle x coarse distance      0     0    0 0.0000    NaN    NaN     NaN      NaN         NaN      NaN
+     (a) (1000, 5) vs (500, 5) both charges    30                   angle_eff     18  1491 1573 0.3035 0.0376 0.0585  0.0163   2.0675      0.0191   2.4464
+     (a) (1000, 5) vs (500, 5) both charges    30 angle_eff x coarse distance      2    73   73 0.0145 0.1370 0.1370 -0.0016  -0.0275     -0.0016  -0.0275
+     (a) (1000, 5) vs (500, 5) both charges     5                        none     34  5871 3602 0.9384 0.1150 0.2016  0.0367   3.9741         NaN      NaN
+     (a) (1000, 5) vs (500, 5) both charges     5                    distance     95  2817 2539 0.5306 0.1654 0.2627  0.0585   4.8931      0.0624   4.9621
+     (a) (1000, 5) vs (500, 5) both charges     5                       angle     91  4846 3258 0.8028 0.0792 0.1829  0.0070   0.8959      0.0375   4.1033
+     (a) (1000, 5) vs (500, 5) both charges     5     angle x coarse distance     70  1257 1126 0.2361 0.1567 0.2815  0.0407   2.4167      0.0631   3.3559
+     (a) (1000, 5) vs (500, 5) both charges     5                   angle_eff     78  4766 3224 0.7915 0.0762 0.1746  0.0060   0.7871      0.0326   3.6124
+     (a) (1000, 5) vs (500, 5) both charges     5 angle_eff x coarse distance     70  1726 1070 0.2770 0.1385 0.2757  0.0244   1.6031      0.0572   3.2400
+            (b) outer vs inner     opposite     5                        none      1  1268 5867 1.0000 0.4298 0.2006 -0.2292 -17.2945         NaN      NaN
+            (b) outer vs inner     opposite     5                    distance      7  1268 5867 1.0000 0.4298 0.2006 -0.1474 -10.5973     -0.2292 -17.2945
+            (b) outer vs inner     opposite     5                       angle      7  1262 5725 0.9793 0.4319 0.2056 -0.0492  -4.0888     -0.2263 -16.8823
+            (b) outer vs inner     opposite     5     angle x coarse distance     20  1191 4476 0.7943 0.4576 0.2630  0.0131   1.0167     -0.1946 -12.9787
+            (b) outer vs inner     opposite     5                   angle_eff      7  1245 5653 0.9668 0.4378 0.2082 -0.0627  -5.2905     -0.2295 -16.9397
+            (b) outer vs inner     opposite     5 angle_eff x coarse distance     19  1135 4133 0.7383 0.4775 0.2836  0.0057   0.4395     -0.1940 -12.3528
+          (c) endcap vs barrel     opposite     5                        none      5 19408 3233 1.0000 0.3959 0.1779 -0.2285 -24.9424         NaN      NaN
+          (c) endcap vs barrel     opposite     5                    distance     29 18035 3055 0.9315 0.4251 0.1882 -0.2467 -28.2280     -0.2529 -26.5900
+          (c) endcap vs barrel     opposite     5                       angle     29 19020 3205 0.9816 0.3975 0.1778 -0.2443 -31.2194     -0.2301 -25.0121
+          (c) endcap vs barrel     opposite     5     angle x coarse distance     61 14275 2619 0.7462 0.5105 0.2146 -0.2823 -34.3722     -0.3109 -29.6699
+          (c) endcap vs barrel     opposite     5                   angle_eff     31 19080 3189 0.9836 0.3942 0.1794 -0.1377 -19.5865     -0.2256 -24.4842
+          (c) endcap vs barrel     opposite     5 angle_eff x coarse distance     57 13863 2245 0.7115 0.5085 0.2477 -0.1929 -22.9766     -0.2804 -24.8968
+(d) 4Mu class A wide vs narrow both charges     5                        none      1 45181 6048 1.0000 0.0222 0.0051 -0.0171  -8.8744         NaN      NaN
+(d) 4Mu class A wide vs narrow both charges     5                    distance      7 45181 6048 1.0000 0.0222 0.0051 -0.0194  -9.8574     -0.0171  -8.8744
+(d) 4Mu class A wide vs narrow both charges     5                       angle      4 44733 5926 0.9889 0.0157 0.0042 -0.0023  -2.0993     -0.0115  -6.9790
+(d) 4Mu class A wide vs narrow both charges     5     angle x coarse distance      6 28268 2997 0.6103 0.0236 0.0083 -0.0044  -2.1732     -0.0152  -5.3885
+(d) 4Mu class A wide vs narrow both charges     5                   angle_eff      4 44811 5657 0.9851 0.0167 0.0048  0.0001   0.1454     -0.0119  -6.8699
+(d) 4Mu class A wide vs narrow both charges     5 angle_eff x coarse distance      6 41463 5654 0.9197 0.0171 0.0048 -0.0008  -0.8144     -0.0123  -7.0014
+(d) 4Mu class A wide vs narrow     opposite     5                        none      1 45181 6048 1.0000 0.0222 0.0051 -0.0171  -8.8744         NaN      NaN
+(d) 4Mu class A wide vs narrow     opposite     5                    distance      7 45181 6048 1.0000 0.0222 0.0051 -0.0194  -9.8574     -0.0171  -8.8744
+(d) 4Mu class A wide vs narrow     opposite     5                       angle      4 44733 5926 0.9889 0.0157 0.0042 -0.0023  -2.0993     -0.0115  -6.9790
+(d) 4Mu class A wide vs narrow     opposite     5     angle x coarse distance      6 28268 2997 0.6103 0.0236 0.0083 -0.0044  -2.1732     -0.0152  -5.3885
+(d) 4Mu class A wide vs narrow     opposite     5                   angle_eff      4 44811 5657 0.9851 0.0167 0.0048  0.0001   0.1454     -0.0119  -6.8699
+(d) 4Mu class A wide vs narrow     opposite     5 angle_eff x coarse distance      6 41463 5654 0.9197 0.0171 0.0048 -0.0008  -0.8144     -0.0123  -7.0014
+(d) 4Mu class D wide vs narrow both charges     5                        none      1  1175  985 1.0000 0.1191 0.0132 -0.1060  -9.5576         NaN      NaN
+(d) 4Mu class D wide vs narrow both charges     5                    distance      6  1032  786 0.8417 0.1357 0.0165 -0.1133  -8.8284     -0.1191  -9.0606
+(d) 4Mu class D wide vs narrow both charges     5                       angle      5  1136  835 0.9125 0.1136 0.0156 -0.0356  -4.7675     -0.0980  -8.3116
+(d) 4Mu class D wide vs narrow both charges     5     angle x coarse distance      6   612  430 0.4824 0.0931 0.0140 -0.0381  -3.5580     -0.0792  -5.2773
+(d) 4Mu class D wide vs narrow both charges     5                   angle_eff      4  1047  677 0.7981 0.0917 0.0177 -0.0172  -2.5936     -0.0740  -6.1874
+(d) 4Mu class D wide vs narrow both charges     5 angle_eff x coarse distance      4   595  357 0.4407 0.0538 0.0196 -0.0099  -1.2658     -0.0342  -2.5740
+(d) 4Mu class D wide vs narrow     opposite     5                        none      1   933  730 1.0000 0.1286 0.0178 -0.1108  -8.2646         NaN      NaN
+(d) 4Mu class D wide vs narrow     opposite     5                    distance      6   814  645 0.8773 0.1474 0.0202 -0.1195  -8.0871     -0.1273  -8.3846
+(d) 4Mu class D wide vs narrow     opposite     5                       angle      5   895  587 0.8912 0.1218 0.0221 -0.0270  -3.1003     -0.0996  -6.8234
+(d) 4Mu class D wide vs narrow     opposite     5     angle x coarse distance      5   447  339 0.4726 0.0962 0.0177 -0.0190  -1.9438     -0.0785  -4.5052
+(d) 4Mu class D wide vs narrow     opposite     5                   angle_eff      4   822  453 0.7667 0.1010 0.0265 -0.0177  -2.0537     -0.0745  -4.8453
+(d) 4Mu class D wide vs narrow     opposite     5 angle_eff x coarse distance      4   455  262 0.4311 0.0615 0.0267 -0.0096  -0.9518     -0.0348  -2.0822
+T4 standardised (barrel, endcap, all)
+region    lxy_cm     n    k     f  f_std  uncovered
+   all    [0,30)   257  129 0.502  0.347      0.000
+   all   [30,60)  1100  505 0.459  0.370      0.000
+   all  [60,110) 12229 5063 0.414  0.376      0.000
+   all [110,150)  6350 2329 0.367  0.372      0.000
+   all [150,200)  3901 1079 0.277  0.312      0.000
+   all [200,250)  1511  202 0.134  0.166      0.000
+   all [250,300)   587   28 0.048  0.061      0.000
+   all [300,350)   168    3 0.018  0.031      0.000
+   all [350,400)    50    2 0.040  0.031      0.021
+   all [400,500)    14    1 0.071  0.035      0.052
+barrel    [0,30)   165   97 0.588  0.426      0.000
+barrel   [30,60)   792  417 0.527  0.435      0.000
+barrel  [60,110) 10191 4556 0.447  0.412      0.000
+barrel [110,150)  5360 2139 0.399  0.408      0.000
+barrel [150,200)  3425  999 0.292  0.334      0.000
+barrel [200,250)  1342  177 0.132  0.169      0.000
+barrel [250,300)   530   24 0.045  0.059      0.000
+barrel [300,350)   151    3 0.020  0.031      0.000
+barrel [350,400)    43    1 0.023  0.033      0.088
+barrel [400,500)    14    1 0.071  0.035      0.052
+endcap    [0,30)    82   28 0.341  0.210      0.000
+endcap   [30,60)   245   70 0.286  0.220      0.000
+endcap  [60,110)  1774  430 0.242  0.203      0.000
+endcap [110,150)   890  168 0.189  0.181      0.000
+endcap [150,200)   431   68 0.158  0.148      0.000
+endcap [200,250)   153   24 0.157  0.142      0.000
+endcap [250,300)    48    2 0.042  0.086      0.000
+endcap [300,350)    14    0 0.000  0.000      0.219
+endcap [350,400)     4    1 0.250  0.053      0.427
+invalid-fit universality
+                           groups             cells_of  min_lj_per_group  cells   n_lj  kept      chi2  ndf  extra
+ (i) mass points of the 2Mu2E set                 none                50      1  25368 1.000  3199.908    7  0.194
+ (i) mass points of the 2Mu2E set                 none                10      1  25368 1.000  3199.908    7  0.194
+ (i) mass points of the 2Mu2E set             distance                50      7  25017 0.986  3723.183   36  0.208
+ (i) mass points of the 2Mu2E set             distance                10      7  25353 0.999  3894.372   47  0.208
+ (i) mass points of the 2Mu2E set                angle                50      8  25109 0.990   368.010   33  0.043
+ (i) mass points of the 2Mu2E set                angle                10      8  25326 0.998   388.981   41  0.043
+ (i) mass points of the 2Mu2E set     angle x distance                50     25  17005 0.670   443.195   69  0.064
+ (i) mass points of the 2Mu2E set     angle x distance                10     38  19848 0.782   701.624  155  0.066
+ (i) mass points of the 2Mu2E set            angle_eff                50      8  25125 0.990   291.348   33  0.032
+ (i) mass points of the 2Mu2E set            angle_eff                10      8  25318 0.998   310.663   41  0.032
+ (i) mass points of the 2Mu2E set angle_eff x distance                50     25  16492 0.650   305.980   71  0.043
+ (i) mass points of the 2Mu2E set angle_eff x distance                10     38  19107 0.753   567.703  151  0.048
+(ii) barrel and endcap, 2Mu2E set                 none                50      1  24891 1.000   498.013    1  0.095
+(ii) barrel and endcap, 2Mu2E set                 none                10      1  24891 1.000   498.013    1  0.095
+(ii) barrel and endcap, 2Mu2E set             distance                50      7  24891 1.000   713.727    7  0.111
+(ii) barrel and endcap, 2Mu2E set             distance                10      7  24891 1.000   713.727    7  0.111
+(ii) barrel and endcap, 2Mu2E set                angle                50      7  24551 0.986   970.470    7  0.120
+(ii) barrel and endcap, 2Mu2E set                angle                10      8  24880 1.000   970.533    8  0.120
+(ii) barrel and endcap, 2Mu2E set     angle x distance                50     22  17157 0.689  1257.294   22  0.150
+(ii) barrel and endcap, 2Mu2E set     angle x distance                10     37  19606 0.788  1379.067   37  0.149
+(ii) barrel and endcap, 2Mu2E set            angle_eff                50      7  24514 0.985   394.405    7  0.053
+(ii) barrel and endcap, 2Mu2E set            angle_eff                10      8  24873 0.999   396.568    8  0.053
+(ii) barrel and endcap, 2Mu2E set angle_eff x distance                50     20  15765 0.633   590.306   20  0.096
+(ii) barrel and endcap, 2Mu2E set angle_eff x distance                10     30  18309 0.736   717.395   30  0.098
+      (iii) Lxy slices, 2Mu2E set                 none                50      1  25306 0.998   984.760    7  0.076
+      (iii) Lxy slices, 2Mu2E set                 none                10      1  25368 1.000  1014.738    9  0.077
+      (iii) Lxy slices, 2Mu2E set             distance                50      7  24901 0.982   730.297   32  0.063
+      (iii) Lxy slices, 2Mu2E set             distance                10      7  25327 0.998   915.558   48  0.067
+      (iii) Lxy slices, 2Mu2E set                angle                50      8  24865 0.980   313.057   29  0.042
+      (iii) Lxy slices, 2Mu2E set                angle                10      8  25297 0.997   335.861   44  0.042
+      (iii) Lxy slices, 2Mu2E set     angle x distance                50     24  16518 0.651   314.835   51  0.060
+      (iii) Lxy slices, 2Mu2E set     angle x distance                10     37  19691 0.776   667.751  129  0.061
+      (iii) Lxy slices, 2Mu2E set            angle_eff                50      8  24839 0.979   304.599   29  0.042
+      (iii) Lxy slices, 2Mu2E set            angle_eff                10      8  25298 0.997   336.615   44  0.043
+      (iii) Lxy slices, 2Mu2E set angle_eff x distance                50     23  16124 0.636   339.532   53  0.059
+      (iii) Lxy slices, 2Mu2E set angle_eff x distance                10     37  18921 0.746   686.564  127  0.062
+       (iv) the three sample sets                 none                50      1 121807 1.000 23687.369    2  0.157
+       (iv) the three sample sets                 none                10      1 121807 1.000 23687.369    2  0.157
+       (iv) the three sample sets             distance                50      7 121807 1.000 28784.574   14  0.195
+       (iv) the three sample sets             distance                10      7 121807 1.000 28784.574   14  0.195
+       (iv) the three sample sets                angle                50      7 120840 0.992   269.647   13  0.008
+       (iv) the three sample sets                angle                10      8 121305 0.996   271.636   15  0.008
+       (iv) the three sample sets     angle x distance                50     26  91053 0.748   674.361   36  0.017
+       (iv) the three sample sets     angle x distance                10     38  97005 0.796   839.587   65  0.017
+       (iv) the three sample sets            angle_eff                50      7 120001 0.985   246.455   12  0.009
+       (iv) the three sample sets            angle_eff                10      8 120438 0.989   250.860   14  0.009
+       (iv) the three sample sets angle_eff x distance                50     27 111438 0.915   249.873   40  0.007
+       (iv) the three sample sets angle_eff x distance                10     40 117074 0.961   411.924   67  0.008
+invalid-fit candidates (LJs with distance <= 15 cm)
+            set population                    variable              bin     n    k     f
+          2Mu2E          P r < 740 cm and |z| < 960 cm           inside 25302 8541 0.338
+          2Mu2E          P r < 740 cm and |z| < 960 cm          outside    66    1 0.015
+          2Mu2E          P angle at the crossing (rad)    [0.0, 0.0001)   422  264 0.626
+          2Mu2E          P angle at the crossing (rad) [0.0001, 0.0003)   749  550 0.734
+          2Mu2E          P angle at the crossing (rad)  [0.0003, 0.001)  2179 1666 0.765
+          2Mu2E          P angle at the crossing (rad)   [0.001, 0.003)  3410 2530 0.742
+          2Mu2E          P angle at the crossing (rad)    [0.003, 0.01)  4252 2138 0.503
+          2Mu2E          P angle at the crossing (rad)     [0.01, 0.03)  7552 1131 0.150
+          2Mu2E          P angle at the crossing (rad)      [0.03, 0.1)  6440  261 0.041
+          2Mu2E          P angle at the crossing (rad)       [0.1, 0.3)   353    2 0.006
+          2Mu2E          P angle at the crossing (rad)       [0.3, 1.0)    11    0 0.000
+          2Mu2E    all LJs r < 740 cm and |z| < 960 cm           inside 26741 8835 0.330
+          2Mu2E    all LJs r < 740 cm and |z| < 960 cm          outside    79    2 0.025
+          2Mu2E    all LJs angle at the crossing (rad)    [0.0, 0.0001)   437  271 0.620
+          2Mu2E    all LJs angle at the crossing (rad) [0.0001, 0.0003)   778  561 0.721
+          2Mu2E    all LJs angle at the crossing (rad)  [0.0003, 0.001)  2251 1709 0.759
+          2Mu2E    all LJs angle at the crossing (rad)   [0.001, 0.003)  3564 2628 0.737
+          2Mu2E    all LJs angle at the crossing (rad)    [0.003, 0.01)  4437 2212 0.499
+          2Mu2E    all LJs angle at the crossing (rad)     [0.01, 0.03)  8039 1165 0.145
+          2Mu2E    all LJs angle at the crossing (rad)      [0.03, 0.1)  6917  288 0.042
+          2Mu2E    all LJs angle at the crossing (rad)       [0.1, 0.3)   386    3 0.008
+          2Mu2E    all LJs angle at the crossing (rad)       [0.3, 1.0)    11    0 0.000
+2Mu2E wide-pair          P r < 740 cm and |z| < 960 cm           inside 11458  261 0.023
+2Mu2E wide-pair          P r < 740 cm and |z| < 960 cm          outside   105    2 0.019
+2Mu2E wide-pair          P angle at the crossing (rad)    [0.0, 0.0001)     4    3 0.750
+2Mu2E wide-pair          P angle at the crossing (rad) [0.0001, 0.0003)    11    8 0.727
+2Mu2E wide-pair          P angle at the crossing (rad)  [0.0003, 0.001)    56   38 0.679
+2Mu2E wide-pair          P angle at the crossing (rad)   [0.001, 0.003)    90   62 0.689
+2Mu2E wide-pair          P angle at the crossing (rad)    [0.003, 0.01)   111   53 0.477
+2Mu2E wide-pair          P angle at the crossing (rad)     [0.01, 0.03)   247   26 0.105
+2Mu2E wide-pair          P angle at the crossing (rad)      [0.03, 0.1)  5445   59 0.011
+2Mu2E wide-pair          P angle at the crossing (rad)       [0.1, 0.3)  5579   14 0.003
+2Mu2E wide-pair          P angle at the crossing (rad)       [0.3, 1.0)    20    0 0.000
+2Mu2E wide-pair    all LJs r < 740 cm and |z| < 960 cm           inside 12362  278 0.022
+2Mu2E wide-pair    all LJs r < 740 cm and |z| < 960 cm          outside   124    3 0.024
+2Mu2E wide-pair    all LJs angle at the crossing (rad)    [0.0, 0.0001)     6    4 0.667
+2Mu2E wide-pair    all LJs angle at the crossing (rad) [0.0001, 0.0003)    12    9 0.750
+2Mu2E wide-pair    all LJs angle at the crossing (rad)  [0.0003, 0.001)    60   40 0.667
+2Mu2E wide-pair    all LJs angle at the crossing (rad)   [0.001, 0.003)   101   65 0.644
+2Mu2E wide-pair    all LJs angle at the crossing (rad)    [0.003, 0.01)   128   56 0.438
+2Mu2E wide-pair    all LJs angle at the crossing (rad)     [0.01, 0.03)   346   30 0.087
+2Mu2E wide-pair    all LJs angle at the crossing (rad)      [0.03, 0.1)  5982   61 0.010
+2Mu2E wide-pair    all LJs angle at the crossing (rad)       [0.1, 0.3)  5830   16 0.003
+2Mu2E wide-pair    all LJs angle at the crossing (rad)       [0.3, 1.0)    21    0 0.000
+            4Mu          P r < 740 cm and |z| < 960 cm           inside 84211 2163 0.026
+            4Mu          P r < 740 cm and |z| < 960 cm          outside   665   31 0.047
+            4Mu          P angle at the crossing (rad)    [0.0, 0.0001)    32   24 0.750
+            4Mu          P angle at the crossing (rad) [0.0001, 0.0003)    98   73 0.745
+            4Mu          P angle at the crossing (rad)  [0.0003, 0.001)   248  177 0.714
+            4Mu          P angle at the crossing (rad)   [0.001, 0.003)   531  337 0.635
+            4Mu          P angle at the crossing (rad)    [0.003, 0.01)   824  457 0.555
+            4Mu          P angle at the crossing (rad)     [0.01, 0.03)  2092  341 0.163
+            4Mu          P angle at the crossing (rad)      [0.03, 0.1) 38199  582 0.015
+            4Mu          P angle at the crossing (rad)       [0.1, 0.3) 42385  203 0.005
+            4Mu          P angle at the crossing (rad)       [0.3, 1.0)   467    0 0.000
+            4Mu    all LJs r < 740 cm and |z| < 960 cm           inside 91026 2338 0.026
+            4Mu    all LJs r < 740 cm and |z| < 960 cm          outside   791   39 0.049
+            4Mu    all LJs angle at the crossing (rad)    [0.0, 0.0001)    37   26 0.703
+            4Mu    all LJs angle at the crossing (rad) [0.0001, 0.0003)   108   79 0.731
+            4Mu    all LJs angle at the crossing (rad)  [0.0003, 0.001)   277  193 0.697
+            4Mu    all LJs angle at the crossing (rad)   [0.001, 0.003)   606  379 0.625
+            4Mu    all LJs angle at the crossing (rad)    [0.003, 0.01)   975  500 0.513
+            4Mu    all LJs angle at the crossing (rad)     [0.01, 0.03)  2933  367 0.125
+            4Mu    all LJs angle at the crossing (rad)      [0.03, 0.1) 42304  622 0.015
+            4Mu    all LJs angle at the crossing (rad)       [0.1, 0.3) 44083  211 0.005
+            4Mu    all LJs angle at the crossing (rad)       [0.3, 1.0)   494    0 0.000
+invalid fits, P(set), angle x coarse distance
+            set population   distance_bins       angle_rad distance_cm     n    k     f
+          2Mu2E          P coarse distance      [0,0.0001)     [0,0.5)   116   33 0.284
+          2Mu2E          P coarse distance      [0,0.0001)     [0.5,2)   252  188 0.746
+          2Mu2E          P coarse distance      [0,0.0001)      [2,15)    54   43 0.796
+          2Mu2E          P coarse distance [0.0001,0.0003)     [0,0.5)   195   72 0.369
+          2Mu2E          P coarse distance [0.0001,0.0003)     [0.5,2)   419  360 0.859
+          2Mu2E          P coarse distance [0.0001,0.0003)      [2,15)   135  118 0.874
+          2Mu2E          P coarse distance  [0.0003,0.001)     [0,0.5)   561  277 0.494
+          2Mu2E          P coarse distance  [0.0003,0.001)     [0.5,2)  1235 1067 0.864
+          2Mu2E          P coarse distance  [0.0003,0.001)      [2,15)   383  322 0.841
+          2Mu2E          P coarse distance   [0.001,0.003)     [0,0.5)   816  387 0.474
+          2Mu2E          P coarse distance   [0.001,0.003)     [0.5,2)  1879 1616 0.860
+          2Mu2E          P coarse distance   [0.001,0.003)      [2,15)   715  527 0.737
+          2Mu2E          P coarse distance    [0.003,0.01)     [0,0.5)  1421  145 0.102
+          2Mu2E          P coarse distance    [0.003,0.01)     [0.5,2)  1542 1084 0.703
+          2Mu2E          P coarse distance    [0.003,0.01)      [2,15)  1289  909 0.705
+          2Mu2E          P coarse distance     [0.01,0.03)     [0,0.5)  4022    1 0.000
+          2Mu2E          P coarse distance     [0.01,0.03)     [0.5,2)  1473  147 0.100
+          2Mu2E          P coarse distance     [0.01,0.03)      [2,15)  2057  983 0.478
+          2Mu2E          P coarse distance      [0.03,0.1)     [0,0.5)  2892    0 0.000
+          2Mu2E          P coarse distance      [0.03,0.1)     [0.5,2)  1653   12 0.007
+          2Mu2E          P coarse distance      [0.03,0.1)      [2,15)  1895  249 0.131
+          2Mu2E          P coarse distance       [0.1,0.3)     [0,0.5)   103    0 0.000
+          2Mu2E          P coarse distance       [0.1,0.3)     [0.5,2)   115    0 0.000
+          2Mu2E          P coarse distance       [0.1,0.3)      [2,15)   135    2 0.015
+          2Mu2E          P coarse distance         [0.3,1)     [0.5,2)     1    0 0.000
+          2Mu2E          P coarse distance         [0.3,1)      [2,15)    10    0 0.000
+2Mu2E wide-pair          P coarse distance      [0,0.0001)     [0,0.5)     1    0 0.000
+2Mu2E wide-pair          P coarse distance      [0,0.0001)     [0.5,2)     1    1 1.000
+2Mu2E wide-pair          P coarse distance      [0,0.0001)      [2,15)     2    2 1.000
+2Mu2E wide-pair          P coarse distance [0.0001,0.0003)     [0,0.5)     1    1 1.000
+2Mu2E wide-pair          P coarse distance [0.0001,0.0003)      [2,15)    10    7 0.700
+2Mu2E wide-pair          P coarse distance  [0.0003,0.001)     [0,0.5)     5    2 0.400
+2Mu2E wide-pair          P coarse distance  [0.0003,0.001)     [0.5,2)    14   11 0.786
+2Mu2E wide-pair          P coarse distance  [0.0003,0.001)      [2,15)    37   25 0.676
+2Mu2E wide-pair          P coarse distance   [0.001,0.003)     [0,0.5)     2    1 0.500
+2Mu2E wide-pair          P coarse distance   [0.001,0.003)     [0.5,2)    22   14 0.636
+2Mu2E wide-pair          P coarse distance   [0.001,0.003)      [2,15)    66   47 0.712
+2Mu2E wide-pair          P coarse distance    [0.003,0.01)     [0,0.5)    10    2 0.200
+2Mu2E wide-pair          P coarse distance    [0.003,0.01)     [0.5,2)    21   12 0.571
+2Mu2E wide-pair          P coarse distance    [0.003,0.01)      [2,15)    80   39 0.488
+2Mu2E wide-pair          P coarse distance     [0.01,0.03)     [0,0.5)    82    1 0.012
+2Mu2E wide-pair          P coarse distance     [0.01,0.03)     [0.5,2)    67    2 0.030
+2Mu2E wide-pair          P coarse distance     [0.01,0.03)      [2,15)    98   23 0.235
+2Mu2E wide-pair          P coarse distance      [0.03,0.1)     [0,0.5)  1995    0 0.000
+2Mu2E wide-pair          P coarse distance      [0.03,0.1)     [0.5,2)  1837    0 0.000
+2Mu2E wide-pair          P coarse distance      [0.03,0.1)      [2,15)  1613   59 0.037
+2Mu2E wide-pair          P coarse distance       [0.1,0.3)     [0,0.5)  1940    0 0.000
+2Mu2E wide-pair          P coarse distance       [0.1,0.3)     [0.5,2)  1727    0 0.000
+2Mu2E wide-pair          P coarse distance       [0.1,0.3)      [2,15)  1912   14 0.007
+2Mu2E wide-pair          P coarse distance         [0.3,1)     [0,0.5)     3    0 0.000
+2Mu2E wide-pair          P coarse distance         [0.3,1)     [0.5,2)     1    0 0.000
+2Mu2E wide-pair          P coarse distance         [0.3,1)      [2,15)    16    0 0.000
+            4Mu          P coarse distance      [0,0.0001)     [0,0.5)     1    1 1.000
+            4Mu          P coarse distance      [0,0.0001)     [0.5,2)     9    3 0.333
+            4Mu          P coarse distance      [0,0.0001)      [2,15)    22   20 0.909
+            4Mu          P coarse distance [0.0001,0.0003)     [0,0.5)     8    4 0.500
+            4Mu          P coarse distance [0.0001,0.0003)     [0.5,2)    23   16 0.696
+            4Mu          P coarse distance [0.0001,0.0003)      [2,15)    67   53 0.791
+            4Mu          P coarse distance  [0.0003,0.001)     [0,0.5)    23    8 0.348
+            4Mu          P coarse distance  [0.0003,0.001)     [0.5,2)    55   34 0.618
+            4Mu          P coarse distance  [0.0003,0.001)      [2,15)   170  135 0.794
+            4Mu          P coarse distance   [0.001,0.003)     [0,0.5)    22   12 0.545
+            4Mu          P coarse distance   [0.001,0.003)     [0.5,2)   117   65 0.556
+            4Mu          P coarse distance   [0.001,0.003)      [2,15)   392  260 0.663
+            4Mu          P coarse distance    [0.003,0.01)     [0,0.5)    54    5 0.093
+            4Mu          P coarse distance    [0.003,0.01)     [0.5,2)   148   68 0.459
+            4Mu          P coarse distance    [0.003,0.01)      [2,15)   622  384 0.617
+            4Mu          P coarse distance     [0.01,0.03)     [0,0.5)   578    5 0.009
+            4Mu          P coarse distance     [0.01,0.03)     [0.5,2)   581   20 0.034
+            4Mu          P coarse distance     [0.01,0.03)      [2,15)   933  316 0.339
+            4Mu          P coarse distance      [0.03,0.1)     [0,0.5) 12256    5 0.000
+            4Mu          P coarse distance      [0.03,0.1)     [0.5,2) 13524    7 0.001
+            4Mu          P coarse distance      [0.03,0.1)      [2,15) 12419  570 0.046
+            4Mu          P coarse distance       [0.1,0.3)     [0,0.5) 11806    0 0.000
+            4Mu          P coarse distance       [0.1,0.3)     [0.5,2) 12807    1 0.000
+            4Mu          P coarse distance       [0.1,0.3)      [2,15) 17772  202 0.011
+            4Mu          P coarse distance         [0.3,1)     [0,0.5)    99    0 0.000
+            4Mu          P coarse distance         [0.3,1)     [0.5,2)   105    0 0.000
+            4Mu          P coarse distance         [0.3,1)      [2,15)   263    0 0.000
+invalid-fit deviance
+            set          description      n     k  excluded  bins  deviance     aic  rank
+          2Mu2E              one bin  25368  8542         0     1   32412.1 32414.1     8
+          2Mu2E             distance  25368  8542         0     7   26157.9 26171.9     7
+          2Mu2E                angle  25368  8542         0     9   22180.2 22198.2     5
+          2Mu2E     angle x distance  25368  8542         0    57   15736.7 15850.7     2
+          2Mu2E                    L  25368  8542         0     8   22439.9 22455.9     6
+          2Mu2E         L x distance  25368  8542         0    54   17036.6 17144.6     3
+          2Mu2E            angle_eff  25368  8542         0     9   21432.8 21450.8     4
+          2Mu2E angle_eff x distance  25368  8542         0    59   14870.7 14988.7     1
+2Mu2E wide-pair              one bin  11563   263         0     1    2510.0  2512.0     8
+2Mu2E wide-pair             distance  11563   263         0     7    2171.6  2185.6     7
+2Mu2E wide-pair                angle  11563   263         0     9    1366.1  1384.1     6
+2Mu2E wide-pair     angle x distance  11563   263         0    54    1040.9  1148.9     2
+2Mu2E wide-pair                    L  11563   263         0     8    1336.0  1352.0     5
+2Mu2E wide-pair         L x distance  11563   263         0    52    1043.6  1147.6     3
+2Mu2E wide-pair            angle_eff  11563   263         0     9    1294.3  1312.3     4
+2Mu2E wide-pair angle_eff x distance  11563   263         0    54     974.1  1082.1     1
+            4Mu              one bin  84876  2194         0     1   20371.0 20373.0     8
+            4Mu             distance  84876  2194         0     7   17399.8 17413.8     7
+            4Mu                angle  84876  2194         0     9   12733.1 12751.1     6
+            4Mu     angle x distance  84876  2194         0    61    9877.3  9999.3     2
+            4Mu                    L  84876  2194         0     8   12541.4 12557.4     5
+            4Mu         L x distance  84876  2194         0    55    9956.8 10066.8     3
+            4Mu            angle_eff  84876  2194         0     9   11552.3 11570.3     4
+            4Mu angle_eff x distance  84876  2194         0    61    9014.0  9136.0     1
+         pooled              one bin 121807 10999         0     1   73870.6 73872.6     8
+         pooled             distance 121807 10999         0     7   69346.8 69360.8     7
+         pooled                angle 121807 10999         0     9   36506.9 36524.9     5
+         pooled     angle x distance 121807 10999         0    63   27358.0 27484.0     2
+         pooled                    L 121807 10999         0     8   38567.8 38583.8     6
+         pooled         L x distance 121807 10999         0    56   32167.8 32279.8     3
+         pooled            angle_eff 121807 10999         0     9   34510.1 34528.1     4
+         pooled angle_eff x distance 121807 10999         0    63   25255.8 25381.8     1
+f_inv per angle bin and set, standardised to 2Mu2E
+       table  variable             set  bin     lo     hi     n    k      f    err  z_vs_2Mu2E  kept  f_obs_kept  f_pred  ratio  f_obs_kept_bs_err  f_pred_bs_err  ratio_bs_err  ratio_bs_q16  ratio_bs_q84
+     per bin     angle           2Mu2E  0.0 0.0000 0.0001   422  264 0.6256 0.0236         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  1.0 0.0001 0.0003   749  550 0.7343 0.0161         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  2.0 0.0003 0.0010  2179 1666 0.7646 0.0091         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  3.0 0.0010 0.0030  3410 2530 0.7419 0.0075         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  4.0 0.0030 0.0100  4252 2138 0.5028 0.0077         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  5.0 0.0100 0.0300  7552 1131 0.1498 0.0041         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  6.0 0.0300 0.1000  6440  261 0.0405 0.0025         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  7.0 0.1000 0.3000   353    2 0.0057 0.0040         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle           2Mu2E  8.0 0.3000 1.0000    11    0 0.0000 0.0000         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  0.0 0.0000 0.0001     4    3 0.7500 0.2165      0.5114   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  1.0 0.0001 0.0003    11    8 0.7273 0.1343     -0.0524   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  2.0 0.0003 0.0010    56   38 0.6786 0.0624     -1.4927   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  3.0 0.0010 0.0030    90   62 0.6889 0.0488     -1.1331   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  4.0 0.0030 0.0100   111   53 0.4775 0.0474     -0.5272   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  5.0 0.0100 0.0300   247   26 0.1053 0.0195     -1.9360   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  6.0 0.0300 0.1000  5445   59 0.0108 0.0014     -9.9637   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  7.0 0.1000 0.3000  5579   14 0.0025 0.0007     -1.1088   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle 2Mu2E wide-pair  8.0 0.3000 1.0000    20    0 0.0000 0.0000         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  0.0 0.0000 0.0001    32   24 0.7500 0.0765      1.4073   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  1.0 0.0001 0.0003    98   73 0.7449 0.0440      0.2233   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  2.0 0.0003 0.0010   248  177 0.7137 0.0287     -1.7751   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  3.0 0.0010 0.0030   531  337 0.6347 0.0209     -5.1641   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  4.0 0.0030 0.0100   824  457 0.5546 0.0173      2.7217   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  5.0 0.0100 0.0300  2092  341 0.1630 0.0081      1.4900   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  6.0 0.0300 0.1000 38199  582 0.0152 0.0006    -13.7934   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  7.0 0.1000 0.3000 42385  203 0.0048 0.0003     -0.2373   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin     angle             4Mu  8.0 0.3000 1.0000   467    0 0.0000 0.0000         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+standardised     angle 2Mu2E wide-pair  NaN    NaN    NaN 11563  263 0.0227 0.0014         NaN   1.0      0.0227  0.0402 0.5653             0.0014         0.0025        0.0432        0.5282        0.6125
+standardised     angle             4Mu  NaN    NaN    NaN 84876 2194 0.0258 0.0005         NaN   1.0      0.0258  0.0376 0.6875             0.0005         0.0024        0.0435        0.6508        0.7347
+     per bin angle_eff           2Mu2E  0.0 0.0000 0.0001   361  230 0.6371 0.0253         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  1.0 0.0001 0.0003   679  505 0.7437 0.0168         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  2.0 0.0003 0.0010  1909 1490 0.7805 0.0095         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  3.0 0.0010 0.0030  3090 2335 0.7557 0.0077         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  4.0 0.0030 0.0100  3962 2376 0.5997 0.0078         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  5.0 0.0100 0.0300  6708 1245 0.1856 0.0047         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  6.0 0.0300 0.1000  8007  356 0.0445 0.0023         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  7.0 0.1000 0.3000   632    5 0.0079 0.0035         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff           2Mu2E  8.0 0.3000 1.0000    20    0 0.0000 0.0000         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  0.0 0.0000 0.0001     3    2 0.6667 0.2722      0.1059   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  1.0 0.0001 0.0003     8    7 0.8750 0.1169      0.8465   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  2.0 0.0003 0.0010    49   32 0.6531 0.0680     -2.1169   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  3.0 0.0010 0.0030    89   62 0.6966 0.0487     -1.2747   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  4.0 0.0030 0.0100   108   54 0.5000 0.0481     -2.0839   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  5.0 0.0100 0.0300   124   28 0.2258 0.0375      1.1393   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  6.0 0.0300 0.1000  2096   55 0.0262 0.0035     -3.7590   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  7.0 0.1000 0.3000  9037   23 0.0025 0.0005     -2.4270   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff 2Mu2E wide-pair  8.0 0.3000 1.0000    49    0 0.0000 0.0000         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  0.0 0.0000 0.0001    27   19 0.7037 0.0879      0.6951   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  1.0 0.0001 0.0003    85   68 0.8000 0.0434      1.1285   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  2.0 0.0003 0.0010   218  156 0.7156 0.0306     -2.1701   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  3.0 0.0010 0.0030   416  288 0.6923 0.0226     -2.7943   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  4.0 0.0030 0.0100   754  434 0.5756 0.0180     -1.2359   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  5.0 0.0100 0.0300   957  367 0.3835 0.0157     14.0520   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  6.0 0.0300 0.1000 11689  565 0.0483 0.0020      1.2652   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  7.0 0.1000 0.3000 69441  297 0.0043 0.0002     -1.3884   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+     per bin angle_eff             4Mu  8.0 0.3000 1.0000  1289    0 0.0000 0.0000         NaN   NaN         NaN     NaN    NaN                NaN            NaN           NaN           NaN           NaN
+standardised angle_eff 2Mu2E wide-pair  NaN    NaN    NaN 11563  263 0.0227 0.0014         NaN   1.0      0.0227  0.0316 0.7189             0.0014         0.0029        0.0692        0.6515        0.7933
+standardised angle_eff             4Mu  NaN    NaN    NaN 84876 2194 0.0258 0.0005         NaN   1.0      0.0258  0.0267 0.9692             0.0006         0.0028        0.1052        0.8801        1.0883
+f_inv against sin(theta_pair) inside each region, P(2Mu2E)
+region                         row  sin_bin  sin_lo  sin_hi      n      k      f                cells_of  cells    n_a    n_b   kept    f_a    f_b   wdiff       z  base_wdiff  base_z
+barrel                    quintile      0.0  0.6834  0.8166 4290.0 1415.0 0.3298                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+barrel                    quintile      1.0  0.8166  0.8874 4290.0 1580.0 0.3683                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+barrel                    quintile      2.0  0.8874  0.9388 4289.0 1660.0 0.3870                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+barrel                    quintile      3.0  0.9388  0.9916 4290.0 1559.0 0.3634                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+barrel                    quintile      4.0  0.9916  1.0000 4290.0 1636.0 0.3814                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+barrel last against first quintile      NaN     NaN     NaN    NaN    NaN    NaN                    none    1.0 4290.0 4290.0 1.0000 0.3298 0.3814  0.0515  4.9839         NaN     NaN
+barrel last against first quintile      NaN     NaN     NaN    NaN    NaN    NaN                   angle    8.0 4289.0 4289.0 0.9998 0.3299 0.3814  0.0291  3.5881         NaN     NaN
+barrel last against first quintile      NaN     NaN     NaN    NaN    NaN    NaN angle x coarse distance   20.0 3810.0 3607.0 0.8645 0.3711 0.4486  0.0393  5.0013      0.0348  3.6715
+endcap                    quintile      0.0  0.1867  0.4059  689.0   86.0 0.1248                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+endcap                    quintile      1.0  0.4059  0.4563  688.0  128.0 0.1860                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+endcap                    quintile      2.0  0.4563  0.4882  688.0  146.0 0.2122                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+endcap                    quintile      3.0  0.4882  0.5173  688.0   96.0 0.1395                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+endcap                    quintile      4.0  0.5173  0.5611  689.0  136.0 0.1974                     NaN    NaN    NaN    NaN    NaN    NaN    NaN     NaN     NaN         NaN     NaN
+endcap last against first quintile      NaN     NaN     NaN    NaN    NaN    NaN                    none    1.0  689.0  689.0 1.0000 0.1248 0.1974  0.0726  3.6625         NaN     NaN
+endcap last against first quintile      NaN     NaN     NaN    NaN    NaN    NaN                   angle    5.0  597.0  580.0 0.8541 0.1424 0.2259 -0.0225 -1.1162         NaN     NaN
+endcap last against first quintile      NaN     NaN     NaN    NaN    NaN    NaN angle x coarse distance    7.0  447.0  360.0 0.5856 0.1812 0.3194  0.0182  0.6562      0.0062  0.2244
+edge 2Mu2E: LJs with a stored vertex and emulated distance > 15 cm 0; paths {}; stored dca max nan
+edge 2Mu2E wide-pair: LJs with a stored vertex and emulated distance > 15 cm 3; paths {4: 3}; stored dca max 10.763
+edge 4Mu: LJs with a stored vertex and emulated distance > 15 cm 13; paths {4: 13}; stored dca max 15.000
+edge, 1 cm bins
+            set      bin    n   k     f
+          2Mu2E [10, 11)  191  78 0.408
+          2Mu2E [11, 12)  134  65 0.485
+          2Mu2E [12, 13)  119  46 0.387
+          2Mu2E [13, 14)   97  43 0.443
+          2Mu2E [14, 15)   76  36 0.474
+          2Mu2E [15, 16)   73  73 1.000
+          2Mu2E [16, 17)   63  63 1.000
+          2Mu2E [17, 18)   59  59 1.000
+          2Mu2E [18, 19)   40  40 1.000
+          2Mu2E [19, 20)   43  43 1.000
+2Mu2E wide-pair [10, 11)  165  15 0.091
+2Mu2E wide-pair [11, 12)  156  12 0.077
+2Mu2E wide-pair [12, 13)  120  11 0.092
+2Mu2E wide-pair [13, 14)  104   9 0.087
+2Mu2E wide-pair [14, 15)  110   7 0.064
+2Mu2E wide-pair [15, 16)   98  97 0.990
+2Mu2E wide-pair [16, 17)   81  81 1.000
+2Mu2E wide-pair [17, 18)   73  73 1.000
+2Mu2E wide-pair [18, 19)   48  48 1.000
+2Mu2E wide-pair [19, 20)   49  49 1.000
+            4Mu [10, 11) 1777 171 0.096
+            4Mu [11, 12) 1558 139 0.089
+            4Mu [12, 13) 1375 118 0.086
+            4Mu [13, 14) 1165 102 0.088
+            4Mu [14, 15)  987 101 0.102
+            4Mu [15, 16)  905 897 0.991
+            4Mu [16, 17)  724 724 1.000
+            4Mu [17, 18)  691 690 0.999
+            4Mu [18, 19)  575 575 1.000
+            4Mu [19, 20)  518 517 0.998
+T7_global_minimum_cut_pairs
+                group     n  gmin_nan  k_lt1  f_lt1  k_lt5  f_lt5  k_lt15  f_lt15  median_gmin  median_distance
+                2Mu2E   946         0     55 0.0581    133 0.1406     647  0.6839      11.1946          27.7177
+      2Mu2E wide-pair  1189         0    494 0.4155    749 0.6299    1040  0.8747       2.2602          27.3660
+                  4Mu 10287         0   3055 0.2970   5799 0.5637    9004  0.8753       3.9098          24.4442
+4Mu T6 class A narrow  1811         0    275 0.1518    875 0.4832    1527  0.8432       5.2806          19.8597
+  4Mu T6 class A wide   613         0     96 0.1566    374 0.6101     577  0.9413       3.7832          21.0975
+T7_stored_dca_vs_global_minimum
+            set stored_dca_cm     n  k_gt1  f_gt1  k_below  gmin_nan
+          2Mu2E           all 17983   2797 0.1555       63         0
+          2Mu2E       [0,0.1)  4322      0 0.0000        6         0
+          2Mu2E     [0.1,0.5)  5493      0 0.0000       13         0
+          2Mu2E       [0.5,1)  2389      0 0.0000       10         0
+          2Mu2E         [1,2)  1995    283 0.1419       17         0
+          2Mu2E         [2,5)  2389   1270 0.5316       16         0
+          2Mu2E        [5,10)  1044    900 0.8621        1         0
+          2Mu2E       [10,15)   351    344 0.9801        0         0
+2Mu2E wide-pair           all 12208   2334 0.1912      112         0
+2Mu2E wide-pair       [0,0.1)  1533      0 0.0000       13         0
+2Mu2E wide-pair     [0.1,0.5)  2809      0 0.0000       25         0
+2Mu2E wide-pair       [0.5,1)  1910      0 0.0000       21         0
+2Mu2E wide-pair         [1,2)  1979     25 0.0126       24         0
+2Mu2E wide-pair         [2,5)  1989    593 0.2981       24         0
+2Mu2E wide-pair        [5,10)  1382   1140 0.8249        4         0
+2Mu2E wide-pair       [10,15)   606    576 0.9505        1         0
+            4Mu           all 89453  18801 0.2102      749         0
+            4Mu       [0,0.1)  8475      0 0.0000       90         0
+            4Mu     [0.1,0.5) 18756      0 0.0000      154         0
+            4Mu       [0.5,1) 14096      0 0.0000      131         0
+            4Mu         [1,2) 14786    125 0.0085      159         0
+            4Mu         [2,5) 15102   3374 0.2234      177         0
+            4Mu        [5,10) 12005   9409 0.7838       35         0
+            4Mu       [10,15)  6233   5893 0.9455        3         0
+T7_minimiser_stability
+            set  n_variant  variant_max_abs_diff  variant_n_gt_0p01  variant_n_gt_0p1  variant_class_changes_1_5_15  n_exhaustive  default_minus_exhaustive_max  default_minus_exhaustive_min  n_path1  path1_gmin_above_ttmd
+          2Mu2E       1946                0.0005                  0                 0                             0            60                           0.0                          -0.0     2726                      0
+2Mu2E wide-pair       2189                0.0025                  0                 0                             0            60                           0.0                          -0.0      564                      0
+            4Mu      11287                0.0359                  2                 0                             0            60                           0.0                          -0.0     4344                      0
+T7_global_minimum_location
+            set                               group     n  n_gen  n_used  gen_lxy_median  dr_median  dr_q16  dr_q84  f_dr_lt10  f_dr_lt20  f_dr_gt100  f_r_gt300  f_absz_gt600  n_cross  cross_dr_median  cross_f_dr_lt20
+          2Mu2E                      cut pairs, all   946    946     946          93.235    194.600  57.174 340.546      0.044      0.081       0.732      0.487         0.032      946           35.310            0.345
+          2Mu2E   cut pairs, global minimum < 15 cm   647    647     647          94.978    143.094  37.077 253.657      0.062      0.114       0.629      0.340         0.046      647           33.590            0.365
+          2Mu2E  cut pairs, global minimum >= 15 cm   299    299     299          89.173    320.972 191.611 426.164      0.007      0.010       0.953      0.806         0.000      299           40.306            0.301
+          2Mu2E control: pairs with a stored vertex 17983  17945   17945         112.741     30.264   6.341  78.971      0.233      0.386       0.091      0.032         0.004    17945           33.696            0.364
+2Mu2E wide-pair                      cut pairs, all  1189   1189    1189         100.936     16.902   3.899  63.841      0.351      0.555       0.101      0.079         0.019     1189           75.328            0.182
+2Mu2E wide-pair   cut pairs, global minimum < 15 cm  1040   1040    1040          97.741     13.784   3.468  39.135      0.400      0.629       0.041      0.038         0.019     1040           81.603            0.137
+2Mu2E wide-pair  cut pairs, global minimum >= 15 cm   149    149     149         119.679    108.134  39.709 264.882      0.007      0.040       0.517      0.362         0.013      149           20.143            0.497
+2Mu2E wide-pair control: pairs with a stored vertex 12208  12204   12204         137.660      8.206   1.984  25.400      0.564      0.780       0.036      0.110         0.009    12204           10.129            0.683
+            4Mu                      cut pairs, all 10287  10283   10283          98.023     16.787   4.016  55.883      0.352      0.558       0.083      0.076         0.031    10283           62.335            0.172
+            4Mu   cut pairs, global minimum < 15 cm  9004   9003    9003          97.602     14.059   3.523  40.438      0.394      0.620       0.037      0.045         0.033     9003           65.619            0.140
+            4Mu  cut pairs, global minimum >= 15 cm  1283   1280    1280         101.224     79.832  25.450 217.420      0.059      0.125       0.409      0.295         0.017     1280           30.549            0.392
+            4Mu control: pairs with a stored vertex 89453  89435   89435         134.083      8.728   2.216  27.735      0.544      0.760       0.040      0.107         0.021    89435           11.041            0.659
