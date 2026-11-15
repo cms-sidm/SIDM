@@ -5,21 +5,37 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-14, 13:00)
+## Current state (2026-11-14, 21:00)
 
-**Running:** nothing. Step 1 of the lepton-jet reconstruction efficiency
-([`lj_reco_efficiency.md`](lj_reco_efficiency.md)) is done: the campaign `lj_reco_eff_v1` is
-complete (422 of 422 chunks, 180 samples merged) and
-[`06_lj_reco_efficiency.ipynb`](06_lj_reco_efficiency.ipynb) is executed with its
-interpretations and its section 5 (what step 1 tells the plan, and the questions left open).
+**Done today:** the campaign `systematics_v2` (3,158 chunks, no failures, 200 samples merged in
+`.../systematics_v2`; `systematics_v1` remade with the merged processor, which applies the
+generator-filter efficiency of the v10 signal samples, 0.36 to 0.90 on the limit grid; the user
+chose a new campaign over correcting v1 at reading time), and notebooks 03, 04 and 05 rerun on
+it with the 4mu working point at 3 pixel hits, their interpretations rewritten. A watcher
+(`watch_v2.py` in the session's scratch directory), checking every 30 minutes as the user
+asked, moved 10 jobs off the slow nodes cmswn2236, cmswn2176 and cmswn2254.
+
+**Since the last commit (not committed yet):**
+- the 4mu working point takes at most 3 pixel hits on both lepton jets (`WORKING_POINTS`,
+  `pixel_hit_max=3.5`; the user's correction: the group loosened it from 2);
+- `condor/campaign_configs/systematics_v2.yaml`, and the `systematics_v2` Campaign in
+  `datacard_tools`;
+- notebooks 03 to 05 on `systematics_v2`, executed, with new interpretations;
+- `run_combine_pulls.py --expect-signal` runs only the signal-plus-background fit and starts
+  it from the injected r (`--skipBOnlyFit --customStartingPoint --setParameters r=R`): with
+  the 4mu working point at 3 pixel hits the 4Mu correlation fit of 05 failed, because
+  FitDiagnostics evaluates the likelihood at r = 0 first, where it is undefined in bins whose
+  only content is the injected signal;
+- the study README (results of 03 to 05, campaign names, open item 2), the limit_plotting
+  README (the `systematics_v2` rows and section, the pulls script) and this log.
 
 **Next steps**
-1. Wait on the group for the lepton-jet efficiency (open question 2 below, four parts); steps 2
-   and 3 of the plan start from their answers.
-2. Offered to the user, not done: a campaign `lj_reco_eff_v2` that splits the muon-type lepton
+1. Rebuild the slides with the v2 figures and numbers; commit by explicit path; give the user
+   the updated PR description.
+2. Lepton-jet efficiency: wait on the group (open question 2 below, four parts).
+3. Offered to the user, not done: a campaign `lj_reco_eff_v2` that splits the muon-type lepton
    jets by constituent (PF, DSA, both; the channels exist), to see which control sample covers
    the decays at 10 to 100 cm (section 5 of 06).
-3. The rest waits on the user or the group (open questions below).
 
 **Notebooks** (inputs and outputs on EOS, read and written through xrootd)
 
@@ -27,9 +43,9 @@ interpretations and its section 5 (what step 1 tells the plan, and the questions
 |---|---|---|---|
 | `01_pileup` | executed 2026-11-12 | campaign `corrections_v1` | in the notebook |
 | `02_jet_energy` | executed 2026-11-12 | campaign `corrections_v1` | in the notebook |
-| `03_limits` | executed 2026-11-14, with interpretations | campaign `systematics_v1` | `.../systematics_v1_limits/` |
-| `04_systematic_effects` | executed 2026-11-14, with interpretations | outputs of 03 | `.../systematics_v1_limits/effects/` |
-| `05_fit_checks` | executed 2026-11-14, with interpretations | outputs of 03 | `.../systematics_v1_limits/fit_checks/` |
+| `03_limits` | executed 2026-11-14 (4mu at 3 pixel hits), with interpretations | campaign `systematics_v2` | `.../systematics_v2_limits/` |
+| `04_systematic_effects` | executed 2026-11-14, with interpretations | outputs of 03 | `.../systematics_v2_limits/effects/` |
+| `05_fit_checks` | executed 2026-11-14, with interpretations | outputs of 03 | `.../systematics_v2_limits/fit_checks/` |
 | `06_lj_reco_efficiency` | executed 2026-11-14, with interpretations | campaign `lj_reco_eff_v1` | `.../lj_reco_eff_v1_results/` |
 
 `...` is `root://cmseos.fnal.gov//store/user/scampbel/sidm_coffea_outputs`. After a change to
@@ -39,7 +55,9 @@ interpretations and its section 5 (what step 1 tells the plan, and the questions
 state in `condor/campaigns/<name>/`)
 - `corrections_v1`: input of 01 and 02 (`.../corrections_v1`).
 - `systematics_v1`: complete on 2026-11-13 (3,158 jobs, 200 samples merged in
-  `.../systematics_v1`); input of 03.
+  `.../systematics_v1`); superseded by v2, since it lacks the generator-filter efficiency.
+- `systematics_v2`: complete on 2026-11-14 (3,158 jobs, 200 samples merged in
+  `.../systematics_v2`); input of 03 to 05. Same samples, chunks and files as v1.
 - `lj_reco_eff_v1`: complete on 2026-11-14 (422 jobs, 180 samples merged in
   `.../lj_reco_eff_v1`); input of 06.
 
@@ -49,11 +67,16 @@ weight variations, `CMS_l1_prefiring` flat 1%, `CMS_jet_energy` from the isolati
 
 **Results to keep in mind** (details in the README and in the notebooks' interpretations)
 - With corrections and systematics the expected limits are 2.0% (2Mu2E) and 1.3% (4Mu) higher
-  than without; the exclusion is the same (13 of 48 and 24 of 48 points).
-- The four systematics do not change the expected limits; each moves the fitted r by about its
-  own size, 1% or less.
-- The signal-injection test validates the 2Mu2E fit but not the 4Mu one: regions C and D are
-  often empty in 4mu (README open item 2).
+  than without; the exclusion is the same (12 of 48 and 23 of 48 points). The generator-filter
+  efficiency raises every limit by exactly its inverse (a median 1.38 times for 2Mu2E and 1.32
+  for 4Mu against `systematics_v1`); best limits 0.70 and 0.15 fb.
+- 4mu at 3 pixel hits: simulated B·C/D = 0.38 (C 0.039 events); region A holds 20.9 events,
+  19.3 of them Drell-Yan, which has no events in B, C or D.
+- The four systematics barely change the expected limits (at most 0.4% at ten points, partly
+  jumps of the limit calculation); each moves the fitted r by about its own size, 1% or less.
+- The signal-injection test validates the 2Mu2E fit but not the 4Mu one: a third of the 4Mu
+  fits fail, as region C stays nearly empty, though the converged ones are now close to
+  unbiased (README open item 2).
 - The 2mu2e simulated background in B and C rests on about 1.5 effective QCD events each, so
   the simulation-only 2Mu2E limits test the machinery, not the sensitivity.
 - Lepton-jet efficiency, step 1: on the limit grid only the shortest lifetime decays mostly
@@ -63,8 +86,8 @@ weight variations, `CMS_l1_prefiring` flat 1%, `CMS_jet_energy` from the isolati
   0.33 beyond 300 cm) shows the size. Egamma-type: 0.89, 0.80, zero beyond 140 cm.
 
 **Open questions for the user or the group**
-1. The 4mu working point or method, given the empty C and D (the 3-pixel-hit working point
-   and the transfer factor from the validation regions are under discussion): group.
+1. The 4mu method, given the nearly empty region C at the 3-pixel-hit working point (the
+   transfer factor from the validation regions is under discussion): group.
 2. Lepton-jet reconstruction efficiency (`lj_reco_efficiency.md`, "What is needed"): which data
    control samples may be read (cosmics, Z → μμγ, J/ψ → μμ, J/ψ → ee), scale factors per
    lepton jet or per constituent, the provisional value until step 2, and (new from step 1)
@@ -101,6 +124,51 @@ local notes in `sidm/studies/limit_plotting/`. Later changes: stage by explicit 
 
 ### 2026-11-14
 
+- Notebooks 03, 04 and 05 rerun on `systematics_v2` with the 4mu working point at 3 pixel hits
+  (20:03 to 20:38), interpretations and README rewritten. 03: background unchanged from v1 (4mu
+  B·C/D 0.38; region A 20.9 events, 19.3 Drell-Yan, which no control region sees); every limit
+  is the v1 one divided by its filter efficiency (checked to three decimals at all 192 grid
+  limits); exclusion 12 of 48 (2Mu2E) and 23 of 48 (4Mu), with and without the corrections.
+  04: impacts and templates as before; the limit breakdown shows four 2Mu2E points at 200 GeV
+  that move only without the jet energy (0.1 to 0.25%), where it is largest, besides jumps of
+  the limit calculation; the 2Mu2E breakdown is identical in v1 and v2, as the scaling
+  requires. 05 failed in its correlations: FitDiagnostics evaluates the likelihood at r = 0
+  before any fit, which is undefined where the injected signal is a bin's only content (4mu C
+  300 to 400 GeV, A 1000 to 1500 GeV); `run_combine_pulls.py` now starts from the injected r,
+  and both fits converge with status 0 (2Mu2E had status 1 before). 4Mu injection: a third of
+  the fits fail, the converged ones 2.5 to 4% low (13 to 15% at 2 pixel hits).
+- `systematics_v2` complete at 20:01: all 3,158 chunks done, nothing to retry, all 200 samples
+  merged (194 at 19:00, 3 at 19:15, the last 3 at 20:10, each round after the skipped-file
+  check of its chunks). 10 jobs moved off slow nodes in all. 03 started on it.
+- `systematics_v2` at 19:00: 3,147 of 3,158 chunks done, no failures. 8 slow jobs moved off
+  cmswn2236, cmswn2176 and cmswn2254 (for example 4Mu_150GeV_1p2GeV_0p64mm chunk 1: 47 min on
+  cmswn2176 and not finished, then 11 min on the new node, 10 min in v1). Two of the 18:51 moves
+  swapped onto the other slow node through claim reuse, so the watcher now excludes every slow
+  node seen so far. Skipped-file check: the same 4 files without events as v1, nothing to retry.
+  Merge of the 194 fully checked samples started.
+- Campaign `systematics_v2` submitted at 17:01 (3,158 jobs; same chunks as v1, checked) after a
+  local test on one signal and one background file: the signal output records
+  `gen_filter_eff` 0.7795, the background 1.0, and the fixed `read_coffea` reads both. Code
+  tarball remade. The watcher moves slow jobs (Current state).
+- Merged upstream main into the branch (`39a2883`; 60 upstream commits, the user's request so
+  the PR can merge). Conflicts in `hists.py` and `hist_collections.yaml` (both sides added;
+  both kept) and in the `datacard_tools.py` docstring (rewritten to cover both conventions).
+  Upstream now applies the generator-filter efficiency of the v10 signal samples in the
+  normalization, which broke `production_xs_pb` for new outputs (the first cutflow row is no
+  longer lumi * xs); fixed in `8e337fc` (the recorded efficiency is divided out before the
+  match). Checked: no duplicate keys or names, every collection's hists defined, `tests/` and
+  the campaign tests pass (120).
+- The 4mu working point loosened to at most 3 pixel hits on both lepton jets (the user's
+  correction). 03 rerun on v1 with it (4mu simulated background A 20.9, B 26.3, C 0.039, D
+  2.75, B*C/D 0.38 instead of 0.003; 4Mu limits a median 11% lower; exclusion 24 to 27 of 48),
+  superseded by v2.
+- Summary deck in [`slides/`](slides/): `systematics.tex` (beamer, the style of the corrections
+  deck), 40 pages: the four systematics, the limits with and without, what each systematic does,
+  the fit checks, step 1 of the lepton-jet efficiency, the questions for the group, open items
+  and backup. Build with `pdflatex -interaction=nonstopmode systematics.tex` (twice) in
+  `slides/`. Its figures in `slides/figures/` are copies of the PDFs that 03 to 06 wrote to EOS
+  and of PNG outputs of 01 and 02; like the deck PDF they are gitignored. The deck is not
+  committed (made after the commits).
 - Committed for a pull request, at the user's request, in four commits on `systematicsStudy`:
   the user's limit-tool changes of the local `limit_updates` branch (`6f04fbc`, until now
   applied uncommitted), the `campaign.py skipped` fix, AGENTS.md and CLAUDE.md, and the study.

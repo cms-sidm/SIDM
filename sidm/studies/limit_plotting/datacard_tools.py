@@ -208,6 +208,17 @@ CAMPAIGNS = {
              "Unlike sixd_inclusive_v1 it has no HEM electron veto and no mu_veto, "
              "which are not defined in this repository.",
     ),
+    "systematics_v2": Campaign(
+        name="systematics_v2",
+        # as systematics_v1: signal and background in one directory, no data
+        bkg_dir=f"{_EOS_SYST}/systematics_v2",
+        signal_dir=f"{_EOS_SYST}/systematics_v2",
+        data_dir=f"{_EOS_SYST}/systematics_v2_has_no_data",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="systematics_v1 remade with the processor that applies the generator-filter "
+             "efficiency of the v10 signal samples (lumi * xs * gen_filter_eff, recorded in "
+             "the output metadata); same channels, histograms and samples.",
+    ),
 }
 
 DEFAULT_CAMPAIGN = "golden_hotspot_iso025_v1"

@@ -187,17 +187,18 @@ def pileup_halfwidth(h_nominal, h_up, h_down):
 
 # --- the ABCD inputs of the limits ---------------------------------------------------
 
-# Region A of the working points (iso x |dphi| plane, m_LJLJ >= 150 GeV, the default
-# displacement cuts: at most two pixel hits on muon-type LJs, at least one missing hit
-# on the egamma-type LJ). 2mu2e: muon-type LJ 0 <= iso < 0.3, |dphi| >= 2.6 against a
-# control side below 2.4, egamma-type LJ iso < 0.5. 4mu: leading muon-type LJ
-# 0 <= iso < 0.3, |dphi| >= 2.0, subleading iso < 0.5.
+# Region A of the working points (iso x |dphi| plane, m_LJLJ >= 150 GeV). 2mu2e: muon-type
+# LJ 0 <= iso < 0.3, |dphi| >= 2.6 against a control side below 2.4, egamma-type LJ
+# iso < 0.5; the default displacement cuts, at most two pixel hits on the muon-type LJ and
+# at least one missing hit on the egamma-type LJ. 4mu: leading muon-type LJ 0 <= iso < 0.3,
+# |dphi| >= 2.0, subleading iso < 0.5; at most three pixel hits on both LJs (the group's
+# loosened cut; pixel_hit_max is the upper edge of the 3-hit bin of the abcd6d_* axes).
 PLANE = "iso_dphi"
 WORKING_POINTS = {
     "SR_2mu2e": st.Selection("2mu2e working point", iso_cut=0.3, dphi_cut=2.6, dphi_cr=2.4,
                              other_iso_cut=0.5, iso_floor=0.0),
     "SR_4mu": st.Selection("4mu working point", iso_cut=0.3, dphi_cut=2.0,
-                           other_iso_cut=0.5, iso_floor=0.0),
+                           other_iso_cut=0.5, iso_floor=0.0, pixel_hit_max=3.5),
 }
 FINAL_STATE_CHANNEL = {"2Mu2E": "SR_2mu2e", "4Mu": "SR_4mu"}
 # DYJetsToMuMu holds the muon pairs of DYJetsToLL, so the two must never be added

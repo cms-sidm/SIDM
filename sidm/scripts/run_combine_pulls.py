@@ -15,6 +15,14 @@ background parameters of the ABCD model (flatParam, named bkg_*) are left out of
 the pulls, since they have no pre-fit constraint to be pulled against, but not out
 of the correlations.
 
+With --expect-signal R > 0 only the signal-plus-background fit runs (as in
+run_combine_toys.py), and the likelihood is first evaluated at r = R rather than
+at r = 0 (--customStartingPoint): where the injected signal falls in a bin without
+background, the likelihood at r = 0 is undefined, and that evaluation alone makes
+FitDiagnostics fail (the 4Mu point of 05_fit_checks.ipynb with the 4mu working
+point at 3 pixel hits). A background-only fit could not describe such a dataset
+either.
+
 Every card these scripts write holds simulation as data_obs, so a fit to it is a
 closure test of the background model and never a measurement. The fit runs in
 the Combine release, dispatched as run_combine_limits.py does.
@@ -87,6 +95,9 @@ def main(argv=None):
            "-m", "125", "--rMin", "0", "--rMax", f"{rmax:.6g}"]
     if not args.fit_data_obs:
         fit += ["-t", "-1", "--expectSignal", f"{args.expect_signal:g}"]
+        if args.expect_signal > 0:   # see the module docstring
+            fit += ["--skipBOnlyFit", "--customStartingPoint",
+                    "--setParameters", f"r={args.expect_signal:g}"]
     this = shlex.quote(str(Path(__file__).resolve()))
     inner = (f"cd {shlex.quote(str(outdir))} && {shlex.join(fit)} > fit.log 2>&1 && "
              f"python3 {this} {shlex.quote(str(args.card))} --outdir {shlex.quote(str(outdir))} "
