@@ -348,10 +348,11 @@ queue sample, chunk, filelist from job_args.txt
 | 8 | hist mode | `unweighted` | `unweighted` (unit weights, as before), `weighted`, or `syst` (weighted, plus a `syst` axis with every weight category; needs corrections) |
 | 9 | monitored corrections | empty | corrections evaluated but not applied, e.g. `electron_id`; `none` is the same as empty |
 | 10 | selections file | `configs/selections.yaml` | the file the channels are defined in, relative to `sidm/`; a study frozen to the definitions it ran with passes its own, e.g. `configs/selections_mulj_decay_angle_as_run.yaml` |
+| 11 | data guard | `no` | `allow-data` passes `--allow-data` to `run_sidm_chunk.py`, so the job may process collision data; any other value than `allow-data` or `no` stops the job |
 
 With the defaults the job applies the default corrections, which reach the cutflows only (the histograms stay unweighted); `none` as the 7th argument runs it as before the corrections existed. See [`sidm/studies/corrections/README.md`](../sidm/studies/corrections/README.md) for the corrections and the weight categories.
 
-`run_sidm_chunk.py` reads each sample's `skim_factor`, `is_data` and `year` from the location YAML its files come from (it matches the files against every YAML in `sidm/configs/ntuples/`), so the skimmed backgrounds are normalized with their skim factor. Earlier versions set `skim_factor = 1` for every sample, which overestimates a skimmed sample's yields by 1/skim_factor. The analysis is blinded, so a chunk whose files are collision data (an `is_data` sample, a `data*.yaml` location or a `/SIDM/Data/` path) stops before reading anything unless `--allow-data` is passed; `run_job.sh` never passes it.
+`run_sidm_chunk.py` reads each sample's `skim_factor`, `is_data` and `year` from the location YAML its files come from (it matches the files against every YAML in `sidm/configs/ntuples/`), so the skimmed backgrounds are normalized with their skim factor. Earlier versions set `skim_factor = 1` for every sample, which overestimates a skimmed sample's yields by 1/skim_factor. The analysis is blinded, so a chunk whose files are collision data (an `is_data` sample, a `data*.yaml` location or a `/SIDM/Data/` path) stops before reading anything unless `--allow-data` is passed. `run_job.sh` passes it only when its 11th argument is `allow-data`, which `campaign.py` gives only for a config with `allow_data: true` (section 23).
 
 `$ENV(USER)` is expanded at submit time, so the same file works for any LPC user. The only thing to edit between runs is the trailing "run tag" — for signals use:
 
@@ -925,6 +926,10 @@ python condor/campaign.py my_study_v1 skipped --submit
 python condor/campaign.py my_study_v1 merge      # into merged_dir, with .meta.yaml sidecars
 ```
 
+Each value of the config goes to the jobs as one argument of `run_job.sh`, so names and
+paths may not contain spaces or quotes; `campaign.py` refuses a config that has them, and
+channels that its selections file does not define.
+
 What it takes care of, from the lessons of the corrections campaign:
 
 - **Even job lengths.** `max_files_per_job` (100 by default) caps the files per job on top
@@ -943,7 +948,19 @@ What it takes care of, from the lessons of the corrections campaign:
   skipped twice is listed as bad, and files without events are left out.
 - **Merging.** `merge` merges only the samples whose chunks are all done, with
   `merge_coffea_chunks_eos.py` (section 17), and its sidecar lists every input file that
-  went in.
+  went in, the selections file and the histogram mode.
+- **A first look before the end.** `merge --partial` merges the chunks done so far, of
+  every sample or of the `--samples` given, into `merged_dir/partial/`, and its sidecars
+  list only the input files of those chunks. Run it again for a later look; the full merge
+  still goes to `merged_dir` once every chunk is done. A sample with a zero-byte chunk
+  output on EOS is left out until that chunk is retried.
+- **A study's own selections.** `selections_cfg` (relative to `sidm/`, `configs/selections.yaml`
+  by default) is the file the jobs read their channels from, for a study frozen to the
+  definitions it ran with.
+- **Collision data.** The analysis is blinded, so `jobs` and `submit` refuse a campaign whose
+  job lists hold collision data (a `data*.yaml` location config, or samples marked
+  `is_data`) unless the config sets `allow_data: true`, which passes `--allow-data` to the
+  jobs. Set it only for a use of data the analysis group has approved.
 
 Merged outputs belong in `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/`, where
 `sidm/test_notebooks/output_browser.ipynb` finds them. Writing there needs `lpcmetx` write

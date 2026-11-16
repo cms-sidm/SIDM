@@ -6,6 +6,10 @@
 #     python condor/campaign.py <name> status    # then retry --submit / skipped --submit until done
 #     python condor/campaign.py <name> merge
 #
+# `merge --partial` merges the chunks done so far into merged_dir/partial/, for a first look
+# while stragglers run. Values go to the jobs as command-line arguments, so they may not
+# contain spaces or quotes.
+#
 # Paths may use environment variables such as $USER. Every key without "required" can be
 # left out; the value shown is its default. corrections_v1.yaml is a complete example.
 
@@ -26,6 +30,11 @@ hist_collections: [muon_base]     # required: collections from sidm/configs/hist
 corrections: default              # default, none, or a list from sidm/configs/corrections.yaml
 hist_mode: unweighted             # unweighted, weighted, or syst (a syst axis; needs corrections)
 monitor_corrections: []           # corrections evaluated but not applied
+selections_cfg: configs/selections.yaml   # the file the channels are defined in, relative to sidm/
+# Collision data: the analysis is blinded, so a campaign over data is refused unless this
+# is true, which passes --allow-data to the jobs. Set it only for a use of data the analysis
+# group has approved.
+allow_data: false
 
 # Files in condor/: Condor logs, filelists, and the prefix of the retry and extra job lists
 logs_dir: logs_my_study_v1              # default: logs_<name>
