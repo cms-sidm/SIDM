@@ -42,6 +42,11 @@ The LJ-LJ dPhi and mass cuts, `lj_lj_*` histograms, mixed muon-egamma mass
 histograms and `mu_lj_sum_pt_score` use this pair. When adding pair observables,
 use candidate collections for both their masks and values.
 
+For simulation weights, cuts that read the candidate collections count as
+reading lepton jets. If a cut reads the selected object collection used for a
+scale factor, that collection still takes precedence. Otherwise the lepton-jet
+fallback uses constituents of the baseline `ljs`.
+
 Inclusive and leading-object diagnostics use their named collections:
 `lj0_*` and `lj1_*` refer to the leading baseline jets, which may differ from
 the analysis pair. Gen-matched histograms use the jets matched to generated
