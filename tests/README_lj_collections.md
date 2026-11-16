@@ -12,4 +12,5 @@ PYTHONPATH=. python tests/test_lj_collections.py
 The tests create Awkward records in memory and use the configured selections;
 no event files are needed. They check pair selection and ordering, stable
 identity, parent/child synchronization, channel exclusivity, empty collections,
-and agreement between pair cuts and histogram values.
+agreement between pair cuts and histogram values, and scale-factor source
+tracking for candidate-only cuts.

@@ -17,6 +17,7 @@ import sidm
 from sidm.definitions.cuts import evt_cut_defs, obj_cut_defs
 from sidm.definitions.hists import hist_defs
 from sidm.definitions.objects import add_lj_candidates, lj_parents
+from sidm.tools.corrections import Corrections
 from sidm.tools.selection import JaggedSelection, Selection
 from sidm.tools.sidm_processor import SidmProcessor
 
@@ -206,6 +207,28 @@ class LJCollectionsTest(unittest.TestCase):
                 self.assertEqual(projected.sum().value, 5.0)
                 self.assertEqual(projected.sum(flow=True).value, 5.0)
                 self.assertEqual(projected.values()[-1], 3.0)
+
+    def test_candidate_cuts_keep_lepton_jet_scale_factor_source(self):
+        """Candidate-only cuts still trigger the baseline LJ scale-factor fallback."""
+        processor = SidmProcessor(["4mu_sr"], [])
+        cuts = processor.build_cuts()["4mu_sr"]
+        built_from = {}
+        raw = objects([[jet(0, isolation=0.4), jet(1), jet(2)]])
+        leptons = ak.Array([[dict(pt=25.0, parent=dict(pdgId=32))]])
+        raw.update(genMus=leptons, genEs=leptons)
+        objs = processor.select_lepton_jets(raw, cuts, is_data=False, built_from=built_from)
+        self.assertEqual(ids(objs, "candidate_ljs"), [[1, 2]])
+        self.assertEqual(ids(objs, "ljs"), [[0, 1, 2]])
+
+        correction = Corrections("2018", names=["muon_id"])
+        muon_cuts = {"muons": ["looseID"]}
+        pair_reads = Selection(["4mu"]).collections_read(objs, built_from)
+        self.assertIn("candidate_mu_ljs", pair_reads)
+        self.assertEqual(correction.sf_sources(muon_cuts, pair_reads),
+                         {"muon_id": ("looseID", "ljs")})
+        muon_reads = Selection(["4mu", "n_mu == 2"]).collections_read(objs, built_from)
+        self.assertEqual(correction.sf_sources(muon_cuts, muon_reads),
+                         {"muon_id": ("looseID", "muons")})
 
     def test_pair_order_is_baseline_order_even_when_typed_views_are_reordered(self):
         objs = selected([[jet(2, pt=100, isolation=0.4), jet(5, mu=0, ele=1, pt=80),
