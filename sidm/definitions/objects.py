@@ -38,6 +38,58 @@ def nE(lj, n):
 def nPhoton(lj, n):
     return lj[lj.photon_n == n]
 
+# These are diagnostic views, not an exhaustive partition: mixed PF/DSA and
+# mixed electron/photon jets belong to their parent but neither pure child.
+lj_parents = {
+    "mu_ljs": "ljs",
+    "egm_ljs": "ljs",
+    "pfmu_ljs": "mu_ljs",
+    "dsamu_ljs": "mu_ljs",
+    "electron_ljs": "egm_ljs",
+    "photon_ljs": "egm_ljs",
+}
+lj_candidate_names = ("candidate_ljs", "candidate_mu_ljs", "candidate_egm_ljs")
+
+def lj_membership(ljs, selected):
+    """Per-event membership by the stable reconstruction index, never rank/pT."""
+    return ak.fill_none(ak.any(
+        ljs.idx[:, :, None] == selected.idx[:, None, :], axis=-1
+    ), False)
+
+def refresh_lj_children(objs, parent):
+    """Prune existing descendants after a parent cut, preserving child cuts.
+
+    Child views do not select their parent. In particular, their union must not
+    replace it, since the pure-child categories omit mixed-constituent jets.
+    Missing indices are a coherence error and must propagate to the caller.
+    """
+    for child, source in lj_parents.items():
+        if source == parent and child in objs:
+            objs[child] = objs[child][lj_membership(objs[child], objs[parent])]
+            refresh_lj_children(objs, child)
+
+def add_lj_candidates(objs):
+    """Add the leading pair of eligible LJs after all typed selections.
+
+    ``ljs`` is the pT-ordered baseline after generic LJ cuts; it remains intact
+    for reconstruction diagnostics. Keep jets surviving their typed selection
+    (with >=2 muons for muon candidates), then take the leading two in baseline
+    order. Later jets can replace rejected jets. Return a complete pair or an
+    empty list; extra jets are allowed. Call after all subtype cuts.
+    """
+    ljs = objs["ljs"]
+    mu_candidates = objs["mu_ljs"][objs["mu_ljs"].muon_n >= 2]
+    egm_candidates = objs["egm_ljs"][objs["egm_ljs"].muon_n == 0]
+    surviving = (lj_membership(ljs, mu_candidates)
+                 | lj_membership(ljs, egm_candidates))
+    pair = ljs[surviving][:, :2]
+    pair = pair[ak.broadcast_arrays(ak.num(pair) == 2, pair.idx)[0]]
+    selected = objs.copy()
+    selected["candidate_ljs"] = pair
+    selected["candidate_mu_ljs"] = pair[pair.muon_n >= 2]
+    selected["candidate_egm_ljs"] = pair[pair.muon_n == 0]
+    return selected
+
 def withMass(part, mass):
     return ak.zip(
         {
@@ -59,6 +111,10 @@ preLj_objs["electrons"]  = lambda evts: evts.Electron
 preLj_objs["photons"]    = lambda evts: evts.Photon
 preLj_objs["muons"]      = lambda evts: evts.Muon
 preLj_objs["dsaMuons"]   = lambda evts: evts.DSAMuon
+# uncut copy of the DSA muon collection. No selection lists it under obj_cuts, so it survives
+# the LJ-source cross-cleaning that removes DSA muons sharing a PF muon, and histograms can
+# still reach that discarded population at fill time.
+preLj_objs["dsaMuonsRaw"] = lambda evts: evts.DSAMuon
 preLj_objs["weight"]     = lambda evts: evts.genWeight
 preLj_objs["gens"]       = lambda evts: evts.GenPart
 preLj_objs["genMus"]     = lambda evts: pid(preLj_objs["gens"](evts), 13)
@@ -74,6 +130,13 @@ preLj_objs["bjets"]      = lambda evts: evts.Jet
 preLj_objs["pileup"]     = lambda evts: evts.Pileup
 # the event number seeds the reproducible JER smearing
 preLj_objs["event_number"] = lambda evts: evts.event
+# dimuon-vertex tables. They carry vx/vy/vxy but no pt/px/py, so the
+# processor's automatic beamspot-dxy step skips them (it requires pt)
+preLj_objs["dsaMuonVertex"]    = lambda evts: evts.DSAMuonVertex
+preLj_objs["patMuonVertex"]    = lambda evts: evts.PatMuonVertex
+preLj_objs["patDsaMuonVertex"] = lambda evts: evts.PatDSAMuonVertex
+# loaded only when a requested channel or histogram needs them (see SidmProcessor.__init__)
+on_demand_preLj_objs = ("dsaMuonsRaw", "dsaMuonVertex", "patMuonVertex", "patDsaMuonVertex")
 # define objects whose that will be added to objs by the sidm_processor after LJs are clustered
 # and LJ cuts are applied. postLj_obj cuts can be applied to these
 postLj_objs = {}

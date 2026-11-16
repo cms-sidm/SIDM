@@ -16,8 +16,9 @@ import vector
 from sidm import BASE_DIR
 from sidm.tools import selection, cutflow, utilities
 from sidm.tools.corrections import Corrections, resolve_names, weight_categories
-from sidm.definitions.hists import hist_defs, counter_defs
-from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC
+from sidm.tools.lj_vertex_chi2 import lj_best_vertex_chi2
+from sidm.definitions.hists import hist_defs, counter_defs, vtx_chi2_or_raw_dsa_hists
+from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC, on_demand_preLj_objs, add_lj_candidates
 
 def _patched_local2global(stack):
     """
@@ -96,7 +97,11 @@ class SidmProcessor(processor.ProcessorABC):
         self.histograms_cfg = histograms_cfg
         self.run_periods_cfg = run_periods_cfg
         self.unweighted_hist = unweighted_hist
-        self.obj_defs = preLj_objs
+        # dsaMuonsRaw and the dimuon-vertex tables feed only mu_ljs.vtx_chi2 and the histograms
+        # in vtx_chi2_or_raw_dsa_hists: load them, and compute vtx_chi2, only if requested
+        self.vtx_chi2_needed = self.needs_vtx_chi2_inputs()
+        self.obj_defs = {name: obj_def for name, obj_def in preLj_objs.items()
+                         if self.vtx_chi2_needed or name not in on_demand_preLj_objs}
         self.postLj_objs = postLj_objs
         self.postLj_objs_MC = postLj_objs_MC
         self.verbose = verbose
@@ -151,6 +156,8 @@ class SidmProcessor(processor.ProcessorABC):
         """Apply selections, make histograms and cutflow"""
         is_data = events.metadata["is_data"]
         year = str(events.metadata["year"])
+        # gen-filter production tag from make_fileset; absent in hand-built filesets
+        production = events.metadata.get("production")
 
         # apply golden json
         n_removed = 0
@@ -182,7 +189,7 @@ class SidmProcessor(processor.ProcessorABC):
                 objs[obj_name]["lxy"] = utilities.lxy(objs[obj_name])
 
             # add dxy wrt beamspot for all objs that don't already have it
-            if hasattr(obj, "vx") and not hasattr(obj, "dxy") and "bs" in objs:
+            if hasattr(obj, "vx") and hasattr(obj, "pt") and not hasattr(obj, "dxy") and "bs" in objs:
                 objs[obj_name]["dxy"] = utilities.dxy(objs[obj_name], ref=objs["bs"])
 
             # add dimension to one-per-event objects to allow independent obj and evt cuts
@@ -234,36 +241,33 @@ class SidmProcessor(processor.ProcessorABC):
                     # remove None entries from matched PF or DSA muons before applying cuts
                     sel_objs["dsaMuons"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuons"].matched_muons), "muons")
                     sel_objs["muons"]["good_matched_dsa_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["muons"].matched_dsa_muons), "dsaMuons")
+                    # Same list on the uncut DSA copy. dsaMuons loses the cross-cleaned muons a few
+                    # lines below, so this is the only place a histogram can still ask which PF muon
+                    # a discarded DSA track was matched against (sidm.definitions.hists.matched_dsa_seg).
+                    if "dsaMuonsRaw" in sel_objs:
+                        sel_objs["dsaMuonsRaw"]["good_matched_muons"] = nested_selection.apply_obj_cuts(sel_objs, ak.drop_none(sel_objs["dsaMuonsRaw"].matched_muons), "muons")
 
                     # apply pre-LJ object selection
                     sel_objs = obj_selection.apply_obj_cuts(sel_objs)
 
                     # reconstruct lepton jets
                     sel_objs["ljs"] = self.build_lepton_jets(sel_objs, float(lj_reco))
+                    # the dimuon-vertex tables are inputs to the LJ vertex match only (vtx_chi2 is on
+                    # the LJs); drop them so later cuts never slice them
+                    for vtx_table in ("dsaMuonVertex", "patMuonVertex", "patDsaMuonVertex"):
+                        sel_objs.pop(vtx_table, None)
 
                     # the two lines above set fields of objs["muons"] and
                     # objs["dsaMuons"] in place for each channel, so cache
                     # snapshots that later channels cannot change
                     lj_cache[cache_key] = {**sel_objs, "muons": copy.copy(sel_objs["muons"]),
                                            "dsaMuons": copy.copy(sel_objs["dsaMuons"])}
+                    # dsaMuonsRaw has good_matched_muons set in place above as well
+                    if "dsaMuonsRaw" in sel_objs:
+                        lj_cache[cache_key]["dsaMuonsRaw"] = copy.copy(sel_objs["dsaMuonsRaw"])
 
-                # apply obj selection to ljs
-                lj_selection = selection.JaggedSelection(cuts["lj"], self.verbose)
-                sel_objs = lj_selection.apply_obj_cuts(sel_objs)
-
-                # add post-lj objects to sel_objs, recording which collections
-                # each one is built from (e.g. mu_ljs from ljs)
-                if not is_data:
-                    self.postLj_objs = {**self.postLj_objs, **self.postLj_objs_MC}
-                built_from = {}
-                for obj in self.postLj_objs:
-                    recorder = selection.CollectionRecorder(sel_objs)
-                    sel_objs[obj] = self.postLj_objs[obj](recorder)
-                    built_from[obj] = recorder.looked_up
-
-                # apply post-lj obj selection
-                postLj_selection = selection.JaggedSelection(cuts["postLj_obj"], self.verbose)
-                sel_objs = postLj_selection.apply_obj_cuts(sel_objs)
+                built_from = {} if weights is not None else None
+                sel_objs = self.select_lepton_jets(sel_objs, cuts, is_data, built_from=built_from)
 
                 evt_selection = selection.Selection(cuts["evt"], self.verbose)
 
@@ -362,6 +366,7 @@ class SidmProcessor(processor.ProcessorABC):
                 # add sample metadata as set_accumulator to only keep unique values during accumulation
                 "year": processor.set_accumulator([year]),
                 "is_data": processor.set_accumulator([is_data]),
+                "production": processor.set_accumulator([production]),
                 "unweighted_hist": processor.set_accumulator([self.unweighted_hist]),
                 "n_removed_golden_json": n_removed,
             },
@@ -653,6 +658,29 @@ class SidmProcessor(processor.ProcessorABC):
         ljs["isolation"] = ak.fill_none((ljs["matched_jet"].energy / ljs.energy) * (1 - (ljs["lepton_fraction"])), 0)
         ljs["dR_matched_jet"] = ljs.delta_r(ljs["matched_jet"])
 
+        # best within-LJ dimuon-vertex fit quality. -1 = no stored vertex whose
+        # both legs are constituents of this LJ; -1 FAILS the keep-cuts by
+        # design, the opposite convention to the *Spread_* variables, which
+        # fill 0 (= passes) when a muon category is absent. The vertex tables
+        # only exist in LLPNanoAOD inputs; unless ALL THREE resolved, vtx_chi2
+        # is NaN and every vtx_chi2 cut (keep and inverse alike) selects
+        # nothing -- with only a subset of tables, LJs of the missing category
+        # would get -1 ("no vertex") and silently migrate into the
+        # inverse-cut region. See sidm/tools/lj_vertex_chi2.py.
+        vtx_table_names = [("dsaMuonVertex", "dsa"), ("patMuonVertex", "pat"),
+                           ("patDsaMuonVertex", "mix")]
+        vtx_tables = [(objs[n], k) for n, k in vtx_table_names if n in objs]
+        if not self.vtx_chi2_needed:
+            pass  # nothing requested reads vtx_chi2 (see __init__), so the LJs get no such field
+        elif len(vtx_tables) == len(vtx_table_names):
+            ljs["vtx_chi2"] = lj_best_vertex_chi2(
+                ljs.pfMuons.idx, ljs.dsaMuons.idx, vtx_tables)
+        else:
+            missing = [n for n, _ in vtx_table_names if n not in objs]
+            print(f"Warning: vtx_chi2 disabled: missing vertex table(s) {missing}. "
+                  "Every vtx_chi2 cut will select nothing.")
+            ljs["vtx_chi2"] = ak.full_like(ljs.pt, np.nan)
+
         # todo: add LJ displacement
 
         # pt order the new LJs
@@ -661,6 +689,47 @@ class SidmProcessor(processor.ProcessorABC):
 
         # return the new LJ collection
         return ljs
+
+    def needs_vtx_chi2_inputs(self):
+        """True if a requested channel has a cut whose name contains vtx_chi2, or a requested
+        histogram is in vtx_chi2_or_raw_dsa_hists. Cuts are recognized by name only, so a cut
+        that reads vtx_chi2 must have "vtx_chi2" in its name."""
+        selection_menu = utilities.load_yaml(f"{BASE_DIR}/{self.selections_cfg}")
+        for channel in self.channel_names:
+            cuts = selection_menu.get(channel, {})
+            if any("vtx_chi2" in str(cut) for cut in utilities.flatten(cuts)):
+                return True
+        hist_menu = utilities.load_yaml(f"{BASE_DIR}/{self.histograms_cfg}")
+        for collection in self.hist_collection_names:
+            if set(utilities.flatten(hist_menu.get(collection, []))) & vtx_chi2_or_raw_dsa_hists:
+                return True
+        return False
+
+    def select_lepton_jets(self, objs, cuts, is_data, *, built_from=None):
+        """Apply LJ cuts and select the pair, optionally recording collection sources.
+
+        This stage also accepts in-memory reconstructed jets, independently of
+        NanoEvents input, weights and event selection.
+        """
+        sel_objs = selection.JaggedSelection(cuts["lj"], self.verbose).apply_obj_cuts(objs)
+        post_objects = self.postLj_objs if is_data else {**self.postLj_objs, **self.postLj_objs_MC}
+        for name, definition in post_objects.items():
+            if built_from is None:
+                sel_objs[name] = definition(sel_objs)
+            else:
+                recorder = selection.CollectionRecorder(sel_objs)
+                sel_objs[name] = definition(recorder)
+                built_from[name] = recorder.looked_up
+        sel_objs = selection.JaggedSelection(cuts["postLj_obj"], self.verbose).apply_obj_cuts(sel_objs)
+        if built_from is None:
+            return add_lj_candidates(sel_objs)
+
+        recorder = selection.CollectionRecorder(sel_objs)
+        selected = add_lj_candidates(recorder)
+        built_from["candidate_ljs"] = recorder.looked_up
+        built_from["candidate_mu_ljs"] = {"candidate_ljs"}
+        built_from["candidate_egm_ljs"] = {"candidate_ljs"}
+        return selected
 
     def build_cuts(self):
         """ Make list of pre-lj object, lj, post-lj obj, and event cuts per channel"""
@@ -725,7 +794,7 @@ class SidmProcessor(processor.ProcessorABC):
 
     def postprocess(self, accumulator):
         """Modify accumulator after process has run on all chunks"""
-        # scale cutflow and hists according to lumi*xs
+        # scale cutflow and hists according to lumi*xs*gen_filter_eff
         for sample, output in accumulator.items():
             if len(output["metadata"]["is_data"]) != 1 or len(output["metadata"]["year"]) != 1:
                 print(f"WARNING: {sample} has more than one value for is_data or year. Not scaling histograms or cutflows.")
@@ -735,10 +804,17 @@ class SidmProcessor(processor.ProcessorABC):
                 print(f"{sample} is data. Not scaling histograms or cutflows.")
                 continue
 
-            print(f"{sample} is simulation. Scaling histograms or cutflows according to lumi*xs.")
+            productions = output["metadata"].get("production", {None})
+            production = next(iter(productions)) if len(productions) == 1 else None
+            gen_filter_eff = utilities.get_gen_filter_eff(sample, production)
+            print(f"{sample} is simulation. Scaling histograms or cutflows according to "
+                  f"lumi*xs*gen_filter_eff (gen_filter_eff = {gen_filter_eff:.4g}, "
+                  f"production {production}).")
+            # set_accumulator, like year/is_data, so a merge of chunks keeps one value
+            accumulator[sample]["metadata"]["gen_filter_eff"] = processor.set_accumulator([gen_filter_eff])
             year = list(output["metadata"]["year"])[0]
             sum_weights = output["metadata"]["scaled_sum_weights"]
-            lumixs_weight = utilities.get_lumixs_weight(sample, year, sum_weights)
+            lumixs_weight = utilities.get_lumixs_weight(sample, year, sum_weights, production)
             for name in output["cutflow"]:
                 accumulator[sample]["cutflow"][name].scale(lumixs_weight)
             if not self.unweighted_hist:

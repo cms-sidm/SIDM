@@ -115,16 +115,51 @@ def sample_outputs(out):
     return out
 
 
+# what postprocess used to scale a chunk; the merge undoes and redoes that scaling per sample
+NORMALIZATION_KEYS = ("gen_filter_eff", "production", "unweighted_hist")
+
+
+def check_chunk_normalization(outputs, keys=NORMALIZATION_KEYS, settings=None):
+    """Check each sample's settings before accumulation can hide a missing key.
+
+    All-legacy chunks may omit a key, but cannot mix with chunks that record it.
+    A present key must contain exactly one value, consistent across the sample.
+    settings holds what earlier calls saw ({sample: {key: values}}), so that chunks
+    read one at a time are checked against the ones before them.
+    """
+    settings = {} if settings is None else settings
+    for output in outputs:
+        for sample, sout in output.items():
+            if not isinstance(sout, dict) or "metadata" not in sout:
+                continue
+            expected = settings.setdefault(sample, {})
+            for key in keys:
+                values = sout["metadata"].get(key)
+                if key in sout["metadata"] and (values is None or len(values) != 1):
+                    raise ValueError(f"{sample}: {key} must contain exactly one value")
+                setting = None if values is None else frozenset(values)
+                if key in expected and setting != expected[key]:
+                    raise ValueError(f"{sample}: chunks disagree on {key} (value or presence); "
+                                     "not merging (re-run the odd chunks with the same setting)")
+                expected[key] = setting
+
+
 def combine_normalized_chunks(outputs, unweighted_override=None):
     """Combine per-chunk SidmProcessor outputs that were normalized PER CHUNK in postprocess.
 
-    postprocess scales (simulation only): cutflow ALWAYS by lumi*xs/sumw_chunk, and hists by the
+    postprocess scales (simulation only): cutflow ALWAYS by lumi*xs*gen_filter_eff/sumw_chunk, and
+    hists by the
     same factor UNLESS the run used unweighted_hist. A plain processor.accumulate over chunks
     therefore inflates those per-chunk-scaled objects by ~the number of chunks (more chunks -> more
     inflation). Recover the correct full-sample normalization by re-weighting each scaled object by
     its chunk sumw, accumulating, then dividing by the total sumw:
-        sum_j(obj_j*sumw_j) / sum_j(sumw_j)  ==  lumi*xs/sumw_full * sum_j raw_j   (the right answer).
+        sum_j(obj_j*sumw_j) / sum_j(sumw_j)  ==  lumi*xs*eff/sumw_full * sum_j raw_j   (the right answer).
     Data, and raw (unweighted) hists, are left to plain accumulation.
+    Runner-wrapped chunks are unwrapped (sample_outputs), and chunks of one sample
+    that disagree on gen_filter_eff, production or unweighted_hist (including missing keys in
+    only some chunks) raise instead of merging: before any input is re-weighted when outputs
+    is a list, and when the odd chunk is read when outputs is a generator. Chunks that all
+    lack a key remain supported.
 
     unweighted_override is only for OLD outputs whose metadata predates the 'unweighted_hist' key;
     newer runs store it, so the merge is self-describing.
@@ -149,7 +184,13 @@ def combine_normalized_chunks(outputs, unweighted_override=None):
             unweighted = False
         return True, (not unweighted)                 # (scale_cutflow, scale_hists)
 
+    if isinstance(outputs, (list, tuple)):
+        # chunks already in memory: refuse before any of them is re-weighted in place
+        check_chunk_normalization([sample_outputs(out) for out in outputs])
+    settings = {}
+
     def reweighted(out):
+        check_chunk_normalization([sample_outputs(out)], settings=settings)
         for sout in sample_outputs(out).values():
             if not isinstance(sout, dict) or "metadata" not in sout:
                 continue
@@ -229,6 +270,11 @@ def main():
         "--selections",
         default=None,
         help="Comma-separated selection names (e.g. 'base'). Saved into sidecar.",
+    )
+    parser.add_argument(
+        "--selections-cfg",
+        default="configs/selections.yaml",
+        help="Selections file the chunks were run with, relative to sidm/. Saved into sidecar.",
     )
     parser.add_argument(
         "--hist-collections",
@@ -376,8 +422,10 @@ def main():
                 unweighted_hist=args.unweighted_hist,
                 corrections=corrections or None,
                 monitor_corrections=monitored or None,
+                output=sample_outputs(merged),
                 extra={"n_chunks": len(local_paths)},
                 sidm_root=_REPO_ROOT,
+                selections_cfg=args.selections_cfg,
             )
             print(f"Wrote sidecar: {sidecar}")
             xrdcp_to_eos(sidecar, output_eos_dir)

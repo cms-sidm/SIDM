@@ -1511,10 +1511,12 @@ genOnly_born: &genOnly_born
     genEs:
       - "status 23"
 
-# re-application of the central-production gen filter. The v10 samples were
-# produced WITH this filter, so the cutflow row is a re-pass/validation rate
-# (0.84-1.00, mass-dependent) -- NOT a filter efficiency; per-point production
-# efficiencies: sidm/studies/truth_kinematics_forAN/central_genFilterEfficiencies.yml.
+# re-application of the central-production gen filter (pT > 5 GeV). The v10
+# samples were produced WITH the same filter at pT > 4 GeV, so the cutflow row is
+# a re-pass rate (0.84-1.00, mass-dependent; the deficit is the 4-5 GeV band) --
+# NOT a filter efficiency; per-point production efficiencies:
+# sidm/studies/truth_kinematics_forAN/central_genFilterEfficiencies.yml (central),
+# sidm/configs/signal_gen_filter_eff.yaml (v10).
 genFilterEmulation: &genFilterEmulation
   obj_cuts: {}
   evt_cuts:

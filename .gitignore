@@ -18,6 +18,7 @@ condor/filelists_smoke/
 condor/filelists_retry/
 condor/filelists_cond/
 condor/filelists_selfcon/
+condor/filelists_vtxlxydr/
 condor/submit_smoke.sub
 condor/smoke_samples.txt
 condor/logs/

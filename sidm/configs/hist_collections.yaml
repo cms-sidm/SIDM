@@ -1123,6 +1123,64 @@ cosmic_veto_extra: &cosmic_veto_extra
   - "dsaMu_pfMu_dR_closest"
   - "dsaMu_pfMu_pt_diff"
 
+# vertexChi2 study: the mu-LJ vtx_chi2 distributions and the mu-LJ DSA-muon pT x (phi, |dxy|,
+# sigma(pT)/pT, |eta|, nHits) histograms of the >= 200 GeV tail. The study's run notebooks
+# request it together with cosmic_veto.
+mu_lj_vtx_chi2_dsa_pt: &mu_lj_vtx_chi2_dsa_pt
+  - "mu_lj_vtx_chi2"
+  - "mu_lj_vtx_chi2_log"
+  - "mu_lj_dsaMuon_pt_phi"
+  - "mu_lj_dsaMuon_pt_absdxy"
+  - "mu_lj_dsaMuon_pt_relPtErr"
+  - "mu_lj_dsaMuon_pt_abseta"
+  - "mu_lj_dsaMuon_pt_nHits"
+  - "mu_lj_dsaMuon_pt_phi_nHits"
+  - "mu_lj_dsaMuon_pt_abseta_nHits"
+
+# DSA-vs-PF pT response for the DSA muons that have a PF-muon partner, i.e. exactly the
+# muons the LJ-source cross-cleaning removes
+dsa_pf_response: &dsa_pf_response
+  - "dsaPfMatch_ptPf_ptDsa"
+  - "dsaPfMatch_response_relPtErr"
+  - "dsaPfMatch_response_abseta"
+  - "dsaPfMatch_response_nHits"
+
+# 3D pT(PF) x pT(DSA) migration matrices, sliced in |eta| and in muon-system hit count
+dsa_response_matrix: &dsa_response_matrix
+  - "dsaPfMatch_ptPf_ptDsa_abseta"
+  - "dsaPfMatch_ptPf_ptDsa_nHits"
+
+# pT(PF) x pT(DSA) migration measured on the control sample built with the analysis's own
+# segment-based cross-cleaning match, not a dR match
+dsa_response_segmatch: &dsa_response_segmatch
+  - "dsaSegMatch_ptPf_ptDsa"
+  - "dsaSegMatch_ptPf_ptDsa_abseta"
+  - "dsaSegMatch_ptPf_ptDsa_nHits"
+  - "dsaSegMatch_response_abseta"
+  - "dsaSegMatch_response_nHits"
+  - "dsaSegMatch_response_relPtErr"
+  - "dsaSegMatch_ptPf_ptDsa_nPartners"
+  - "dsaSegMatch_ptPfFewest_ptDsa"
+  - "dsaSegMatch_ptDsa_absdxyBS_nHits"
+  - "dsaSegMatch_ptDsa_nDTHits_nHits"
+
+# Beam-halo diagnostics for the mu-LJ DSA muons: beamspot displacement, the DT/CSC hit split
+# (halo is CSC-only), and the phi x |eta| map of the high-pT tail
+dsa_tail_diag: &dsa_tail_diag
+  - "mu_lj_dsaMuon_pt_nHits_absdxyBS"
+  - "mu_lj_dsaMuon_pt_nHits_nDTHits"
+  - "mu_lj_dsaMuon_pt_phi_abseta"
+
+# vertexChi2 study: vertex outcome (no vertex / normChi2 >= 5 / pass) of every mu-type LJ
+# against its muon count, the matched gen dark photon's Lxy and the LJ's muon-pair dR, plus the
+# plain vtx_chi2 histogram the outcome marginal closes against. Signal MC only (gen axis).
+mu_lj_vtx_outcome_lxy_dr: &mu_lj_vtx_outcome_lxy_dr
+  - "mu_lj_vtxChi2_muonN_genA_lxy"
+  - "mu_lj_vtxChi2_muonN_mumu_dR"
+  - "mu_lj_vtxChi2_genA_lxy_mumu_dR"
+  - "mu_lj_vtx_chi2"
+  - "mu_lj_pt"
+
 cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - *cosAlpha
   - "egm_lj_pt"
@@ -1209,3 +1267,65 @@ corrections_study: &corrections_study
   - "lj1_pt"
   - "lj_lj_absdphi"
   - "lj_lj_invmass"
+
+mulj_decay_angle: &mulj_decay_angle
+  - "mu_lj_mumu_absCosTheta"
+  - "mu_lj_mumu_ptRatio"
+  - "mu_lj_mumu_ptRatio_vs_absCosTheta"
+  - "mu_lj_mumu_absCosTheta_vs_pt"
+  - "mu_lj_mumu_absCosTheta_vs_mass"
+  - "mu_lj_mumu_absCosTheta_vs_iso"
+  - "mu_lj_mumu_absCosTheta_vs_minDxy"
+  - "mu_lj_mumu_absCosTheta_vs_maxDxy"
+  - "mu_lj_mumu_absCosTheta_vs_nDsa"
+  - "mu_lj_mumu_absCosTheta_vs_subMuPt"
+  - "mu_lj_mumu_absCosTheta_vs_vxySpread_mu"
+  - "mu_lj_mumu_absCosTheta_vs_dzSpread_mu"
+  - "mu_lj_n"
+  - "mu_lj_iso"
+  - "mu_lj_pt"
+  - "lj_n"
+  - "mu_lj_muonN"
+  - "mu_lj_dsaMu_n"
+
+mulj_decay_angle_gen: &mulj_decay_angle_gen
+  - "genMu_AFrame_absCosTheta"
+  - "genMu_ptRatio_vs_absCosTheta"
+  - "genAs_toMu_lxy"
+
+mulj_decay_angle_pair: &mulj_decay_angle_pair
+  - "mulj_pair_absCosTheta0_vs_absCosTheta1"
+  - "mulj_pair_absCosTheta_vs_mjj"
+  - "mu_lj_mumu_absCosTheta"
+  - "mu_lj_n"
+
+# per-LJ decay angle of the leading lepton pair, for both LJ types
+lj_decay_angle: &lj_decay_angle
+  - *mulj_decay_angle
+  - "egm_lj_ee_absCosTheta"
+  - "egm_lj_ee_ptRatio"
+  - "egm_lj_ee_dR"
+  - "egm_lj_ee_absCosTheta_vs_mass"
+  - "egm_lj_n"
+  - "egm_lj_electronN"
+
+# event-level decay-plane observables of the two leading qualifying LJs (either type)
+lj_pair_decay_planes: &lj_pair_decay_planes
+  - "lj_pair_cosThetaA0_vs_cosThetaA1"
+  - "lj_pair_Phi"
+  - "lj_pair_planeAngle"
+  - "lj_pair_ptAsym"
+  - "lj_pair_ptVecSum"
+  - "lj_pair_met"
+  - "lj_pair_metCorr"
+  - "lj_pair_metCorr_vs_ptVecSum"
+  - "mulj_pair_absCosTheta0_vs_absCosTheta1"
+  - "mulj_pair_absCosTheta_vs_mjj"
+
+# the truth-level counterpart of lj_pair_decay_planes (signal only)
+lj_pair_decay_planes_gen: &lj_pair_decay_planes_gen
+  - "gen_pair_Phi"
+  - "gen_pair_planeAngle"
+  - "gen_pair_cosThetaA0_vs_cosThetaA1"
+  - "genMu_AFrame_absCosTheta"
+  - "genE_AFrame_absCosTheta"

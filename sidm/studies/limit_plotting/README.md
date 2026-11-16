@@ -257,8 +257,9 @@ datacard_tools.load_limit_metadata("limits_abcd_obs")   # the full record
 
 * **`r` is a cross section in fb.** `utilities.get_xs` returns a 1 fb reference for signal
   unless `use_signal_xs=True`, and `sidm_processor.postprocess` scales the histograms by
-  `lumi * xs`. So the datacards are built at 1 fb and Combine's `r` *is* the limit on sigma in
-  fb. The theory cross sections are applied afterwards in `limit_plots.ipynb` — no refit, and
+  `lumi * xs * gen_filter_eff` (the signal generator-filter efficiency,
+  `utilities.get_gen_filter_eff`). So the datacards are built at 1 fb and Combine's `r` *is* the
+  limit on the total (pre-filter) sigma in fb. The theory cross sections are applied afterwards in `limit_plots.ipynb` — no refit, and
   nothing about the coffea processing changes.
 
 * **One fixed bug in the theory cross sections, and one confirmed oddity.** A duplicate YAML
