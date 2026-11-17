@@ -127,6 +127,9 @@ over collision data needs the group's approval first (see "The analysis is blind
 ## Commits and pull requests
 
 - Coding agents commit or push only when asked.
+- Coding agents do not list themselves as authors or contributors: no `Co-Authored-By`
+  trailer naming an agent in commit messages, and no "Generated with ..." line at the end
+  of a pull-request description or anything else they write.
 - Stage files by explicit path. Never use `git add -A` or `git add .`: working trees hold
   large untracked outputs (coffea files, condor logs, notes, slides) that must not be
   committed.
