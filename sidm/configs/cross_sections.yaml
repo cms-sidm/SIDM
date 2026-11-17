@@ -24,8 +24,11 @@ WW: 76.03
 WZ: 27.51
 ZZ: 12.14
 
-# assume 1fb for all signal
-# hardcoded in utilities.get_xs() and will be overridden by specific entries here
+# Signal: utilities.get_xs returns 1 fb for every 2Mu2E/4Mu sample unless it is called with
+# use_signal_xs=True, so the processor's normalization always uses 1 fb. The entries below are
+# the theory cross sections. They are read by get_xs(..., use_signal_xs=True) and directly by
+# studies/limit_plotting (theory normalization of the limits, and which sample names count as
+# simulation) and studies/mulj_decay_angle.
 
 #2mu2e for mxx=200-1000
 

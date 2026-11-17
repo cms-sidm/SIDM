@@ -1,4 +1,7 @@
-""" Tool to add ntuple locations to sidm/configs/ntuple_locations.yaml.
+""" Tool to add ntuple locations to a location config in sidm/configs/ntuples/.
+
+The block is appended to the file given with -o, under the name given with -n; that name
+is the ntuple_version argument of utilities.make_fileset.
 
 Developed and tested on FNAL LPC. Will be updated after issue
 https://github.com/CoffeaTeam/coffea-casa/issues/374 is resolved. Note that cmsenv or equivalent
@@ -16,7 +19,7 @@ from XRootD import client
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output-cfg", dest="cfg", required=True,
-                    help="Path to output config, e.g. '../configs/ntuple_locations.yaml'")
+                    help="Path to output config, e.g. '../configs/ntuples/backgrounds.yaml'")
 parser.add_argument("-n", "--name", dest="name", required=True,
                     help="Name of group of ntuples, e.g. 'ffntuple_v4'")
 parser.add_argument("-c", "--comment", dest="comment", required=True,
