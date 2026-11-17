@@ -88,7 +88,7 @@ notebook; outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_eff_v1_re
   muon-type efficiency (0.87 and 0.77 in 4Mu), and no dimuon resonance reaches that opening
   angle (question 4 below).
 
-### Step 2: data and simulation in control samples (simulation done, data running, 2026-11-16)
+### Step 2: data and simulation in control samples (done for the prompt regime, 2026-11-17)
 
 The advisor approved reading data in the control samples proposed here, asking that each be
 thought through before its first look, especially distributions whose tails may be
@@ -167,10 +167,21 @@ table in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v2_results/`):
   that is a new version of the sample.
 - **The alone condition** keeps 98% of the J/ψ probes and does not change the passing fraction.
 
-**Running:** the data campaign `lj_reco_cr_data_v1` (all 2018 DoubleMuon files, the alone versions
-only, 2,580 jobs, submitted 2026-11-16 22:57). Next: the data/simulation passing fractions (J/ψ
-against pT, ΔR and |η|; Z for unconverted photons above 30 GeV), read only through
-`systematics_study.lj_cr_data`.
+**Results in data** (campaign `lj_reco_cr_data_v1`, all 2018 DoubleMuon files, the alone versions
+only, read through the safety table; notebook [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb);
+outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1_results/`):
+
+- **Muon-type (J/ψ → μμ):** above 50 GeV the passing fraction is 0.9819 ± 0.0004 in data and
+  0.9936 ± 0.0062 in simulation, a ratio of **0.988 ± 0.006** (barrel 0.991 ± 0.009, overlap 0.994
+  ± 0.007, endcaps 0.976 ± 0.008; ΔR from 0.05 to 0.12: 0.993 to 0.994 ± 0.003). Near the 30 GeV
+  threshold the data turn on more slowly (0.87 ± 0.04 from 40 to 50 GeV), where the spectrum inside
+  a bin differs between the prompt and non-prompt J/ψ of the data and the non-prompt ones of the
+  simulation. Below ΔR = 0.02 both samples hold few probes.
+- **Egamma-type (Z → μμγ, unconverted photons above 30 GeV):** 0.854 ± 0.016 in data, 0.842 ± 0.025
+  in Drell-Yan, a ratio of **1.01 ± 0.04** (1.04 ± 0.04 from 30 to 60 GeV, which holds 90% of the
+  probes; 0.80 ± 0.08 above 60 GeV, from 112 probes, 2.2 standard deviations).
+- **Not measured:** displaced DSA muons, converted photons (a purer probe), prompt electron pairs,
+  and the most collimated muon pairs. These are questions 4 and 5.
 
 ### Step 3: from ratios to a correction
 

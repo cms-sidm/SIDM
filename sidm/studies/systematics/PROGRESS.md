@@ -5,59 +5,32 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-17, 09:40)
+## Current state (2026-11-17, 11:10)
 
-**In progress: the lepton-jet efficiency with data (`lj_reco_efficiency.md`, step 2): simulation
-done and interpreted, data campaign running.** The user asked to go ahead, and to use the 4mu
-working-point deck (`wp_4mu_px3_dphi24.pdf`, the group's safety criteria) as the guide for whether
-a data region may be read.
-- **Scoping:** Z → μμγ (egamma-type) and boosted J/ψ → μμ (muon-type, prompt) are feasible with
-  the DoubleMuon data and our simulation; cosmics (no cosmic simulation; both legs always
-  reconstructed in our triggered, skimmed data) and J/ψ → ee (needs EGamma data) are not: group
-  question 5 (the user's request).
-- **Blinding of the control samples:** data read only the `_alone` versions, whose probes have no
-  other lepton jet of the signal selection's kinds away from them, so no event of the signal
-  region (which holds two) enters (`objects._alone`).
-- **Simulation, done:** campaign `lj_reco_cr_v2` complete (1,926 chunks, 114 samples merged, two
-  empty skipped files); notebook 07 executed with interpretations. Every region of both samples
-  is safe (worst signal: 0.010 events in all of Z → μμγ; 3.0 against 899 background events in the
-  J/ψ bin above 300 GeV), so no pT cap. J/ψ passing fraction 0.94 to 1.00 above 40 GeV, falling
-  for ΔR(μμ) below 0.03. Z → μμγ: narrow peak (85 to 95 GeV) and adjacent sidebands, because the
-  non-Z photons rise steeply under the peak; reliable for unconverted photons (R9 ≥ 0.94) above
-  30 GeV (0.83 to 0.86), not for converted ones (purer probe needed, a new version).
-- **Data campaign** `lj_reco_cr_data_v1` (all 2018 DoubleMuon files, alone channels and collection
-  only, 2,580 jobs, submitted 2026-11-16 22:57, the same chunks as `systematics_data_v1`; one-file
-  technical test first, output deleted): all chunks done overnight. 528 skipped files: 463 empty
-  (as in `systematics_data_v1`) and 65 in 10 chunks of 2018D, resubmitted as extra chunks on
-  2026-11-17 (cluster 31182283). Merge after they finish. The session scratchpad, with the watcher
-  scripts, was cleared overnight; the per-sample rule is in the condor-slow-nodes memory.
-- **Code, uncommitted:** channels `lj_cr_Z_to_mumugamma`, `lj_cr_JPsi_to_mumu` and their `_alone`
-  versions (`selections.yaml`); probes `zmmg_probe_photons`, `jpsi_probe_dimuons` (options
-  `alone`, and `pt_max` for J/ψ) and the uncut copies `photonsRaw`/`muonsRaw` (`objects.py`,
-  loaded only when needed: `SidmProcessor.needs_probe_inputs`); their event cuts (`cuts.py`);
-  histogram factories and four probe histograms (`hists.py`, `probe_hists`); collections
-  `lj_reco_control_samples` and `lj_reco_control_samples_alone`; the test for on-demand inputs
-  extended (4 pass); in `systematics_study.py` the safety check (`lj_cr_inputs`, `lj_cr_safety`,
-  `lj_cr_readable`, `require_safe`, `write_verdicts`, `lj_cr_verdicts`; switch
-  `STRICT_SPARSE_BINS` for the sparse-bin rule, which the user agreed to use until the advisor
-  rules), the efficiency helpers (`probe_efficiency`, `efficiency_ratio`, plots) and the gated data
-  loader `lj_cr_data`; notebook 07; configs `lj_reco_cr_v2.yaml` and `lj_reco_cr_data_v1.yaml`;
-  sample lists `samples_lj_reco_cr_{2mu2e,4mu,background}.txt`.
+**Step 2 of the lepton-jet efficiency done for the prompt regime (`lj_reco_efficiency.md`).** The
+user set the 4mu working-point deck's safety criteria as the guide for reading data (now a general
+rule in AGENTS.md) and allowed committing results from approved data uses.
+- **Simulation:** campaign `lj_reco_cr_v2`, notebook 07: every region of both control samples is
+  safe (with the sparse-bin rule, switch `STRICT_SPARSE_BINS`, used until the advisor rules).
+- **Data:** campaign `lj_reco_cr_data_v1` complete (2,590 chunks: 2,580 plus 10 extra chunks for 65
+  files that failed to read at first; 463 empty files skipped, as in `systematics_data_v1`; 68
+  samples merged). Notebook 08, read through the safety table: muon-type (J/ψ, above 50 GeV)
+  data/simulation 0.988 ± 0.006 (endcaps 0.976 ± 0.008); egamma-type (Z → μμγ, unconverted
+  photons above 30 GeV) 1.01 ± 0.04, 0.80 ± 0.08 above 60 GeV (112 probes).
+- **AN Sec. 7:** the lepton-jet reconstruction subsection now holds the measurement (two figures,
+  `efficiency_jpsi_above50_data_simulation.pdf` and `efficiency_zmmg_data_simulation.pdf` in
+  `an_systematics/`), replacing the authors' placeholder, in the advisor's style; compiles.
+- **Deck** `slides/systematics.tex`: 40 pages with the data results (local).
+- **Commits** on `systematicsStudy`, not pushed: `25fe827` (campaign tool), `0a5fd77` (AGENTS.md),
+  `3dd4114` (the study up to notebook 07), and the data step (notebook 08 and the documents).
 
 **The user's workflow (2026-11-16):** after running anything, update the AN (in the advisor's
 style, `an_systematics/WRITING_GUIDE.md`), then the summary deck, then commit and paste an updated
-PR description in chat. The deck `slides/systematics.tex` (the deck of 2026-11-14 kept as
-`systematics_2026-11-14.tex` with `figures_2026-11-14/`). Commit: include the data-campaign configs
-(`npv_data_v1.yaml`, `systematics_data_v1.yaml`, `samples_data_doublemuon_2018.txt`; the user
-agreed); keep `slides/` and `an_systematics/` local. Results from approved data uses may be
-committed (the user, 2026-11-17; AGENTS.md updated, with the safety criteria as a general rule). Under the advisor's rule the AN's lepton-jet
-subsection changes only when the data/simulation comparison exists.
+PR description in chat. Keep `slides/` and `an_systematics/` local.
 
-**Next (step 2):** when `lj_reco_cr_data_v1` is merged, a notebook `08_lj_reco_data` that reads the
-data only through `lj_cr_data` (gated by the safety table) and compares the passing fractions with
-the simulation (J/ψ against pT, ΔR and |η|; Z for unconverted photons above 30 GeV); then the AN,
-the deck, a commit and the PR description again. A purer Z → μμγ probe for converted photons is a
-later version.
+**Next:** step 3 (per-lepton-jet scale factors for the prompt regime, `Corrections` extension,
+two registry entries, rerun of 03 to 05), after the group's answers to questions 2 to 6 of
+`lj_reco_efficiency.md`; a purer Z → μμγ probe for converted photons (a new version of the sample).
 
 ## State before step 2 (2026-11-16, 17:10)
 
@@ -208,6 +181,11 @@ only.
 
 ### 2026-11-17
 
+- (11:10) Data campaign merged after the 10 extra chunks; notebook 08 written and executed (data
+  read only through `lj_cr_data`, gated by the safety table): results above. The J/ψ figure for
+  the AN shows the pT dependence from 30 GeV and the opening angle and |η| above 50 GeV, where the
+  threshold no longer matters; the comparison figures now share their x axis between the panels
+  (they did not at first). AN subsection, deck, README and proposal updated.
 - (09:40) The data campaign finished overnight; 65 skipped files in 10 chunks resubmitted. The user
   allowed committing results from approved data uses: AGENTS.md now says so, and states the
   group's safety criteria for reading a data region as a general rule. Committed the work of

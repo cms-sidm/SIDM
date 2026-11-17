@@ -424,8 +424,8 @@ J/ψ → μμ (muon-type, prompt) can be measured with our data and simulation, 
 cannot; the channels `lj_cr_Z_to_mumugamma` and `lj_cr_JPsi_to_mumu`, and their `_alone`
 versions without events of the signal region (the only ones data read), ran in the simulation
 campaign `lj_reco_cr_v2`, whose signal side is the safety check (the group's criteria, bin by
-bin): every region of both samples is safe, and the data campaign `lj_reco_cr_data_v1` is
-running. Step 3 waits on the group (scale-factor
+bin): every region of both samples is safe, so the data campaign `lj_reco_cr_data_v1` read them
+in full (`08_lj_reco_data.ipynb`). Step 3 waits on the group (scale-factor
 granularity, provisional value, the most collimated muon pairs, and the regimes no control
 sample reaches).
 
@@ -442,6 +442,17 @@ sample reaches).
   since photons that do not come from the Z make a steeply rising background under the peak
   (peak 85 to 95 GeV, adjacent sidebands). Converted photons need a purer probe.
 - **The alone condition** does not change the passing fraction.
+
+### Results of step 2 in data (2026-11-17, `08_lj_reco_data.ipynb`)
+
+- **Muon-type (J/ψ → μμ):** above 50 GeV, data/simulation 0.988 ± 0.006 (endcaps 0.976 ± 0.008);
+  the simulation describes the prompt muon-type lepton jets to about 1%. Near the 30 GeV threshold
+  the data turn on more slowly, which the different J/ψ spectra of data and simulation inside a bin
+  can cause.
+- **Egamma-type (Z → μμγ, unconverted photons above 30 GeV):** data/Drell-Yan 1.01 ± 0.04 (1.04 ±
+  0.04 from 30 to 60 GeV; 0.80 ± 0.08 above 60 GeV, from 112 probes).
+- **Not measured:** displaced DSA muons, converted photons, prompt electron pairs, the most
+  collimated muon pairs.
 
 ### Results of step 1 (2026-11-14)
 
@@ -498,6 +509,7 @@ sample reaches).
 | [`05_fit_checks.ipynb`](05_fit_checks.ipynb) | checks of the fit: signal injection with toys, likelihood scans, correlations | outputs of 03 | about 5 min |
 | [`06_lj_reco_efficiency.ipynb`](06_lj_reco_efficiency.ipynb) | step 1 of the lepton-jet reconstruction efficiency: the efficiency against $L_{xy}$, $p_T$ and the opening angle, its maps, and the decay-radius regimes of every signal point | `lj_reco_eff_v1` | about 1 min |
 | [`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb) | step 2 of the lepton-jet reconstruction efficiency, simulation part: the Z → μμγ and J/ψ → μμ probes, the safety check that decides which regions data may read (table written to EOS), the efficiencies the simulation expects | `lj_reco_cr_v2` | about 2 min |
+| [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb) | step 2 of the lepton-jet reconstruction efficiency, data part: the passing fractions of the control samples in data against the simulation, read only through the safety table of 07 | `lj_reco_cr_data_v1`, `lj_reco_cr_v2` | about 2 min |
 
 Notebooks 01 and 02 read the merged outputs of the corrections campaign
 (`corrections_study.CAMPAIGN_DIR`) through `corrections_study.load`, which copies them once

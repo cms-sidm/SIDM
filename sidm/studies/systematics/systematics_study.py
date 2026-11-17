@@ -1233,3 +1233,77 @@ def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt"):
         for field in ("value", "variance"):     # the weighted view takes no scalar as a whole
             view[field][tuple(index)] = 0.0
     return out
+
+
+# where 08_lj_reco_data.ipynb writes its figures and the passing fractions in data and simulation
+LJ_CR_DATA_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1_results"
+
+
+def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None):
+    """The probe mass of one control sample in data (points) and in the simulation (stacked by
+    group, at its luminosity), for the probes that sel (a dict of histogram slices) keeps"""
+    spec = LJ_CR[cr]
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 6))
+    bottom = None
+    for (group, samples), colour in zip(LJ_CR_GROUPS.items(),
+                                        (study.BLUE, study.ORANGE, study.AQUA, study.GRAY)):
+        hists = [inputs["background"][s][cr] for s in samples if s in inputs["background"]]
+        if not hists:
+            continue
+        h = sum(hists)
+        mass = (h[sel] if sel else h).project(spec["mass"])
+        base = np.zeros(len(mass.values())) if bottom is None else bottom
+        ax.stairs(base + mass.values(), mass.axes[0].edges, baseline=base, fill=True,
+                  color=colour, label=group)
+        bottom = base + mass.values()
+    mass = (data[cr][sel] if sel else data[cr]).project(spec["mass"])
+    ax.errorbar(mass.axes[0].centers, mass.values(), yerr=np.sqrt(mass.variances()), fmt="o",
+                color=study.BLACK, label="data")
+    ax.set_xlabel(mass.axes[0].label)
+    ax.set_ylabel("probes")
+    ax.legend(fontsize=11)
+    return ax
+
+
+def plot_efficiency_comparison(results, reference, top, bottom):
+    """Passing fractions ({label: probe_efficiency result}, the data under "data") in the top
+    panel, and the ratio of the data to the curve named reference in the bottom panel"""
+    plot_probe_efficiency(results, ax=top)
+    ratio, err = efficiency_ratio(results["data"], results[reference])
+    edges = results["data"]["edges"]
+    axis = results["data"]["axis"]
+    bottom.errorbar(0.5 * (edges[1:] + edges[:-1]), in_range(axis, ratio),
+                    yerr=in_range(axis, err), xerr=0.5 * np.diff(edges), fmt="o",
+                    color=study.BLACK)
+    bottom.axhline(1.0, color=study.GRAY, linestyle=":")
+    bottom.set_ylim(0.6, 1.4)
+    bottom.set_ylabel(f"data / {reference}", fontsize=12)
+    bottom.set_xlabel(top.get_xlabel())
+    top.set_xlabel("")
+    top.tick_params(labelbottom=False)
+
+
+def efficiency_table(results, reference):
+    """[(low edge, high edge, data, its uncertainty, reference, its uncertainty, ratio, its
+    uncertainty)] over the in-range bins, results as for plot_efficiency_comparison"""
+    data, ref = results["data"], results[reference]
+    ratio, err = efficiency_ratio(data, ref)
+    columns = [in_range(data["axis"], x) for x in (data["eff"], data["err"], ref["eff"],
+                                                   ref["err"], ratio, err)]
+    return [(lo, hi, *values) for lo, hi, *values in zip(data["edges"][:-1], data["edges"][1:],
+                                                         *columns)]
+
+
+def integrated_efficiency(h, spec):
+    """(passing fraction, its uncertainty, probes) of all the probes of h, its other axes summed,
+    after the sideband subtraction of probe_efficiency"""
+    (p_lo, p_hi), sidebands = spec["peak"], spec["sidebands"]
+    k = (p_hi - p_lo) / sum(hi - lo for lo, hi in sidebands)
+    peak = mass_window(h, spec["mass"], p_lo, p_hi).project("passing")
+    side = sum(mass_window(h, spec["mass"], lo, hi).project("passing") for lo, hi in sidebands)
+    values = peak.values() - k * side.values()
+    variances = peak.variances() + k * k * side.variances()
+    probes = values.sum()
+    eff = values[1] / probes
+    return eff, math.sqrt((1 - eff) ** 2 * variances[1] + eff ** 2 * variances[0]) / probes, probes
