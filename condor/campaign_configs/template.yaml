@@ -27,6 +27,11 @@ corrections: default              # default, none, or a list from sidm/configs/c
 hist_mode: unweighted             # unweighted, weighted, or syst (a syst axis; needs corrections)
 monitor_corrections: []           # corrections evaluated but not applied
 
+# Collision data. The analysis is blinded: run_sidm_chunk.py refuses data unless given
+# --allow-data, which campaign.py passes only when this is true. Set it only for a data use
+# the group approved, name that use in the config's header, and read nothing else.
+allow_data: false
+
 # Files in condor/: Condor logs, filelists, and the prefix of the retry and extra job lists
 logs_dir: logs_my_study_v1              # default: logs_<name>
 filelists_dir: filelists_my_study_v1    # default: filelists_<name>
@@ -43,6 +48,7 @@ job_lists:
     census_skip: null             # census skip list (a path, or a name in sidm/configs/census/)
     replace_xcache: false         # true on LPC, where root://xcache// does not resolve
     max_files: null               # files per sample, for a quick test
+    file_stride: null             # every Nth file of each sample: an even subset, e.g. of data
 
 # At most this many input files per job, whatever files_per_job says: each file costs a
 # fixed ~30 s, so a job of a few hundred tiny files runs for hours.

@@ -126,14 +126,36 @@ def test_submit():
     expanded = re.sub(r"\$\((\w+)\)", lambda m: macros.get(m.group(1), m.group(0)), arguments)
     old = ("$(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/"
            "CorrectionsChunks_v1 base,2mu2e,4mu,2mu2e_sr,4mu_sr,Z_to_mumu_control_region "
-           "corrections_study pileup,l1_prefiring,muon_id,electron_reco syst photon_pixel_veto")
-    check("arguments as in submit_corrections.sub", expanded == old.replace("$ENV(USER)", os.environ["USER"]))
+           "corrections_study pileup,l1_prefiring,muon_id,electron_reco syst photon_pixel_veto "
+           "configs/selections.yaml mc")
+    check("arguments as in submit_corrections.sub, plus the selections file and the data mode",
+          expanded == old.replace("$ENV(USER)", os.environ["USER"]))
     check("job list relative to condor/", macros["JOB_ARGS"] == "job_args_corrections_2mu2e.txt")
     check("logs", macros["LOGS"] == "logs_corrections")
     check("memory", macros["MEMORY"] == "2GB" and camp.submit_macros(job_list, "8GB")["MEMORY"] == "8GB")
     check("stall guard", macros["STALL_HOURS"] == "12" and macros["STALL_RESTARTS"] == "1")
     cmd = camp.submit_command(job_list)
     check("command ends with the submit file", cmd[-1] == campaign.SUBMIT_FILE and "CORRECTIONS=" + camp.corrections in cmd)
+
+
+def test_data_switch():
+    """Collision data only with allow_data: true, and nothing else turns it on"""
+    good = corrections_config()
+    job_list = os.path.join(campaign.CONDOR, "job_args_corrections_2mu2e.txt")
+    camp = campaign.Campaign(copy.deepcopy(good))
+    check("data refused by default", not camp.allow_data and camp.submit_macros(job_list)["DATA_MODE"] == "mc")
+    cfg = copy.deepcopy(good)
+    cfg["allow_data"] = True
+    check("allow_data passes --allow-data",
+          campaign.Campaign(cfg).submit_macros(job_list)["DATA_MODE"] == "allow-data")
+    for value in ("true", "yes", 1, None):
+        cfg = copy.deepcopy(good)
+        cfg["allow_data"] = value
+        check(f"allow_data {value!r} is not a boolean", raises(cfg))
+    cfg = copy.deepcopy(good)
+    cfg["monitor_corrections"] = []
+    check("an empty monitor list keeps its argument position",
+          campaign.Campaign(cfg).submit_macros(job_list)["MONITOR"] == "none")
 
 
 def test_make_job_args():
@@ -155,6 +177,12 @@ def test_make_job_args():
     check("default", make_job_args.files_per_job_for("signal", fpj, 25) == 25)
     check("capped", make_job_args.files_per_job_for("tiny", fpj, 25, cap=100) == 100)
     check("below the cap", make_job_args.files_per_job_for("big", fpj, 25, cap=100) == 6)
+    check("no stride unless asked", "--file-stride" not in bkg)
+    cfg = corrections_config()
+    cfg["job_lists"][2]["file_stride"] = 100
+    strided = campaign.Campaign(cfg)
+    cmd = strided.make_job_args_command(strided.job_list_specs[2])
+    check("stride passed", cmd[cmd.index("--file-stride") + 1] == "100")
 
 
 def test_bookkeeping():
@@ -208,6 +236,7 @@ if __name__ == "__main__":
     test_configs_load()
     test_validation()
     test_submit()
+    test_data_switch()
     test_make_job_args()
     test_bookkeeping()
     print(f"{_PASS} passed, {_FAIL} failed")

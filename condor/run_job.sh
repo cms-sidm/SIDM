@@ -28,6 +28,14 @@ MONITOR_CORRECTIONS=${9:-}
 # relative to sidm/ (SidmProcessor's selections_cfg). A study frozen to the
 # definitions it ran with passes its own file.
 SELECTIONS_CFG=${10:-configs/selections.yaml}
+# Optional positional arg 11: "allow-data" to process collision data
+# (run_sidm_chunk.py --allow-data); anything else, or nothing, keeps the refusal.
+# condor/campaign.py passes it only for a config with allow_data: true.
+DATA_MODE=${11:-mc}
+DATA_FLAGS=()
+if [ "${DATA_MODE}" = "allow-data" ]; then
+    DATA_FLAGS=(--allow-data)
+fi
 
 case "${HIST_MODE}" in
     unweighted) HIST_FLAGS=(--unweighted-hist) ;;
@@ -125,7 +133,8 @@ python condor/run_sidm_chunk.py \
     --corrections "${CORRECTIONS}" \
     --monitor-corrections "${MONITOR_CORRECTIONS}" \
     --selections-cfg "${SELECTIONS_CFG}" \
-    ${HIST_FLAGS[@]+"${HIST_FLAGS[@]}"}
+    ${HIST_FLAGS[@]+"${HIST_FLAGS[@]}"} \
+    ${DATA_FLAGS[@]+"${DATA_FLAGS[@]}"}
 
 echo "Output:"
 ls -lh "${OUTFILE}"

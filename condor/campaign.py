@@ -82,10 +82,11 @@ DEFAULTS = {
     "max_retries": 2,
     "stall_hours": 12,
     "stall_restarts": 1,
+    "allow_data": False,       # the analysis is blinded: true only for a data use the group approved
 }
 JOB_LIST_REQUIRED = ("job_args", "samples_file", "dataset", "location_cfg")
 JOB_LIST_DEFAULTS = {"files_per_job": 1, "files_per_job_map": None, "replace_xcache": False,
-                     "census_skip": None, "max_files": None}
+                     "census_skip": None, "max_files": None, "file_stride": None}
 
 
 def _names(value, key):
@@ -129,6 +130,11 @@ class Campaign:
         self.monitor = _names(c["monitor_corrections"], "monitor_corrections") if c["monitor_corrections"] else []
         if self.corrections == "none" and (self.monitor or self.hist_mode == "syst"):
             raise ValueError(f"{path}: monitor_corrections and hist_mode syst need corrections")
+        # run_sidm_chunk.py refuses collision data unless given --allow-data; a campaign
+        # passes it only when its config says so in so many words
+        if not isinstance(c["allow_data"], bool):
+            raise ValueError(f"{path}: allow_data must be true or false, got {c['allow_data']!r}")
+        self.allow_data = c["allow_data"]
         self.logs_dir = os.path.join(CONDOR, c["logs_dir"] or f"logs_{self.name}")
         self.filelists_dir = os.path.join(CONDOR, c["filelists_dir"] or f"filelists_{self.name}")
         self.prefix = c["job_list_prefix"] or f"job_args_{self.name}"
@@ -179,7 +185,10 @@ class Campaign:
             "HIST_COLLECTIONS": ",".join(self.hist_collections),
             "CORRECTIONS": self.corrections,
             "HIST_MODE": self.hist_mode,
-            "MONITOR": ",".join(self.monitor),
+            # "none" rather than empty, so the arguments after it keep their positions
+            "MONITOR": ",".join(self.monitor) or "none",
+            "SELECTIONS_CFG": "configs/selections.yaml",
+            "DATA_MODE": "allow-data" if self.allow_data else "mc",
             "LOGS": os.path.relpath(self.logs_dir, CONDOR),
             "MEMORY": memory or self.request_memory,
             "MAX_RETRIES": str(self.max_retries),
@@ -212,6 +221,8 @@ class Campaign:
             cmd += ["--census-skip", spec["census_skip"]]
         if spec["max_files"]:
             cmd += ["--max-files", str(spec["max_files"])]
+        if spec["file_stride"]:
+            cmd += ["--file-stride", str(spec["file_stride"])]
         return cmd
 
 

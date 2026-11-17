@@ -944,6 +944,9 @@ What it takes care of, from the lessons of the corrections campaign:
 - **Merging.** `merge` merges only the samples whose chunks are all done, with
   `merge_coffea_chunks_eos.py` (section 17), and its sidecar lists every input file that
   went in.
+- **Collision data.** The analysis is blinded, and `run_sidm_chunk.py` refuses data unless
+  given `--allow-data`. A campaign passes it only when its config sets `allow_data: true`,
+  which is for a data use the group approved; the config's header names that use.
 
 Merged outputs belong in `/store/group/lpcmetx/SIDM/coffea_outputs/$USER/<study>/`, where
 `sidm/test_notebooks/output_browser.ipynb` finds them. Writing there needs `lpcmetx` write
