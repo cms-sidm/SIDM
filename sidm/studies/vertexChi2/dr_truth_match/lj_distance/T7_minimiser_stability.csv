@@ -1,0 +1,4 @@
+set,n_variant,variant_max_abs_diff,variant_n_gt_0p01,variant_n_gt_0p1,variant_class_changes_1_5_15,n_exhaustive,default_minus_exhaustive_max,default_minus_exhaustive_min,n_path1,path1_gmin_above_ttmd
+2Mu2E,1946,0.0005205977256514949,0,0,0,60,8.79296635503124e-14,-5.8832938520936295e-12,2726,0
+2Mu2E wide-pair,2189,0.0024912666847916043,0,0,0,60,6.328271240363392e-14,-1.56008539420327e-12,564,0
+4Mu,11287,0.03588449420898776,2,0,0,60,9.296036163064514e-13,-8.539835505416704e-13,4344,0

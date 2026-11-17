@@ -1,5 +1,8 @@
 """Define all available cuts"""
 
+# python
+import functools
+import operator
 # columnar analysis
 import awkward as ak
 import numpy as np
@@ -325,6 +328,27 @@ def _gen_filter_count(leps, flag_bits, status=None):
     )
     return ak.num(leps[passing])
 
+# MET filters ANDed by "pass flags". The order is the bit order of the histogram
+# met_filter_fail_mask (bit 0 goodVertices, bit 1 the beam-halo filter, ...).
+MET_FILTERS = (
+    "goodVertices",
+    "globalSuperTightHalo2016Filter",
+    "HBHENoiseFilter",
+    "HBHENoiseIsoFilter",
+    "EcalDeadCellTriggerPrimitiveFilter",
+    "BadPFMuonFilter",
+    "BadPFMuonDzFilter",
+    "eeBadScFilter",
+    "ecalBadCalibFilter",
+    "hfNoisyHitsFilter",
+)
+HALO_FILTER = "globalSuperTightHalo2016Filter"
+
+
+def _pass_filters(objs, names):
+    """AND of the named Flag_* filters."""
+    return functools.reduce(operator.and_, (objs["flags"][name] for name in names))
+
 evt_cut_defs = {
     # This following will be True for every event. There's probably a more intuitive way to do this
     "Keep all evts": lambda objs: ak.flatten(objs["pvs"].npvs) >= 0,
@@ -353,18 +377,10 @@ evt_cut_defs = {
         | objs["hlt"].DoubleL2Mu25NoVtx_2Cha_Eta2p4
         | objs["hlt"].DoubleL2Mu25NoVtx_2Cha_CosmicSeed_Eta2p4
     ),
-    "pass flags": lambda objs: (
-          objs["flags"].goodVertices
-        & objs["flags"].globalSuperTightHalo2016Filter
-        & objs["flags"].HBHENoiseFilter
-        & objs["flags"].HBHENoiseIsoFilter
-        & objs["flags"].EcalDeadCellTriggerPrimitiveFilter
-        & objs["flags"].BadPFMuonFilter
-        & objs["flags"].BadPFMuonDzFilter
-        & objs["flags"].eeBadScFilter
-        & objs["flags"].ecalBadCalibFilter
-        & objs["flags"].hfNoisyHitsFilter
-    ),
+    "pass flags": lambda objs: _pass_filters(objs, MET_FILTERS),
+    "pass flags except halo": lambda objs: _pass_filters(
+        objs, [f for f in MET_FILTERS if f != HALO_FILTER]),
+    "fail halo filter": lambda objs: ~objs["flags"][HALO_FILTER],
     ">=1 muon": lambda objs: ak.num(objs["muons"]) >= 1,
     ">=2 muons (pf or dsa) pT > 26 GeV": lambda objs: (
         ak.sum(objs["muons"].pt > 26, axis=-1) + ak.sum(objs["dsaMuons"].pt > 26, axis=-1) >= 2

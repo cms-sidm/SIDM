@@ -42,11 +42,15 @@ VTX = "base_ljDisplacementIso_cosAlpha_vtxChi2"
 SELS = {REF: "reference (no cosmic veto)", SPREAD: "Spread veto"}
 NEFF_MIN = 200          # robust subset, as in the write-up (section 4)
 NEFF_BIN_MIN = 20       # a sample enters a bin's unweighted mean only with N_eff >= this there
+NEFF_RTOL = 1e-9        # relative tolerance of that comparison
 H_LXY, H_DR, H_3D = ("mu_lj_vtxChi2_muonN_genA_lxy", "mu_lj_vtxChi2_muonN_mumu_dR",
                      "mu_lj_vtxChi2_genA_lxy_mumu_dR")
 V_NOVTX, V_PASS, V_FAIL, V_OTHER = [1, 2], [3, 4, 5], [6, 7, 8, 9, 10], [0]
 OUTCOMES = {"no_vertex": V_NOVTX, "chi2_ge5": V_FAIL, "pass": V_PASS}
 MU_1, MU_GE2 = [1], [2, 3, 4]   # muonN axis [1, 2, 3, 11], flow view
+# The grid is the v10 production (signal_*_v10.yaml); the stored outputs predate the production
+# tag in the metadata, so this selects their generator-filter efficiency.
+STORED_PRODUCTION = "v10"
 
 
 def _num(s):
@@ -74,12 +78,22 @@ def hists(path, with_meta=False):
     return (n, o["hists"], o["metadata"]) if with_meta else (n, o["hists"])
 
 
+def production(md):
+    """Signal production of an output: its metadata's, else STORED_PRODUCTION."""
+    p = md.get("production", set())
+    return next(iter(p)) if len(p) == 1 and next(iter(p)) else STORED_PRODUCTION
+
+
 def yield_scale(n, md):
-    """lumi*xs/sumw for an unweighted (condor) output, 1 for a weighted one: the factor
-    postprocess would have applied, so pooled sums weight each sample by its yield."""
+    """lumi*xs*gen_filter_eff/sumw for an unweighted (condor) output; for a weighted one, the
+    generator-filter efficiency if postprocess did not apply it (no gen_filter_eff in the
+    metadata), else 1. Pooled sums then weight each sample by its yield."""
     if not bool(next(iter(md.get("unweighted_hist", {False})))):
-        return 1.0
-    return utilities.get_lumixs_weight(n, str(next(iter(md["year"]))), md["scaled_sum_weights"])
+        if "gen_filter_eff" in md:
+            return 1.0
+        return utilities.get_gen_filter_eff(n, production(md))
+    return utilities.get_lumixs_weight(n, str(next(iter(md["year"]))), md["scaled_sum_weights"],
+                                       production(md))
 
 
 def vv(h, ch):
@@ -228,7 +242,9 @@ def binned(sel, labels, getter):
             neff = np.divide(tot ** 2, totw, out=np.zeros_like(tot), where=totw > 0)
             for k, idx in OUTCOMES.items():
                 fr = np.divide(v[idx].sum(axis=0), tot, out=np.full_like(tot, np.nan), where=tot > 0)
-                fr[neff < NEFF_BIN_MIN] = np.nan
+                # N_eff of unit weights is the integer count, here a float ratio: the relative
+                # tolerance keeps a bin with exactly NEFF_BIN_MIN entries in, whatever the scale
+                fr[neff < NEFF_BIN_MIN * (1 - NEFF_RTOL)] = np.nan
                 per[k].append(fr)
         for j, lab in enumerate(labels):
             row = dict(selection=sel, group=glab, bin=lab)

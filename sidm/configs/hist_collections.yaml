@@ -1171,6 +1171,17 @@ dsa_tail_diag: &dsa_tail_diag
   - "mu_lj_dsaMuon_pt_nHits_nDTHits"
   - "mu_lj_dsaMuon_pt_phi_abseta"
 
+# Failed-MET-filter bit mask (per event, with the highest mu-LJ DSA muon pT)
+met_filter_mask: &met_filter_mask
+  - "met_filter_fail_mask"
+
+# Halo-filter study (sidm/studies/vertexChi2/vtx_outcome_lxy_dr/halo_filter_counts.py): the
+# halo diagnostics, the filter mask and the mu-LJ pT
+halo_filter: &halo_filter
+  - *dsa_tail_diag
+  - *met_filter_mask
+  - "mu_lj_pt"
+
 # vertexChi2 study: vertex outcome (no vertex / normChi2 >= 5 / pass) of every mu-type LJ
 # against its muon count, the matched gen dark photon's Lxy and the LJ's muon-pair dR, plus the
 # plain vtx_chi2 histogram the outcome marginal closes against. Signal MC only (gen axis).
@@ -1180,6 +1191,14 @@ mu_lj_vtx_outcome_lxy_dr: &mu_lj_vtx_outcome_lxy_dr
   - "mu_lj_vtxChi2_genA_lxy_mumu_dR"
   - "mu_lj_vtx_chi2"
   - "mu_lj_pt"
+
+# vertexChi2 study: the same outcome against the generated dR of the matched dark photon's two
+# daughter muons (coarse gen Lxy as the third axis), with the reconstructed-dR histogram and
+# mu_lj_vtx_chi2 for the marginal closures. Signal MC only.
+mu_lj_vtx_outcome_gen_dr: &mu_lj_vtx_outcome_gen_dr
+  - "mu_lj_vtxChi2_genA_lxy_genMuMu_dR"
+  - "mu_lj_vtxChi2_genA_lxy_mumu_dR"
+  - "mu_lj_vtx_chi2"
 
 cosmic_veto: &cosmic_veto ##final set of histograms for slides and AN
   - *cosAlpha

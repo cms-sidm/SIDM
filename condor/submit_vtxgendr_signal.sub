@@ -1,0 +1,32 @@
+universe = vanilla
+
+executable = run_job.sh
+
+# run_job.sh positional arguments: sample, chunk, filelist, EOS output directory, channels,
+# hist collections, corrections, histogram weighting, monitored corrections, selections file.
+# "none unweighted none" as in vtxLxyDr_signal_2018, which this run extends with the
+# generated-dR histogram: no standard corrections, unit-weight histograms, no monitored corrections.
+arguments = $(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/vtxGenDr_signal_2018 base_ljDisplacementIso_cosAlpha,base_ljDisplacementIso_cosAlpha_ljSpread mu_lj_vtx_outcome_gen_dr none unweighted none configs/selections_vertexChi2_as_run.yaml
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+
+transfer_input_files = sidm_code.tar.gz, requirements.txt, constraints.txt, $(filelist)
+transfer_output_files = ""
+
+output = $(LOGDIR)/$(sample)_$(chunk)_$(Cluster)_$(Process).out
+error  = $(LOGDIR)/$(sample)_$(chunk)_$(Cluster)_$(Process).err
+log    = $(LOGDIR)/$(sample)_$(chunk)_$(Cluster)_$(Process).log
+
+request_cpus = 1
+request_memory = 2GB
+request_disk = 4GB
+
+priority = 15
+
+x509userproxy = $ENV(X509_USER_PROXY)
+
+# LOGDIR defaults to logs/ (git-ignored); pass -append 'LOGDIR=...' to put them elsewhere.
+LOGDIR = logs
+JOBARGS = job_args_vtxgendr.txt
+queue sample, chunk, filelist from $(JOBARGS)

@@ -123,7 +123,8 @@ copies both to `root://cmseos.fnal.gov//store/group/lpcmetx/SIDM/coffea_outputs/
 `sidm_path` is derived from the working directory, so run them from this directory. Per-sample
 outputs already on disk are skipped, so an interrupted run can be resumed.
 
-Every stored output predates the correction of `dR_outer` in `sidm/tools/utilities.py` (PR #65,
+Every stored histogram output except `vtxGenDr_signal_2018` predates the correction of `dR_outer`
+in `sidm/tools/utilities.py` (PR #65,
 merged 2026-11-02: the outer-track phi difference is wrapped across +-pi, and the (-5, -5)
 coordinates of a missing outer track count as missing). `dR_outer` enters the DSA cross-cleaning
 cut `all` of every channel here and the segment-matched control of the write-up's section 10.
@@ -138,12 +139,23 @@ corrected `dR_outer` removes 2 of the 12,905 DSA muons in muon LJs and moves 2 o
 LJs to another bin, with every cutflow count unchanged, and the code with `dR_outer` as it was
 before the fix reproduces the stored histograms exactly. So the stored outputs can differ from a
 rerun at the 10^-4 level in the DSA-muon content. Nothing else has been rerun.
+`vtxGenDr_signal_2018` (below) was produced with the correction, over the samples, files,
+channels and selections of `vtxLxyDr_signal_2018`. In the reference channel
+(`base_ljDisplacementIso_cosAlpha`, the selection without a cosmic veto) it holds 68 fewer
+mu-type LJs with >= 2 muons than that run, of 5,764,154 (57 of the 180 samples differ; summed
+over the samples, 82 fewer LJs pass, 7 more have no vertex and 7 more have chi2 >= 5), and 63
+fewer of 5,581,391 in the Spread-veto channel (`base_ljDisplacementIso_cosAlpha_ljSpread`, 53
+samples). These differences were not traced LJ by LJ. The per-LJ records of `dr_truth_match/`
+(below) were also produced with the correction: their LJ counts equal those of
+`vtxGenDr_signal_2018` in each of their 16 samples.
 
-Every stored output also predates the standard corrections (PR #58, merged 2026-11-12), which
+Every stored output but `vtxGenDr_signal_2018` also predates the standard corrections (PR #58,
+merged 2026-11-12), which
 `SidmProcessor` applies to simulation unless it is given `corrections=None`. The run notebooks do
 not set that argument, so a simulation notebook rerun on main weights its cutflows and weighted
 histograms with the corrections; `corrections=None` gives the weights of the stored outputs. Data
-are not affected.
+are not affected. The condor submission of `vtxGenDr_signal_2018` passes `none` for the
+corrections and books unweighted histograms, as that of `vtxLxyDr_signal_2018` does.
 
 Every run notebook passes `selections_cfg="configs/selections_vertexChi2_as_run.yaml"` to
 `SidmProcessor` and to `write_run_metadata`. That argument was added after the notebooks were
@@ -221,6 +233,31 @@ python sidm/scripts/merge_coffea_chunks_eos.py \
 where `<scratch>` is any local scratch directory (`--keep-local` leaves the chunk copies there),
 and the merged files are copied to `RunOutputFiles/vtxLxyDr_signal_2018/`.
 
+### Condor production of `vtxGenDr_signal_2018`
+
+`vtxGenDr_signal_2018` repeats that production with one more histogram: the vertex outcome
+against the generated dR of the matched dark photon's two daughter muons. The hist collection
+`mu_lj_vtx_outcome_gen_dr` holds it (`mu_lj_vtxChi2_genA_lxy_genMuMu_dR`: `vtx_chi2` x coarse
+generated Lxy x generated dR) together with `mu_lj_vtxChi2_genA_lxy_mumu_dR` and
+`mu_lj_vtx_chi2` for the closures. Samples, channels, selections file, census skip list and job
+layout are those of `vtxLxyDr_signal_2018`: `condor/submit_vtxgendr_signal.sub` over
+`condor/job_args_vtxgendr.txt`, 964 jobs of 10 files, unweighted, no standard corrections. The
+job list and the filelists are regenerated with the recipe above, with `vtxgendr` for `vtxlxydr`
+in `--outdir` and in the job-list names (the two sample lists `condor/samples_vtxlxydr_*.txt`
+serve both productions). The code was `main` at 9d9b387c plus the two changes that book the
+histogram and add the submission. The provenance sidecars record commit 78b7404b, which is not
+in this repository: it is 9d9b387c with those same two changes. The chunks are merged with
+
+```bash
+python sidm/scripts/merge_coffea_chunks_eos.py \
+  --input-eos-dir /store/user/$USER/sidm_condor/vtxGenDr_signal_2018 \
+  --output-eos-dir /store/group/lpcmetx/SIDM/coffea_outputs/$USER/vtxGenDr_signal_2018 \
+  --workdir <scratch>/merge_vtxgendr --keep-local --filelists-dir condor/filelists_vtxgendr \
+  --selections base_ljDisplacementIso_cosAlpha,base_ljDisplacementIso_cosAlpha_ljSpread \
+  --hist-collections mu_lj_vtx_outcome_gen_dr \
+  --selections-cfg configs/selections_vertexChi2_as_run.yaml --chunksize 50000 --unweighted-hist
+```
+
 ### Vertex outcome vs Lxy and dR, and the halo fractions (`vtx_outcome_lxy_dr/`)
 
 The tables in `vtx_outcome_lxy_dr/` are read from `vtxLxyDr_signal_2018` (signal), the existing
@@ -236,7 +273,12 @@ python $D/halo_data_mc.py $OUT
 python $D/condor_vs_dask.py $OUT/condor_vs_dask.txt
 ```
 
-They also write PNG figures, which are not committed. Outcome of a mu-type LJ: **no vertex**
+They also write PNG figures, which are not committed. `an_figures.py OUTDIR` draws the
+figures for the analysis note from `outcome_vs_lxy.csv`, `outcome_vs_dR.csv` and
+`outcome_vs_gen_dR.csv` (next section), reference channel, mean over the samples: the outcome
+fractions against the generated Lxy, against the reconstructed dR and against the generated dR,
+in the style of `truth_kinematics_forAN/an_style.py`, as vector PDF with
+PNG previews (the "bound-state mass" of their legends is the mediator mass of this README). Outcome of a mu-type LJ: **no vertex**
 (`vtx_chi2 < 0`: the -1 sentinel of an LJ without a stored within-LJ vertex, and the three LJs
 in the grid whose stored normChi2 lies in [-0.5, 0), which the vertex cut and `mu_lj_vtx_chi2`
 count as no vertex too), **chi2 >= 5** (a stored vertex with normChi2 >= 5), **pass**
@@ -246,16 +288,15 @@ empty. Every LJ of the two channels has >= 2 muons (`Mu >= 2`). The
 reference channel's `mu_lj_dsaMuon_pt_relPtErr`, flow included. Two ways of combining samples:
 **mean** / **sem** is the unweighted mean of the per-sample fractions, and its standard error,
 over the samples with `N_eff >= 20` in that bin; **pooled** sums the LJs of all samples, each
-sample weighted to its yield at 1 fb (`lumi*xs/sumw`, since the condor histograms are raw
-counts). That weight leaves out the efficiency of the generator-level filter the samples were
-made with (0.23 to 0.90 across the v10 samples, PR #81), which changes how much each sample
-counts in the pooled numbers; the mean and sem do not depend on it.
+sample weighted to its yield at 1 fb (`lumi*xs*eff/sumw`, since the condor histograms are raw
+counts; `eff` is the efficiency of the generator-level filter the samples were made with, 0.23
+to 0.90 across the v10 samples, PR #81). The mean and sem do not depend on that weight.
 
 | file | what it holds | written by |
 |---|---|---|
 | `outcome_by_sample.csv` | Per sample and channel: mass point, `N_eff` from this run and from `vtxChi2_signal_2018`, robust flag, LJ count and yield, 1-muon and >= 2-muon fractions, the three outcome fractions among >= 2-muon LJs, the gen-matched fraction, pass/all, the old run's per-LJ vertex-veto efficiency (reference channel), and the input-file and event counts of both runs. | `vtx_outcome_vs_lxy_dr.py` |
 | `outcome_vs_lxy.csv` | Robust samples, gen-matched LJs (nearest `genAs_toMu` within dR < 0.4): outcome fractions in bins of the dark photon's Lxy (cm), mean / sem and pooled with its error, for all samples and per mediator mass, in both channels. | `vtx_outcome_vs_lxy_dr.py` |
-| `outcome_vs_dR.csv` | The same in bins of dR between the LJ's two highest-pT muons (PF and DSA pooled). | `vtx_outcome_vs_lxy_dr.py` |
+| `outcome_vs_dR.csv` | The same in bins of dR between the LJ's two highest-pT muons (PF and DSA pooled). At mediator masses of 500 and 1000 GeV a reconstructed dR above 0.1 is mostly not the opening angle of the decay pair: one of the two muons lies away from both generated daughters, while the generated pair is narrow (`dr_truth_match/` below). | `vtx_outcome_vs_lxy_dr.py` |
 | `outcome_vs_lxy_dR.csv` | The same in coarse Lxy x dR bins. | `vtx_outcome_vs_lxy_dr.py` |
 | `closure_checks.txt`, `closure_vtx_chi2_marginal.csv` | Closure checks. The marginal closure (the CSV, summarised in the text file): in every sample, channel and new histogram, the `vtx_chi2` marginal, grouped as no vertex / pass / chi2 >= 5, against `mu_lj_vtx_chi2`. The efficiency closure: per-sample pass/all against the old run's per-LJ efficiency, the samples whose input-file or event count differs between the two runs, and the robust means by mediator mass, m_Zd and ctau. | `vtx_outcome_vs_lxy_dr.py` |
 | `condor_vs_dask.txt` | `4Mu_100GeV_0p25GeV_0p02mm` from condor against the Dask run in `dask_check/`, every bin of the three new histograms and `mu_lj_vtx_chi2`, both channels. | `condor_vs_dask.py` |
@@ -267,6 +308,1211 @@ bin is vertical if its centre is within 0.5 rad of +-pi/2, horizontal if within 
 or +-pi. `halo_common.py` holds these index groups and the fraction and ratio helpers shared by
 `halo_signal.py` and `halo_data_mc.py`. A horizontal-over-vertical ratio with no horizontal
 entries is 0 with error 0; one with no vertical entries is left blank.
+
+### Vertex outcome against the generated dR, and tests of the trends (`vtx_outcome_lxy_dr/`)
+
+At mediator masses of 500 and 1000 GeV a reconstructed dR above 0.1 between the two leading muons
+is mostly not the opening angle of the decay pair (`dr_truth_match/` below), so the outcome is
+also tabulated against the generated dR of the matched dark photon's two daughter muons, from
+`vtxGenDr_signal_2018`. With `GENDR` and `LXYDR` local copies of the merged outputs of
+`vtxGenDr_signal_2018` and `vtxLxyDr_signal_2018`:
+
+```bash
+D=sidm/studies/vertexChi2/vtx_outcome_lxy_dr
+python $D/vtx_outcome_vs_gen_dr.py $GENDR $LXYDR $OUT     # reads outcome_by_sample.csv next to it
+python $D/physical_sense_tests.py $OUT $OUT/physical_sense
+python $D/trigger_vs_lxy.py $OUT/trigger_vs_lxy.csv condor/filelists_vtxgendr/<sample>_0.txt ...
+```
+
+Both condor productions are unweighted, so every number of these tables is a raw LJ count or a
+ratio of raw counts. A mass point is one pair (mediator mass, m_Zd), its lifetimes and both final
+states summed unless a table splits them. The generated dR is that of the dark photon the LJ is
+matched to (nearest `genAs_toMu` within dR < 0.4), between its own two daughters, from their
+momenta as generated.
+
+| file | what it holds | written by |
+|---|---|---|
+| `counts_gen_dr.csv.gz` | Per sample and channel: LJs by outcome in bins of the coarse generated Lxy ([0, 1), [1, 10), [10, 100), [100, 1000) cm) and of the generated dR (edges 0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5). Underflow and overflow are bins of their own; "< 0" is an LJ without a matched dark photon. | `vtx_outcome_vs_gen_dr.py` |
+| `counts_lxy.csv`, `counts_lxy_muonN.csv` | From `vtxLxyDr_signal_2018`: LJs by outcome per sample, channel and bin of the fine generated Lxy (the ten bins of `outcome_vs_lxy.csv`); the second file per muon multiplicity, for [100, 300) and [300, 1000) cm only. | `vtx_outcome_vs_gen_dr.py` |
+| `outcome_vs_gen_dR.csv` | `outcome_vs_dR.csv` with the generated dR in place of the reconstructed one: robust samples, gen-matched LJs of every Lxy, mean / sem and pooled, for all samples and per mediator mass, in both channels. | `vtx_outcome_vs_gen_dr.py` |
+| `closure_gen_dr_marginal.csv`, `gen_dr_checks.txt` | Per sample and channel, the new histogram summed over both generated axes against `mu_lj_vtx_chi2`, and summed over the generated dR against the reconstructed-dR histogram of the same run summed over the reconstructed dR. Both are exact in all 360 (sample, channel) pairs. No gen-matched LJ has fewer than two daughters. | `vtx_outcome_vs_gen_dr.py` |
+| `physical_sense/TC_floor.csv`, `TC_dr_mix.csv` | Decays within 10 cm: the no-vertex fraction against the generated dR, per mediator mass; and per mediator mass the fraction over all dR, the share of the LJs below 0.002, the fraction that its dR distribution gives with the fraction of each dR bin taken from all masses summed, and the measured fraction minus that, with the parts of the difference from the dR bin below 0.002 and from the bins between 0.002 and 0.01. | `physical_sense_tests.py` |
+| `physical_sense/TA_points.csv`, `TA_cells.csv`, `TA_order.csv`, `TA_final_state.csv` | Whether the mass points share one fraction inside a (coarse Lxy, generated dR) cell. Per cell and mass point (points with >= 200 LJs): the no-vertex and pass fractions; per cell their range over the mass points and the chi2 of one common fraction; the rank correlation of the fractions with the mediator mass at fixed m_Zd and with m_Zd at fixed mediator mass; 4Mu against 2Mu2E. The cells are coarse (one spans 10 to 100 cm), and a different Lxy or dR distribution inside a cell also makes the points disagree; tables 21 and 22 of `dr_truth_match/` repeat the test in finer cells. | `physical_sense_tests.py` |
+| `physical_sense/TB_samples.csv`, `TB_pooled.csv`, `TB_pooled_by_M.csv` | Lxy [100, 300) against [300, 1000) cm: the three outcome fractions in each bin and their difference, per sample with >= 50 LJs in both bins, and with the counts of those samples summed per mass point and per mediator mass. | `physical_sense_tests.py` |
+| `physical_sense/TB_final_state.csv` | The LJs and the no-vertex fraction of those two Lxy bins per final state and m_Zd, all samples summed. | `physical_sense_tests.py` |
+| `physical_sense/TD_widest.csv` | Generated dR [0.2, 0.5) against [0.1, 0.2) at a fixed mass point and coarse Lxy bin: the no-vertex fraction in each and their difference, for both final states together and for each (rows with >= 100 LJs in both dR bins). | `physical_sense_tests.py` |
+| `trigger_vs_lxy.csv` | Twelve samples (both final states at 150 and 500 GeV, m_Zd of 0.25, 1.2 and 5 GeV, the longest lifetime of each; the first two filelists, 20 files, 537,470 events): events and the fraction that pass the trigger (the OR of the "pass triggers" cut, no other selection) by the decay radius of the dark photons that decay to muons, in 4Mu the larger and the smaller of the two. | `trigger_vs_lxy.py` |
+
+Numbers, reference channel. The first, second and fourth items are from `vtxGenDr_signal_2018`
+(5,761,625 gen-matched LJs in the 180 samples), the third from `vtxLxyDr_signal_2018`
+(5,761,693).
+
+- **Collimated pairs.** Among the 1,288,870 LJs whose dark photon decays within 10 cm, the
+  no-vertex fraction is 0.18 to 0.27 for a generated dR below 0.002 at every mediator mass (239
+  of 1,059 at 100 GeV, 23,301 of 85,269 at 1000 GeV), 0.083 to 0.153 in [0.002, 0.005), 0.055
+  to 0.140 in [0.005, 0.01), 0.025 to 0.089 in [0.01, 0.02) and 0.004 to 0.011 in [0.1, 0.2)
+  (0.009 to 0.014 in [0.2, 0.5) at 100 to 200 GeV, 1 of 96 at 500 GeV). Over all dR inside
+  10 cm it is 0.050, 0.068, 0.075, 0.122, 0.157 and 0.139 at 100, 150, 200, 500, 800 and
+  1000 GeV, and the share of the LJs below 0.002 is 0.03, 0.06, 0.10, 0.39, 0.43 and 0.30
+  (`TC_dr_mix.csv`). With the fraction of each dR bin taken from all masses summed, the dR
+  distribution of each mass gives 0.074, 0.080, 0.081, 0.130, 0.147 and 0.125: the step from
+  100 to 200 GeV up to 500 to 1000 GeV, the maximum at 800 GeV, and 0.073 of the range of
+  0.108. The measured fraction is below that at 100 to 500 GeV (by 0.025, 0.012, 0.006 and
+  0.008) and above it at 800 and 1000 GeV (by 0.010 and 0.013): the fraction inside a dR bin
+  changes with the mediator mass as well. At 100 and 150 GeV the difference comes from the
+  bins between 0.002 and 0.01 (0.023 and 0.009 of it), where the fraction rises with the
+  mediator mass (0.083 at 100 GeV and 0.145 at 1000 GeV in [0.002, 0.005), 0.055 and 0.140 in
+  [0.005, 0.01)). From 200 GeV up it comes mostly from the bin below 0.002 itself (-0.006,
+  -0.010, +0.009 and +0.009 at 200, 500, 800 and 1000 GeV), where the fraction is 0.183 at
+  200 GeV and 0.273 at 1000 GeV. A bin holds a different m_Zd at each mediator mass (next
+  item).
+- **Mass points inside a cell.** Of the 32 (coarse Lxy, generated dR) cells, 26 reject one
+  common no-vertex fraction for all mass points at p < 0.001 (27 of 32 for the pass
+  fraction). In Lxy [10, 100) cm and dR [0.02, 0.05), the fraction runs from 0.071
+  (500 GeV, m_Zd = 5 GeV) to 0.150 (200 GeV, 1.2 GeV) over nine mass points and 891,217 LJs.
+  Within a cell the fraction is lower at the higher m_Zd in 26 of the 30 pairs of mass points
+  of equal mediator mass, and its rank correlation with the mediator mass at fixed m_Zd is
+  positive in 32 of 44 groups of three to six masses. These cells are coarse. In the sixteen
+  2Mu2E samples of `dr_truth_match/` the disagreement does not go away when each Lxy slice is
+  cut in up to eight: the spread of the fraction between mass points beyond the binomial
+  expectation stays at 0.03. It falls to between 0.013 and 0.021 with the muon content of the
+  pair as a further cell variable, or with the dR bin below 0.002 cut in three, and what is
+  left of it is in the DSA-DSA pairs (tables 21 and 22 there).
+- **Largest radii.** The no-vertex fraction falls from [100, 300) to [300, 1000) cm in 37 of the
+  43 samples with at least 50 LJs in both bins, in 20 of them by more than twice its error (it
+  rises by more than that in one), so the fall of `outcome_vs_lxy.csv` is not made by the change
+  of the samples that enter the bin (the fraction without a passing vertex falls in 30 of the
+  43). With the counts summed per mass point the change is -0.18 to -0.28 at m_Zd = 0.25 GeV
+  from 150 GeV up (-0.05 +- 0.03 at 100 GeV), -0.14 to -0.23 at 1.2 GeV from 500 GeV up
+  (+0.06 +- 0.03, -0.03 +- 0.02 and -0.04 +- 0.02 at 100, 150 and 200 GeV), and at 5 GeV 0.00
+  at 100 to 200 GeV and -0.04 to -0.06 from 500 GeV up. 35 of the 43 samples are 4Mu: beyond
+  300 cm, 3,785 of the 3,833 LJs at 0.25 and 1.2 GeV are 4Mu (`TB_final_state.csv`). At 5 GeV
+  both final states populate the bin and differ there, 0.059 (96 of 1,621) in 2Mu2E against
+  0.108 (1,403 of 12,944) in 4Mu, after 0.150 and 0.153 in [100, 300) cm. The trigger selects
+  differently in the two (`trigger_vs_lxy.csv`). A 2Mu2E event whose muon pair decays beyond
+  300 cm passes it in 0.001 to 0.004 of the cases at 0.25 and 1.2 GeV (10 of 11,333 to 39 of
+  8,938) and in 0.014 to 0.044 at 5 GeV, against 0.13 to 0.23 in [100, 300) cm. A 4Mu event
+  passes in 0.20 to 0.34 with both pairs beyond 300 cm and in 0.52 to 0.75 with the other pair
+  within 100 cm. The 2Mu2E LJs beyond 300 cm are therefore a small, trigger-selected part of
+  the decays there. Whether that selection makes their no-vertex fraction lower, and what
+  makes the fraction fall beyond 300 cm in 4Mu, is not established.
+- **The widest generated dR.** In `outcome_vs_gen_dR.csv` the no-vertex fraction (mean over the
+  samples) falls from 0.315 +- 0.010 below 0.002 to 0.046 +- 0.004 in [0.1, 0.2) and is
+  0.124 +- 0.017 in [0.2, 0.5). The 82,405 LJs of the last bin are from m_Zd = 5 GeV at 100 to
+  200 GeV but for 851. At a fixed mass point (`TD_widest.csv`) the last bin is above
+  [0.1, 0.2) beyond 100 cm: 0.164 (1168 of 7130) against 0.076 at 100 GeV, 0.192 against 0.078
+  at 150 GeV, 0.208 (383 of 1841) against 0.083 at 200 GeV. Within 100 cm the two bins agree to
+  0.018 with both final states summed. The final states differ. In 2Mu2E the last bin is high
+  in [10, 100) cm as well: 0.194 (75 of 386) against 0.055 at 100 GeV, 0.230 (38 of 165)
+  against 0.037 at 150 GeV (0.191 and 0.305 beyond 100 cm). In 4Mu, which
+  holds 13,109 of the 13,752 LJs of the last bin beyond 100 cm, it is high only there. These
+  tables do not establish the cause; a truth match of these pairs is in
+  `dr_truth_match/wide_pair/` (below).
+
+### MET filters and the beam-halo filter in the 1-LJ control region (`vtx_outcome_lxy_dr/halo_filter_counts/`)
+
+A direct count of what the ten MET filters of "pass flags" remove in the 1-LJ control region,
+with the beam-halo filter (`globalSuperTightHalo2016Filter`) counted separately, and of what
+they would cost the signal. `configs/selections_vertexChi2_halo.yaml` holds the channels: the
+control regions `cr_1egmOr1mu_lj` and `cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu` as they are
+(with "pass flags"), a `_noFlags` copy of each (no MET filter) and a `_failHalo` copy (the
+other nine filters passed, the halo filter failed); a control region with its two copies is a
+"channel family" in the tables. For the signal, `4mu` / `2mu2e` as on main and `4mu_flags` /
+`2mu2e_flags` with "pass flags" appended. `4mu` and `2mu2e` are the two-LJ preselections of the
+two final states: they do not have the LJ isolation, displacement and LJ-LJ dPhi requirements
+of the search regions `4mu_sr` / `2mu2e_sr`, which were not run. On main only control-region, Z
+and ttbar selections apply the filters; `4mu`, `2mu2e` and the `base*` selections do not. The
+histogram `met_filter_fail_mask` holds, per event, the bit mask of failed filters (bit i is
+`MET_FILTERS[i]` of `definitions/cuts.py`, bit 1 the halo filter, 0 means all ten passed)
+against the highest pT of the DSA muons in mu-type LJs.
+
+With `RUN` a directory for the run's outputs and `OUT` one for the tables:
+
+```bash
+D=sidm/studies/vertexChi2/vtx_outcome_lxy_dr
+python $D/run_halo_filter.py $RUN data mc signal     # Dask on the LPC condor pool, one sample at a time
+python $D/halo_filter_counts.py $RUN/halo_data_2018 $RUN/halo_mc_2018 $RUN/halo_signal_2018 $OUT
+```
+
+`run_halo_filter.py` skips a sample whose output exists, and `halo_filter_counts.py` reads
+whatever is in the three directories. The run skips input files that cannot be read
+(`skipbadfiles`); `checks.txt` lists the files processed per sample, to be compared with the
+file lists of the location configs. The stored outputs were produced by a copy of
+`run_halo_filter.py` that differed from it in the order of the samples, in fixed output paths
+and in a copy of each output to EOS; `run_halo_filter.py` reproduces the stored output of
+`2Mu2E_100GeV_5p0GeV_400mm`, every cutflow and every bin of the mask histogram. The committed
+tables are from the runs of 2026-11-13 and 2026-11-14: the 68 data skims of 2018,
+`QCD_Pt170To300` of the eight background samples (the other seven were not run), and 24 signal
+samples (2Mu2E and 4Mu at 100, 500 and 1000 GeV, m_Zd of 0.25 and 5 GeV, the shortest and the
+longest ctau, the first five files of each). Of the 127415 data files 127090 were processed;
+the 325 that could not be read are in 30 skims, at most 2.9% of the files of a skim that
+contributes events (8 of 274, `DoubleMuon_2018B_6`). Three skims contribute no event
+(`DoubleMuon_2018B_1`, `_10` and `_11`): they hold only runs 318816 and 317482, which are not
+in the certified list the processor applies to data
+(`data/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt`).
+
+| file | what it holds |
+|---|---|
+| `table1_counts.csv` | Per sample and pooled, per channel family: events without the filters, with all ten, failing any, failing the halo filter in any combination, failing only the halo filter, and the fractions with Clopper-Pearson 68% intervals. Data in raw counts. Background MC in weighted yields, with raw counts where a cutflow gives them and intervals on N_eff. Signal in raw counts; its weighted yields are raw counts times the sample's mean event weight in the channel, summed over the samples of a pooled row. |
+| `table2_counts_by_pt.csv` | The same per bin of the highest mu-LJ DSA muon pT: none, [0, 100), [100, 200), [200, 500), >= 500 GeV. |
+| `table3_per_filter.csv` | Events failing each of the ten filters, at all pT and per pT bin. An event failing two filters counts in both. |
+| `table4_signal.csv` | Signal: selected events in `4mu` / `2mu2e` and in the `_flags` variant, the fraction the filters remove with its interval, the fraction failing the halo filter, and the halo share of what is removed. |
+| `checks.txt` | The samples and file counts read and, per sample and channel family, the mask histogram against the cutflows: mask 0 against the channel with the filters, the total against `_noFlags`, mask 2 against `_failHalo`. All 162 pass. The last line tests the halo-only counts of the data skims against one common rate (Poisson deviance, p-value from toys). |
+| `tables.md` | The pooled rows of the four tables. |
+
+Numbers (all of 2018; data and signal in raw counts):
+
+- **Halo filter.** 117 of 2236644 control-region events fail it, a fraction of 5.23e-5 (68%
+  interval 4.75e-5 to 5.76e-5), and all 117 pass the other nine filters. The rate does not
+  change over the year within the counts: 27 of 512715 events in 2018A, 10 of 257284 in B, 16
+  of 262556 in C and 64 of 1204089 in D (3.9e-5 to 6.1e-5), and over the 65 skims with events
+  the Poisson deviance against one common rate is 50.3 for 64 degrees of freedom (p-value 0.315
+  from toys; the highest rate in one skim is 7 of 41978, `DoubleMuon_2018D_28`). The fraction
+  is an upper bound on the beam halo this filter can tag in the control region, whatever share
+  of the 117 is halo. Simulation, which has no beam halo, gives the rate at which the filter
+  fails without it: 6.2e-5 of the weighted `QCD_Pt170To300` yield (4 raw events of 67129, 68%
+  interval 3.3e-5 to 1.1e-4), and 6 of 76226 events of the signal preselections. The data rate
+  is consistent with those, and a rate that is constant over the year at the simulated level is
+  what failures unrelated to halo would give. With 4 simulated events the comparison is weak:
+  at the lower edge of the simulation's interval, about 37% of the 117 could be halo.
+- **By DSA muon pT.** 97 of the 117 have no DSA muon in a mu-type LJ and 20 have one below
+  100 GeV. Above 100 GeV there is none, among 52864 events before the Spread and cosAlpha veto
+  and 13787 after it (20133 and 2965 above 200 GeV). At the inclusive rate 2.8 and 0.79 events
+  would be expected there (probability of none: 0.06 and 0.45), so the zero is at most a weak
+  sign that the failures fall with pT. It bounds the fraction of events above 200 GeV that
+  fail the halo filter: below 1.5e-4 before the veto and below 1.0e-3 after it (95% CL, 0 of
+  20133 and 0 of 2965). The veto removes 1 of the 117.
+- **Any filter.** 13222 events (0.59%) fail at least one filter before the veto and 8229
+  (0.41%) after it. `BadPFMuonDzFilter` fails in 9483, `BadPFMuonFilter` in 7204 and
+  `hfNoisyHitsFilter` in 2432 of the 13222 (an event can fail more than one), 5145, 3971 and
+  2201 of the 8229. Above 200 GeV, `HBHENoiseFilter` fails in 81 events and
+  `HBHENoiseIsoFilter` in 105 before the veto and in none after it. Of the 2965 events the
+  veto leaves above 200 GeV, 97 fail a filter, 89 of them `BadPFMuonDzFilter`.
+- **Signal.** In the preselections the ten filters would remove 1.2% of the 2Mu2E events and
+  1.5% of the 4Mu events, pooled by raw count over the samples; the shortest-lifetime samples
+  hold 93% and 95% of those events. Per sample it is at most 3% at the shortest lifetime of a
+  mass point, and up to 13% (2Mu2E) and 22% (4Mu) at the longest
+  (`4Mu_1000GeV_5p0GeV_40p0mm`: 279 of 357 events kept). At the long lifetimes the loss is from
+  `BadPFMuonDzFilter` and `BadPFMuonFilter` (700 and 309 of the 740 removed 4Mu events; an
+  event can fail both). In the short-lifetime 2Mu2E samples at m_Zd = 5 GeV
+  `EcalDeadCellTriggerPrimitiveFilter` removes more (11 of the 16 removed events of
+  `2Mu2E_1000GeV_5p0GeV_0p04mm`; 60 of the 345 removed 2Mu2E events overall). The halo filter
+  fails in 6 signal events, at most 3 in one sample (of 18556, 1.6e-4); the samples with few
+  selected events give no useful bound. Only the two lifetime extremes of each mass point were
+  run, and `BadPFMuonDzFilter` goes with displacement, so the cost in the search regions can
+  differ from these numbers.
+
+The halo filter needs a CSC segment matched to a halo-like cluster in ECAL or HCAL
+(`GlobalSuperTightHaloId2016`, set in CMSSW's `BeamHaloSummaryProducer`), so a halo muon that
+crosses only the muon chambers is not counted here. For those the only handle is indirect: the
+`halo_fractions_*` tables above (DSA muons without DT hits or at large `|dxy_BS|`, and the
+horizontal-over-vertical ratio in phi), which are sensitive to halo but give neither a tag nor
+a rate.
+
+### Truth match of the two leading muons of a mu-type LJ (`dr_truth_match/`)
+
+Against the dR of the LJ's two leading muons, the no-vertex fraction at mediator masses 500 and
+1000 GeV is highest in the widest bins, [0.2, 0.3) and [0.3, 0.5) (`outcome_vs_dR.csv` above;
+table 13 here for the samples of this study). This study asks whether that dR measures the
+opening angle of the Zd decay pair. It writes one record per mu-type LJ, with its PF and DSA
+constituents and the generated Zd daughter muons of the event, and matches the two leading
+muons to the daughters in direction. Signal MC only: 16 2Mu2E samples of the 2018 v10 grid,
+listed in `condor/samples.txt` (mediator mass 100, 500 and 1000 GeV; m_Zd of 0.25, 1.2 and
+5 GeV, without the 0.25 GeV point at 100 GeV; two lifetimes each), reference channel
+`base_ljDisplacementIso_cosAlpha` of `configs/selections_vertexChi2_as_run.yaml` (no cosmic
+veto), no corrections.
+
+Terms used below and in `tables.md`:
+
+- **m0, m1**: the LJ's two highest-pT muons, PF and DSA pooled (m2 is the third). **reco dR** =
+  dR(m0, m1), the quantity of `mu_lj_mumu_dr` and of `outcome_vs_dR.csv`.
+- **d1, d2**: the two generated muons from the decay of the dark photon matched to the LJ (the
+  generated muons whose first ancestor with a different pdgId is that Zd). In 2Mu2E they are the
+  event's only Zd daughter muons (`tables.md`, line above table 7); a 4Mu event has four, two per
+  dark photon (`wide_pair/` below). **gen dR** = dR(d1, d2) at the decay vertex. **Lxy**:
+  transverse decay length (cm) of the generated dark photon matched to the LJ. **Gen-matched**:
+  a generated dark photon decaying to muons (the `genAs_toMu` collection) within dR < 0.4 of the
+  LJ, as in `outcome_vs_lxy.csv`.
+- **Propagated match**: a reco muon is compared with the direction a daughter has at the point of
+  closest approach of its helix to the beamline, where a track quotes its momentum (helix in a
+  uniform 3.8 T field along z, from the generated decay vertex; no material, no field map). The
+  committed tables use it (`--propagate`). The gen dR stays the opening angle at the decay.
+- **Outcome**: **no vertex** (`vtx_chi2 < 0`), **chi2 >= 5**, **pass** (`0 <= vtx_chi2 < 5`), as in
+  `vtx_outcome_lxy_dr/`; **not pass** = no vertex or chi2 >= 5.
+- **Match radius**: the 99% quantile of dR(reco muon, nearest daughter) in gen-matched LJs with
+  exactly two opposite-charge muons and a passing vertex, all three masses pooled: 0.0556 for PF
+  and 0.0761 for DSA muons (table 3). A muon is **within its radius** of a daughter when their dR
+  is below it.
+- **Classes** of a gen-matched LJ, from m0 and m1 (table 4): **D**, m0 or m1 is outside its radius
+  of both daughters; **A**, m0 and m1 are within their radii of different daughters, have
+  opposite charge, and the reco dR agrees with the gen dR (ratio within [1/2, 2], or a difference
+  of at most the sum of the two radii), i.e. the decay pair; **B**, as A but with the reco dR wider
+  than that tolerance; **C**, both nearest to the same daughter, with the same charge or a PF-DSA
+  pair sharing muon-system segments, i.e. two reconstructions of one daughter; **E**, the rest.
+
+From the repository root, with the `sidm_venv` active, the records are produced by 32 condor
+jobs of up to 25 files (`condor/job_args.txt`). Build `condor/sidm_code.tar.gz` as in
+`condor/README.md` (section 8), then
+
+```bash
+D=sidm/studies/vertexChi2/dr_truth_match
+python condor/make_job_args.py --samples-file $D/condor/samples.txt --dataset llpNanoAOD_v2 \
+  --location-cfg signal_2mu2e_v10.yaml --files-per-job 25 --replace-xcache \
+  --census-skip sidm/studies/vertexChi2/signal_skip.json \
+  --outdir $D/condor/filelists --job-args /tmp/job_args_dr_truth.txt
+cd $D/condor && mkdir -p logs out && condor_submit submit.sub && cd -
+```
+
+The filelists are not committed; this command writes the same lists the committed tables were
+made from. The job list it writes is discarded: its paths are relative to `condor/`, and
+`condor/job_args.txt` here is the same list relative to `dr_truth_match/condor/`. `run.sh`
+builds the worker environment as `condor/run_job.sh` does, from the repository's
+`condor/requirements.txt` and `condor/constraints.txt`, and runs `extract.py` on one filelist;
+each job writes one parquet file to `out/`. `extract.py` also runs by hand on a single filelist
+(`python $D/extract.py SAMPLE FILELIST OUT.parquet`, from the repository root). The tables are
+then made, in under a minute, by
+
+```bash
+python $D/analyze.py $D/condor/out $OUT --propagate
+```
+
+which also writes `lj_truth.parquet` (the merged records) and `lj_classified.parquet` (the
+gen-matched LJs with every derived column) to `$OUT`; neither is committed.
+
+| file | what it holds |
+|---|---|
+| `tables.md` | Every table below with its caption, the input counts and the check against the histograms of `vtxLxyDr_signal_2018`. |
+| `check_vs_outcome_by_sample.csv` | Per sample: the LJ count and the three outcome fractions from the records, against `vtx_outcome_lxy_dr/outcome_by_sample.csv` (reference channel), and the largest difference. |
+| `table1.csv` | Per mass and reco-dR bin: 10/50/90% quantiles of the gen dR, the fraction with gen dR < 0.05, and the fraction whose gen dR falls in the same bin. |
+| `table2.csv` | Per mass and reco-dR bin: PF+PF / PF+DSA / DSA+DSA leading pair, 2 and >= 3 muons, same-charge leading pair. |
+| `table3.csv` | dR(reco muon, nearest daughter) quantiles for PF and DSA muons (pooled, by DSA Lxy range, per mass): the match radii. |
+| `table4.csv` | Per mass and reco-dR bin: class fractions A to E with binomial errors, the ambiguous fraction, and the A-or-B fraction with reco dR > 2 x gen dR. |
+| `table5.csv` | Per mass, reco-dR bin and class: outcome fractions and counts. |
+| `table6.csv` | Classes C and D at reco dR >= 0.1, 500 and 1000 GeV: the duplicate or extra muon (type, pT, \|eta\|, dR to its nearest daughter), the third muon, and how many daughters the LJ's muons cover. |
+| `table7.csv` | 500 and 1000 GeV pooled, reco dR >= 0.1 and >= 0.2: LJ count and share, class fractions, no-vertex fraction and share of all no-vertex LJs, and the class D split by which leading muon is outside. |
+| `table8.csv` | The class D LJs of table 7 at reco dR >= 0.1 with exactly one leading muon outside: what that muon is, by type (azimuth within 0.03 of a daughter, charge and pT match to it, \|eta\| difference, and the outcome and Lxy of those that match the other daughter). |
+| `table9.csv` | \|eta(reco) - eta(nearest daughter)\| quantiles of the two muons of two-muon class A LJs, 500 and 1000 GeV, by type and Lxy. |
+| `table10.csv` | Leading muons of all gen-matched LJs, 500 and 1000 GeV, within 0.03 in azimuth of a daughter: fraction with \|eta\| difference > 0.05, by type and Lxy. |
+| `table11.csv` | Outcome fractions against the gen dR, per mass (500, 1000). |
+| `table12.csv` | No-vertex and not-pass fractions against the gen dR per Lxy slice, 500 and 1000 GeV pooled. |
+| `table13.csv` | The same against the reco dR. |
+| `table14.csv` | Per mass and reco-dR bin, with per-mass match radii: decay-pair fraction and fraction with a leading muon outside, next to the class A and D fractions of table 4, and the median gen dR. |
+
+The records reproduce the histograms of `vtxLxyDr_signal_2018`: the LJ count equals that of
+`outcome_by_sample.csv` in 15 samples and is one LJ short in `2Mu2E_500GeV_0p25GeV_4p0mm`
+(17911 against 17912; that run predates the `dR_outer` correction, and against
+`vtxGenDr_signal_2018`, made with it as the records are, the gen-matched LJ count is equal in
+all 16 samples), the three outcome fractions agree to 3e-5 in that sample and
+to 1e-6 in the others (`check_vs_outcome_by_sample.csv`), and the reco dR recomputed from the
+records equals `mu_lj_mumu_dr` to 4.17e-07 (`tables.md`). The records hold 85438 LJs, 85355 of
+them gen-matched (`tables.md`).
+
+**Result.** At 500 and 1000 GeV a reconstructed dR above 0.1 is mostly not the opening angle
+of the decay pair: one of the two leading muons lies outside its radius of both daughters, while
+the generated pair is narrow. Against the generated dR the no-vertex fraction falls.
+
+- Such LJs are few: of the 84383 gen-matched LJs at 500 and 1000 GeV, 3016 (3.6%) have reco
+  dR >= 0.1 and 555 (0.7%) have reco dR >= 0.2. They hold 0.0535 of the no-vertex LJs of
+  those masses (table 7).
+- Most of them are class D: 0.647 at reco dR >= 0.1 and 0.941 at >= 0.2 (table 7); per bin
+  0.519, 0.897 and 1.000 in [0.1, 0.2), [0.2, 0.3) and [0.3, 0.5) at 500 GeV, and 0.806, 0.982
+  and 1.000 at 1000 GeV (table 4). The generated pairs in these bins are narrow: the median gen
+  dR of all LJs of the bin is 0.0447, 0.0110 and 0.0105 at 500 GeV, 0.0168, 0.0113 and 0.0081 at
+  1000 GeV (table 1). The rest at reco dR >= 0.1 is the decay pair (class A, 0.337), nearly all
+  of it in [0.1, 0.2).
+- What the outside muon is (table 8; the 1901 class D LJs at reco dR >= 0.1 with exactly one
+  leading muon outside, 1129 PF and 772 DSA). A PF outside muon sits at the azimuth of the
+  pair with a shifted eta: 0.959 are within 0.03 in azimuth of a daughter (0.041 of neither),
+  while by the class definition they are more than 0.0556 in dR from both. Which daughter it
+  is rests on the charge alone, since 0.836 are within 0.03 of both daughters: 0.663 have the
+  charge of the daughter not claimed by the other leading muon (0.541 also within 30% of its
+  pT; the pT window has no control sample), with an \|eta\| difference to it of 0.141
+  (median; 0.089 and 0.257 at 10% and 90%) and Lxy of 19.6 to 58.9 cm (10% to 90%, median
+  43.7), and 0.283 have the charge of the claimed daughter. Of the 772 DSA outside muons,
+  0.437 match the other daughter in azimuth and charge (\|eta\| difference 0.175, median),
+  0.088 the claimed one, and 0.475 neither; 0.935 of the first group have no vertex. Taken
+  together, the outside muon has the azimuth and charge of the other daughter in 1085 of the
+  1901 LJs (57%), which is 36% of the 3016 LJs at reco dR >= 0.1.
+- The PF eta measurement degrades with Lxy in the well-matched LJs too: the 90% quantile of
+  \|eta(reco) - eta(daughter)\| in class A grows from 0.0007 at Lxy <= 1 cm to 0.0054 at 20 to
+  30 cm and 0.018 to 0.025 from 30 to 100 cm (table 9). Class A requires dR < 0.0556, so table
+  9 cannot hold offsets of the size seen in table 8; it shows the core widening, not the tail.
+  The fraction of azimuth-matched PF muons with an \|eta\| difference above 0.05 grows from
+  0.0028 to 0.0136 and then 0.060 to 0.109 over the same ranges (table 10; this population
+  contains the class D muons themselves, so it restates table 8 against Lxy and is not an
+  independent check). The DSA eta width does not depend on Lxy: the 90% quantile stays at
+  0.0135 to 0.0155 below 300 cm (table 9).
+- Against the gen dR the no-vertex fraction falls (not monotonically in every bin): at 500 GeV
+  from 0.359 at gen dR < 0.002 to 0.073 in [0.05, 0.1) and 0.057 in [0.1, 0.2) (402 LJs); at
+  1000 GeV from 0.304 to 0.071 and 0.048 (21 LJs) (table 11). The highest fractions are those of
+  the most collimated pairs. In every Lxy slice below 300 cm it is lower in [0.05, 0.1) than
+  below 0.002: 0.062 against 0.424 at 10 to 100 cm, 0.117 against 0.480 at 100 to 300 cm
+  (table 12). Against the reco dR, in the same slices, it is 0.462 and 0.574 in [0.2, 0.3) and
+  [0.3, 0.5) at 10 to 100 cm, and 0.646 and 0.905 (21 LJs) at 100 to 300 cm (table 13).
+- With per-mass match radii (500 GeV: 0.0614 PF, 0.0667 DSA; 1000 GeV: 0.0409, 0.0603) the
+  fraction with a leading muon outside both daughters is 0.532 and 0.848 in [0.1, 0.2) at 500
+  and 1000 GeV, against class D fractions of 0.519 and 0.806 with the pooled radii, and 0.897 and
+  0.991 in [0.2, 0.3) against 0.897 and 0.982 (table 14).
+- At 100 GeV the generated pairs are themselves wide: the median gen dR is 0.162 in [0.1, 0.2)
+  and 0.216 in [0.2, 0.3), and 0.49 and 0.58 of the LJs have their gen dR in the same bin as
+  their reco dR (table 1; 321 and 139 LJs). There the reco dR does follow the opening angle for
+  about half of the LJs. The class fractions at this mass depend on the match radius: with the
+  pooled radii class A is 0.586 and 0.317 and class D 0.396 and 0.647 (table 4); with the
+  100 GeV radii, 0.120 for PF and 0.183 for DSA, which come from 269 and 857 muons and are as
+  large as the gen dR itself, the decay-pair fraction is 0.766 and 0.597 (table 14).
+
+Caveats:
+
+- Sixteen 2Mu2E samples, no 4Mu; two dark-photon masses per mediator mass at 100 GeV, three at
+  500 and 1000 GeV (`condor/samples.txt`), reference channel only. In these samples one Zd
+  decays to muons, so d1 and d2 are the event's only Zd daughter muons; for 4Mu `extract.py`
+  assigns the daughters per LJ, which the tables 1 to 22 do not use.
+- The propagation places the decay vertex at Lxy along the dark photon's momentum from the
+  origin, so the beam-spot offset is ignored.
+- LJs are pooled by raw count, without cross-section weights, so each sample counts by its number
+  of LJs, from 18 to 17911 (`check_vs_outcome_by_sample.csv`).
+- The match uses direction only. A muon with the right azimuth and a wrong eta is outside its
+  radius; table 8 is what ties such muons to the decay pair, with a fixed 0.03 azimuth window
+  and a 30% pT window. It does not show whether the outside muon is a daughter reconstructed
+  with a wrong eta or another track at the same azimuth; the 0.475 of DSA and 0.055 of PF
+  outside muons that match neither daughter are not identified. The radii come from LJs with a
+  passing vertex, so they describe well-measured muons.
+- Tables 7 to 14 give fractions with their counts and no errors; several bins hold a handful of
+  LJs (gen dR >= 0.2 holds 1 LJ per mass, table 11). Tables 12 and 13 pool 500 and 1000 GeV, and
+  the gen-dR dependence in them is not separated from the dark-photon mass and pT that set the
+  gen dR.
+- Class B holds 24 LJs over the three masses (table 5). With daughter directions at the decay
+  vertex it is empty by construction; the propagated match compares with directions at the
+  beamline, while the gen dR is the opening angle at the decay.
+
+#### Muon content of the pair (`pair_content.py`, tables 15 to 22)
+
+`pair_content.py` reads the `lj_classified.parquet` that `analyze.py` writes and tabulates the
+vertex outcome by the muon content of the LJ:
+
+```bash
+python $D/pair_content.py $OUT/lj_classified.parquet $OUT     # tables 15 to 22, pair_content.md
+```
+
+**Content** is defined for an LJ with exactly two muons, from its PF and DSA muon counts: PF-PF
+(35,602 LJs), PF-DSA (18,319), DSA-DSA (26,768); the other 4,666 of the 85,355 gen-matched LJs
+have three or more muons and enter only the shares of table 17. **Charge** is that of the two
+muons, opposite or same: table 15 splits by it, tables 19 and 20 take the opposite-charge pairs,
+and tables 16, 18, 21 and 22 take both together. The **region** of tables 20 and 22 is from the
+mean eta of d1 and d2: barrel below 0.9, endcap above 1.2 in absolute value. LJs are raw counts,
+the three mediator masses (eight mass points) pooled unless a table is per mass.
+
+| table | what it holds |
+|---|---|
+| 15 | No-vertex fraction by content and charge. |
+| 16 | No-vertex fraction by Lxy slice and content. |
+| 17 | Share of each content, and of the LJs with three or more muons, per mediator mass and Lxy slice. |
+| 18 | No-vertex fraction by gen dR and content. |
+| 19 | DSA-DSA LJs of opposite charge: the three outcomes per Lxy slice. |
+| 20 | DSA-DSA LJs of opposite charge: the no-vertex fraction per Lxy slice and region. |
+| 21 | Whether the mass points share one no-vertex fraction inside cells of (Lxy, gen dR), and with the content, the lower generated pT of d1 and d2, or both as further cell variables: chi2 and ndf summed over the cells, the LJs in the test, and the spread of the fraction between mass points beyond the binomial expectation (`extra`; definitions in the script's docstring). One row per cell size (each Lxy slice of table 16 cut in 1, 2, 4 or 8), set of gen dR edges (those of table 18, or the same with the bin below 0.002 cut at 0.0005 and 0.001) and minimum number of LJs of a mass point in a cell (100 or 50). |
+| 22 | The same test for each content separately (Lxy slices cut in 4 and 8, at least 50 LJs), with the cells alone and with the charge, the region, the lower generated pT or the class of `analyze.py` as a further cell variable. |
+
+- Opposite-charge pairs have no stored vertex in 0.067 of the PF-PF LJs (2360 of 35,444), 0.446
+  of the PF-DSA LJs (7246 of 16,256) and 0.357 of the DSA-DSA LJs (9341 of 26,167) (table 15).
+- Against the gen dR (table 18) the PF-PF fraction is 0.165 below 0.002, 0.108 in
+  [0.002, 0.005) and 0.011 to 0.022 from 0.005 to 0.2. With a DSA muon in the pair it is 0.39 to
+  0.52 below 0.02 and 0.07 to 0.23 from 0.02 to 0.2 (67 PF-DSA and 352 DSA-DSA LJs in
+  [0.1, 0.2)).
+- The content follows the decay radius (table 17): at 500 GeV the PF-PF share is 0.863 within
+  1 cm and 0.011 in [60, 110) cm, where DSA-DSA holds 0.818. It also changes with the mass at a
+  given radius. Within 1 cm the PF-DSA share is 0.115 at 500 GeV (1179 of 10,266) and 0.179 at
+  1000 GeV (1284 of 7173) (the 100 GeV samples have 39 LJs there), and there 0.460 of the PF-DSA
+  LJs have no vertex (1134 of 2464) against 0.079 of the PF-PF LJs (1153 of 14,628; table 16).
+- For DSA-DSA pairs of opposite charge the no-vertex fraction falls with the decay radius: 0.502
+  within 30 cm (129 of 257), 0.414 in [60, 110) cm, 0.277 in [150, 200), 0.048 in [250, 300) and
+  0.018 in [300, 350) (3 of 168), while the pass fraction rises from 0.471 to 0.911 (table 19).
+  In the barrel it is 0.588 (97 of 165), 0.447, 0.292, 0.045 and 0.020 in those slices, and in
+  the endcap 0.341 (28 of 82), 0.242, 0.158 and 0.042 (2 of 48) in the first four; the barrel is
+  above the endcap out to 200 cm (table 20). Neither the fall with the radius nor the
+  difference between barrel and endcap is explained here.
+- In cells of (Lxy, gen dR) the mass points do not share one no-vertex fraction (table 21).
+  With the Lxy slices of table 16, the dR bins of table 18 and mass points of at least 100 LJs,
+  chi2 = 167.3 for 33 degrees of freedom (97.8 for 41 with the content as a third cell
+  variable, 132.7 for 43 with the lower generated pT of the two daughters instead, 84.9 for 41
+  with both), and the spread of the fraction between mass points beyond the binomial
+  expectation is 0.028. Cutting each Lxy slice in 2, 4 and 8 leaves that spread at 0.027 to
+  0.029, so it is not made by different Lxy distributions inside a slice. Two changes reduce
+  it: the content as a further cell variable (0.019, 0.017, 0.017 and 0.013 for the four cell
+  sizes), and the dR bin below 0.002 cut at 0.0005 and 0.001 (0.021, 0.020, 0.020 and 0.014).
+  With those finer dR bins the content adds nothing (0.016 to 0.021).
+- Per content (table 22) the PF-PF mass points agree: chi2 = 54.2 for
+  42 degrees of freedom with the Lxy slices cut in 4 and the dR bins of table 18, 36.6 for 42
+  with the finer dR bins, 38.8 for 38 and 39.7 for 39 with the slices cut in 8. The PF-DSA
+  mass points agree in every case (15.9 for 20, 10.3 for 17). The DSA-DSA mass points do not:
+  74.6 for 30, 72.5 for 26, 47.3 for 21 and 44.3 for 19, a spread of 0.029 to 0.035, and it
+  stays at 0.027 to 0.038 with the charge, the region, the lower generated pT or the class as
+  a further cell variable. What separates the mass points for DSA-DSA pairs is not identified
+  by these tables; `lj_distance/` (below) takes it up.
+
+The producer of the vertex tables (`MuonVertexTableProducer` of `cms-sidm/LLPNanoAOD`, read at
+the head of its main branch, commit 14c5287454) writes no vertex for a pair in two cases: the
+Kalman vertex fit of the two tracks is not valid, or the distance of closest approach of the
+two tracks, where its calculation succeeds, is above 15 cm. Which case applies to an LJ is not
+stored; for DSA-DSA pairs `lj_distance.py` (below) reconstructs it. That the 2018 v10 samples were made with this version of the producer was not checked.
+
+These tables have the limits of the caveats above: sixteen 2Mu2E samples, three mediator
+masses, two lifetimes per mass point, raw counts. They give fractions with their counts and no
+errors.
+
+#### Widest generated pairs (`wide_pair.py`, `wide_pair/`)
+
+In `vtx_outcome_lxy_dr/counts_gen_dr.csv.gz` (m_Zd = 5 GeV, reference channel), at Lxy >= 100 cm
+the LJs whose generated pair has gen dR in [0.2, 0.5) lose the vertex more often than those in
+[0.1, 0.2): 0.164 against 0.076 at 100 GeV, 0.192 against 0.078 at 150 GeV, 0.208 against 0.083
+at 200 GeV (both final states summed, `T0_counts_gen_dr_by_final_state.csv`). This study asks
+which property of the LJ goes with it, from the per-LJ truth records.
+
+**Samples.** m_Zd = 5 GeV, mediator 100, 150 and 200 GeV, the three longest lifetimes of each
+(100 GeV: 40, 200, 400 mm; 150 GeV: 27, 130, 270 mm; 200 GeV: 20, 100, 200 mm), in both final
+states: 2Mu2E (`condor/samples_wide_pair_2mu2e.txt`, 19 jobs in
+`condor/job_args_wide_pair_2mu2e.txt`) and 4Mu (`condor/samples_4mu.txt`, 23 jobs in
+`condor/job_args_4mu.txt`). Signal MC only, reference channel `base_ljDisplacementIso_cosAlpha`.
+
+**Records.** In `extract.py`, d1 and d2 are the final-state (status-1) daughter muons of the dark
+photon matched to the LJ, and o1, o2 (with `n_other_dau`, and `o_a_lxy`, `o_a_phi` of that dark
+photon) the Zd daughter muons of the event that are not d1, d2. In 2Mu2E d1 and d2 are the
+event's only two Zd daughter muons, so the committed tables do not change (`analyze.py
+--propagate` and `pair_content.py` reproduce all 25 committed outputs byte for byte from the new
+records). In 4Mu, where the event has four Zd daughter muons, d1 and d2 are those of the dark
+photon matched to the LJ and o1, o2 those of the other one. Absent generated muons have pt -1,
+eta and phi -99 and charge 0 (d1, d2, o1, o2); without another dark photon `o_a_lxy` is -1 and
+`o_a_phi` -99.
+
+`extract.py` now also writes, per muon of the LJ, the DSA track parameters at the reference point
+and the DSA track-quality branches (the list `DSA_TRACK`), the PF muon's inner-track reference
+point and momentum and its muon-type flags (`PF_TRACK`), each -999 for a muon of the other type,
+and for the two leading muons the stored vertex of that pair (`pv_n`, `pv_dca`, `pv_dcaStatus`,
+`pv_isValid`, `pv_normChi2`; `pv_n` is 0 and the others -999 without one). No table in this
+directory uses these fields.
+
+From the repository root:
+
+```bash
+D=sidm/studies/vertexChi2/dr_truth_match
+python condor/make_job_args.py --samples-file $D/condor/samples_4mu.txt --dataset llpNanoAOD_v2 \
+  --location-cfg signal_4mu_v10.yaml --files-per-job 25 --replace-xcache \
+  --census-skip sidm/studies/vertexChi2/signal_skip.json \
+  --outdir $D/condor/filelists --job-args /tmp/job_args_4mu.txt
+while read s c f; do
+  python $D/extract.py $s $D/condor/$f $REC/${s}_${c}.parquet --chunksize 50000 --workers 1
+done < $D/condor/job_args_4mu.txt
+python $D/analyze.py $REC $AN --propagate
+python $D/wide_pair.py $AN sidm/studies/vertexChi2/vtx_outcome_lxy_dr/counts_gen_dr.csv.gz \
+  $D/wide_pair/4mu
+```
+
+and the same for 2Mu2E with `samples_wide_pair_2mu2e.txt`, `signal_2mu2e_v10.yaml`,
+`job_args_wide_pair_2mu2e.txt` and `$D/wide_pair/2mu2e`. Rerun on 2026-11-14, the make_job_args
+command writes the same filelists (23 and 19 files, identical byte for byte) as those the records
+were made from, and the job lists here are its output with the filelist paths relative to
+`dr_truth_match/condor/`. The records were made by hand on cmslpc, not on condor. `analyze.py`
+stops at table 7, which needs the 500 and 1000 GeV samples, after writing `lj_truth.parquet`,
+`lj_classified.parquet` and `table3.csv`, which `wide_pair.py` reads. Its match radii, computed
+from these samples: 2Mu2E PF 0.0510, DSA 0.1106; 4Mu PF 0.0607, DSA 0.1355.
+
+Terms:
+
+- **narrow** = gen dR [0.1, 0.2), **wide** = gen dR [0.2, 0.5); no vertex = `vtx_chi2 < 0`.
+- **gen dR** here is that of the final-state daughters d1, d2. `counts_gen_dr.csv.gz` bins the
+  dark photon's own children (`hists.mu_lj_gen_a_mumu_dr`), before final-state radiation; see
+  "Records against counts_gen_dr.csv.gz" below.
+- **soft_dau_unreco**: no muon of the LJ, PF or DSA, within its radius of the softer daughter
+  (lower generated pT of d1, d2), compared with the daughter's direction at the point of closest
+  approach to the beamline (the propagated match of `analyze.py`).
+- **acceptance**: both daughters in abs(eta) < 2.4 and the softer above 10 GeV of generated pT.
+- **lead_on_other**: m0 or m1 within its radius of a daughter of another dark photon (o1, o2,
+  propagated from that dark photon's Lxy and phi).
+- **Standardisation**: the wide bin's no-vertex fraction predicted from the narrow bin's fraction
+  in each cell of a variable, weighted by the wide bin's cell shares. **gap closed** =
+  (predicted - narrow) / (observed wide - narrow).
+- **Errors**: `err_*` are binomial with the wide bin's cell shares held fixed; `*_bs_err` are the
+  standard deviations of a bootstrap (1000 replicas, fixed seed, the LJs of the narrow and of the
+  wide bin resampled separately), and `gap_closed_bs_q16`, `_q84` its 16 % and 84 % quantiles.
+  Values below quote gap closed +- its bootstrap standard deviation, or its 16 to 84 % range where
+  that is asymmetric.
+
+| file (in `wide_pair/2mu2e/` and `wide_pair/4mu/`) | what it holds |
+|---|---|
+| `T0_counts_gen_dr_by_final_state.csv` | From `counts_gen_dr.csv.gz`: no-vertex fraction of narrow and wide, Lxy [10, 100) and [100, 1000), per mediator mass, for both final states, each final state, and the samples of this run. |
+| `T1_records_vs_counts_gen_dr.csv`, `T1_records_vs_counts_gen_dr_by_sample.csv` | The records binned as `counts_gen_dr.csv.gz`, per sample, Lxy, gen dR and outcome, with the differences. |
+| `T2_composition.csv` | Per Lxy range, mass and gen dR bin ([0.05, 0.1), narrow, wide): LJs, no-vertex fraction, class shares A to E, content shares, same-charge share, median soft reco and gen pT, generated acceptance (both daughters in abs(eta) < 2.4 and softer pT > 5 or > 10 GeV), soft_dau_unreco, lead_on_other. |
+| `T2_dr_to_other.csv` | Quantiles (minimum, 1, 5, 16, 50 %) of the smallest dR between m0, m1 and a daughter of the other dark photon. |
+| `T3_cells.csv`, `T3_summary.csv`; `T3_cells_lxy10_100.csv`, `T3_summary_lxy10_100.csv` | Standardisation by one variable at a time (class, content, number of muons, charge, soft reco pT, soft gen pT, region), Lxy [100, 1000) and [10, 100). |
+| `T4_cells.csv`, `T4_summary.csv` | The two variables of T3 closing most of the gap together (4Mu: class x soft gen pT; 2Mu2E: soft gen pT x class). |
+| `T4_alt_cells.csv`, `T4_alt_summary.csv` | class x charge. |
+| `T5_cells.csv`, `T5_summary.csv` | soft_dau_unreco alone, both Lxy ranges, per mass. |
+| `T5_acceptance_cells.csv` | soft_dau_unreco x acceptance per bin: LJs, share of the bin, no-vertex fraction. |
+| `tables.txt` | All tables as printed. |
+
+**4Mu, Lxy >= 100 cm, masses summed**
+
+- Narrow 0.0834 (4994 of 59,863), wide 0.178 (2317 of 13,003): a gap of 0.095 (`T5_summary.csv`,
+  `T2_composition.csv`).
+- The softer daughter has no LJ muon within its radius in 0.054 of the narrow and 0.308 of the
+  wide LJs; per mass 0.054 to 0.251 (100 GeV), 0.054 to 0.339 (150), 0.054 to 0.440 (200)
+  (`T2_composition.csv`).
+- No-vertex fraction, narrow to wide: with the softer daughter found 0.071 (4008 of 56,613) to
+  0.097 (873 of 9000); without it 0.303 (986 of 3250) to 0.361 (1444 of 4003) (`T5_cells.csv`).
+- Standardised by soft_dau_unreco the wide bin is predicted at 0.142 +- 0.003, closing
+  0.62 +- 0.03 of the gap; per mass 0.54 +- 0.12, 0.59 +- 0.05, 0.74 +- 0.07 (`T5_summary.csv`).
+- Missing daughter and acceptance (`T5_acceptance_cells.csv`): of the 4003 wide LJs with the
+  softer daughter missing, 2820 (0.70) are outside the acceptance (no-vertex fraction 0.385) and
+  1183 (0.30; 0.091 of the bin) inside it (0.303). In the narrow bin 544 of 3250 (0.17) are
+  outside. The wide LJs outside the acceptance with the daughter found, 1323 (0.102 of the bin),
+  lose the vertex at 0.106, those inside it with the daughter found at 0.096. So most of the
+  missing-daughter share of the wide bin (0.217 of its 0.308) is a daughter outside the acceptance,
+  and the no-vertex fraction goes with the missing daughter, inside the acceptance or not.
+- Other variables (`T3_summary.csv`): class closes 0.44 +- 0.02 (0.26 +- 0.07, 0.37 +- 0.03,
+  0.51 +- 0.05 per mass); soft gen pT 0.36 +- 0.04; content 0.18 +- 0.01; charge 0.17 +- 0.01;
+  soft reco pT 0.11 +- 0.01; region 0.03 +- 0.004; number of muons -0.05 +- 0.004. class x charge
+  0.47 +- 0.02 (`T4_alt_summary.csv`); class x soft gen pT 0.60 +- 0.05, with 3 of 15 cells on
+  narrow cells under 50 LJs, 0.023 of the wide bin on narrow cells under 20 and 0.009 without a
+  narrow cell (`T4_summary.csv`).
+- Class A share 0.841 to 0.548, class D 0.103 to 0.343 (`T2_composition.csv`); no-vertex
+  fraction in class A 0.063 (3156 of 50,319) to 0.097 (692 of 7125), class D 0.220 (1353 of
+  6139) to 0.307 (1367 of 4460) (`T3_cells.csv`).
+- The softer generated pT has median 23.9 GeV (narrow) and 12.1 GeV (wide); in the acceptance:
+  0.979 and 0.681 (`T2_composition.csv`).
+- lead_on_other is 0 in every row (`T2_composition.csv`). That is fixed by the event topology:
+  the smallest dR between m0, m1 and a daughter of the other dark photon is at least 0.39 in
+  every 4Mu LJ, 1.84 at the 1 % quantile and 2.98 at the median (`T2_dr_to_other.csv`), far
+  beyond the match radii (at most 0.14). It shows that the other dark photon is far away, nothing
+  more.
+
+**4Mu, Lxy [10, 100) cm.** Narrow 0.0488 (8145 of 166,759), wide 0.0553 (2772 of 50,164), a gap
+of 0.0064. The soft_dau_unreco share rises from 0.031 to 0.094 (`T2_composition.csv`), and the
+standardised prediction, 0.0619 +- 0.0008, is above the observed 0.0553 +- 0.0010
+(`T5_summary.csv`; gap closed 2.04, 16 to 84 % range 1.76 to 2.51): with the softer daughter
+found the fraction falls from 0.042 to 0.033, without it 0.251 to 0.268 (`T5_cells.csv`). Of the
+4703 wide LJs with the softer daughter missing, 3623 (0.77) are outside the acceptance
+(`T5_acceptance_cells.csv`).
+
+**2Mu2E.** At Lxy >= 100 cm narrow 0.0615 (516 of 8385), wide 0.218 (139 of 638), a gap of 0.156;
+at [10, 100) cm 0.0376 (719 of 19,127) and 0.217 (127 of 586) (`T3_summary.csv`,
+`T3_summary_lxy10_100.csv`). soft_dau_unreco 0.049 to 0.492 at >= 100 cm and 0.033 to 0.369 at
+[10, 100) cm (`T2_composition.csv`).
+
+- Standardised by soft_dau_unreco: 0.140 +- 0.010 at >= 100 cm, closing 0.50 +- 0.08 of the gap
+  (100 GeV 0.62, range 0.36 to 0.90; 150 GeV 0.33 +- 0.07; the 200 GeV value rests on 47 wide
+  LJs, range 0.62 to 2.40, and is not quoted), and 0.097 +- 0.007 at [10, 100) cm against the
+  observed 0.217 +- 0.017, closing 0.33 +- 0.05 (`T5_summary.csv`).
+- No-vertex fraction, narrow to wide, at >= 100 cm: with the softer daughter found 0.053 (422 of
+  7975) to 0.049 (16 of 324), without it 0.229 (94 of 410) to 0.392 (123 of 314). At
+  [10, 100) cm: with the softer daughter found 0.032 (589 of 18,504) to 0.124 (46 of 370), without
+  it 0.209 (130 of 623) to 0.375 (81 of 216) (`T5_cells.csv`).
+- Missing daughter and acceptance: of the wide LJs with the softer daughter missing, 169 of 314
+  (0.54) at >= 100 cm and 116 of 216 (0.54) at [10, 100) cm are outside the acceptance, with
+  no-vertex fractions 0.49 (outside) and 0.28 (inside) at >= 100 cm (`T5_acceptance_cells.csv`).
+- By class 0.39 +- 0.07 (>= 100 cm) and 0.22 +- 0.03 ([10, 100) cm) (`T3_summary.csv`,
+  `T3_summary_lxy10_100.csv`). By soft gen pT 0.96 (range 0.71 to 1.23) at >= 100 cm is not
+  quoted as a result: 0.26 of the wide bin sits on narrow cells under 20 LJs and 0.024 has no
+  narrow cell; the same holds for soft gen pT x class (1.01, 0.25 on cells under 20, 0.033 without
+  a cell; `T4_summary.csv`). At [10, 100) cm soft gen pT closes 0.70 +- 0.17, with 0.022 of the
+  wide bin without a narrow cell.
+- In `counts_gen_dr.csv.gz` the 2Mu2E wide pairs lose the vertex more often already at
+  [10, 100) cm (0.194, 0.230, 0.312 against 0.055, 0.037, 0.033), 4Mu wide pairs do not (0.063,
+  0.050, 0.042 against 0.048, 0.046, 0.046) (`T0_counts_gen_dr_by_final_state.csv`).
+
+**Records against counts_gen_dr.csv.gz** (`T1_records_vs_counts_gen_dr.csv`)
+
+Every LJ is in both (330,322 in 4Mu, 34,325 in 2Mu2E), but the gen dR bin differs for a few: of
+the 1080 cells (sample x Lxy x gen dR x outcome) 956 agree exactly in 4Mu (largest difference
+106 LJs) and 1036 in 2Mu2E (largest 26). The records use the final-state daughters, the histogram
+the dark photon's own children before final-state radiation. In 4Mu at Lxy [10, 100) cm the
+records hold 266 more LJs in gen dR [0.05, 0.1) and 201 fewer in [0.2, 0.5); at >= 100 cm the wide
+bin holds 13,003 LJs against 13,050 (2Mu2E: 638 against 640). A test extraction of
+4Mu_200GeV_5p0GeV_20p0mm that also stored `hists.mu_lj_gen_a_mumu_dr` (not a staged file)
+reproduced all 120 cells of that sample with it, against 99 of 120 with the final-state
+daughters; the two dR differ by more than 10 % in 0.75 % of its LJs, and in 70 % of those the
+final-state dR is the smaller.
+
+**What is and is not explained**
+
+- In 4Mu at Lxy >= 100 cm the softer daughter is missing from the LJ far more often in the wide
+  bin (0.308 against 0.054), and those LJs lose the vertex at 0.30 to 0.36. Standardising for it
+  alone closes 0.62 +- 0.03 of the gap (0.54 to 0.74 by mass); the class of `analyze.py` closes
+  0.44 +- 0.02. About 70 % of the missing daughters are outside the acceptance (0.217 of the wide
+  bin, against 0.319 of the wide bin outside the acceptance in all).
+- Inside each group the wide bin is still higher (0.071 to 0.097 with the softer daughter found,
+  0.303 to 0.361 without); that part is not explained.
+- In 2Mu2E at Lxy >= 100 cm the same variable closes 0.50 +- 0.08 of a larger gap (0.156); there
+  the LJs with the softer daughter found do not rise (0.053 to 0.049), and the rest of the gap is
+  inside the group without it (0.229 to 0.392).
+- At Lxy [10, 100) cm the two final states differ. In 4Mu the missing-daughter share rises in the
+  wide bin without a matching rise of the no-vertex fraction (prediction 0.062 above observation
+  0.055). In 2Mu2E the prediction is below the observation (0.097 against 0.217, closing 0.33),
+  and the no-vertex fraction rises inside the group with the softer daughter found (0.032 to
+  0.124, 46 of 370 wide LJs).
+- The standardisation is arithmetic over two groups and does not show that the missing daughter
+  causes the vertex loss.
+- lead_on_other = 0 says only that the other dark photon's daughters are far from the LJ's
+  leading muons (dR >= 0.39 in every 4Mu LJ).
+
+**Limits**
+
+- The match radii are computed from these samples by `analyze.py` and differ from those of the
+  committed tables (PF 0.0556, DSA 0.0761); soft_dau_unreco and the classes depend on them.
+- Values per mass rest on few wide LJs at 200 GeV in 2Mu2E (47 at >= 100 cm, 45 at [10, 100) cm)
+  and on 532 (2Mu2E) and 2146 (4Mu) narrow LJs at 100 GeV, >= 100 cm; read them with the
+  bootstrap ranges.
+- A daughter reconstructed as a muon outside the LJ, or matched beyond its radius, counts as
+  missing.
+- The gen dR of the records is the final-state one, so a few LJs sit in a neighbouring gen dR bin
+  of `counts_gen_dr.csv.gz` (above).
+
+#### Why a DSA-DSA pair has no stored vertex (`lj_distance.py`, `lj_distance/`)
+
+The vertex producer of LLPNanoAOD (`MuonVertexTableProducer`) stores no vertex for a muon pair
+in two cases: the Kalman vertex fit is invalid, or `TwoTrackMinimumDistance` (TTMD) between the
+two tracks succeeds and gives a distance above 15 cm. This study separates the two for DSA-DSA
+LJs, asks which properties of the pair go with the invalid fits, and tests four patterns of the
+tables above:
+
+- (a) at fixed (Lxy, gen dR) the mass points differ; tested as (1000, 5) against (500, 5) GeV
+  (tables 21 and 22);
+- (b) the no-vertex fraction falls with Lxy (table 19);
+- (c) the barrel is above the endcap (table 20);
+- (d) in 4Mu at Lxy >= 100 cm the widest generated pairs, gen dR [0.2, 0.5), lose the vertex
+  more often than [0.1, 0.2) (`wide_pair/`).
+
+Everything below is computed by `lj_distance.py` from the per-LJ records of `extract.py` and
+the `lj_classified.parquet` files of `analyze.py`; it reads no NanoAOD. The exceptions are
+numbers from a direct read of NanoAOD files by a script that is not in this repository; they
+are labelled where they appear.
+
+**Inputs.** Three sample sets: the sixteen 2Mu2E samples of the tables above (the 32 jobs of
+`condor/job_args.txt`), the nine 4Mu samples (23 jobs of `condor/job_args_4mu.txt`) and the
+nine wide-pair 2Mu2E samples at the mass points of the 4Mu samples (19 jobs of
+`condor/job_args_wide_pair_2mu2e.txt`; m_Zd = 5 GeV, mediator 100, 150 and 200 GeV), all
+records of the extended `extract.py` (DSA track parameters at the reference point and
+track-quality branches, PF inner-track parameters, and the stored vertex of the two leading
+muons, `pv_*`). `2Mu2E_100GeV_5p0GeV_400mm` is in both 2Mu2E sets (307 LJs of the population P
+below, 277 of them at 15 cm or less): those LJs count twice wherever the sets are pooled or
+compared.
+
+```bash
+python $D/lj_distance.py $D/condor/out $REC4MU $RECWP $OUT/lj_classified.parquet \
+  $OUT4MU/lj_classified.parquet $OUTWP/lj_classified.parquet $D/lj_distance
+```
+
+where `$REC4MU` and `$RECWP` hold the 4Mu and wide-pair 2Mu2E records, and `$OUT4MU`, `$OUTWP`
+the outputs of `analyze.py --propagate` on them (it stops at table 7, which needs the 500 and
+1000 GeV samples, after writing `lj_classified.parquet`). The run takes 18 minutes on one
+cmslpc core, most of it the global minimum distance below.
+
+**What the producer does.** `MuonVertexTableProducer.cc` in cms-sidm/LLPNanoAOD at commit
+14c5287454 (the commit the LLPNanoAOD README cites, set up for CMSSW_10_6_29). Each pair is fit
+with `KalmanVertexFitter vertexFitter(true)` (line 146); the DSA-DSA loop (lines 589-595; the
+PF-PF and PF-DSA loops have the same lines) reads
+
+```cpp
+TransientVertex transientMuonVertex = vertexFitter.vertex(muonTransientTracks);
+reco::Vertex muonVertex = reco::Vertex(transientMuonVertex);
+
+if (!transientMuonVertex.isValid()) continue;
+std::tuple<float,float,GlobalPoint> distanceTuple = getDistanceBetweenMuonTracks(muonTrack_i, muonTrack_j, magneticField);
+// if dca status is good but dca is more than 15 cm
+if(std::get<1>(distanceTuple) && std::get<0>(distanceTuple) > 15) continue;
+```
+
+and the distance (lines 1115-1124) is
+
+```cpp
+TwoTrackMinimumDistance ttmd;
+FreeTrajectoryState fts1(GlobalPoint(track1.vx(), track1.vy(), track1.vz()),
+                          GlobalVector(track1.px(), track1.py(), track1.pz()),
+                          track1.charge(), magneticField.product());
+FreeTrajectoryState fts2(GlobalPoint(track2.vx(), track2.vy(), track2.vz()),
+                          GlobalVector(track2.px(), track2.py(), track2.pz()),
+                          track2.charge(), magneticField.product());
+bool status = ttmd.calculate(fts1, fts2);
+if (!status) return std::tuple(-999.f, status, GlobalPoint(-999.f,-999.f,-999.f));
+return std::make_tuple(ttmd.distance(), status, ttmd.crossingPoint());
+```
+
+The stored `dca`, `dcaStatus` and `dcax`, `dcay`, `dcaz` are the three entries (lines 635-639,
+`ddDCA.push_back(std::get<0>(distanceTuple))` and so on); `crossingPoint()` is the mean of the
+two closest points TTMD found (`return mean ( points_ );`, `TwoTrackMinimumDistance.cc` line 187
+in CMSSW_10_6_29). TTMD starts from each track's reference point (vx, vy, vz) with the track's
+momentum there. The track of a DSA muon is its `displacedStandAloneMuons` track; that of a PF
+muon is the combined track of a global muon, the standalone track of a standalone muon, and
+`tunePMuonBestTrack()` otherwise (lines 198-200). Track 1 is the PF muon in a PF-DSA pair and
+the lower index in a pair of the same type.
+
+**When the fit is invalid in this production.** `KalmanVertexFitter` (CMSSW_10_6_29,
+`RecoVertex/KalmanVertexFit/src/KalmanVertexFitter.cc`) builds a `SequentialVertexFitter` with
+`FsmwLinearizationPointFinder(20, -2., 0.4, 10.)` (line 30) and the defaults
+`pSet.addParameter<double>("maxDistance", 0.01);` and
+`pSet.addParameter<int>("maxNbrOfIterations", 10); //10` (lines 47-48). For two tracks the
+linearization point is the TTMD crossing point of their impact-point states
+(`CrossingPtBasedLinearizationPointFinder.cc` line 169). The iteration in
+`SequentialVertexFitter.cc` reads (lines 287-303 and 321-335)
+
+```cpp
+      fVertex = theUpdator->add(fVertex,*i);
+      if (!fVertex.isValid()) break;
+    }
+
+    validVertex = fVertex.isValid();
+    // check tracker bounds and NaN in position
+    if (validVertex && hasNan(fVertex.position())) {
+      LogDebug("RecoVertex/SequentialVertexFitter") 
+	 << "Fitted position is NaN.\n";
+      validVertex = false;
+    }
+
+    if (validVertex && !insideTrackerBounds(fVertex.position())) {
+      LogDebug("RecoVertex/SequentialVertexFitter") 
+	 << "Fitted position is out of tracker bounds.\n";
+      validVertex = false;
+    }
+```
+
+```cpp
+  } while ( (step != theMaxStep) &&
+  	    (((previousPosition - newPosition).transverse() > theMaxShift) ||
+		(!validVertex) ) );
+
+  if (!validVertex) {
+    LogDebug("RecoVertex/SequentialVertexFitter") 
+       << "Fitted position is invalid (out of tracker bounds or has NaN). Returned vertex is invalid\n";
+    return CachingVertex<N>(); // return invalid vertex
+  }
+
+  if (step >= theMaxStep) {
+    LogDebug("RecoVertex/SequentialVertexFitter") 
+       << "The maximum number of steps has been exceeded. Returned vertex is invalid\n";
+    return CachingVertex<N>(); // return invalid vertex
+  }
+```
+
+An invalid step resets the vertex to (0, 0, 0) with a large error and forces another iteration
+(lines 305-313). `KalmanVertexUpdator::add` returns an invalid vertex when the position update
+fails or the chi2 increment fails (`KalmanVertexUpdator.cc` lines 21 and 26), and the position
+update fails when a matrix inversion fails (lines 92-95, "predictedState error matrix inversion
+failed", and 105-108, "S matrix inversion failed"). So in this code a pair has no vertex when,
+in the last of at most 10 iterations, an update step fails, the position is NaN or outside the
+bounds, or when 10 iterations end without the transverse position settling within 0.01 cm.
+
+The bounds differ between stock CMSSW and the files the LLPNanoAOD README tells the user to
+copy over it (`RecoVertex_corrections/`: "This will also extend the values of the
+`trackerBoundsRadius` and `trackerBoundsHalfLength` to: `trackerBoundsRadius = 740`,
+`trackerBoundsHalfLength = 960`"). Stock CMSSW_10_6_29 `SequentialVertexFitter.cc` (lines
+13-14):
+
+```cpp
+  const float TrackerBoundsRadius = 112;
+  const float TrackerBoundsHalfLength = 273.5;
+```
+
+the LLPNanoAOD copy of `SequentialVertexFitter.h` (lines 271-272), with that namespace commented
+out in its `.cc`:
+
+```cpp
+  float trackerBoundsRadius{740.};
+  float trackerBoundsHalfLength{960.};
+```
+
+Apart from these bounds (also in `SingleTrackVertexConstraint.cc`) the copied files differ from
+stock only in `PerigeeLinearizedTrackState.cc`, which flips the sign of the transverse curvature
+when the field changes sign between two states (lines 122-125). The iteration above is the same
+in both. The sample files do not record the LLPNanoAOD commit, but they cannot have been made
+with the stock bounds: in the direct NanoAOD read (not in this repository; six samples, 1800
+files) the median transverse position of the stored DSA-DSA vertices with stored dca below 0.1
+cm is 151 cm (12,753 vertices), above the stock 112 cm. Which of the conditions above makes the
+fit invalid for a given pair is not established here: the fit is not emulated.
+
+**The emulation and its validation.** `lj_distance.py` ports TTMD (FastMode, CMSSW_10_6_29) to
+numpy: Newton steps on the two helix phases from the two starting states, each helix in the
+field at the other state's position (`TwoTrackMinimumDistanceHelixHelix`); if they fail, the
+transverse crossing of the two circles (or their closest points) from `ClosestApproachInRPhi`,
+then Newton steps from there, the transverse points being kept when that gives a larger
+distance. It returns the distance, the crossing point and the path taken. The field is the
+parabolic parametrisation Bz(r, z) of CMSSW, evaluated where TTMD evaluates it. A DSA leg uses
+the stored DSA track, as the producer does. A PF leg uses the inner track: the producer's track
+for a tracker-only muon, a stand-in otherwise.
+
+- DSA-DSA pairs are reproduced. Of the pairs with a stored vertex whose two leading muons are
+  DSA, the emulated distance is within 0.1 cm of the stored dca for 0.999 of 17,983 (2Mu2E),
+  0.997 of 12,208 (wide-pair 2Mu2E) and 0.994 of 89,453 (4Mu); in every DSA-DSA group and
+  stored-dca bin with at least 20 pairs at most 0.029 are off by more than 1 cm in one direction
+  (`validation_dca.csv`).
+- Pairs with a PF leg are not: PF-DSA pairs are within 0.1 cm for 0.354 of 12,933 (2Mu2E) and
+  0.430 of 47,817 (4Mu). When every PF leg is a tracker-only muon, all 28 and 51 (2Mu2E PF-DSA,
+  PF-PF) and 339 and 77 (4Mu) pairs are within 0.1 cm, so the failure sits in the PF legs whose
+  producer track the records do not hold. Everything below uses DSA-DSA pairs only.
+- On all DSA-DSA pairs of the event, not only the leading pair of an LJ, the direct NanoAOD
+  read (not in this repository; six samples, 1800 files) finds the emulated distance more than
+  1 cm from the stored dca for 7096 of 388,266 stored vertices (1.8%) and more than 0.01 cm for
+  56,042. Of the leading pairs of the three sets above, 0.13% or less are off by more than 1 cm
+  (rows `all` of the three `all LJs, leading pair DSA-DSA` groups of `validation_dca.csv`; up
+  to 1.1% in the class D groups of (d)); why the other pairs of the event do worse was not
+  looked into.
+- Status (`summary.txt`): every DSA-DSA pair with a stored vertex has stored and emulated status
+  1; the emulated distance is above 15 cm for none of them in 2Mu2E, 3 of 12,208 in the
+  wide-pair set and 13 of 89,453 in 4Mu, all on the path that keeps the transverse points
+  (stored dca at most 10.8 and 15.0 cm). No pair without a stored vertex has emulated status 0.
+- Edge (`edge_1cm.csv`, all LJs whose leading pair is DSA-DSA): the no-vertex fraction is 0.474
+  (36 of 76) in [14, 15) cm and 1.000 (73 of 73) in [15, 16) cm in 2Mu2E; 0.064 (7 of 110) and
+  0.990 (97 of 98) in the wide-pair set; 0.102 (101 of 987) and 0.991 (897 of 905) in 4Mu.
+- The crossing point is a proxy for where the fit works. The direct NanoAOD read (not in this
+  repository) measured the stored crossing point against the stored vertex: median 3D offset
+  2.50 cm (388,256 pairs with dcaStatus 1), from 0.043 cm (stored dca below 0.1 cm, 12,753) to
+  6.23 cm (stored dca [10, 15) cm, 74,078), and 37.0 cm on the path that keeps the transverse
+  points (28,388). The emulated crossing point is within 1 cm of the stored one for 0.944 of the
+  pairs and within 0.01 cm for 0.686.
+
+**Per pair**, besides the distance and the crossing point: the 3D opening angle of the two
+helices at the crossing point (the TTMD helices; tangents where each circle passes the crossing
+point in the transverse plane); dR of the two momenta at the reference points; sin(theta_pair),
+the sine of the polar angle of the summed momentum of the two tracks at the crossing point
+(each helix tangent there times the track's momentum), and angle_eff = angle / sin(theta_pair);
+L = s / angle with s = 0.5 sqrt(dxyBSErr1^2 + dxyBSErr2^2 + dzBSErr1^2 + dzBSErr2^2) (the
+records hold the beam-spot dxy and dz errors of the DSA tracks, not dxyErr and dzErr; for these
+tracks the beam-spot width is negligible); and the global minimum distance of the two helices
+with both closest points inside r < 740 cm and |z| < 960 cm and a transverse arc of at most
+1500 cm (`global_min`: a 20 cm grid, exact one-parameter profiles at 5 cm steps and 2 cm grids
+around the best grid minima, each candidate refined by a pattern search and Newton steps).
+`gmin_stability` compares it with a finer variant and with an exhaustive 1 cm grid
+(`T7_minimiser_stability.csv`): on all cut pairs and 1000 random pairs with a stored vertex per
+set (1946, 2189 and 11,287 pairs) the variant moves the minimum by at most 0.036 cm (2 pairs
+above 0.01 cm, none above 0.1 cm, no cut pair changes class at 1, 5 or 15 cm); on 60 pairs per
+set the exhaustive grid agrees within 1e-11 cm; and for the 2726, 564 and 4344 pairs on the
+first Newton path, whose TTMD result is a local minimum of the same helices, the global minimum
+is never above the TTMD distance.
+
+**Populations and terms.** P(set): gen-matched LJs with exactly two muons, both DSA, of
+opposite charge: 26,167 LJs (9341 without a vertex) in 2Mu2E, 12,137 (837) in the wide-pair
+set, 91,174 (8485) in 4Mu (`summary.txt`). (a) to (c) use P(2Mu2E). The population of (d), "T6
+population" in the script and the tables: 4Mu, Lxy >= 100 cm, two-muon DSA-DSA LJs of class A
+or D with gen dR [0.1, 0.2) (narrow) or [0.2, 0.5) (wide), both charges unless stated; all
+class A LJs there have opposite charge. No vertex = `vtx_chi2 < 0`. For a group of LJs, **s15**
+is the share with emulated distance above 15 cm (all of them have no vertex, up to the 13 and 3
+pairs above), and **f_inv** the no-vertex fraction of the others (distance at most 15 cm: the
+invalid fits). The no-vertex fraction is s15 + (1 - s15) f_inv, and the difference of two
+groups splits exactly into term_s15 = (1 - mean f_inv) (s15_b - s15_a) and term_finv = (1 -
+mean s15) (f_inv_b - f_inv_a); the residual counts the cut LJs with a stored vertex.
+
+Comparison tests (as in `pair_content.py`): Mantel-Haenszel-style over cells with at least 5
+LJs of each group (30 where stated); `wdiff` is the weighted difference, `kept` the share of
+the two groups' LJs inside the cells used, and `base_wdiff` the same test on the same LJs
+without the added cell variable. Base cells: (a) Lxy slice cut in 8 x gen dR (table 18 edges);
+(b) none; (c) Lxy slice (below 200 cm); (d) none. Added cell variables: the distance bin ([0,
+0.1, 0.5, 1, 2, 5, 10, 15] cm), the angle bin ([0, 1e-4, 3e-4, 1e-3, 3e-3, 0.01, 0.03, 0.1,
+0.3, 1] rad and above), the angle bin x coarse distance ([0, 0.5, 2, 15] cm), the angle_eff bin
+(the angle edges with [1, 3) and 3 rad and above at the top; no LJ has angle_eff above 1, so
+both are empty) alone and x coarse distance, and each track-quality variable (worst of the two
+muons, quintile bins). The consistency test fits one f_inv per cell to all groups with at least
+10 (or 50) LJs in the cell; `extra` is the spread of f_inv between groups beyond the binomial
+one.
+
+How the angle was chosen: after the distance, four per-pair candidates were looked at against
+f_inv (the crossing-point position against the fitter bounds, the TTMD path, the opening angle
+at the crossing point, and dR of the momenta at the reference points;
+`invalid_fit_candidates.csv`), and 13 track-quality variables in the tests (12 give cells;
+displacedID is 1 for the DSA muons of these LJs, checked on one 2Mu2E record file with 592 DSA
+muons, and gives one bin). The angle was picked after seeing these. L and angle_eff were each
+written down before being computed and are reported whatever they give. The repository holds no
+dated record of that order, and angle_eff was proposed after (c) had been found unexplained at
+fixed angle: it tests one hypothesis made with the data in view. It comes from the fitter's
+loop condition: `SequentialVertexFitter` iterates while the transverse shift of the vertex
+between iterations exceeds 0.01 cm (or the vertex is invalid), at most 10 times. If the failing
+branch were non-convergence along the poorly constrained flight direction of a nearly parallel
+pair, a pair flying at polar angle theta would move less in the transverse plane per step by
+sin(theta), so f_inv would follow angle_eff rather than the angle, and inside the barrel and
+inside the endcap it would rise with sin(theta_pair) at fixed angle.
+
+**Results**
+
+- The two conditions (`T2_condition_share.csv`, `T2_same_mass_points.csv`). In P, 799 of the
+  9341 no-vertex LJs (0.086) of 2Mu2E have a distance above 15 cm, 574 of 837 (0.686) of the
+  wide-pair set and 6291 of 8485 (0.741) of 4Mu. Over all LJs whose leading pair is DSA-DSA:
+  946 of 9783 (0.097), 1189 of 1470 (0.809) and 10,287 of 12,664 (0.812). At the same mass
+  points the two final states agree when pooled (0.809 against 0.812) and per sample at 100 and
+  150 GeV. At 200 GeV the wide-pair set is lower: 0.649, 0.700 and 0.602 for its three
+  lifetimes (errors 0.03 to 0.04) against 0.751, 0.717 and 0.728 in 4Mu (errors 0.01). The
+  sixteen-sample 2Mu2E set differs because its mass points do. In P(2Mu2E) the invalid fits are
+  8542 of the 25,368 LJs at 15 cm or less (f_inv 0.337), against 263 of 11,563 (0.023) in the
+  wide-pair set and 2194 of 84,876 (0.026) in 4Mu (`invalid_fit_deviance.csv`).
+
+- Decomposition of (a) to (d) (`decomposition_cut_vs_invalid_fit.csv`; raw fractions, no
+  cells). The difference is the first-named group minus the second-named one, which is the
+  reference (group b minus group a of the file):
+
+  | comparison | reference: n, s15, f_inv | first-named: n, s15, f_inv | difference | term_s15 | term_finv |
+  |---|---|---|---|---|---|
+  | (a) (1000, 5) vs (500, 5), opposite | 6399, 0.028, 0.110 | 3735, 0.031, 0.207 | +0.097 | +0.002 | +0.094 |
+  | (b) [150, 300) vs [0, 60) cm | 1357, 0.066, 0.430 | 5999, 0.022, 0.201 | -0.249 | -0.030 | -0.219 |
+  | (c) endcap vs barrel, Lxy < 200 cm | 19,933, 0.026, 0.396 | 3422, 0.055, 0.178 | -0.189 | +0.021 | -0.209 |
+  | (d) class A, wide vs narrow | 46,996, 0.039, 0.022 | 6662, 0.092, 0.005 | +0.037 | +0.053 | -0.016 |
+  | (d) class D, wide vs narrow, both charges | 1588, 0.260, 0.119 | 1670, 0.410, 0.013 | +0.070 | +0.140 | -0.070 |
+  | (d) class D, opposite charge | 1208, 0.228, 0.129 | 889, 0.179, 0.018 | -0.133 | -0.045 | -0.088 |
+
+  Per Lxy slice below 200 cm, the endcap has the larger s15 and the smaller f_inv in every slice
+  (term_finv -0.165 to -0.273, term_s15 +0.016 to +0.031). (a) to (c) are carried by the invalid
+  fits. (d) in class A is carried by the distance cut, against a smaller f_inv in the wide bin.
+  In class D the two charge combinations go opposite ways. For opposite charge the wide bin
+  has the lower no-vertex fraction, 0.193 (172 of 889) against 0.326 (394 of 1208). The excess
+  of the wide bin in the both-charges row is in the same-charge pairs: by subtraction 524 of
+  781 have no vertex in the wide bin, all 524 with a distance above 15 cm, against 157 of 380
+  in the narrow bin. A same-charge pair is not a decay pair.
+
+- f_inv against the opening angle (`invalid_fit_candidates.csv`, P(set), distance at most 15
+  cm):
+
+  | angle (rad) | 2Mu2E: n, f_inv | wide-pair: n, f_inv | 4Mu: n, f_inv |
+  |---|---|---|---|
+  | [0, 1e-4) | 422, 0.626 | 4, 3 of 4 | 32, 0.750 |
+  | [1e-4, 3e-4) | 749, 0.734 | 11, 8 of 11 | 98, 0.745 |
+  | [3e-4, 1e-3) | 2179, 0.765 | 56, 0.679 | 248, 0.714 |
+  | [1e-3, 3e-3) | 3410, 0.742 | 90, 0.689 | 531, 0.635 |
+  | [3e-3, 0.01) | 4252, 0.503 | 111, 0.477 | 824, 0.555 |
+  | [0.01, 0.03) | 7552, 0.150 | 247, 0.105 | 2092, 0.163 |
+  | [0.03, 0.1) | 6440, 0.041 | 5445, 0.011 | 38,199, 0.015 |
+  | [0.1, 0.3) | 353, 0.006 | 5579, 0.003 | 42,385, 0.005 |
+  | [0.3, 1) | 11, 0 | 20, 0 | 467, 0 |
+
+  The sets differ mainly in how their pairs fill these bins: 0.73 of P(2Mu2E) lies below 0.03
+  rad, 0.045 of the wide-pair set and 0.045 of 4Mu. They do not share one curve, though
+  (`invalid_fit_angle_standardised.csv`): in [0.03, 0.1) rad the sixteen 2Mu2E samples have
+  0.041 against 0.011 (z -10.0) and 0.015 (z -13.8), and in [1e-3, 3e-3) rad 0.742 against
+  0.635 in 4Mu (z -5.2). With the sixteen samples' fraction in each angle bin the wide-pair set
+  would have f_inv 0.040 +- 0.003 and 4Mu 0.038 +- 0.002; observed are 0.023 and 0.026, 0.57 +-
+  0.04 and 0.69 +- 0.04 of that (bootstrap errors). At fixed angle f_inv rises with the
+  distance: from 0.01 rad up it is at most 0.012 (1 of 82) below 0.5 cm in every set, and up to
+  0.478 (983 of 2057; 2Mu2E, [0.01, 0.03) rad) in [2, 15) cm
+  (`invalid_fit_angle_x_distance.csv`). A crossing point outside the bounds is rare and does not
+  carry the invalid fits: 1 of 66 such LJs (2Mu2E), 2 of 105 (wide-pair), 31 of 665 (4Mu).
+
+- Tests on f_inv at fixed variable (`invalid_fit_tests.csv`; wdiff (z); base_wdiff on the same
+  LJs; kept):
+
+  | comparison | no added cells | distance bin | angle bin | angle bin x coarse distance |
+  |---|---|---|---|---|
+  | (a) opposite, >= 5 per group | +0.040 (4.23); kept 0.940 | +0.061 (5.02); +0.065; 0.524 | +0.009 (1.13); +0.041; 0.803 | +0.040 (2.36); +0.064; 0.232 |
+  | (a) opposite, >= 30 per group | +0.054 (5.03); 0.593 | +0.036 (1.91); +0.038; 0.153 | +0.023 (2.65); +0.030; 0.337 | no cells |
+  | (b) outer vs inner | -0.229 (-17.3); 1.000 | -0.147 (-10.6); -0.229; 1.000 | -0.049 (-4.09); -0.226; 0.979 | +0.013 (1.02); -0.195; 0.794 |
+  | (c) endcap vs barrel | -0.228 (-24.9); 1.000 | -0.247 (-28.2); -0.253; 0.931 | -0.244 (-31.2); -0.230; 0.982 | -0.282 (-34.4); -0.311; 0.746 |
+  | (d) class A, wide vs narrow | -0.017 (-8.87); 1.000 | -0.019 (-9.86); -0.017; 1.000 | -0.002 (-2.10); -0.011; 0.989 | -0.004 (-2.17); -0.015; 0.610 |
+  | (d) class D, both charges | -0.106 (-9.56); 1.000 | -0.113 (-8.83); -0.119; 0.842 | -0.036 (-4.77); -0.098; 0.912 | -0.038 (-3.56); -0.079; 0.482 |
+  | (d) class D, opposite | -0.111 (-8.26); 1.000 | -0.120 (-8.09); -0.127; 0.877 | -0.027 (-3.10); -0.100; 0.891 | -0.019 (-1.94); -0.078; 0.473 |
+
+  Both charges in (a) give the same picture (+0.007, z 0.90, against +0.038, kept 0.803, at
+  fixed angle). Of the track-quality variables, none removes a difference: the largest changes
+  are dxyBSErr in (c), -0.177 (z -19.6) against -0.228 (kept 0.999), and etaErr in (a), +0.032
+  (z 3.21) against +0.041 (kept 0.780).
+
+- Universality (`invalid_fit_universality.csv`): one f_inv per cell shared by the groups; chi2 /
+  ndf, extra, kept, with at least 50 LJs per group in a cell (at least 10 in brackets where the
+  extra differs):
+
+  | groups | no cells | distance bin | angle bin | angle bin x distance bin |
+  |---|---|---|---|---|
+  | (i) the 8 mass points (M, m_Zd) of 2Mu2E, lifetimes pooled | 3200 / 7, 0.194, 1.000 | 3723 / 36, 0.208, 0.986 | 368 / 33, 0.043, 0.990 | 443 / 69, 0.064, 0.670 (0.066) |
+  | (ii) barrel and endcap, 2Mu2E | 498 / 1, 0.095, 1.000 | 714 / 7, 0.111, 1.000 | 970 / 7, 0.120, 0.986 | 1257 / 22, 0.150, 0.689 (0.149) |
+  | (iii) Lxy slices, 2Mu2E | 985 / 7, 0.076, 0.998 (0.077) | 730 / 32, 0.063, 0.982 (0.067) | 313 / 29, 0.042, 0.980 | 315 / 51, 0.060, 0.651 (0.061) |
+  | (iv) the three sample sets | 23,687 / 2, 0.157, 1.000 | 28,785 / 14, 0.195, 1.000 | 270 / 13, 0.008, 0.992 | 674 / 36, 0.017, 0.748 |
+
+  At fixed angle the spread of f_inv between the sample sets falls from 0.157 to 0.008 (on
+  0.992 of 121,807 LJs), between mass points from 0.194 to 0.043 and between Lxy slices from
+  0.076 to 0.042. In no grouping is the chi2 consistent with one f_inv per cell (in this table
+  at best about 6 per degree of freedom, 315 for 51 for the Lxy slices at fixed angle x
+  distance; with angle_eff x distance, 306 for 71 between the mass points). Barrel and endcap
+  do not come together at fixed angle: the spread grows from 0.095 to 0.120. Adding the
+  distance bin to the angle does not lower the spread in any grouping.
+
+- Binned descriptions of f_inv ranked by binomial deviance (`invalid_fit_deviance.csv`; the same
+  LJs per row: P(set) at 15 cm or less, none excluded for a missing L; number of bins in
+  brackets):
+
+  | description | 2Mu2E (25,368) | wide-pair (11,563) | 4Mu (84,876) | pooled (121,807) |
+  |---|---|---|---|---|
+  | one bin | 32,412 (1) | 2510 (1) | 20,371 (1) | 73,871 (1) |
+  | distance | 26,158 (7) | 2172 (7) | 17,400 (7) | 69,347 (7) |
+  | angle | 22,180 (9) | 1366 (9) | 12,733 (9) | 36,507 (9) |
+  | L | 22,440 (8) | 1336 (8) | 12,541 (8) | 38,568 (8) |
+  | L x distance | 17,037 (54) | 1044 (52) | 9957 (55) | 32,168 (56) |
+  | angle x distance | 15,737 (57) | 1041 (54) | 9877 (61) | 27,358 (63) |
+  | angle_eff | 21,433 (9) | 1294 (9) | 11,552 (9) | 34,510 (9) |
+  | angle_eff x distance | 14,871 (59) | 974 (54) | 9014 (61) | 25,256 (63) |
+
+  Of the descriptions without angle_eff, angle x distance has the lowest deviance in every set
+  and pooled, L x distance the next; in the wide-pair set the two are level once the bins are
+  counted (1041 with 54 bins against 1044 with 52). Alone, L ranks above the angle in the
+  wide-pair set and 4Mu and below it in 2Mu2E. Pooled over the three sets
+  the angle loses 227 in deviance against the sum of the per-set fits (36,507 against 36,279), L
+  2251 (38,568 against 36,317) and the distance 23,618. The angle is the closest of the three
+  to one description for all sets, and 227 for the 18 extra parameters of the per-set fits is
+  still far from agreement. This compares descriptions of f_inv; it does not establish which
+  branch of the fitter fails.
+
+- angle_eff, the test described above (`invalid_fit_tests.csv`, `invalid_fit_universality.csv`,
+  `invalid_fit_deviance.csv`, `invalid_fit_sin_theta.csv`). It describes f_inv better than the
+  angle in every set (deviance above; pooled it loses 231 against the per-set fits, the angle
+  227) and with the distance as well. Standardised to the sixteen samples' fractions per
+  angle_eff bin, the wide-pair set is at 0.72 +- 0.07 of the prediction and 4Mu at 0.97 +-
+  0.11, but bin by bin 4Mu is off in both directions (z +14.1 in [0.01, 0.03), -2.8 in [1e-3,
+  3e-3)). At fixed angle_eff the endcap is below the barrel by 0.138 (z -19.6) against 0.226
+  without it on the same LJs (kept 0.984), and by 0.193 (z -23.0) against 0.280 at fixed
+  angle_eff x coarse distance (kept 0.712); at fixed angle it was 0.244. The barrel-endcap
+  spread at fixed angle_eff is 0.053 (chi2 394 for 7 ndf; 0.120 and 970 at fixed angle), 0.096
+  with the distance bin (0.150). Between mass points it is 0.032 (0.043 at fixed angle),
+  between Lxy slices 0.042 (0.042), between sample sets 0.009 (0.008); with the distance bin
+  0.043, 0.059 and 0.007 (0.064, 0.060, 0.017). (a) and (d) do not get worse: (a) +0.0075 (z
+  0.95) on 0.793, (d) class A +0.0001 (z 0.15), class D -0.017 (z -2.59). (b) is a little
+  larger at fixed angle_eff alone, -0.063 (z -5.29) against -0.049 at fixed angle, and still
+  removed with the coarse distance, +0.006 (z 0.44). Inside each region (P(2Mu2E), quintiles of
+  sin(theta_pair), last against first): in the barrel (sin(theta_pair) 0.68 to 1.00) f_inv
+  rises by +0.029 +- 0.008 at fixed angle bin and +0.039 +- 0.008 at fixed angle bin x coarse
+  distance. In the endcap (0.19 to 0.56, a sixth of the barrel's LJs) the same tests give
+  -0.023 +- 0.020 and +0.018 +- 0.028: no rise is seen, and one of the barrel's size is 2.4
+  sigma away at fixed angle and 0.7 sigma away with the coarse distance (errors taken as the
+  weighted difference divided by the z of the test).
+
+- The cut pairs and the global minimum (`T7_global_minimum_cut_pairs.csv`, all LJs whose
+  leading pair is DSA-DSA, no vertex and emulated distance above 15 cm): the global minimum of
+  the two helices inside the bounds is below 15 cm for 647 of 946 (2Mu2E), 1040 of 1189
+  (wide-pair) and 9004 of 10,287 (4Mu), and below 1 cm for 55, 494 and 3055 of them; in the
+  class A LJs of (d) below 15 cm for 1527 of 1811 (narrow) and 577 of 613 (wide). The medians
+  are 11.2, 2.3, 3.9, 5.3 and 3.8 cm, against median TTMD distances of 27.7, 27.4, 24.4, 19.9
+  and 21.1 cm. For the pairs with a stored vertex (`T7_stored_dca_vs_global_minimum.csv`) the
+  stored dca exceeds the global minimum by more than 1 cm for 2797 of 17,983 (2Mu2E), 2334 of
+  12,208 (wide-pair) and 18,801 of 89,453 (4Mu): never below a stored dca of 1 cm, and for 344
+  of 351, 576 of 606 and 5893 of 6233 in [10, 15) cm. For 63, 112 and 749 of them the stored
+  dca is more than 0.1 cm below the bounded global minimum, so away from the first Newton path
+  that minimum is not a lower bound on TTMD's distance (the reason was not looked into).
+
+- Where the global minimum lies (`T7_global_minimum_location.csv`): the transverse radius of
+  the midpoint of the two closest points against the generated Lxy of the matched dark photon.
+  For the pairs with a stored vertex (the control) the median difference is 8.2 cm in the
+  wide-pair set and 8.7 cm in 4Mu (0.78 and 0.76 within 20 cm), and 30.3 cm in the sixteen
+  2Mu2E samples (0.39 within 20 cm), where 0.73 of the pairs of P open by less than 0.03 rad.
+  For the cut pairs:
+
+  | set | cut pairs with global minimum | n | median difference (cm) | within 20 cm | beyond 100 cm | at r > 300 cm | TTMD crossing point: median (cm), within 20 cm |
+  |---|---|---|---|---|---|---|---|
+  | 2Mu2E | < 15 cm | 647 | 143 | 0.114 | 0.629 | 0.340 | 34, 0.365 |
+  | 2Mu2E | >= 15 cm | 299 | 321 | 0.010 | 0.953 | 0.806 | 40, 0.301 |
+  | wide-pair | < 15 cm | 1040 | 13.8 | 0.629 | 0.041 | 0.038 | 82, 0.137 |
+  | wide-pair | >= 15 cm | 149 | 108 | 0.040 | 0.517 | 0.362 | 20, 0.497 |
+  | 4Mu | < 15 cm | 9004 | 14.1 | 0.620 | 0.037 | 0.045 | 66, 0.140 |
+  | 4Mu | >= 15 cm | 1283 | 80 | 0.125 | 0.409 | 0.295 | 31, 0.392 |
+
+  The TTMD crossing point of the control pairs is a median 10.1 and 11.0 cm from the generated
+  radius in the wide-pair set and 4Mu, and 33.7 cm in the sixteen 2Mu2E samples. So in the
+  wide-pair set and 4Mu the cut pairs whose helices come within 15 cm do so at a radius a
+  median 14 cm from the generated decay radius (control 8 to 9 cm; 0.63 and 0.62 within 20 cm
+  against 0.78 and 0.76), while the point where TTMD ended is 66 to 82 cm from it in radius. In
+  the sixteen 2Mu2E samples it is the other way round: the radius of TTMD's point is as close
+  to the decay radius as for the pairs with a vertex (34 against 34 cm), and the global minimum
+  lies elsewhere, a third of the time beyond r = 300 cm.
+
+**What is and is not explained**
+
+- In the sixteen 2Mu2E samples 9% of the DSA-DSA LJs without a vertex are cut at 15 cm and 91%
+  have an invalid fit;
+  in the wide-pair 2Mu2E and 4Mu sets at the same mass points the shares are reversed (0.686 and
+  0.741 cut, in P). Patterns (a) to (c) are differences in f_inv (term_finv carries the
+  difference). Pattern (d) in class A, the pairs matched to both daughters, is a difference in
+  s15 (term_s15 +0.053), against a lower f_inv in the wide bin. In class D it is not one
+  pattern: the excess of the wide bin is in the same-charge pairs only, and opposite-charge
+  class D pairs lose the vertex less often in the wide bin (0.193 against 0.326).
+- f_inv follows the opening angle at the crossing point: 0.6 to 0.77 below 3 mrad and 0.006 or
+  less above 0.1 rad in every set. At fixed angle the spread of f_inv between the three sample
+  sets falls from 0.157 to 0.008, so most of the difference between the sixteen 2Mu2E samples
+  (0.337) and the wide-pair and 4Mu sets (0.023, 0.026) goes with the angles of their pairs.
+  Not all of it: at the same angles the wide-pair and 4Mu pairs fail 0.57 +- 0.04 and 0.69 +-
+  0.04 times as often as the sixteen samples' fractions predict (chi2 270 for 13 ndf).
+- (b) is explained by the angle and the distance: at fixed angle bin and coarse distance the
+  outer-inner difference is +0.013 (z 1.02) against -0.195 on the same LJs, on 0.794 of the LJs;
+  at fixed angle alone it falls from -0.226 to -0.049 (z -4.09) on 0.979.
+- (a) is reduced, and whether anything remains is not established. At fixed angle it falls
+  from +0.041 to +0.009 (z 1.13) on 0.803 of the LJs (at least 5 per group in a cell); with at
+  least 30 per group it is +0.023 (z 2.65) against +0.030 on 0.337, and at fixed angle and
+  coarse distance +0.040 (z 2.36) against +0.064 on 0.232. The two results above 2 sigma are
+  on a third and a quarter of the LJs, among 164 test rows. Between the 8 mass points
+  the spread at fixed angle is 0.043.
+- (c) is not explained by the angle, the distance or any track-quality variable: at fixed angle
+  the endcap is below the barrel by 0.244 (z -31.2; -0.230 without the angle on the same LJs,
+  kept 0.982), and the endcap has more cut pairs as well (larger s15 in every Lxy slice).
+  angle_eff, derived from the fitter's loop condition, reduces it (-0.138, z -19.6) but does
+  not reconcile barrel and endcap. f_inv rises with sin(theta_pair) inside the barrel; inside
+  the endcap the test has too few LJs to show or to exclude the same rise. (c) stays
+  unexplained, and the failing branch is not observed.
+- (d): in class A the wide bin's extra no-vertex LJs are cut pairs (term_s15). The lower f_inv
+  of the wide bin is mostly the angle: class A -0.002 (z -2.10) at fixed angle against -0.011
+  on 0.989 of the LJs, class D (both charges) -0.036 (z -4.77) against -0.098 on 0.912; not
+  removed in class D.
+- In the wide-pair set and 4Mu the 15 cm cut removes many pairs whose helices do come close.
+  For 0.875 of the cut pairs in both sets the global minimum is below 15 cm, at a radius a
+  median 14 cm from the generated decay radius (8 to 9 cm for the pairs with a vertex), while
+  TTMD, starting from the reference points, ends 66 to 82 cm from it in radius and returns more
+  than 15 cm. Counting only minima within 20 cm of the decay radius, that is about half of the
+  cut pairs (0.875 x 0.62 to 0.63). The other 0.125 are more than 15 cm apart everywhere inside
+  the bounds. Only radii are compared, so the distance between the two tracks at the decay
+  itself is not measured. For the cut pairs of the wide bin in (d), class A, the global minimum
+  is below 15 cm for 577 of 613; where it lies was not computed for that group. In the sixteen
+  2Mu2E samples the statement does not hold: the helices of 0.684 of the 946 cut pairs also
+  come within 15 cm, but at a radius a median 143 cm from the generated one, and the radius of
+  TTMD's own point is as close to the decay radius there as for the pairs with a vertex. A
+  close approach that far from the decay says nothing about a common vertex.
+
+**Limits**
+
+- DSA-DSA LJs only. Pairs with a PF leg are not reproduced, because the records hold the inner
+  track, not the combined or standalone track the producer uses. LJs with three or more muons
+  are not tested.
+- The Kalman fit is not emulated: "invalid fit" means a pair without a stored vertex whose
+  emulated TTMD distance is at most 15 cm. Which condition of the fitter (update step, NaN,
+  bounds, iteration count) fails is not established; the angle and L are descriptions of where
+  it fails, not of why.
+- The angle is taken at the TTMD crossing point, a proxy whose distance from the stored vertex
+  was measured only by the direct NanoAOD read, not in this repository (median 2.50 cm, 37.0 cm
+  on the path that keeps the transverse points). The fitter's linearization point is the
+  crossing point of the impact-point states, not of the reference-point states used here.
+- The angle was chosen after looking at four candidates and 13 track-quality variables; the
+  angle bins were fixed before the tests of this section and were not tuned. That, like the
+  order in which L and angle_eff were specified, is recorded nowhere but in this text.
+- L uses the beam-spot dxy and dz errors (dxyBSErr, dzBSErr), the only reference-point errors
+  in the records.
+- The parabolic parametrisation stands in for the producer's volume-based field map (with a
+  uniform 3.8 T field the DSA-DSA pairs within 0.1 cm fall from 0.999 to 0.992 in 2Mu2E and from
+  0.994 to 0.952 in 4Mu, `validation_dca.csv`).
+- The emulation is checked against the producer only on pairs with a stored vertex (stored dca
+  at most 15 cm); for the pairs without one the emulated distance is the same calculation on the
+  same kind of input.
+- The position of the global minimum is compared with the generated decay in radius only: the
+  records hold the dark photon's Lxy, eta and phi, not its decay vertex. They hold no position
+  of the stored vertex either, so the control rows use the same two points (global-minimum
+  midpoint, TTMD crossing point) for the pairs with a stored vertex.
+- Signal MC only; nothing here is a statement about data.
+
+| file | what it holds |
+|---|---|
+| `validation_dca.csv` | Emulated against stored dca for the pairs with a stored vertex, per group and stored-dca bin, for the parabolic and a uniform field. |
+| `table15_check.csv` | LJ and no-vertex counts by content and charge (table 15). |
+| `T1_novtx_vs_distance.csv`, `T1_distance_shares_by_point.csv` | P(2Mu2E): no-vertex fraction against the distance, all and per mass point; distance composition per mass point. |
+| `T2_condition_share.csv` | Per sample set, share of the no-vertex LJs of P(set) with distance > 15 cm, by Lxy slice, region and mass point. |
+| `T2_same_mass_points.csv` | All LJs whose leading pair is DSA-DSA, per sample set and sample: no-vertex LJs and those with distance > 15 cm. |
+| `decomposition_cut_vs_invalid_fit.csv` | s15 and f_inv of the two groups of (a) to (d), and the split of the difference. |
+| `invalid_fit_tests.csv` | Tests on f_inv for (a) to (d) with each added cell variable. |
+| `T4_standardised.csv` | P(2Mu2E): no-vertex fraction per region and Lxy slice, observed and standardised to the pooled distance composition. |
+| `invalid_fit_universality.csv` | Consistency of f_inv across mass points, regions, Lxy slices and sample sets, per cell choice. |
+| `invalid_fit_candidates.csv` | Per sample set, P(set) and all LJs, distance at most 15 cm: f_inv against crossing r and abs(z), the bounds, the TTMD path, the angle, dR at the reference points, the distance. |
+| `invalid_fit_angle_x_distance.csv` | The same against angle x distance (fine and coarse distance bins). |
+| `invalid_fit_deviance.csv` | Binomial deviance of the binned descriptions of f_inv. |
+| `invalid_fit_angle_standardised.csv` | P(set), distance at most 15 cm: f_inv per angle and angle_eff bin and set with the z against the sixteen 2Mu2E samples, and each set's f_inv against the one predicted from the sixteen samples' fractions per bin. |
+| `invalid_fit_sin_theta.csv` | P(2Mu2E), distance at most 15 cm, barrel and endcap: f_inv in quintiles of sin(theta_pair), and the last quintile against the first with no cells, at fixed angle bin and at fixed angle bin x coarse distance. |
+| `edge_1cm.csv` | No-vertex fraction in 1 cm bins of the distance from 10 to 20 cm. |
+| `T7_global_minimum_cut_pairs.csv`, `T7_stored_dca_vs_global_minimum.csv`, `T7_minimiser_stability.csv` | Global minimum distance of the cut pairs; stored dca against it; stability of the minimiser. |
+| `T7_global_minimum_location.csv` | Radius of the global-minimum midpoint and of the TTMD crossing point against the generated Lxy, for the cut pairs (all, global minimum below and above 15 cm) and for the pairs with a stored vertex. |
+| `summary.txt` | The checks and the main rows of every table. |
 
 ### Slides (`slides/`)
 
@@ -456,7 +1702,8 @@ both on the full background stack). And over the signal grid it keeps 28% fewer 
 jets (0.690 vs 0.961). The signal efficiencies are for the Spread veto in its as-run `vxySpread`
 form; `main`'s `dxySpread` form was not run on signal. The one corner where the ordering
 reverses is m_Zd = 5 GeV, mediator mass 100-150 GeV, ctau >= 130 mm: 8 of the 180 signal
-samples when efficiency is counted per DSA muon (6 counted per lepton jet). There the
+samples when efficiency is counted per DSA muon (counted per lepton jet it is 6 samples, one
+of them at ctau = 40 mm). There the
 max-over-pairs Spread variables start failing on wide displaced pairs and the min-over-pairs
 vertex requirement does not.
 

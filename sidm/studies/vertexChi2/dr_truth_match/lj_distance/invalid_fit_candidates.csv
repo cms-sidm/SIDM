@@ -1,0 +1,292 @@
+set,population,variable,bin,n,k,f
+2Mu2E,P,crossing r (cm),"[0.0, 50.0)",3657,888,0.2428219852337982
+2Mu2E,P,crossing r (cm),"[50.0, 100.0)",4002,1288,0.3218390804597701
+2Mu2E,P,crossing r (cm),"[100.0, 200.0)",13991,5738,0.4101207919376742
+2Mu2E,P,crossing r (cm),"[200.0, 300.0)",3272,624,0.19070904645476772
+2Mu2E,P,crossing r (cm),"[300.0, 400.0)",275,2,0.007272727272727273
+2Mu2E,P,crossing r (cm),"[400.0, 500.0)",80,1,0.0125
+2Mu2E,P,crossing r (cm),"[500.0, 600.0)",61,1,0.01639344262295082
+2Mu2E,P,crossing r (cm),"[600.0, 700.0)",23,0,0.0
+2Mu2E,P,crossing r (cm),"[700.0, 740.0)",3,0,0.0
+2Mu2E,P,crossing r (cm),"[740.0, 800.0)",1,0,0.0
+2Mu2E,P,crossing r (cm),"[800.0, 1000.0)",1,0,0.0
+2Mu2E,P,crossing r (cm),"[1000.0, inf)",2,0,0.0
+2Mu2E,P,crossing |z| (cm),"[0.0, 100.0)",17691,6615,0.37391894183483126
+2Mu2E,P,crossing |z| (cm),"[100.0, 300.0)",6702,1871,0.27917039689644885
+2Mu2E,P,crossing |z| (cm),"[300.0, 500.0)",814,55,0.06756756756756757
+2Mu2E,P,crossing |z| (cm),"[500.0, 700.0)",73,0,0.0
+2Mu2E,P,crossing |z| (cm),"[700.0, 900.0)",22,0,0.0
+2Mu2E,P,crossing |z| (cm),"[900.0, 960.0)",4,0,0.0
+2Mu2E,P,crossing |z| (cm),"[960.0, 1100.0)",17,1,0.058823529411764705
+2Mu2E,P,crossing |z| (cm),"[1100.0, inf)",45,0,0.0
+2Mu2E,P,r < 740 cm and |z| < 960 cm,inside,25302,8541,0.33756224804363294
+2Mu2E,P,r < 740 cm and |z| < 960 cm,outside,66,1,0.015151515151515152
+2Mu2E,P,TTMD path,1,2562,695,0.27127244340359097
+2Mu2E,P,TTMD path,3,17559,5880,0.3348710063215445
+2Mu2E,P,TTMD path,4,5247,1967,0.37488088431484656
+2Mu2E,P,angle at the crossing (rad),"[0.0, 0.0001)",422,264,0.6255924170616114
+2Mu2E,P,angle at the crossing (rad),"[0.0001, 0.0003)",749,550,0.7343124165554072
+2Mu2E,P,angle at the crossing (rad),"[0.0003, 0.001)",2179,1666,0.7645709040844424
+2Mu2E,P,angle at the crossing (rad),"[0.001, 0.003)",3410,2530,0.7419354838709677
+2Mu2E,P,angle at the crossing (rad),"[0.003, 0.01)",4252,2138,0.5028222013170273
+2Mu2E,P,angle at the crossing (rad),"[0.01, 0.03)",7552,1131,0.1497616525423729
+2Mu2E,P,angle at the crossing (rad),"[0.03, 0.1)",6440,261,0.04052795031055901
+2Mu2E,P,angle at the crossing (rad),"[0.1, 0.3)",353,2,0.0056657223796034
+2Mu2E,P,angle at the crossing (rad),"[0.3, 1.0)",11,0,0.0
+2Mu2E,P,dR of the momenta at the reference points,"[0.0, 0.0001)",2,2,1.0
+2Mu2E,P,dR of the momenta at the reference points,"[0.0001, 0.0003)",12,5,0.4166666666666667
+2Mu2E,P,dR of the momenta at the reference points,"[0.0003, 0.001)",90,50,0.5555555555555556
+2Mu2E,P,dR of the momenta at the reference points,"[0.001, 0.003)",526,236,0.44866920152091255
+2Mu2E,P,dR of the momenta at the reference points,"[0.003, 0.01)",2575,436,0.16932038834951457
+2Mu2E,P,dR of the momenta at the reference points,"[0.01, 0.03)",8239,1982,0.24056317514261438
+2Mu2E,P,dR of the momenta at the reference points,"[0.03, 0.1)",12729,5556,0.436483620080132
+2Mu2E,P,dR of the momenta at the reference points,"[0.1, 0.3)",1149,272,0.23672758920800696
+2Mu2E,P,dR of the momenta at the reference points,"[0.3, 1.0)",46,3,0.06521739130434782
+2Mu2E,P,distance (cm),"[0.0, 0.1)",4055,9,0.0022194821208384712
+2Mu2E,P,distance (cm),"[0.1, 0.5)",6071,906,0.14923406358095864
+2Mu2E,P,distance (cm),"[0.5, 1.0)",4078,1833,0.4494850416871015
+2Mu2E,P,distance (cm),"[1.0, 2.0)",4491,2641,0.5880650189267423
+2Mu2E,P,distance (cm),"[2.0, 5.0)",4382,2143,0.48904609767229573
+2Mu2E,P,distance (cm),"[5.0, 10.0)",1731,757,0.43731946851530906
+2Mu2E,P,distance (cm),"[10.0, 15.0)",560,253,0.4517857142857143
+2Mu2E,all LJs,crossing r (cm),"[0.0, 50.0)",3896,942,0.24178644763860369
+2Mu2E,all LJs,crossing r (cm),"[50.0, 100.0)",4318,1379,0.3193608151922186
+2Mu2E,all LJs,crossing r (cm),"[100.0, 200.0)",14710,5885,0.4000679809653297
+2Mu2E,all LJs,crossing r (cm),"[200.0, 300.0)",3408,626,0.18368544600938966
+2Mu2E,all LJs,crossing r (cm),"[300.0, 400.0)",293,2,0.006825938566552901
+2Mu2E,all LJs,crossing r (cm),"[400.0, 500.0)",84,1,0.011904761904761904
+2Mu2E,all LJs,crossing r (cm),"[500.0, 600.0)",66,1,0.015151515151515152
+2Mu2E,all LJs,crossing r (cm),"[600.0, 700.0)",29,1,0.034482758620689655
+2Mu2E,all LJs,crossing r (cm),"[700.0, 740.0)",7,0,0.0
+2Mu2E,all LJs,crossing r (cm),"[740.0, 800.0)",2,0,0.0
+2Mu2E,all LJs,crossing r (cm),"[800.0, 1000.0)",2,0,0.0
+2Mu2E,all LJs,crossing r (cm),"[1000.0, inf)",5,0,0.0
+2Mu2E,all LJs,crossing |z| (cm),"[0.0, 100.0)",18516,6830,0.3688701663426226
+2Mu2E,all LJs,crossing |z| (cm),"[100.0, 300.0)",7184,1941,0.2701837416481069
+2Mu2E,all LJs,crossing |z| (cm),"[300.0, 500.0)",930,64,0.06881720430107527
+2Mu2E,all LJs,crossing |z| (cm),"[500.0, 700.0)",89,0,0.0
+2Mu2E,all LJs,crossing |z| (cm),"[700.0, 900.0)",24,0,0.0
+2Mu2E,all LJs,crossing |z| (cm),"[900.0, 960.0)",6,0,0.0
+2Mu2E,all LJs,crossing |z| (cm),"[960.0, 1100.0)",19,1,0.05263157894736842
+2Mu2E,all LJs,crossing |z| (cm),"[1100.0, inf)",52,1,0.019230769230769232
+2Mu2E,all LJs,r < 740 cm and |z| < 960 cm,inside,26741,8835,0.33039153360008977
+2Mu2E,all LJs,r < 740 cm and |z| < 960 cm,outside,79,2,0.02531645569620253
+2Mu2E,all LJs,TTMD path,1,2720,730,0.26838235294117646
+2Mu2E,all LJs,TTMD path,3,18555,6052,0.3261654540555106
+2Mu2E,all LJs,TTMD path,4,5545,2055,0.37060414788097384
+2Mu2E,all LJs,angle at the crossing (rad),"[0.0, 0.0001)",437,271,0.620137299771167
+2Mu2E,all LJs,angle at the crossing (rad),"[0.0001, 0.0003)",778,561,0.7210796915167095
+2Mu2E,all LJs,angle at the crossing (rad),"[0.0003, 0.001)",2251,1709,0.7592181252776544
+2Mu2E,all LJs,angle at the crossing (rad),"[0.001, 0.003)",3564,2628,0.7373737373737373
+2Mu2E,all LJs,angle at the crossing (rad),"[0.003, 0.01)",4437,2212,0.498535046202389
+2Mu2E,all LJs,angle at the crossing (rad),"[0.01, 0.03)",8039,1165,0.14491852220425427
+2Mu2E,all LJs,angle at the crossing (rad),"[0.03, 0.1)",6917,288,0.04163654763625849
+2Mu2E,all LJs,angle at the crossing (rad),"[0.1, 0.3)",386,3,0.007772020725388601
+2Mu2E,all LJs,angle at the crossing (rad),"[0.3, 1.0)",11,0,0.0
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.0, 0.0001)",2,2,1.0
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.0001, 0.0003)",12,5,0.4166666666666667
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.0003, 0.001)",100,53,0.53
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.001, 0.003)",568,250,0.44014084507042256
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.003, 0.01)",2756,461,0.16727140783744557
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.01, 0.03)",8711,2107,0.2418780851796579
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.03, 0.1)",13364,5678,0.4248727925770727
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.1, 0.3)",1259,278,0.22081016679904686
+2Mu2E,all LJs,dR of the momenta at the reference points,"[0.3, 1.0)",48,3,0.0625
+2Mu2E,all LJs,distance (cm),"[0.0, 0.1)",4330,9,0.002078521939953811
+2Mu2E,all LJs,distance (cm),"[0.1, 0.5)",6419,922,0.143636080386353
+2Mu2E,all LJs,distance (cm),"[0.5, 1.0)",4269,1883,0.44108690559850083
+2Mu2E,all LJs,distance (cm),"[1.0, 2.0)",4726,2732,0.5780787134997885
+2Mu2E,all LJs,distance (cm),"[2.0, 5.0)",4617,2227,0.48234784492094435
+2Mu2E,all LJs,distance (cm),"[5.0, 10.0)",1842,796,0.43213897937024975
+2Mu2E,all LJs,distance (cm),"[10.0, 15.0)",617,268,0.4343598055105348
+2Mu2E wide-pair,P,crossing r (cm),"[0.0, 50.0)",1054,133,0.12618595825426945
+2Mu2E wide-pair,P,crossing r (cm),"[50.0, 100.0)",2198,37,0.01683348498635123
+2Mu2E wide-pair,P,crossing r (cm),"[100.0, 200.0)",4374,48,0.010973936899862825
+2Mu2E wide-pair,P,crossing r (cm),"[200.0, 300.0)",2559,13,0.005080109417741305
+2Mu2E wide-pair,P,crossing r (cm),"[300.0, 400.0)",965,2,0.002072538860103627
+2Mu2E wide-pair,P,crossing r (cm),"[400.0, 500.0)",166,15,0.09036144578313253
+2Mu2E wide-pair,P,crossing r (cm),"[500.0, 600.0)",153,14,0.0915032679738562
+2Mu2E wide-pair,P,crossing r (cm),"[600.0, 700.0)",65,1,0.015384615384615385
+2Mu2E wide-pair,P,crossing r (cm),"[700.0, 740.0)",9,0,0.0
+2Mu2E wide-pair,P,crossing r (cm),"[740.0, 800.0)",10,0,0.0
+2Mu2E wide-pair,P,crossing r (cm),"[800.0, 1000.0)",10,0,0.0
+2Mu2E wide-pair,P,crossing |z| (cm),"[0.0, 100.0)",6094,225,0.03692156219232032
+2Mu2E wide-pair,P,crossing |z| (cm),"[100.0, 300.0)",4245,28,0.006595995288574794
+2Mu2E wide-pair,P,crossing |z| (cm),"[300.0, 500.0)",894,7,0.007829977628635347
+2Mu2E wide-pair,P,crossing |z| (cm),"[500.0, 700.0)",197,1,0.005076142131979695
+2Mu2E wide-pair,P,crossing |z| (cm),"[700.0, 900.0)",36,0,0.0
+2Mu2E wide-pair,P,crossing |z| (cm),"[900.0, 960.0)",10,0,0.0
+2Mu2E wide-pair,P,crossing |z| (cm),"[960.0, 1100.0)",26,2,0.07692307692307693
+2Mu2E wide-pair,P,crossing |z| (cm),"[1100.0, inf)",61,0,0.0
+2Mu2E wide-pair,P,r < 740 cm and |z| < 960 cm,inside,11458,261,0.02277884447547565
+2Mu2E wide-pair,P,r < 740 cm and |z| < 960 cm,outside,105,2,0.01904761904761905
+2Mu2E wide-pair,P,TTMD path,1,419,100,0.2386634844868735
+2Mu2E wide-pair,P,TTMD path,3,9062,95,0.010483337011697198
+2Mu2E wide-pair,P,TTMD path,4,2082,68,0.03266090297790586
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.0, 0.0001)",4,3,0.75
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.0001, 0.0003)",11,8,0.7272727272727273
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.0003, 0.001)",56,38,0.6785714285714286
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.001, 0.003)",90,62,0.6888888888888889
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.003, 0.01)",111,53,0.4774774774774775
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.01, 0.03)",247,26,0.10526315789473684
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.03, 0.1)",5445,59,0.0108356290174472
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.1, 0.3)",5579,14,0.002509410288582183
+2Mu2E wide-pair,P,angle at the crossing (rad),"[0.3, 1.0)",20,0,0.0
+2Mu2E wide-pair,P,dR of the momenta at the reference points,"[0.0003, 0.001)",6,5,0.8333333333333334
+2Mu2E wide-pair,P,dR of the momenta at the reference points,"[0.001, 0.003)",18,9,0.5
+2Mu2E wide-pair,P,dR of the momenta at the reference points,"[0.003, 0.01)",117,47,0.4017094017094017
+2Mu2E wide-pair,P,dR of the momenta at the reference points,"[0.01, 0.03)",507,36,0.07100591715976332
+2Mu2E wide-pair,P,dR of the momenta at the reference points,"[0.03, 0.1)",3841,88,0.022910700338453528
+2Mu2E wide-pair,P,dR of the momenta at the reference points,"[0.1, 0.3)",6601,70,0.010604453870625663
+2Mu2E wide-pair,P,dR of the momenta at the reference points,"[0.3, 1.0)",473,8,0.016913319238900635
+2Mu2E wide-pair,P,distance (cm),"[0.0, 0.1)",1400,0,0.0
+2Mu2E wide-pair,P,distance (cm),"[0.1, 0.5)",2639,7,0.002652519893899204
+2Mu2E wide-pair,P,distance (cm),"[0.5, 1.0)",1822,11,0.0060373216245883645
+2Mu2E wide-pair,P,distance (cm),"[1.0, 2.0)",1868,29,0.015524625267665952
+2Mu2E wide-pair,P,distance (cm),"[2.0, 5.0)",1935,78,0.040310077519379844
+2Mu2E wide-pair,P,distance (cm),"[5.0, 10.0)",1354,91,0.0672082717872969
+2Mu2E wide-pair,P,distance (cm),"[10.0, 15.0)",545,47,0.08623853211009175
+2Mu2E wide-pair,all LJs,crossing r (cm),"[0.0, 50.0)",1241,138,0.11120064464141821
+2Mu2E wide-pair,all LJs,crossing r (cm),"[50.0, 100.0)",2476,40,0.01615508885298869
+2Mu2E wide-pair,all LJs,crossing r (cm),"[100.0, 200.0)",4660,55,0.011802575107296138
+2Mu2E wide-pair,all LJs,crossing r (cm),"[200.0, 300.0)",2663,14,0.005257228689447991
+2Mu2E wide-pair,all LJs,crossing r (cm),"[300.0, 400.0)",1015,4,0.003940886699507389
+2Mu2E wide-pair,all LJs,crossing r (cm),"[400.0, 500.0)",174,15,0.08620689655172414
+2Mu2E wide-pair,all LJs,crossing r (cm),"[500.0, 600.0)",156,14,0.08974358974358974
+2Mu2E wide-pair,all LJs,crossing r (cm),"[600.0, 700.0)",68,1,0.014705882352941176
+2Mu2E wide-pair,all LJs,crossing r (cm),"[700.0, 740.0)",10,0,0.0
+2Mu2E wide-pair,all LJs,crossing r (cm),"[740.0, 800.0)",10,0,0.0
+2Mu2E wide-pair,all LJs,crossing r (cm),"[800.0, 1000.0)",10,0,0.0
+2Mu2E wide-pair,all LJs,crossing r (cm),"[1000.0, inf)",3,0,0.0
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[0.0, 100.0)",6461,236,0.03652685342826188
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[100.0, 300.0)",4602,32,0.006953498478922208
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[300.0, 500.0)",1041,9,0.008645533141210375
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[500.0, 700.0)",228,1,0.0043859649122807015
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[700.0, 900.0)",40,0,0.0
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[900.0, 960.0)",10,0,0.0
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[960.0, 1100.0)",31,2,0.06451612903225806
+2Mu2E wide-pair,all LJs,crossing |z| (cm),"[1100.0, inf)",73,1,0.0136986301369863
+2Mu2E wide-pair,all LJs,r < 740 cm and |z| < 960 cm,inside,12362,278,0.022488270506390552
+2Mu2E wide-pair,all LJs,r < 740 cm and |z| < 960 cm,outside,124,3,0.024193548387096774
+2Mu2E wide-pair,all LJs,TTMD path,1,489,103,0.21063394683026584
+2Mu2E wide-pair,all LJs,TTMD path,3,9675,103,0.010645994832041344
+2Mu2E wide-pair,all LJs,TTMD path,4,2322,75,0.03229974160206718
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.0, 0.0001)",6,4,0.6666666666666666
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.0001, 0.0003)",12,9,0.75
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.0003, 0.001)",60,40,0.6666666666666666
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.001, 0.003)",101,65,0.6435643564356436
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.003, 0.01)",128,56,0.4375
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.01, 0.03)",346,30,0.08670520231213873
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.03, 0.1)",5982,61,0.010197258441992645
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.1, 0.3)",5830,16,0.0027444253859348197
+2Mu2E wide-pair,all LJs,angle at the crossing (rad),"[0.3, 1.0)",21,0,0.0
+2Mu2E wide-pair,all LJs,dR of the momenta at the reference points,"[0.0003, 0.001)",6,5,0.8333333333333334
+2Mu2E wide-pair,all LJs,dR of the momenta at the reference points,"[0.001, 0.003)",18,9,0.5
+2Mu2E wide-pair,all LJs,dR of the momenta at the reference points,"[0.003, 0.01)",127,48,0.3779527559055118
+2Mu2E wide-pair,all LJs,dR of the momenta at the reference points,"[0.01, 0.03)",541,42,0.07763401109057301
+2Mu2E wide-pair,all LJs,dR of the momenta at the reference points,"[0.03, 0.1)",4098,96,0.02342606149341142
+2Mu2E wide-pair,all LJs,dR of the momenta at the reference points,"[0.1, 0.3)",7204,73,0.010133259300388673
+2Mu2E wide-pair,all LJs,dR of the momenta at the reference points,"[0.3, 1.0)",492,8,0.016260162601626018
+2Mu2E wide-pair,all LJs,distance (cm),"[0.0, 0.1)",1528,0,0.0
+2Mu2E wide-pair,all LJs,distance (cm),"[0.1, 0.5)",2821,7,0.0024813895781637717
+2Mu2E wide-pair,all LJs,distance (cm),"[0.5, 1.0)",1920,11,0.005729166666666666
+2Mu2E wide-pair,all LJs,distance (cm),"[1.0, 2.0)",2010,31,0.015422885572139304
+2Mu2E wide-pair,all LJs,distance (cm),"[2.0, 5.0)",2068,81,0.03916827852998066
+2Mu2E wide-pair,all LJs,distance (cm),"[5.0, 10.0)",1484,97,0.06536388140161725
+2Mu2E wide-pair,all LJs,distance (cm),"[10.0, 15.0)",655,54,0.08244274809160305
+4Mu,P,crossing r (cm),"[0.0, 50.0)",8810,988,0.11214528944381384
+4Mu,P,crossing r (cm),"[50.0, 100.0)",17307,391,0.02259201479170278
+4Mu,P,crossing r (cm),"[100.0, 200.0)",31793,487,0.015317837259774165
+4Mu,P,crossing r (cm),"[200.0, 300.0)",17474,143,0.008183587043607646
+4Mu,P,crossing r (cm),"[300.0, 400.0)",6624,21,0.003170289855072464
+4Mu,P,crossing r (cm),"[400.0, 500.0)",1334,102,0.07646176911544228
+4Mu,P,crossing r (cm),"[500.0, 600.0)",1030,50,0.04854368932038835
+4Mu,P,crossing r (cm),"[600.0, 700.0)",351,5,0.014245014245014245
+4Mu,P,crossing r (cm),"[700.0, 740.0)",62,2,0.03225806451612903
+4Mu,P,crossing r (cm),"[740.0, 800.0)",51,4,0.0784313725490196
+4Mu,P,crossing r (cm),"[800.0, 1000.0)",36,1,0.027777777777777776
+4Mu,P,crossing r (cm),"[1000.0, inf)",4,0,0.0
+4Mu,P,crossing |z| (cm),"[0.0, 100.0)",41239,1824,0.04422997647857611
+4Mu,P,crossing |z| (cm),"[100.0, 300.0)",30330,249,0.008209693372898121
+4Mu,P,crossing |z| (cm),"[300.0, 500.0)",9370,67,0.007150480256136607
+4Mu,P,crossing |z| (cm),"[500.0, 700.0)",2671,17,0.00636465743167353
+4Mu,P,crossing |z| (cm),"[700.0, 900.0)",537,10,0.0186219739292365
+4Mu,P,crossing |z| (cm),"[900.0, 960.0)",131,0,0.0
+4Mu,P,crossing |z| (cm),"[960.0, 1100.0)",194,18,0.09278350515463918
+4Mu,P,crossing |z| (cm),"[1100.0, inf)",404,9,0.022277227722772276
+4Mu,P,r < 740 cm and |z| < 960 cm,inside,84211,2163,0.02568548051917208
+4Mu,P,r < 740 cm and |z| < 960 cm,outside,665,31,0.04661654135338346
+4Mu,P,TTMD path,1,3173,665,0.20958083832335328
+4Mu,P,TTMD path,3,64551,925,0.01432975476754814
+4Mu,P,TTMD path,4,17152,604,0.03521455223880597
+4Mu,P,angle at the crossing (rad),"[0.0, 0.0001)",32,24,0.75
+4Mu,P,angle at the crossing (rad),"[0.0001, 0.0003)",98,73,0.7448979591836735
+4Mu,P,angle at the crossing (rad),"[0.0003, 0.001)",248,177,0.7137096774193549
+4Mu,P,angle at the crossing (rad),"[0.001, 0.003)",531,337,0.6346516007532956
+4Mu,P,angle at the crossing (rad),"[0.003, 0.01)",824,457,0.5546116504854369
+4Mu,P,angle at the crossing (rad),"[0.01, 0.03)",2092,341,0.1630019120458891
+4Mu,P,angle at the crossing (rad),"[0.03, 0.1)",38199,582,0.015236000942433048
+4Mu,P,angle at the crossing (rad),"[0.1, 0.3)",42385,203,0.004789430222956234
+4Mu,P,angle at the crossing (rad),"[0.3, 1.0)",467,0,0.0
+4Mu,P,dR of the momenta at the reference points,"[0.0003, 0.001)",6,4,0.6666666666666666
+4Mu,P,dR of the momenta at the reference points,"[0.001, 0.003)",80,50,0.625
+4Mu,P,dR of the momenta at the reference points,"[0.003, 0.01)",528,244,0.4621212121212121
+4Mu,P,dR of the momenta at the reference points,"[0.01, 0.03)",2635,333,0.12637571157495256
+4Mu,P,dR of the momenta at the reference points,"[0.03, 0.1)",20537,715,0.03481521156936261
+4Mu,P,dR of the momenta at the reference points,"[0.1, 0.3)",53205,724,0.013607743633117187
+4Mu,P,dR of the momenta at the reference points,"[0.3, 1.0)",7885,124,0.01572606214331008
+4Mu,P,distance (cm),"[0.0, 0.1)",7311,2,0.0002735603884557516
+4Mu,P,distance (cm),"[0.1, 0.5)",17536,38,0.002166970802919708
+4Mu,P,distance (cm),"[0.5, 1.0)",13353,64,0.004792930427619262
+4Mu,P,distance (cm),"[1.0, 2.0)",14016,150,0.010702054794520547
+4Mu,P,distance (cm),"[2.0, 5.0)",14664,494,0.03368794326241135
+4Mu,P,distance (cm),"[5.0, 10.0)",11994,860,0.07170251792562948
+4Mu,P,distance (cm),"[10.0, 15.0)",6002,586,0.09763412195934688
+4Mu,all LJs,crossing r (cm),"[0.0, 50.0)",10119,1022,0.10099812234410514
+4Mu,all LJs,crossing r (cm),"[50.0, 100.0)",19008,415,0.021832912457912457
+4Mu,all LJs,crossing r (cm),"[100.0, 200.0)",34205,542,0.015845636602835843
+4Mu,all LJs,crossing r (cm),"[200.0, 300.0)",18413,193,0.01048172486829957
+4Mu,all LJs,crossing r (cm),"[300.0, 400.0)",7024,34,0.004840546697038725
+4Mu,all LJs,crossing r (cm),"[400.0, 500.0)",1440,105,0.07291666666666667
+4Mu,all LJs,crossing r (cm),"[500.0, 600.0)",1067,52,0.04873477038425492
+4Mu,all LJs,crossing r (cm),"[600.0, 700.0)",366,5,0.01366120218579235
+4Mu,all LJs,crossing r (cm),"[700.0, 740.0)",65,3,0.046153846153846156
+4Mu,all LJs,crossing r (cm),"[740.0, 800.0)",56,4,0.07142857142857142
+4Mu,all LJs,crossing r (cm),"[800.0, 1000.0)",42,2,0.047619047619047616
+4Mu,all LJs,crossing r (cm),"[1000.0, inf)",12,0,0.0
+4Mu,all LJs,crossing |z| (cm),"[0.0, 100.0)",43390,1902,0.04383498501958977
+4Mu,all LJs,crossing |z| (cm),"[100.0, 300.0)",32905,330,0.010028870992250418
+4Mu,all LJs,crossing |z| (cm),"[300.0, 500.0)",10705,80,0.007473143390938813
+4Mu,all LJs,crossing |z| (cm),"[500.0, 700.0)",3266,19,0.005817513778322106
+4Mu,all LJs,crossing |z| (cm),"[700.0, 900.0)",690,12,0.017391304347826087
+4Mu,all LJs,crossing |z| (cm),"[900.0, 960.0)",147,0,0.0
+4Mu,all LJs,crossing |z| (cm),"[960.0, 1100.0)",239,20,0.08368200836820083
+4Mu,all LJs,crossing |z| (cm),"[1100.0, inf)",475,14,0.029473684210526315
+4Mu,all LJs,r < 740 cm and |z| < 960 cm,inside,91026,2338,0.025684969129699208
+4Mu,all LJs,r < 740 cm and |z| < 960 cm,outside,791,39,0.0493046776232617
+4Mu,all LJs,TTMD path,1,3667,688,0.18761930733569676
+4Mu,all LJs,TTMD path,3,69340,1035,0.014926449379867321
+4Mu,all LJs,TTMD path,4,18810,654,0.03476874003189793
+4Mu,all LJs,angle at the crossing (rad),"[0.0, 0.0001)",37,26,0.7027027027027027
+4Mu,all LJs,angle at the crossing (rad),"[0.0001, 0.0003)",108,79,0.7314814814814815
+4Mu,all LJs,angle at the crossing (rad),"[0.0003, 0.001)",277,193,0.6967509025270758
+4Mu,all LJs,angle at the crossing (rad),"[0.001, 0.003)",606,379,0.6254125412541254
+4Mu,all LJs,angle at the crossing (rad),"[0.003, 0.01)",975,500,0.5128205128205128
+4Mu,all LJs,angle at the crossing (rad),"[0.01, 0.03)",2933,367,0.12512785543811797
+4Mu,all LJs,angle at the crossing (rad),"[0.03, 0.1)",42304,622,0.014703101361573373
+4Mu,all LJs,angle at the crossing (rad),"[0.1, 0.3)",44083,211,0.004786425606242769
+4Mu,all LJs,angle at the crossing (rad),"[0.3, 1.0)",494,0,0.0
+4Mu,all LJs,dR of the momenta at the reference points,"[0.0003, 0.001)",10,4,0.4
+4Mu,all LJs,dR of the momenta at the reference points,"[0.001, 0.003)",84,51,0.6071428571428571
+4Mu,all LJs,dR of the momenta at the reference points,"[0.003, 0.01)",568,254,0.4471830985915493
+4Mu,all LJs,dR of the momenta at the reference points,"[0.01, 0.03)",2841,346,0.12178810278071102
+4Mu,all LJs,dR of the momenta at the reference points,"[0.03, 0.1)",22231,791,0.03558094552651703
+4Mu,all LJs,dR of the momenta at the reference points,"[0.1, 0.3)",57894,803,0.013870176529519466
+4Mu,all LJs,dR of the momenta at the reference points,"[0.3, 1.0)",8189,128,0.015630724142141898
+4Mu,all LJs,distance (cm),"[0.0, 0.1)",8478,2,0.00023590469450342062
+4Mu,all LJs,distance (cm),"[0.1, 0.5)",18817,41,0.002178880799277249
+4Mu,all LJs,distance (cm),"[0.5, 1.0)",14156,68,0.004803616840915513
+4Mu,all LJs,distance (cm),"[1.0, 2.0)",14960,172,0.011497326203208556
+4Mu,all LJs,distance (cm),"[2.0, 5.0)",15632,544,0.03480040941658137
+4Mu,all LJs,distance (cm),"[5.0, 10.0)",12912,919,0.07117410161090458
+4Mu,all LJs,distance (cm),"[10.0, 15.0)",6862,631,0.09195569804721655

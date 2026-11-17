@@ -1,0 +1,268 @@
+samples read (name, files processed):
+  data   DoubleMuon_2018A_0: 999 files
+  data   DoubleMuon_2018A_1: 993 files
+  data   DoubleMuon_2018A_2: 769 files
+  data   DoubleMuon_2018B_0: 3498 files
+  data   DoubleMuon_2018B_1: 66 files
+  data   DoubleMuon_2018B_10: 126 files
+  data   DoubleMuon_2018B_11: 25 files
+  data   DoubleMuon_2018B_12: 31 files
+  data   DoubleMuon_2018B_13: 29 files
+  data   DoubleMuon_2018B_2: 31 files
+  data   DoubleMuon_2018B_3: 5274 files
+  data   DoubleMuon_2018B_4: 7328 files
+  data   DoubleMuon_2018B_5: 9321 files
+  data   DoubleMuon_2018B_6: 266 files
+  data   DoubleMuon_2018B_7: 224 files
+  data   DoubleMuon_2018B_8: 27 files
+  data   DoubleMuon_2018B_9: 3152 files
+  data   DoubleMuon_2018C: 632 files
+  data   DoubleMuon_2018D_0: 13 files
+  data   DoubleMuon_2018D_1: 682 files
+  data   DoubleMuon_2018D_10: 1794 files
+  data   DoubleMuon_2018D_11: 39 files
+  data   DoubleMuon_2018D_12: 60 files
+  data   DoubleMuon_2018D_13: 1823 files
+  data   DoubleMuon_2018D_14: 194 files
+  data   DoubleMuon_2018D_15: 96 files
+  data   DoubleMuon_2018D_16: 57 files
+  data   DoubleMuon_2018D_17: 44 files
+  data   DoubleMuon_2018D_18: 5443 files
+  data   DoubleMuon_2018D_19: 1880 files
+  data   DoubleMuon_2018D_2: 6860 files
+  data   DoubleMuon_2018D_20: 1663 files
+  data   DoubleMuon_2018D_21: 2824 files
+  data   DoubleMuon_2018D_22: 11 files
+  data   DoubleMuon_2018D_23: 6117 files
+  data   DoubleMuon_2018D_24: 191 files
+  data   DoubleMuon_2018D_25: 12 files
+  data   DoubleMuon_2018D_26: 181 files
+  data   DoubleMuon_2018D_27: 16 files
+  data   DoubleMuon_2018D_28: 3744 files
+  data   DoubleMuon_2018D_29: 157 files
+  data   DoubleMuon_2018D_3: 150 files
+  data   DoubleMuon_2018D_30: 9024 files
+  data   DoubleMuon_2018D_31: 2190 files
+  data   DoubleMuon_2018D_32: 2463 files
+  data   DoubleMuon_2018D_33: 28 files
+  data   DoubleMuon_2018D_34: 6170 files
+  data   DoubleMuon_2018D_35: 5652 files
+  data   DoubleMuon_2018D_36: 15 files
+  data   DoubleMuon_2018D_37: 2089 files
+  data   DoubleMuon_2018D_38: 14 files
+  data   DoubleMuon_2018D_39: 14 files
+  data   DoubleMuon_2018D_4: 29 files
+  data   DoubleMuon_2018D_40: 3790 files
+  data   DoubleMuon_2018D_41: 30 files
+  data   DoubleMuon_2018D_42: 511 files
+  data   DoubleMuon_2018D_43: 33 files
+  data   DoubleMuon_2018D_44: 5966 files
+  data   DoubleMuon_2018D_45: 1708 files
+  data   DoubleMuon_2018D_46: 1505 files
+  data   DoubleMuon_2018D_47: 1497 files
+  data   DoubleMuon_2018D_48: 4364 files
+  data   DoubleMuon_2018D_49: 1581 files
+  data   DoubleMuon_2018D_5: 416 files
+  data   DoubleMuon_2018D_6: 533 files
+  data   DoubleMuon_2018D_7: 1555 files
+  data   DoubleMuon_2018D_8: 6293 files
+  data   DoubleMuon_2018D_9: 2778 files
+  MC     QCD_Pt170To300: 6998 files
+  signal 2Mu2E_1000GeV_0p25GeV_0p002mm: 5 files
+  signal 2Mu2E_1000GeV_0p25GeV_2p0mm: 5 files
+  signal 2Mu2E_1000GeV_5p0GeV_0p04mm: 5 files
+  signal 2Mu2E_1000GeV_5p0GeV_40p0mm: 5 files
+  signal 2Mu2E_100GeV_0p25GeV_0p02mm: 5 files
+  signal 2Mu2E_100GeV_0p25GeV_20p0mm: 5 files
+  signal 2Mu2E_100GeV_5p0GeV_0p4mm: 5 files
+  signal 2Mu2E_100GeV_5p0GeV_400mm: 5 files
+  signal 2Mu2E_500GeV_0p25GeV_0p004mm: 5 files
+  signal 2Mu2E_500GeV_0p25GeV_4p0mm: 5 files
+  signal 2Mu2E_500GeV_5p0GeV_0p08mm: 5 files
+  signal 2Mu2E_500GeV_5p0GeV_80p0mm: 5 files
+  signal 4Mu_1000GeV_0p25GeV_0p002mm: 5 files
+  signal 4Mu_1000GeV_0p25GeV_2p0mm: 5 files
+  signal 4Mu_1000GeV_5p0GeV_0p04mm: 5 files
+  signal 4Mu_1000GeV_5p0GeV_40p0mm: 5 files
+  signal 4Mu_100GeV_0p25GeV_0p02mm: 5 files
+  signal 4Mu_100GeV_0p25GeV_20p0mm: 5 files
+  signal 4Mu_100GeV_5p0GeV_0p4mm: 5 files
+  signal 4Mu_100GeV_5p0GeV_400mm: 5 files
+  signal 4Mu_500GeV_0p25GeV_0p004mm: 5 files
+  signal 4Mu_500GeV_0p25GeV_4p0mm: 5 files
+  signal 4Mu_500GeV_5p0GeV_0p08mm: 5 files
+  signal 4Mu_500GeV_5p0GeV_80p0mm: 5 files
+PASS data   DoubleMuon_2018A_0 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 184395 = 184395; total vs noFlags cutflow 185642 = 185642; mask==2 vs failHalo cutflow 10 = 10
+PASS data   DoubleMuon_2018A_0 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 167253 = 167253; total vs noFlags cutflow 168025 = 168025; mask==2 vs failHalo cutflow 10 = 10
+PASS data   DoubleMuon_2018A_1 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 177089 = 177089; total vs noFlags cutflow 178225 = 178225; mask==2 vs failHalo cutflow 7 = 7
+PASS data   DoubleMuon_2018A_1 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 160927 = 160927; total vs noFlags cutflow 161650 = 161650; mask==2 vs failHalo cutflow 7 = 7
+PASS data   DoubleMuon_2018A_2 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 147940 = 147940; total vs noFlags cutflow 148848 = 148848; mask==2 vs failHalo cutflow 10 = 10
+PASS data   DoubleMuon_2018A_2 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 134434 = 134434; total vs noFlags cutflow 135003 = 135003; mask==2 vs failHalo cutflow 10 = 10
+PASS data   DoubleMuon_2018B_0 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 24363 = 24363; total vs noFlags cutflow 24498 = 24498; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018B_0 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 22279 = 22279; total vs noFlags cutflow 22368 = 22368; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018B_1 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 0 = 0; total vs noFlags cutflow 0 = 0; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_1 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 0 = 0; total vs noFlags cutflow 0 = 0; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_10 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 0 = 0; total vs noFlags cutflow 0 = 0; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_10 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 0 = 0; total vs noFlags cutflow 0 = 0; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_11 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 0 = 0; total vs noFlags cutflow 0 = 0; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_11 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 0 = 0; total vs noFlags cutflow 0 = 0; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_12 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 455 = 455; total vs noFlags cutflow 459 = 459; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_12 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 405 = 405; total vs noFlags cutflow 407 = 407; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_13 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 474 = 474; total vs noFlags cutflow 476 = 476; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_13 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 410 = 410; total vs noFlags cutflow 412 = 412; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_2 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 430 = 430; total vs noFlags cutflow 431 = 431; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_2 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 380 = 380; total vs noFlags cutflow 381 = 381; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_3 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 45274 = 45274; total vs noFlags cutflow 45540 = 45540; mask==2 vs failHalo cutflow 2 = 2
+PASS data   DoubleMuon_2018B_3 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 41157 = 41157; total vs noFlags cutflow 41321 = 41321; mask==2 vs failHalo cutflow 2 = 2
+PASS data   DoubleMuon_2018B_4 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 68005 = 68005; total vs noFlags cutflow 68444 = 68444; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018B_4 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 61598 = 61598; total vs noFlags cutflow 61866 = 61866; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018B_5 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 84500 = 84500; total vs noFlags cutflow 85031 = 85031; mask==2 vs failHalo cutflow 4 = 4
+PASS data   DoubleMuon_2018B_5 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 76514 = 76514; total vs noFlags cutflow 76839 = 76839; mask==2 vs failHalo cutflow 4 = 4
+PASS data   DoubleMuon_2018B_6 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 2922 = 2922; total vs noFlags cutflow 2946 = 2946; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_6 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 2606 = 2606; total vs noFlags cutflow 2623 = 2623; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_7 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 1814 = 1814; total vs noFlags cutflow 1834 = 1834; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_7 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 1625 = 1625; total vs noFlags cutflow 1633 = 1633; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_8 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 421 = 421; total vs noFlags cutflow 428 = 428; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_8 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 364 = 364; total vs noFlags cutflow 369 = 369; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_9 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 27040 = 27040; total vs noFlags cutflow 27197 = 27197; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018B_9 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 24395 = 24395; total vs noFlags cutflow 24487 = 24487; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018C cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 260902 = 260902; total vs noFlags cutflow 262556 = 262556; mask==2 vs failHalo cutflow 16 = 16
+PASS data   DoubleMuon_2018C cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 236459 = 236459; total vs noFlags cutflow 237463 = 237463; mask==2 vs failHalo cutflow 16 = 16
+PASS data   DoubleMuon_2018D_0 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 198 = 198; total vs noFlags cutflow 199 = 199; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_0 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 180 = 180; total vs noFlags cutflow 181 = 181; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_1 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 8199 = 8199; total vs noFlags cutflow 8258 = 8258; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_1 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 7358 = 7358; total vs noFlags cutflow 7395 = 7395; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_10 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 14623 = 14623; total vs noFlags cutflow 14697 = 14697; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_10 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 13348 = 13348; total vs noFlags cutflow 13395 = 13395; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_11 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 587 = 587; total vs noFlags cutflow 589 = 589; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_11 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 515 = 515; total vs noFlags cutflow 517 = 517; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_12 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 771 = 771; total vs noFlags cutflow 778 = 778; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_12 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 708 = 708; total vs noFlags cutflow 711 = 711; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_13 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 16815 = 16815; total vs noFlags cutflow 16899 = 16899; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_13 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 15254 = 15254; total vs noFlags cutflow 15305 = 15305; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_14 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 2617 = 2617; total vs noFlags cutflow 2638 = 2638; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_14 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 2334 = 2334; total vs noFlags cutflow 2349 = 2349; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_15 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 1439 = 1439; total vs noFlags cutflow 1451 = 1451; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_15 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 1296 = 1296; total vs noFlags cutflow 1302 = 1302; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_16 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 811 = 811; total vs noFlags cutflow 817 = 817; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_16 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 723 = 723; total vs noFlags cutflow 727 = 727; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_17 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 607 = 607; total vs noFlags cutflow 609 = 609; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_17 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 532 = 532; total vs noFlags cutflow 533 = 533; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_18 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 98847 = 98847; total vs noFlags cutflow 99377 = 99377; mask==2 vs failHalo cutflow 5 = 5
+PASS data   DoubleMuon_2018D_18 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 89672 = 89672; total vs noFlags cutflow 89982 = 89982; mask==2 vs failHalo cutflow 5 = 5
+PASS data   DoubleMuon_2018D_19 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 17718 = 17718; total vs noFlags cutflow 17818 = 17818; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_19 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 16085 = 16085; total vs noFlags cutflow 16151 = 16151; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_2 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 92611 = 92611; total vs noFlags cutflow 93049 = 93049; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018D_2 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 84798 = 84798; total vs noFlags cutflow 85066 = 85066; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018D_20 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 14368 = 14368; total vs noFlags cutflow 14449 = 14449; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_20 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 13123 = 13123; total vs noFlags cutflow 13173 = 13173; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_21 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 20470 = 20470; total vs noFlags cutflow 20555 = 20555; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_21 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 18815 = 18815; total vs noFlags cutflow 18875 = 18875; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_22 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 185 = 185; total vs noFlags cutflow 186 = 186; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_22 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 162 = 162; total vs noFlags cutflow 162 = 162; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_23 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 101051 = 101051; total vs noFlags cutflow 101600 = 101600; mask==2 vs failHalo cutflow 4 = 4
+PASS data   DoubleMuon_2018D_23 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 92021 = 92021; total vs noFlags cutflow 92361 = 92361; mask==2 vs failHalo cutflow 4 = 4
+PASS data   DoubleMuon_2018D_24 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 1253 = 1253; total vs noFlags cutflow 1258 = 1258; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_24 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 1118 = 1118; total vs noFlags cutflow 1122 = 1122; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_25 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 206 = 206; total vs noFlags cutflow 207 = 207; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_25 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 178 = 178; total vs noFlags cutflow 178 = 178; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_26 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 2564 = 2564; total vs noFlags cutflow 2577 = 2577; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_26 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 2291 = 2291; total vs noFlags cutflow 2301 = 2301; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_27 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 219 = 219; total vs noFlags cutflow 221 = 221; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_27 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 200 = 200; total vs noFlags cutflow 200 = 200; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_28 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 41680 = 41680; total vs noFlags cutflow 41978 = 41978; mask==2 vs failHalo cutflow 7 = 7
+PASS data   DoubleMuon_2018D_28 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 37565 = 37565; total vs noFlags cutflow 37769 = 37769; mask==2 vs failHalo cutflow 7 = 7
+PASS data   DoubleMuon_2018D_29 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 1534 = 1534; total vs noFlags cutflow 1547 = 1547; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_29 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 1375 = 1375; total vs noFlags cutflow 1384 = 1384; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_3 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 1606 = 1606; total vs noFlags cutflow 1612 = 1612; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_3 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 1423 = 1423; total vs noFlags cutflow 1426 = 1426; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_30 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 100664 = 100664; total vs noFlags cutflow 101344 = 101344; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_30 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 90813 = 90813; total vs noFlags cutflow 91239 = 91239; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_31 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 17672 = 17672; total vs noFlags cutflow 17768 = 17768; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_31 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 16140 = 16140; total vs noFlags cutflow 16203 = 16203; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_32 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 17825 = 17825; total vs noFlags cutflow 17898 = 17898; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_32 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 16359 = 16359; total vs noFlags cutflow 16403 = 16403; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_33 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 449 = 449; total vs noFlags cutflow 452 = 452; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_33 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 403 = 403; total vs noFlags cutflow 405 = 405; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_34 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 96891 = 96891; total vs noFlags cutflow 97407 = 97407; mask==2 vs failHalo cutflow 9 = 9
+PASS data   DoubleMuon_2018D_34 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 88276 = 88276; total vs noFlags cutflow 88598 = 88598; mask==2 vs failHalo cutflow 9 = 9
+PASS data   DoubleMuon_2018D_35 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 98524 = 98524; total vs noFlags cutflow 99083 = 99083; mask==2 vs failHalo cutflow 9 = 9
+PASS data   DoubleMuon_2018D_35 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 89803 = 89803; total vs noFlags cutflow 90155 = 90155; mask==2 vs failHalo cutflow 8 = 8
+PASS data   DoubleMuon_2018D_36 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 186 = 186; total vs noFlags cutflow 187 = 187; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_36 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 166 = 166; total vs noFlags cutflow 167 = 167; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_37 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 18547 = 18547; total vs noFlags cutflow 18636 = 18636; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_37 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 17003 = 17003; total vs noFlags cutflow 17064 = 17064; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_38 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 185 = 185; total vs noFlags cutflow 187 = 187; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_38 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 168 = 168; total vs noFlags cutflow 171 = 171; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_39 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 207 = 207; total vs noFlags cutflow 209 = 209; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_39 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 186 = 186; total vs noFlags cutflow 188 = 188; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_4 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 401 = 401; total vs noFlags cutflow 403 = 403; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_4 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 359 = 359; total vs noFlags cutflow 360 = 360; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_40 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 36260 = 36260; total vs noFlags cutflow 36434 = 36434; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_40 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 32993 = 32993; total vs noFlags cutflow 33095 = 33095; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_41 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 390 = 390; total vs noFlags cutflow 394 = 394; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_41 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 354 = 354; total vs noFlags cutflow 355 = 355; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_42 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 6348 = 6348; total vs noFlags cutflow 6399 = 6399; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_42 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 5757 = 5757; total vs noFlags cutflow 5787 = 5787; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_43 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 386 = 386; total vs noFlags cutflow 387 = 387; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_43 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 338 = 338; total vs noFlags cutflow 338 = 338; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_44 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 102297 = 102297; total vs noFlags cutflow 102811 = 102811; mask==2 vs failHalo cutflow 5 = 5
+PASS data   DoubleMuon_2018D_44 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 93188 = 93188; total vs noFlags cutflow 93531 = 93531; mask==2 vs failHalo cutflow 5 = 5
+PASS data   DoubleMuon_2018D_45 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 22494 = 22494; total vs noFlags cutflow 22659 = 22659; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018D_45 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 20125 = 20125; total vs noFlags cutflow 20220 = 20220; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018D_46 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 15349 = 15349; total vs noFlags cutflow 15448 = 15448; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_46 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 13950 = 13950; total vs noFlags cutflow 14016 = 14016; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_47 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 15757 = 15757; total vs noFlags cutflow 15836 = 15836; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_47 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 14347 = 14347; total vs noFlags cutflow 14402 = 14402; mask==2 vs failHalo cutflow 1 = 1
+PASS data   DoubleMuon_2018D_48 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 56764 = 56764; total vs noFlags cutflow 57216 = 57216; mask==2 vs failHalo cutflow 7 = 7
+PASS data   DoubleMuon_2018D_48 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 50686 = 50686; total vs noFlags cutflow 50957 = 50957; mask==2 vs failHalo cutflow 7 = 7
+PASS data   DoubleMuon_2018D_49 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 15410 = 15410; total vs noFlags cutflow 15499 = 15499; mask==2 vs failHalo cutflow 2 = 2
+PASS data   DoubleMuon_2018D_49 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 14022 = 14022; total vs noFlags cutflow 14081 = 14081; mask==2 vs failHalo cutflow 2 = 2
+PASS data   DoubleMuon_2018D_5 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 4663 = 4663; total vs noFlags cutflow 4693 = 4693; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_5 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 4189 = 4189; total vs noFlags cutflow 4206 = 4206; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_6 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 4755 = 4755; total vs noFlags cutflow 4778 = 4778; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_6 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 4347 = 4347; total vs noFlags cutflow 4359 = 4359; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_7 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 12607 = 12607; total vs noFlags cutflow 12667 = 12667; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_7 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 11468 = 11468; total vs noFlags cutflow 11501 = 11501; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_8 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 87778 = 87778; total vs noFlags cutflow 88212 = 88212; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018D_8 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 80039 = 80039; total vs noFlags cutflow 80301 = 80301; mask==2 vs failHalo cutflow 3 = 3
+PASS data   DoubleMuon_2018D_9 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 23610 = 23610; total vs noFlags cutflow 23713 = 23713; mask==2 vs failHalo cutflow 0 = 0
+PASS data   DoubleMuon_2018D_9 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 21643 = 21643; total vs noFlags cutflow 21717 = 21717; mask==2 vs failHalo cutflow 0 = 0
+PASS MC     QCD_Pt170To300 cr_1egmOr1mu_lj: mask==0 vs with-filters cutflow 485666 = 485666; total vs noFlags cutflow 487037 = 487037; mask==2 vs failHalo cutflow 30.1323 = 30.1323
+PASS MC     QCD_Pt170To300 cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu: mask==0 vs with-filters cutflow 475119 = 475119; total vs noFlags cutflow 476107 = 476107; mask==2 vs failHalo cutflow 30.1323 = 30.1323
+PASS signal 2Mu2E_1000GeV_0p25GeV_0p002mm 2mu2e: mask==0 vs with-filters cutflow 6240 = 6240; total vs noFlags cutflow 6326 = 6326
+PASS signal 2Mu2E_1000GeV_0p25GeV_2p0mm 2mu2e: mask==0 vs with-filters cutflow 147 = 147; total vs noFlags cutflow 169 = 169
+PASS signal 2Mu2E_1000GeV_5p0GeV_0p04mm 2mu2e: mask==0 vs with-filters cutflow 3000 = 3000; total vs noFlags cutflow 3016 = 3016
+PASS signal 2Mu2E_1000GeV_5p0GeV_40p0mm 2mu2e: mask==0 vs with-filters cutflow 384 = 384; total vs noFlags cutflow 433 = 433
+PASS signal 2Mu2E_100GeV_0p25GeV_0p02mm 2mu2e: mask==0 vs with-filters cutflow 228 = 228; total vs noFlags cutflow 228 = 228
+PASS signal 2Mu2E_100GeV_0p25GeV_20p0mm 2mu2e: mask==0 vs with-filters cutflow 38 = 38; total vs noFlags cutflow 39 = 39
+PASS signal 2Mu2E_100GeV_5p0GeV_0p4mm 2mu2e: mask==0 vs with-filters cutflow 80 = 80; total vs noFlags cutflow 80 = 80
+PASS signal 2Mu2E_100GeV_5p0GeV_400mm 2mu2e: mask==0 vs with-filters cutflow 13 = 13; total vs noFlags cutflow 13 = 13
+PASS signal 2Mu2E_500GeV_0p25GeV_0p004mm 2mu2e: mask==0 vs with-filters cutflow 10093 = 10093; total vs noFlags cutflow 10155 = 10155
+PASS signal 2Mu2E_500GeV_0p25GeV_4p0mm 2mu2e: mask==0 vs with-filters cutflow 770 = 770; total vs noFlags cutflow 815 = 815
+PASS signal 2Mu2E_500GeV_5p0GeV_0p08mm 2mu2e: mask==0 vs with-filters cutflow 6217 = 6217; total vs noFlags cutflow 6238 = 6238
+PASS signal 2Mu2E_500GeV_5p0GeV_80p0mm 2mu2e: mask==0 vs with-filters cutflow 507 = 507; total vs noFlags cutflow 550 = 550
+PASS signal 4Mu_1000GeV_0p25GeV_0p002mm 4mu: mask==0 vs with-filters cutflow 5174 = 5174; total vs noFlags cutflow 5332 = 5332
+PASS signal 4Mu_1000GeV_0p25GeV_2p0mm 4mu: mask==0 vs with-filters cutflow 69 = 69; total vs noFlags cutflow 88 = 88
+PASS signal 4Mu_1000GeV_5p0GeV_0p04mm 4mu: mask==0 vs with-filters cutflow 7076 = 7076; total vs noFlags cutflow 7111 = 7111
+PASS signal 4Mu_1000GeV_5p0GeV_40p0mm 4mu: mask==0 vs with-filters cutflow 279 = 279; total vs noFlags cutflow 357 = 357
+PASS signal 4Mu_100GeV_0p25GeV_0p02mm 4mu: mask==0 vs with-filters cutflow 2172 = 2172; total vs noFlags cutflow 2172 = 2172
+PASS signal 4Mu_100GeV_0p25GeV_20p0mm 4mu: mask==0 vs with-filters cutflow 378 = 378; total vs noFlags cutflow 387 = 387
+PASS signal 4Mu_100GeV_5p0GeV_0p4mm 4mu: mask==0 vs with-filters cutflow 2235 = 2235; total vs noFlags cutflow 2235 = 2235
+PASS signal 4Mu_100GeV_5p0GeV_400mm 4mu: mask==0 vs with-filters cutflow 179 = 179; total vs noFlags cutflow 184 = 184
+PASS signal 4Mu_500GeV_0p25GeV_0p004mm 4mu: mask==0 vs with-filters cutflow 18343 = 18343; total vs noFlags cutflow 18556 = 18556
+PASS signal 4Mu_500GeV_0p25GeV_4p0mm 4mu: mask==0 vs with-filters cutflow 502 = 502; total vs noFlags cutflow 572 = 572
+PASS signal 4Mu_500GeV_5p0GeV_0p08mm 4mu: mask==0 vs with-filters cutflow 10257 = 10257; total vs noFlags cutflow 10278 = 10278
+PASS signal 4Mu_500GeV_5p0GeV_80p0mm 4mu: mask==0 vs with-filters cutflow 760 = 760; total vs noFlags cutflow 892 = 892
+checks: 162 of 162 (sample, channel family) pass
+pooled data: 68 samples, 127090 files: DoubleMuon_2018A_0 (999), DoubleMuon_2018A_1 (993), DoubleMuon_2018A_2 (769), DoubleMuon_2018B_0 (3498), DoubleMuon_2018B_1 (66), DoubleMuon_2018B_10 (126), DoubleMuon_2018B_11 (25), DoubleMuon_2018B_12 (31), DoubleMuon_2018B_13 (29), DoubleMuon_2018B_2 (31), DoubleMuon_2018B_3 (5274), DoubleMuon_2018B_4 (7328), DoubleMuon_2018B_5 (9321), DoubleMuon_2018B_6 (266), DoubleMuon_2018B_7 (224), DoubleMuon_2018B_8 (27), DoubleMuon_2018B_9 (3152), DoubleMuon_2018C (632), DoubleMuon_2018D_0 (13), DoubleMuon_2018D_1 (682), DoubleMuon_2018D_10 (1794), DoubleMuon_2018D_11 (39), DoubleMuon_2018D_12 (60), DoubleMuon_2018D_13 (1823), DoubleMuon_2018D_14 (194), DoubleMuon_2018D_15 (96), DoubleMuon_2018D_16 (57), DoubleMuon_2018D_17 (44), DoubleMuon_2018D_18 (5443), DoubleMuon_2018D_19 (1880), DoubleMuon_2018D_2 (6860), DoubleMuon_2018D_20 (1663), DoubleMuon_2018D_21 (2824), DoubleMuon_2018D_22 (11), DoubleMuon_2018D_23 (6117), DoubleMuon_2018D_24 (191), DoubleMuon_2018D_25 (12), DoubleMuon_2018D_26 (181), DoubleMuon_2018D_27 (16), DoubleMuon_2018D_28 (3744), DoubleMuon_2018D_29 (157), DoubleMuon_2018D_3 (150), DoubleMuon_2018D_30 (9024), DoubleMuon_2018D_31 (2190), DoubleMuon_2018D_32 (2463), DoubleMuon_2018D_33 (28), DoubleMuon_2018D_34 (6170), DoubleMuon_2018D_35 (5652), DoubleMuon_2018D_36 (15), DoubleMuon_2018D_37 (2089), DoubleMuon_2018D_38 (14), DoubleMuon_2018D_39 (14), DoubleMuon_2018D_4 (29), DoubleMuon_2018D_40 (3790), DoubleMuon_2018D_41 (30), DoubleMuon_2018D_42 (511), DoubleMuon_2018D_43 (33), DoubleMuon_2018D_44 (5966), DoubleMuon_2018D_45 (1708), DoubleMuon_2018D_46 (1505), DoubleMuon_2018D_47 (1497), DoubleMuon_2018D_48 (4364), DoubleMuon_2018D_49 (1581), DoubleMuon_2018D_5 (416), DoubleMuon_2018D_6 (533), DoubleMuon_2018D_7 (1555), DoubleMuon_2018D_8 (6293), DoubleMuon_2018D_9 (2778)
+pooled MC: 1 samples, 6998 files: QCD_Pt170To300 (6998)
+pooled 2Mu2E: 12 samples, 60 files: 2Mu2E_1000GeV_0p25GeV_0p002mm (5), 2Mu2E_1000GeV_0p25GeV_2p0mm (5), 2Mu2E_1000GeV_5p0GeV_0p04mm (5), 2Mu2E_1000GeV_5p0GeV_40p0mm (5), 2Mu2E_100GeV_0p25GeV_0p02mm (5), 2Mu2E_100GeV_0p25GeV_20p0mm (5), 2Mu2E_100GeV_5p0GeV_0p4mm (5), 2Mu2E_100GeV_5p0GeV_400mm (5), 2Mu2E_500GeV_0p25GeV_0p004mm (5), 2Mu2E_500GeV_0p25GeV_4p0mm (5), 2Mu2E_500GeV_5p0GeV_0p08mm (5), 2Mu2E_500GeV_5p0GeV_80p0mm (5)
+pooled 2Mu2E 1000GeV: 4 samples, 20 files: 2Mu2E_1000GeV_0p25GeV_0p002mm (5), 2Mu2E_1000GeV_0p25GeV_2p0mm (5), 2Mu2E_1000GeV_5p0GeV_0p04mm (5), 2Mu2E_1000GeV_5p0GeV_40p0mm (5)
+pooled 2Mu2E 100GeV: 4 samples, 20 files: 2Mu2E_100GeV_0p25GeV_0p02mm (5), 2Mu2E_100GeV_0p25GeV_20p0mm (5), 2Mu2E_100GeV_5p0GeV_0p4mm (5), 2Mu2E_100GeV_5p0GeV_400mm (5)
+pooled 2Mu2E 500GeV: 4 samples, 20 files: 2Mu2E_500GeV_0p25GeV_0p004mm (5), 2Mu2E_500GeV_0p25GeV_4p0mm (5), 2Mu2E_500GeV_5p0GeV_0p08mm (5), 2Mu2E_500GeV_5p0GeV_80p0mm (5)
+pooled 4Mu: 12 samples, 60 files: 4Mu_1000GeV_0p25GeV_0p002mm (5), 4Mu_1000GeV_0p25GeV_2p0mm (5), 4Mu_1000GeV_5p0GeV_0p04mm (5), 4Mu_1000GeV_5p0GeV_40p0mm (5), 4Mu_100GeV_0p25GeV_0p02mm (5), 4Mu_100GeV_0p25GeV_20p0mm (5), 4Mu_100GeV_5p0GeV_0p4mm (5), 4Mu_100GeV_5p0GeV_400mm (5), 4Mu_500GeV_0p25GeV_0p004mm (5), 4Mu_500GeV_0p25GeV_4p0mm (5), 4Mu_500GeV_5p0GeV_0p08mm (5), 4Mu_500GeV_5p0GeV_80p0mm (5)
+pooled 4Mu 1000GeV: 4 samples, 20 files: 4Mu_1000GeV_0p25GeV_0p002mm (5), 4Mu_1000GeV_0p25GeV_2p0mm (5), 4Mu_1000GeV_5p0GeV_0p04mm (5), 4Mu_1000GeV_5p0GeV_40p0mm (5)
+pooled 4Mu 100GeV: 4 samples, 20 files: 4Mu_100GeV_0p25GeV_0p02mm (5), 4Mu_100GeV_0p25GeV_20p0mm (5), 4Mu_100GeV_5p0GeV_0p4mm (5), 4Mu_100GeV_5p0GeV_400mm (5)
+pooled 4Mu 500GeV: 4 samples, 20 files: 4Mu_500GeV_0p25GeV_0p004mm (5), 4Mu_500GeV_0p25GeV_4p0mm (5), 4Mu_500GeV_5p0GeV_0p08mm (5), 4Mu_500GeV_5p0GeV_80p0mm (5)
+halo-only rate over the 65 data samples with events (cr_1egmOr1mu_lj): 117 of 2236644; Poisson deviance against one common rate 50.3 for 64 dof, p-value from 20000 toys 0.315

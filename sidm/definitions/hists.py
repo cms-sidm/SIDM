@@ -18,10 +18,21 @@ from sidm.tools import histogram as h
 from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs, dR_outer
 from sidm.definitions.objects import derived_objs, withMass
 from sidm.tools.corrections import Corrections
-from sidm.definitions.cuts import obj_cut_defs
+from sidm.definitions.cuts import obj_cut_defs, MET_FILTERS
 # always reload local modules to pick up changes during development
 importlib.reload(h)
 
+
+
+def met_filter_fail_mask(objs):
+    """Per event, the bit mask of failed MET filters: bit i is set if MET_FILTERS[i] failed."""
+    return sum(ak.values_astype(~objs["flags"][name], np.int64) << i
+               for i, name in enumerate(MET_FILTERS))
+
+
+def mu_lj_dsa_max_pt(objs):
+    """Per event, the highest pT of the DSA muons in mu-type LJs; -1 if there is none."""
+    return ak.fill_none(ak.max(ak.flatten(objs["mu_ljs"].dsaMuons.pt, axis=2), axis=1), -1)
 
 
 # define counters
@@ -310,6 +321,16 @@ def mu_lj_gen_a_lxy(objs, r=0.4):
     gen_a, dr_gen = objs["mu_ljs"].nearest(objs["genAs_toMu"], return_metric=True)
     return ak.fill_none(ak.where(dr_gen < r, lxy(gen_a), -1), -1)
 
+def mu_lj_gen_a_mumu_dr(objs, r=0.4):
+    """Per mu-type LJ: dR between the two daughter muons of the gen dark photon matched as in
+    mu_lj_gen_a_lxy, from their momenta as generated. The daughters are that dark photon's own
+    children (by mother index), so in a 4Mu event they are never the other dark photon's muons.
+    -1 for an LJ with no matched dark photon or one with fewer than two children."""
+    gen_a, dr_gen = objs["mu_ljs"].nearest(objs["genAs_toMu"], return_metric=True)
+    daughters = ak.pad_none(gen_a.children, 2, axis=-1)
+    dr_daughters = daughters[:, :, 0].delta_r(daughters[:, :, 1])
+    return ak.fill_none(ak.where(dr_gen < r, dr_daughters, -1), -1)
+
 # Histograms that read mu_ljs.vtx_chi2 or objs["dsaMuonsRaw"]. SidmProcessor loads dsaMuonsRaw
 # and the dimuon-vertex tables, and computes vtx_chi2, only when a requested histogram is listed
 # here or a requested channel cuts on vtx_chi2. tests/test_vtx_chi2_inputs.py checks the list.
@@ -322,7 +343,7 @@ vtx_chi2_or_raw_dsa_hists = {
     "dsaSegMatch_ptPf_ptDsa_nPartners", "dsaSegMatch_ptPfFewest_ptDsa",
     "dsaSegMatch_ptDsa_absdxyBS_nHits", "dsaSegMatch_ptDsa_nDTHits_nHits",
     "mu_lj_vtxChi2_muonN_genA_lxy", "mu_lj_vtxChi2_muonN_mumu_dR",
-    "mu_lj_vtxChi2_genA_lxy_mumu_dR",
+    "mu_lj_vtxChi2_genA_lxy_mumu_dR", "mu_lj_vtxChi2_genA_lxy_genMuMu_dR",
 }
 
 
@@ -5832,6 +5853,19 @@ hist_defs = {
                    lambda objs, mask: abs(objs["mu_ljs"].dsaMuons.eta)),
         ],
     ),
+    # Failed-MET-filter bit mask (0 = all ten filters of "pass flags" passed), against the
+    # highest mu-LJ DSA muon pT of the event (underflow: no DSA muon in a mu-type LJ), with the
+    # pT edges of the halo diagnostics above. Meant for channels without "pass flags".
+    "met_filter_fail_mask": h.Histogram(
+        [
+            h.Axis(hist.axis.Integer(0, 1 << len(MET_FILTERS), name="met_filter_fail_mask",
+                                     label="Failed MET filter bit mask"),
+                   lambda objs, mask: met_filter_fail_mask(objs)),
+            h.Axis(hist.axis.Variable([0, 100, 200, 500], name="mu_lj_dsaMuon_max_pt",
+                                      label=r"Highest $\mu$-type LJ DSA $\mu$ pT (GeV)"),
+                   lambda objs, mask: mu_lj_dsa_max_pt(objs)),
+        ],
+    ),
     # ------------------------------------------------------------------------------------
     # Vertex outcome of every mu-type LJ against the gen dark photon's Lxy and the LJ's muon-pair
     # opening angle. vtx_chi2 bin [-1.5, -0.5) is the -1 no-vertex sentinel, [0, 5) passes the
@@ -5879,6 +5913,25 @@ hist_defs = {
             h.Axis(hist.axis.Variable([0, 0.02, 0.1, 0.5, 1.0], name="mu_lj_mumu_dR",
                                       label=r"$\Delta R$ of the two leading LJ muons"),
                    lambda objs, mask: mu_lj_mumu_dr(objs)),
+        ],
+    ),
+    # The same outcome against the generated dR of the matched dark photon's two daughter
+    # muons, which the reconstructed muon directions mismeasure. An LJ without a matched dark
+    # photon fills the underflow of both gen axes, so the vtx_chi2 marginal over the flow bins
+    # equals mu_lj_vtx_chi2's and the gen-matched LJs are those with genA_lxy >= 0.
+    "mu_lj_vtxChi2_genA_lxy_genMuMu_dR": h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([-1.5, -0.5, 0, 1, 2, 5, 10, 100, 1e4, 1e9],
+                                      name="vtx_chi2",
+                                      label="mu-type LJ best dimuon-vertex normChi2"),
+                   lambda objs, mask: objs["mu_ljs"].vtx_chi2),
+            h.Axis(hist.axis.Variable([0, 1, 10, 100, 1000], name="genA_lxy",
+                                      label=r"$L_{xy}$ of the matched $Z_d\rightarrow\mu\mu$ (cm)"),
+                   lambda objs, mask: mu_lj_gen_a_lxy(objs)),
+            h.Axis(hist.axis.Variable([0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5],
+                                      name="genA_mumu_dR",
+                                      label=r"Generated $\Delta R$ of the matched $Z_d$'s two muons"),
+                   lambda objs, mask: mu_lj_gen_a_mumu_dr(objs)),
         ],
     ),
     "dsaMu_pfMu_dR_closest": h.Histogram(

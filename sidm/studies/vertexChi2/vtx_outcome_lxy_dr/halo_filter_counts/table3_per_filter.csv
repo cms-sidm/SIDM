@@ -1,0 +1,1045 @@
+sample,kind,family,pt_bin,total,goodVertices,globalSuperTightHalo2016Filter,HBHENoiseFilter,HBHENoiseIsoFilter,EcalDeadCellTriggerPrimitiveFilter,BadPFMuonFilter,BadPFMuonDzFilter,eeBadScFilter,ecalBadCalibFilter,hfNoisyHitsFilter
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj,all,185642,0,10,22,48,9,715,932,0,17,218
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj,none,150111,0,7,7,21,6,495,689,0,14,181
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj,"[0, 100)",31674,0,3,3,14,3,180,197,0,3,32
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj,"[100, 200)",2405,0,0,5,4,0,26,29,0,0,4
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj,"[200, 500)",1230,0,0,7,8,0,11,14,0,0,1
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj,>= 500,222,0,0,0,1,0,3,3,0,0,0
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,168025,0,10,7,29,9,392,502,0,17,200
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,139328,0,7,7,20,6,224,321,0,14,168
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",27498,0,3,0,9,3,133,141,0,3,28
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",923,0,0,0,0,0,24,27,0,0,3
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",253,0,0,0,0,0,9,11,0,0,1
+DoubleMuon_2018A_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,23,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj,all,178225,0,7,22,51,11,675,838,0,17,195
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj,none,143608,0,6,8,29,9,482,622,0,15,162
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj,"[0, 100)",30524,0,1,5,10,1,158,181,0,2,28
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj,"[100, 200)",2594,0,0,4,5,1,28,28,0,0,1
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj,"[200, 500)",1281,0,0,4,7,0,7,7,0,0,4
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj,>= 500,218,0,0,1,0,0,0,0,0,0,0
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,161650,0,7,9,33,11,384,463,0,17,184
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,134210,0,6,8,27,9,233,293,0,15,156
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",26281,0,1,1,6,1,120,139,0,2,26
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",932,0,0,0,0,1,26,26,0,0,0
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",211,0,0,0,0,0,5,5,0,0,2
+DoubleMuon_2018A_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,16,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj,all,148848,0,10,24,49,8,503,660,0,16,152
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj,none,119811,0,8,9,24,7,358,494,0,9,122
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj,"[0, 100)",25644,0,2,2,13,1,128,146,0,7,28
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj,"[100, 200)",2111,0,0,6,9,0,7,9,0,0,1
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj,"[200, 500)",1086,0,0,5,3,0,8,9,0,0,1
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj,>= 500,196,0,0,2,0,0,2,2,0,0,0
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,135003,0,10,10,29,8,276,365,0,14,137
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,111989,0,8,9,23,7,160,235,0,7,113
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",22094,0,2,0,6,1,100,112,0,7,24
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",742,0,0,1,0,0,7,8,0,0,0
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",160,0,0,0,0,0,7,8,0,0,0
+DoubleMuon_2018A_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,18,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj,all,24498,0,1,4,5,2,67,93,0,0,31
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj,none,19721,0,1,1,1,2,47,72,0,0,26
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj,"[0, 100)",4194,0,0,0,2,0,17,18,0,0,3
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj,"[100, 200)",361,0,0,3,2,0,2,2,0,0,1
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj,"[200, 500)",189,0,0,0,0,0,1,1,0,0,1
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj,>= 500,33,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,22368,0,1,0,3,2,42,57,0,0,26
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,18633,0,1,0,0,2,26,40,0,0,23
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",3585,0,0,0,2,0,13,14,0,0,2
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",123,0,0,0,1,0,2,2,0,0,0
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",25,0,0,0,0,0,1,1,0,0,1
+DoubleMuon_2018B_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj,all,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj,none,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj,"[0, 100)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj,all,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj,none,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj,"[0, 100)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj,all,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj,none,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj,"[0, 100)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj,all,459,0,0,0,0,0,4,4,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj,none,379,0,0,0,0,0,3,3,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj,"[0, 100)",73,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj,"[100, 200)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj,"[200, 500)",2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,407,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,343,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",62,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj,all,476,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj,none,375,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj,"[0, 100)",88,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj,"[100, 200)",6,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj,"[200, 500)",6,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,412,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,331,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",73,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",4,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj,all,431,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj,none,336,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj,"[0, 100)",90,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj,"[100, 200)",5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,381,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,305,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",76,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj,all,45540,0,2,6,11,3,145,184,0,9,52
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj,none,36743,0,2,1,4,3,98,131,0,9,43
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj,"[0, 100)",7682,0,0,2,4,0,39,44,0,0,8
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj,"[100, 200)",692,0,0,0,0,0,8,9,0,0,1
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj,"[200, 500)",349,0,0,1,3,0,0,0,0,0,0
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj,>= 500,74,0,0,2,0,0,0,0,0,0,0
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,41321,0,2,2,5,3,74,96,0,9,47
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,34525,0,2,1,4,3,44,60,0,9,38
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",6529,0,0,1,1,0,24,29,0,0,8
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",204,0,0,0,0,0,6,7,0,0,1
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",58,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj,all,68444,0,3,11,20,3,242,325,0,7,72
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj,none,55081,0,2,5,8,2,171,239,0,6,61
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj,"[0, 100)",11651,0,1,3,7,1,59,74,0,1,10
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj,"[100, 200)",1052,0,0,3,2,0,12,12,0,0,0
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj,"[200, 500)",537,0,0,0,2,0,0,0,0,0,1
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj,>= 500,123,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,61866,0,3,5,12,3,135,176,0,7,62
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,51534,0,2,5,8,2,78,111,0,6,55
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",9896,0,1,0,4,1,48,56,0,1,7
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",345,0,0,0,0,0,9,9,0,0,0
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",81,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,10,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj,all,85031,0,4,5,28,5,287,385,0,4,103
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj,none,68285,0,4,0,15,5,192,277,0,3,82
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj,"[0, 100)",14631,0,0,2,2,0,78,91,0,1,17
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj,"[100, 200)",1293,0,0,2,6,0,13,13,0,0,0
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj,"[200, 500)",664,0,0,1,3,0,3,3,0,0,3
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj,>= 500,158,0,0,0,2,0,1,1,0,0,1
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,76839,0,4,1,15,5,162,209,0,4,87
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,63746,0,4,0,15,5,88,126,0,3,74
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",12543,0,0,1,0,0,60,69,0,1,12
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",432,0,0,0,0,0,10,10,0,0,0
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",110,0,0,0,0,0,3,3,0,0,1
+DoubleMuon_2018B_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,8,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj,all,2946,0,0,0,0,0,16,19,0,0,5
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj,none,2398,0,0,0,0,0,12,15,0,0,5
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj,"[0, 100)",488,0,0,0,0,0,3,3,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj,"[100, 200)",40,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj,"[200, 500)",16,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj,>= 500,4,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,2623,0,0,0,0,0,11,12,0,0,5
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,2178,0,0,0,0,0,7,8,0,0,5
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",425,0,0,0,0,0,3,3,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",17,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj,all,1834,0,0,0,0,0,14,16,0,0,4
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj,none,1463,0,0,0,0,0,10,12,0,0,3
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj,"[0, 100)",330,0,0,0,0,0,4,4,0,0,0
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj,"[100, 200)",27,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj,"[200, 500)",12,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,1633,0,0,0,0,0,5,6,0,0,2
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,1330,0,0,0,0,0,2,3,0,0,2
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",290,0,0,0,0,0,3,3,0,0,0
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",10,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj,all,428,0,0,0,0,0,5,5,0,0,2
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj,none,362,0,0,0,0,0,3,3,0,0,2
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj,"[0, 100)",59,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj,"[100, 200)",4,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,369,0,0,0,0,0,3,3,0,0,2
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,317,0,0,0,0,0,2,2,0,0,2
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",49,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",2,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj,all,27197,0,0,4,4,3,77,118,0,2,26
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj,none,21803,0,0,1,2,3,50,87,0,1,20
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj,"[0, 100)",4684,0,0,2,1,0,22,26,0,1,5
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj,"[100, 200)",447,0,0,1,1,0,3,3,0,0,1
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj,"[200, 500)",219,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj,>= 500,44,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,24487,0,0,1,2,3,36,61,0,2,23
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,20323,0,0,1,2,3,20,41,0,1,18
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",3986,0,0,0,0,0,14,18,0,1,4
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",133,0,0,0,0,0,2,2,0,0,1
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",39,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018B_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,6,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj,all,262556,0,16,39,89,17,903,1198,0,14,291
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj,none,212089,0,14,11,36,14,641,903,0,11,221
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj,"[0, 100)",44521,0,2,5,17,2,215,247,0,3,59
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj,"[100, 200)",3675,0,0,11,16,0,27,27,0,0,10
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj,"[200, 500)",1893,0,0,12,15,1,17,18,0,0,1
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj,>= 500,378,0,0,0,5,0,3,3,0,0,0
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,237463,0,16,12,48,16,497,632,0,14,267
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,197798,0,14,10,35,13,299,415,0,11,208
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",38106,0,2,1,12,2,163,182,0,3,55
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",1233,0,0,1,1,0,19,19,0,0,4
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",301,0,0,0,0,1,15,15,0,0,0
+DoubleMuon_2018C,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,25,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj,all,199,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj,none,165,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj,"[0, 100)",30,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj,"[100, 200)",2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj,"[200, 500)",2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,181,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,151,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",29,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_0,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj,all,8258,0,0,2,1,2,34,47,0,0,7
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj,none,6636,0,0,0,0,2,24,34,0,0,5
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj,"[0, 100)",1469,0,0,1,1,0,8,11,0,0,1
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj,"[100, 200)",84,0,0,1,0,0,1,1,0,0,1
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj,"[200, 500)",58,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj,>= 500,11,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,7395,0,0,0,1,2,19,27,0,0,7
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,6075,0,0,0,0,2,10,16,0,0,5
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",1271,0,0,0,1,0,7,9,0,0,1
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",39,0,0,0,0,0,1,1,0,0,1
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",8,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_1,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj,all,14697,0,0,2,6,0,37,54,0,1,11
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj,none,11857,0,0,0,2,0,26,40,0,1,9
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj,"[0, 100)",2470,0,0,1,2,0,10,12,0,0,1
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj,"[100, 200)",237,0,0,0,1,0,1,2,0,0,1
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj,"[200, 500)",110,0,0,1,1,0,0,0,0,0,0
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj,>= 500,23,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,13395,0,0,1,3,0,24,32,0,1,10
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,11209,0,0,0,2,0,13,19,0,1,9
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2097,0,0,1,1,0,10,11,0,0,1
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",77,0,0,0,0,0,1,2,0,0,0
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",11,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_10,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj,all,589,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj,none,485,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj,"[0, 100)",88,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj,"[100, 200)",9,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj,"[200, 500)",6,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,517,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,433,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",76,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_11,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj,all,778,0,0,1,0,0,5,6,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj,none,637,0,0,1,0,0,4,5,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj,"[0, 100)",129,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj,"[100, 200)",6,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj,"[200, 500)",5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,711,0,0,1,0,0,1,2,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,586,0,0,1,0,0,1,2,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",120,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_12,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj,all,16899,0,0,2,2,1,48,70,0,0,10
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj,none,13630,0,0,0,1,1,37,56,0,0,9
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj,"[0, 100)",2872,0,0,0,0,0,10,13,0,0,0
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj,"[100, 200)",243,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj,"[200, 500)",121,0,0,2,1,0,0,0,0,0,1
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj,>= 500,33,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,15305,0,0,0,1,1,31,41,0,0,8
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,12791,0,0,0,1,1,21,31,0,0,8
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2421,0,0,0,0,0,9,9,0,0,0
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",66,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",22,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_13,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj,all,2638,0,0,0,4,0,10,14,0,2,1
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj,none,2141,0,0,0,3,0,5,8,0,2,1
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj,"[0, 100)",437,0,0,0,1,0,4,4,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj,"[100, 200)",32,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj,"[200, 500)",23,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj,>= 500,5,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,2349,0,0,0,4,0,6,8,0,2,1
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,1963,0,0,0,3,0,2,3,0,2,1
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",376,0,0,0,1,0,3,3,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",5,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_14,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj,all,1451,0,0,0,1,0,6,8,0,0,3
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj,none,1211,0,0,0,0,0,3,4,0,0,3
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj,"[0, 100)",215,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj,"[100, 200)",14,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj,"[200, 500)",9,0,0,0,0,0,1,2,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,1302,0,0,0,1,0,2,2,0,0,3
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,1111,0,0,0,0,0,0,0,0,0,3
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",184,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",5,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",2,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_15,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj,all,817,0,0,0,0,0,4,4,0,0,2
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj,none,661,0,0,0,0,0,2,2,0,0,2
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj,"[0, 100)",140,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj,"[100, 200)",10,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj,"[200, 500)",6,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,727,0,0,0,0,0,3,3,0,0,1
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,599,0,0,0,0,0,1,1,0,0,1
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",122,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",5,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_16,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj,all,609,0,0,0,0,0,1,1,0,0,1
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj,none,486,0,0,0,0,0,1,1,0,0,1
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj,"[0, 100)",109,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj,"[100, 200)",8,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj,"[200, 500)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,533,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,443,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",88,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_17,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj,all,99377,0,5,9,29,5,284,377,0,8,98
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj,none,80047,0,5,2,13,4,203,288,0,7,79
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj,"[0, 100)",16960,0,0,1,9,1,69,77,0,1,14
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj,"[100, 200)",1421,0,0,2,6,0,9,9,0,0,5
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj,"[200, 500)",772,0,0,4,1,0,3,3,0,0,0
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj,>= 500,177,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,89982,0,5,0,19,5,139,187,0,8,86
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,75039,0,5,0,13,4,79,118,0,7,72
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",14380,0,0,0,6,1,52,61,0,1,12
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",436,0,0,0,0,0,7,7,0,0,2
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",119,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_18,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,8,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj,all,17818,0,0,1,8,0,52,67,0,2,22
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj,none,14361,0,0,0,5,0,35,48,0,2,20
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj,"[0, 100)",3025,0,0,0,1,0,12,14,0,0,2
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj,"[100, 200)",251,0,0,1,1,0,2,2,0,0,0
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj,"[200, 500)",152,0,0,0,1,0,3,3,0,0,0
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj,>= 500,29,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,16151,0,0,0,5,0,31,39,0,2,20
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,13424,0,0,0,5,0,18,25,0,2,18
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2619,0,0,0,0,0,9,10,0,0,2
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",78,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",26,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_19,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj,all,93049,0,3,18,27,3,217,297,0,11,81
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj,none,74943,0,0,5,15,3,162,231,0,9,69
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj,"[0, 100)",15621,0,3,4,4,0,48,58,0,2,10
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj,"[100, 200)",1532,0,0,5,6,0,7,8,0,0,2
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj,"[200, 500)",779,0,0,3,1,0,0,0,0,0,0
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj,>= 500,174,0,0,1,1,0,0,0,0,0,0
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,85066,0,3,5,18,2,117,163,0,10,68
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,71272,0,0,4,14,2,72,111,0,8,61
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",13213,0,3,1,3,0,40,46,0,2,7
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",466,0,0,0,1,0,5,6,0,0,0
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",108,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_2,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,7,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj,all,14449,0,0,0,5,0,45,60,0,2,14
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj,none,11672,0,0,0,3,0,32,46,0,1,11
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj,"[0, 100)",2406,0,0,0,0,0,10,11,0,1,3
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj,"[100, 200)",235,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj,"[200, 500)",105,0,0,0,1,0,2,2,0,0,0
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj,>= 500,31,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,13173,0,0,0,3,0,22,32,0,2,13
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,11011,0,0,0,3,0,12,21,0,1,10
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2071,0,0,0,0,0,7,8,0,1,3
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",68,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",17,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_20,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,6,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj,all,20555,0,1,1,7,3,32,51,0,1,21
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj,none,16614,0,1,0,3,1,21,39,0,1,17
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj,"[0, 100)",3420,0,0,0,2,2,10,11,0,0,4
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj,"[100, 200)",317,0,0,1,2,0,0,0,0,0,0
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj,"[200, 500)",169,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj,>= 500,35,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,18875,0,1,0,4,1,20,33,0,1,20
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,15857,0,1,0,3,0,10,22,0,1,16
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2897,0,0,0,1,1,9,10,0,0,4
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",88,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",29,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_21,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,4,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj,all,186,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj,none,155,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj,"[0, 100)",29,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj,"[100, 200)",2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,162,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,139,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",23,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_22,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj,all,101600,0,4,16,28,5,291,386,0,10,105
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj,none,81585,0,4,3,15,4,204,283,0,10,85
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj,"[0, 100)",17413,0,0,1,5,1,73,85,0,0,18
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj,"[100, 200)",1604,0,0,4,2,0,11,14,0,0,2
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj,"[200, 500)",802,0,0,7,6,0,3,4,0,0,0
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj,>= 500,196,0,0,1,0,0,0,0,0,0,0
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,92361,0,4,3,17,5,152,206,0,10,97
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,76980,0,4,2,14,4,88,131,0,10,80
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",14761,0,0,1,3,1,54,63,0,0,15
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",497,0,0,0,0,0,9,10,0,0,2
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",109,0,0,0,0,0,1,2,0,0,0
+DoubleMuon_2018D_23,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,14,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj,all,1258,0,0,0,1,0,1,2,0,0,2
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj,none,1022,0,0,0,1,0,0,1,0,0,2
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj,"[0, 100)",208,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj,"[100, 200)",14,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj,"[200, 500)",11,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj,>= 500,3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,1122,0,0,0,0,0,1,2,0,0,2
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,941,0,0,0,0,0,0,1,0,0,2
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",172,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_24,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj,all,207,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj,none,158,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj,"[0, 100)",44,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj,"[100, 200)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,178,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,136,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",39,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_25,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj,all,2577,0,0,0,1,0,8,11,0,0,1
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj,none,2077,0,0,0,0,0,4,7,0,0,1
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj,"[0, 100)",434,0,0,0,0,0,4,4,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj,"[100, 200)",44,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj,"[200, 500)",20,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj,>= 500,2,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,2301,0,0,0,0,0,6,9,0,0,1
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,1899,0,0,0,0,0,2,5,0,0,1
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",377,0,0,0,0,0,4,4,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",17,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",8,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_26,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj,all,221,0,0,0,1,0,0,1,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj,none,192,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj,"[0, 100)",28,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,200,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,174,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",26,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_27,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj,all,41978,0,7,3,10,3,158,209,0,2,64
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj,none,34015,0,5,1,8,2,103,151,0,2,51
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj,"[0, 100)",7069,0,2,0,0,1,49,51,0,0,13
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj,"[100, 200)",577,0,0,1,2,0,3,4,0,0,0
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj,"[200, 500)",259,0,0,1,0,0,2,2,0,0,0
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj,>= 500,58,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,37769,0,7,1,8,3,97,127,0,2,56
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,31391,0,5,1,8,2,51,80,0,2,44
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",6111,0,2,0,0,1,41,41,0,0,12
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",214,0,0,0,0,0,3,4,0,0,0
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",42,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_28,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,11,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj,all,1547,0,0,1,0,0,8,10,0,1,1
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj,none,1269,0,0,0,0,0,7,9,0,1,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj,"[0, 100)",251,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj,"[100, 200)",16,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj,"[200, 500)",10,0,0,1,0,0,1,1,0,0,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj,>= 500,1,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,1384,0,0,0,0,0,5,7,0,1,1
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,1160,0,0,0,0,0,4,6,0,1,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",213,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",8,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",2,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_29,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,1,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj,all,1612,0,0,0,0,0,5,6,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj,none,1300,0,0,0,0,0,4,5,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj,"[0, 100)",276,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj,"[100, 200)",20,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj,"[200, 500)",12,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj,>= 500,4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,1426,0,0,0,0,0,2,3,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,1177,0,0,0,0,0,2,3,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",236,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",7,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_3,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj,all,101344,0,1,15,39,7,355,474,0,5,142
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj,none,81957,0,0,6,17,6,240,345,0,4,117
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj,"[0, 100)",17121,0,1,3,9,1,93,105,0,1,24
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj,"[100, 200)",1447,0,0,2,5,0,14,15,0,0,1
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj,"[200, 500)",665,0,0,4,8,0,8,9,0,0,0
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj,>= 500,154,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,91239,0,1,7,20,5,194,258,0,5,130
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,75920,0,0,6,16,5,106,161,0,4,108
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",14687,0,1,1,4,0,68,77,0,1,22
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",496,0,0,0,0,0,12,12,0,0,0
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",123,0,0,0,0,0,8,8,0,0,0
+DoubleMuon_2018D_30,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,13,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj,all,17768,0,1,0,6,1,59,68,0,2,18
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj,none,14315,0,0,0,2,1,37,46,0,2,14
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj,"[0, 100)",2989,0,1,0,0,0,19,19,0,0,3
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj,"[100, 200)",270,0,0,0,2,0,2,2,0,0,1
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj,"[200, 500)",156,0,0,0,2,0,1,1,0,0,0
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj,>= 500,38,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,16203,0,1,0,2,1,35,41,0,2,16
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,13558,0,0,0,1,1,18,24,0,2,13
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2530,0,1,0,0,0,16,16,0,0,3
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",96,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",16,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_31,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj,all,17898,0,0,0,5,0,37,52,0,2,14
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj,none,14444,0,0,0,3,0,27,42,0,2,11
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj,"[0, 100)",2969,0,0,0,1,0,10,10,0,0,2
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj,"[100, 200)",291,0,0,0,1,0,0,0,0,0,1
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj,"[200, 500)",164,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj,>= 500,30,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,16403,0,0,0,3,0,17,27,0,2,12
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,13794,0,0,0,3,0,12,22,0,2,10
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2515,0,0,0,0,0,5,5,0,0,2
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",65,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",26,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_32,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj,all,452,0,0,0,0,0,2,3,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj,none,365,0,0,0,0,0,1,2,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj,"[0, 100)",81,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj,"[100, 200)",5,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,405,0,0,0,0,0,1,2,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,337,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",65,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",3,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_33,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj,all,97407,0,9,13,33,8,276,349,0,9,99
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj,none,78305,0,8,3,14,6,193,254,0,9,76
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj,"[0, 100)",16556,0,1,4,10,1,64,75,0,0,19
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj,"[100, 200)",1498,0,0,2,5,1,11,12,0,0,2
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj,"[200, 500)",871,0,0,4,3,0,8,8,0,0,2
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj,>= 500,177,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,88598,0,9,3,20,8,143,182,0,9,91
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,73994,0,8,2,14,6,75,104,0,9,73
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",13997,0,1,1,6,1,54,63,0,0,17
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",464,0,0,0,0,1,10,11,0,0,1
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",132,0,0,0,0,0,4,4,0,0,0
+DoubleMuon_2018D_34,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,11,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj,all,99083,0,9,11,28,4,320,402,0,5,104
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj,none,80080,0,8,4,19,2,237,312,0,4,88
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj,"[0, 100)",16587,0,1,2,1,1,67,74,0,1,15
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj,"[100, 200)",1482,0,0,4,3,1,11,11,0,0,0
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj,"[200, 500)",790,0,0,1,5,0,4,4,0,0,1
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj,>= 500,144,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,90155,0,8,4,18,4,182,220,0,5,94
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,75398,0,7,4,18,2,121,154,0,4,80
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",14157,0,1,0,0,1,50,55,0,1,14
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",467,0,0,0,0,1,8,8,0,0,0
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",118,0,0,0,0,0,3,3,0,0,0
+DoubleMuon_2018D_35,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,15,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj,all,187,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj,none,156,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj,"[0, 100)",30,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,167,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,142,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",25,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_36,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj,all,18636,0,0,1,7,0,48,59,0,1,23
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj,none,15040,0,0,0,2,0,34,44,0,1,17
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj,"[0, 100)",3142,0,0,0,0,0,11,12,0,0,4
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj,"[100, 200)",296,0,0,0,3,0,3,3,0,0,2
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj,"[200, 500)",129,0,0,1,1,0,0,0,0,0,0
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj,>= 500,29,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,17064,0,0,0,2,0,33,38,0,1,21
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,14276,0,0,0,2,0,20,24,0,1,16
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2682,0,0,0,0,0,10,11,0,0,4
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",91,0,0,0,0,0,3,3,0,0,1
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",13,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_37,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj,all,187,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj,none,149,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj,"[0, 100)",36,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,171,0,0,0,0,0,2,3,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,139,0,0,0,0,0,2,3,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",30,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_38,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj,all,209,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj,none,172,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj,"[0, 100)",35,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,188,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,156,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",31,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_39,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj,all,403,0,0,0,0,0,0,1,0,0,1
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj,none,330,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj,"[0, 100)",66,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj,"[100, 200)",5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj,"[200, 500)",2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,360,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,300,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",57,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_4,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj,all,36434,0,1,7,8,1,91,122,0,3,33
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj,none,29544,0,1,1,5,1,68,93,0,3,31
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj,"[0, 100)",6008,0,0,2,1,0,14,20,0,0,2
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj,"[100, 200)",523,0,0,1,2,0,6,6,0,0,0
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj,"[200, 500)",301,0,0,2,0,0,3,3,0,0,0
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj,>= 500,58,0,0,1,0,0,0,0,0,0,0
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,33095,0,1,1,5,1,44,60,0,3,31
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,27790,0,1,1,5,1,29,40,0,3,30
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",5074,0,0,0,0,0,9,14,0,0,1
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",182,0,0,0,0,0,4,4,0,0,0
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",46,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_40,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj,all,394,0,0,0,0,0,2,4,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj,none,333,0,0,0,0,0,2,4,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj,"[0, 100)",56,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj,"[100, 200)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,355,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,304,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",48,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_41,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj,all,6399,0,1,2,2,1,25,35,0,0,12
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj,none,5194,0,1,0,0,1,19,29,0,0,9
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj,"[0, 100)",1086,0,0,1,1,0,6,6,0,0,3
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj,"[100, 200)",73,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj,"[200, 500)",37,0,0,1,1,0,0,0,0,0,0
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj,>= 500,9,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,5787,0,1,0,0,1,12,17,0,0,11
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,4839,0,1,0,0,1,8,13,0,0,9
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",930,0,0,0,0,0,4,4,0,0,2
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",16,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_42,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj,all,387,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj,none,316,0,0,0,0,0,0,1,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj,"[0, 100)",65,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj,"[100, 200)",2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj,"[200, 500)",3,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,338,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,282,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",55,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_43,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj,all,102811,0,5,10,34,5,243,334,0,12,116
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj,none,82988,0,4,0,11,4,163,241,0,10,94
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj,"[0, 100)",17263,0,1,4,8,1,71,83,0,2,18
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj,"[100, 200)",1594,0,0,4,8,0,9,10,0,0,3
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj,"[200, 500)",805,0,0,1,4,0,0,0,0,0,1
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj,>= 500,161,0,0,1,3,0,0,0,0,0,0
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,93531,0,5,0,16,5,147,195,0,12,110
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,78343,0,4,0,11,4,90,132,0,10,91
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",14572,0,1,0,5,1,49,54,0,2,17
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",481,0,0,0,0,0,8,9,0,0,1
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",128,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_44,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,7,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj,all,22659,0,3,2,6,2,102,127,0,2,23
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj,none,18197,0,3,0,1,2,70,92,0,2,20
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj,"[0, 100)",3963,0,0,1,2,0,28,30,0,0,3
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj,"[100, 200)",294,0,0,0,1,0,2,3,0,0,0
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj,"[200, 500)",169,0,0,0,2,0,2,2,0,0,0
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj,>= 500,36,0,0,1,0,0,0,0,0,0,0
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,20220,0,3,1,3,2,56,65,0,2,19
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,16688,0,3,0,1,2,31,40,0,2,18
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",3385,0,0,1,2,0,22,22,0,0,1
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",105,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",37,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_45,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj,all,15448,0,1,3,7,1,48,67,0,2,20
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj,none,12441,0,1,1,4,1,40,57,0,2,18
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj,"[0, 100)",2684,0,0,0,2,0,8,10,0,0,2
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj,"[100, 200)",206,0,0,1,1,0,0,0,0,0,0
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj,"[200, 500)",95,0,0,1,0,0,0,0,0,0,0
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj,>= 500,22,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,14016,0,1,1,4,1,29,41,0,2,17
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,11626,0,1,1,3,1,22,32,0,2,15
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2303,0,0,0,1,0,7,9,0,0,2
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",61,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",24,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_46,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj,all,15836,0,1,0,6,0,34,52,0,2,19
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj,none,12871,0,1,0,4,0,27,42,0,2,16
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj,"[0, 100)",2606,0,0,0,1,0,6,9,0,0,2
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj,"[100, 200)",228,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj,"[200, 500)",108,0,0,0,0,0,0,0,0,0,1
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj,>= 500,23,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,14402,0,1,0,4,0,20,31,0,2,17
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,12055,0,1,0,4,0,13,21,0,2,15
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2249,0,0,0,0,0,6,9,0,0,2
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",78,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",20,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_47,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj,all,57216,0,7,7,20,5,270,344,0,4,66
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj,none,46332,0,7,4,12,5,187,248,0,4,52
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj,"[0, 100)",9677,0,0,1,6,0,72,85,0,0,13
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj,"[100, 200)",796,0,0,1,1,0,8,8,0,0,1
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj,"[200, 500)",347,0,0,1,0,0,3,3,0,0,0
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj,>= 500,64,0,0,0,1,0,0,0,0,0,0
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,50957,0,7,4,16,4,142,176,0,4,60
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,42246,0,7,4,12,4,76,103,0,4,50
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",8338,0,0,0,4,0,56,63,0,0,9
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",301,0,0,0,0,0,8,8,0,0,1
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",68,0,0,0,0,0,2,2,0,0,0
+DoubleMuon_2018D_48,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj,all,15499,0,2,3,11,0,46,62,0,1,12
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj,none,12452,0,2,1,5,0,33,46,0,1,11
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj,"[0, 100)",2677,0,0,0,1,0,10,13,0,0,1
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj,"[100, 200)",238,0,0,0,3,0,2,2,0,0,0
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj,"[200, 500)",116,0,0,2,2,0,1,1,0,0,0
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj,>= 500,16,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,14081,0,2,1,7,0,30,40,0,0,10
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,11650,0,2,1,6,0,19,27,0,0,9
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",2326,0,0,0,1,0,9,11,0,0,1
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",83,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",20,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_49,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj,all,4693,0,0,0,0,0,21,22,0,0,8
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj,none,3797,0,0,0,0,0,17,18,0,0,7
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj,"[0, 100)",795,0,0,0,0,0,3,3,0,0,1
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj,"[100, 200)",64,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj,"[200, 500)",29,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj,>= 500,8,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,4206,0,0,0,0,0,10,10,0,0,7
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,3507,0,0,0,0,0,6,6,0,0,7
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",672,0,0,0,0,0,3,3,0,0,0
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",21,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",5,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_5,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,1,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj,all,4778,0,0,1,1,0,13,17,0,0,5
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj,none,3881,0,0,0,0,0,12,16,0,0,3
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj,"[0, 100)",787,0,0,0,0,0,1,1,0,0,2
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj,"[100, 200)",72,0,0,1,1,0,0,0,0,0,0
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj,"[200, 500)",28,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj,>= 500,10,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,4359,0,0,0,0,0,6,7,0,0,5
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,3647,0,0,0,0,0,6,7,0,0,3
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",680,0,0,0,0,0,0,0,0,0,2
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",28,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",4,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_6,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj,all,12667,0,0,0,3,0,30,43,0,1,13
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj,none,10209,0,0,0,0,0,21,32,0,1,10
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj,"[0, 100)",2096,0,0,0,3,0,9,11,0,0,3
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj,"[100, 200)",212,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj,"[200, 500)",114,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj,>= 500,36,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,11501,0,0,0,2,0,13,18,0,1,12
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,9662,0,0,0,0,0,6,10,0,1,9
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",1766,0,0,0,2,0,7,8,0,0,3
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",52,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",19,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_7,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,2,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj,all,88212,0,3,10,18,4,234,313,0,7,80
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj,none,71056,0,2,3,9,4,158,229,0,7,74
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj,"[0, 100)",14983,0,1,2,3,0,62,70,0,0,6
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj,"[100, 200)",1366,0,0,2,1,0,9,9,0,0,0
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj,"[200, 500)",661,0,0,3,4,0,4,4,0,0,0
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj,>= 500,146,0,0,0,1,0,1,1,0,0,0
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,80301,0,3,3,10,3,130,162,0,7,74
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,67117,0,2,3,9,3,76,103,0,7,68
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",12659,0,1,0,1,0,45,50,0,0,6
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",410,0,0,0,0,0,6,6,0,0,0
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",100,0,0,0,0,0,3,3,0,0,0
+DoubleMuon_2018D_8,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,15,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj,all,23713,0,0,2,7,3,40,63,0,1,29
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj,none,19299,0,0,1,5,1,27,45,0,0,26
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj,"[0, 100)",3839,0,0,0,1,2,12,16,0,0,3
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj,"[100, 200)",364,0,0,0,0,0,0,1,0,1,0
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj,"[200, 500)",174,0,0,1,1,0,1,1,0,0,0
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj,>= 500,37,0,0,0,0,0,0,0,0,0,0
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,21717,0,0,1,6,3,22,37,0,1,26
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,18328,0,0,1,5,1,12,24,0,0,23
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",3247,0,0,0,1,2,9,11,0,0,3
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",116,0,0,0,0,0,0,1,0,1,0
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",26,0,0,0,0,0,1,1,0,0,0
+DoubleMuon_2018D_9,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj,all,487036.6445,0,30.1323438,0,84.22918738,36.7279395,626.8245823,1015.487604,0,189.53956,14.37252944
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj,none,414550.5612,0,22.99335981,0,84.22918738,36.7279395,382.9933825,727.7208782,0,145.4732718,14.37252944
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj,"[0, 100)",70092.50995,0,7.138983988,0,0,0,214.8961592,258.8316852,0,44.06628822,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj,"[100, 200)",2141.326906,0,0,0,0,0,28.93504065,28.93504065,0,0,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj,"[200, 500)",245.0461092,0,0,0,0,0,0,0,0,0,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj,>= 500,7.20025884,0,0,0,0,0,0,0,0,0,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,476106.6775,0,30.1323438,0,84.22918738,36.7279395,390.0639382,632.2096123,0,189.53956,14.37252944
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,406805.104,0,22.99335981,0,84.22918738,36.7279395,212.6164538,410.8266018,0,145.4732718,14.37252944
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",67015.12029,0,7.138983988,0,0,0,155.5938739,199.5293999,0,44.06628822,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",2047.484113,0,0,0,0,0,21.85361058,21.85361058,0,0,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",231.7688597,0,0,0,0,0,0,0,0,0,0
+QCD_Pt170To300,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,7.20025884,0,0,0,0,0,0,0,0,0,0
+2Mu2E_1000GeV_0p25GeV_0p002mm,signal,2mu2e,all,6326,0,1,1,1,19,29,64,0,1,0
+2Mu2E_1000GeV_0p25GeV_0p002mm,signal,2mu2e,none,4873,0,1,1,1,12,20,51,0,0,0
+2Mu2E_1000GeV_0p25GeV_0p002mm,signal,2mu2e,"[0, 100)",380,0,0,0,0,1,0,1,0,0,0
+2Mu2E_1000GeV_0p25GeV_0p002mm,signal,2mu2e,"[100, 200)",574,0,0,0,0,2,5,5,0,0,0
+2Mu2E_1000GeV_0p25GeV_0p002mm,signal,2mu2e,"[200, 500)",454,0,0,0,0,4,4,5,0,1,0
+2Mu2E_1000GeV_0p25GeV_0p002mm,signal,2mu2e,>= 500,45,0,0,0,0,0,0,2,0,0,0
+2Mu2E_1000GeV_0p25GeV_2p0mm,signal,2mu2e,all,169,0,0,0,0,0,7,22,0,0,0
+2Mu2E_1000GeV_0p25GeV_2p0mm,signal,2mu2e,none,49,0,0,0,0,0,2,7,0,0,0
+2Mu2E_1000GeV_0p25GeV_2p0mm,signal,2mu2e,"[0, 100)",28,0,0,0,0,0,1,2,0,0,0
+2Mu2E_1000GeV_0p25GeV_2p0mm,signal,2mu2e,"[100, 200)",48,0,0,0,0,0,2,5,0,0,0
+2Mu2E_1000GeV_0p25GeV_2p0mm,signal,2mu2e,"[200, 500)",40,0,0,0,0,0,2,8,0,0,0
+2Mu2E_1000GeV_0p25GeV_2p0mm,signal,2mu2e,>= 500,4,0,0,0,0,0,0,0,0,0,0
+2Mu2E_1000GeV_5p0GeV_0p04mm,signal,2mu2e,all,3016,0,0,0,0,11,2,5,0,0,0
+2Mu2E_1000GeV_5p0GeV_0p04mm,signal,2mu2e,none,2719,0,0,0,0,11,2,5,0,0,0
+2Mu2E_1000GeV_5p0GeV_0p04mm,signal,2mu2e,"[0, 100)",123,0,0,0,0,0,0,0,0,0,0
+2Mu2E_1000GeV_5p0GeV_0p04mm,signal,2mu2e,"[100, 200)",82,0,0,0,0,0,0,0,0,0,0
+2Mu2E_1000GeV_5p0GeV_0p04mm,signal,2mu2e,"[200, 500)",81,0,0,0,0,0,0,0,0,0,0
+2Mu2E_1000GeV_5p0GeV_0p04mm,signal,2mu2e,>= 500,11,0,0,0,0,0,0,0,0,0,0
+2Mu2E_1000GeV_5p0GeV_40p0mm,signal,2mu2e,all,433,0,0,0,7,3,13,40,0,0,0
+2Mu2E_1000GeV_5p0GeV_40p0mm,signal,2mu2e,none,194,0,0,0,2,3,1,15,0,0,0
+2Mu2E_1000GeV_5p0GeV_40p0mm,signal,2mu2e,"[0, 100)",53,0,0,0,0,0,3,9,0,0,0
+2Mu2E_1000GeV_5p0GeV_40p0mm,signal,2mu2e,"[100, 200)",58,0,0,0,0,0,4,6,0,0,0
+2Mu2E_1000GeV_5p0GeV_40p0mm,signal,2mu2e,"[200, 500)",104,0,0,0,3,0,3,7,0,0,0
+2Mu2E_1000GeV_5p0GeV_40p0mm,signal,2mu2e,>= 500,24,0,0,0,2,0,2,3,0,0,0
+2Mu2E_100GeV_0p25GeV_0p02mm,signal,2mu2e,all,228,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_0p02mm,signal,2mu2e,none,189,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_0p02mm,signal,2mu2e,"[0, 100)",37,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_0p02mm,signal,2mu2e,"[100, 200)",2,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_0p02mm,signal,2mu2e,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_0p02mm,signal,2mu2e,>= 500,0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_20p0mm,signal,2mu2e,all,39,0,0,0,0,0,1,1,0,0,0
+2Mu2E_100GeV_0p25GeV_20p0mm,signal,2mu2e,none,8,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_20p0mm,signal,2mu2e,"[0, 100)",30,0,0,0,0,0,1,1,0,0,0
+2Mu2E_100GeV_0p25GeV_20p0mm,signal,2mu2e,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_20p0mm,signal,2mu2e,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_0p25GeV_20p0mm,signal,2mu2e,>= 500,0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_0p4mm,signal,2mu2e,all,80,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_0p4mm,signal,2mu2e,none,65,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_0p4mm,signal,2mu2e,"[0, 100)",14,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_0p4mm,signal,2mu2e,"[100, 200)",1,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_0p4mm,signal,2mu2e,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_0p4mm,signal,2mu2e,>= 500,0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_400mm,signal,2mu2e,all,13,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_400mm,signal,2mu2e,none,2,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_400mm,signal,2mu2e,"[0, 100)",11,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_400mm,signal,2mu2e,"[100, 200)",0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_400mm,signal,2mu2e,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_100GeV_5p0GeV_400mm,signal,2mu2e,>= 500,0,0,0,0,0,0,0,0,0,0,0
+2Mu2E_500GeV_0p25GeV_0p004mm,signal,2mu2e,all,10155,0,0,0,0,14,19,47,0,1,0
+2Mu2E_500GeV_0p25GeV_0p004mm,signal,2mu2e,none,8663,0,0,0,0,13,10,33,0,1,0
+2Mu2E_500GeV_0p25GeV_0p004mm,signal,2mu2e,"[0, 100)",841,0,0,0,0,0,1,2,0,0,0
+2Mu2E_500GeV_0p25GeV_0p004mm,signal,2mu2e,"[100, 200)",539,0,0,0,0,1,4,8,0,0,0
+2Mu2E_500GeV_0p25GeV_0p004mm,signal,2mu2e,"[200, 500)",107,0,0,0,0,0,4,4,0,0,0
+2Mu2E_500GeV_0p25GeV_0p004mm,signal,2mu2e,>= 500,5,0,0,0,0,0,0,0,0,0,0
+2Mu2E_500GeV_0p25GeV_4p0mm,signal,2mu2e,all,815,0,0,0,2,0,14,43,0,0,0
+2Mu2E_500GeV_0p25GeV_4p0mm,signal,2mu2e,none,263,0,0,0,0,0,2,8,0,0,0
+2Mu2E_500GeV_0p25GeV_4p0mm,signal,2mu2e,"[0, 100)",240,0,0,0,1,0,6,21,0,0,0
+2Mu2E_500GeV_0p25GeV_4p0mm,signal,2mu2e,"[100, 200)",259,0,0,0,1,0,4,12,0,0,0
+2Mu2E_500GeV_0p25GeV_4p0mm,signal,2mu2e,"[200, 500)",52,0,0,0,0,0,2,2,0,0,0
+2Mu2E_500GeV_0p25GeV_4p0mm,signal,2mu2e,>= 500,1,0,0,0,0,0,0,0,0,0,0
+2Mu2E_500GeV_5p0GeV_0p08mm,signal,2mu2e,all,6238,0,0,0,0,13,4,7,0,1,0
+2Mu2E_500GeV_5p0GeV_0p08mm,signal,2mu2e,none,5567,0,0,0,0,13,4,7,0,1,0
+2Mu2E_500GeV_5p0GeV_0p08mm,signal,2mu2e,"[0, 100)",400,0,0,0,0,0,0,0,0,0,0
+2Mu2E_500GeV_5p0GeV_0p08mm,signal,2mu2e,"[100, 200)",216,0,0,0,0,0,0,0,0,0,0
+2Mu2E_500GeV_5p0GeV_0p08mm,signal,2mu2e,"[200, 500)",50,0,0,0,0,0,0,0,0,0,0
+2Mu2E_500GeV_5p0GeV_0p08mm,signal,2mu2e,>= 500,5,0,0,0,0,0,0,0,0,0,0
+2Mu2E_500GeV_5p0GeV_80p0mm,signal,2mu2e,all,550,0,0,0,7,0,12,36,0,0,0
+2Mu2E_500GeV_5p0GeV_80p0mm,signal,2mu2e,none,169,0,0,0,1,0,1,18,0,0,0
+2Mu2E_500GeV_5p0GeV_80p0mm,signal,2mu2e,"[0, 100)",121,0,0,0,2,0,4,10,0,0,0
+2Mu2E_500GeV_5p0GeV_80p0mm,signal,2mu2e,"[100, 200)",193,0,0,0,3,0,4,5,0,0,0
+2Mu2E_500GeV_5p0GeV_80p0mm,signal,2mu2e,"[200, 500)",63,0,0,0,1,0,3,3,0,0,0
+2Mu2E_500GeV_5p0GeV_80p0mm,signal,2mu2e,>= 500,4,0,0,0,0,0,0,0,0,0,0
+4Mu_1000GeV_0p25GeV_0p002mm,signal,4mu,all,5332,0,0,0,1,0,73,157,0,0,0
+4Mu_1000GeV_0p25GeV_0p002mm,signal,4mu,none,2914,0,0,0,0,0,39,100,0,0,0
+4Mu_1000GeV_0p25GeV_0p002mm,signal,4mu,"[0, 100)",740,0,0,0,0,0,13,22,0,0,0
+4Mu_1000GeV_0p25GeV_0p002mm,signal,4mu,"[100, 200)",889,0,0,0,0,0,11,18,0,0,0
+4Mu_1000GeV_0p25GeV_0p002mm,signal,4mu,"[200, 500)",726,0,0,0,1,0,10,17,0,0,0
+4Mu_1000GeV_0p25GeV_0p002mm,signal,4mu,>= 500,63,0,0,0,0,0,0,0,0,0,0
+4Mu_1000GeV_0p25GeV_2p0mm,signal,4mu,all,88,0,0,0,1,0,9,19,0,0,0
+4Mu_1000GeV_0p25GeV_2p0mm,signal,4mu,none,9,0,0,0,0,0,0,0,0,0,0
+4Mu_1000GeV_0p25GeV_2p0mm,signal,4mu,"[0, 100)",20,0,0,0,0,0,0,4,0,0,0
+4Mu_1000GeV_0p25GeV_2p0mm,signal,4mu,"[100, 200)",30,0,0,0,0,0,4,7,0,0,0
+4Mu_1000GeV_0p25GeV_2p0mm,signal,4mu,"[200, 500)",26,0,0,0,1,0,4,7,0,0,0
+4Mu_1000GeV_0p25GeV_2p0mm,signal,4mu,>= 500,3,0,0,0,0,0,1,1,0,0,0
+4Mu_1000GeV_5p0GeV_0p04mm,signal,4mu,all,7111,0,1,0,0,1,13,32,0,1,0
+4Mu_1000GeV_5p0GeV_0p04mm,signal,4mu,none,5225,0,1,0,0,1,6,21,0,1,0
+4Mu_1000GeV_5p0GeV_0p04mm,signal,4mu,"[0, 100)",838,0,0,0,0,0,3,4,0,0,0
+4Mu_1000GeV_5p0GeV_0p04mm,signal,4mu,"[100, 200)",481,0,0,0,0,0,2,4,0,0,0
+4Mu_1000GeV_5p0GeV_0p04mm,signal,4mu,"[200, 500)",475,0,0,0,0,0,2,2,0,0,0
+4Mu_1000GeV_5p0GeV_0p04mm,signal,4mu,>= 500,92,0,0,0,0,0,0,1,0,0,0
+4Mu_1000GeV_5p0GeV_40p0mm,signal,4mu,all,357,0,0,0,8,1,27,71,0,0,0
+4Mu_1000GeV_5p0GeV_40p0mm,signal,4mu,none,53,0,0,0,1,0,2,10,0,0,0
+4Mu_1000GeV_5p0GeV_40p0mm,signal,4mu,"[0, 100)",53,0,0,0,0,0,9,15,0,0,0
+4Mu_1000GeV_5p0GeV_40p0mm,signal,4mu,"[100, 200)",80,0,0,0,2,1,3,16,0,0,0
+4Mu_1000GeV_5p0GeV_40p0mm,signal,4mu,"[200, 500)",138,0,0,0,4,0,13,29,0,0,0
+4Mu_1000GeV_5p0GeV_40p0mm,signal,4mu,>= 500,33,0,0,0,1,0,0,1,0,0,0
+4Mu_100GeV_0p25GeV_0p02mm,signal,4mu,all,2172,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_0p02mm,signal,4mu,none,1828,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_0p02mm,signal,4mu,"[0, 100)",341,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_0p02mm,signal,4mu,"[100, 200)",2,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_0p02mm,signal,4mu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_0p02mm,signal,4mu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_20p0mm,signal,4mu,all,387,0,0,0,0,0,9,9,0,0,0
+4Mu_100GeV_0p25GeV_20p0mm,signal,4mu,none,28,0,0,0,0,0,1,1,0,0,0
+4Mu_100GeV_0p25GeV_20p0mm,signal,4mu,"[0, 100)",354,0,0,0,0,0,8,8,0,0,0
+4Mu_100GeV_0p25GeV_20p0mm,signal,4mu,"[100, 200)",5,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_20p0mm,signal,4mu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_0p25GeV_20p0mm,signal,4mu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_0p4mm,signal,4mu,all,2235,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_0p4mm,signal,4mu,none,1994,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_0p4mm,signal,4mu,"[0, 100)",236,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_0p4mm,signal,4mu,"[100, 200)",4,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_0p4mm,signal,4mu,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_0p4mm,signal,4mu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_400mm,signal,4mu,all,184,0,0,0,0,0,4,5,0,0,0
+4Mu_100GeV_5p0GeV_400mm,signal,4mu,none,57,0,0,0,0,0,1,1,0,0,0
+4Mu_100GeV_5p0GeV_400mm,signal,4mu,"[0, 100)",124,0,0,0,0,0,2,3,0,0,0
+4Mu_100GeV_5p0GeV_400mm,signal,4mu,"[100, 200)",3,0,0,0,0,0,1,1,0,0,0
+4Mu_100GeV_5p0GeV_400mm,signal,4mu,"[200, 500)",0,0,0,0,0,0,0,0,0,0,0
+4Mu_100GeV_5p0GeV_400mm,signal,4mu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+4Mu_500GeV_0p25GeV_0p004mm,signal,4mu,all,18556,0,3,1,0,0,101,208,0,1,0
+4Mu_500GeV_0p25GeV_0p004mm,signal,4mu,none,12830,0,3,1,0,0,50,130,0,1,0
+4Mu_500GeV_0p25GeV_0p004mm,signal,4mu,"[0, 100)",3245,0,0,0,0,0,18,34,0,0,0
+4Mu_500GeV_0p25GeV_0p004mm,signal,4mu,"[100, 200)",1949,0,0,0,0,0,26,33,0,0,0
+4Mu_500GeV_0p25GeV_0p004mm,signal,4mu,"[200, 500)",504,0,0,0,0,0,6,10,0,0,0
+4Mu_500GeV_0p25GeV_0p004mm,signal,4mu,>= 500,28,0,0,0,0,0,1,1,0,0,0
+4Mu_500GeV_0p25GeV_4p0mm,signal,4mu,all,572,0,0,0,9,0,30,61,0,0,0
+4Mu_500GeV_0p25GeV_4p0mm,signal,4mu,none,38,0,0,0,0,0,4,5,0,0,0
+4Mu_500GeV_0p25GeV_4p0mm,signal,4mu,"[0, 100)",217,0,0,0,5,0,6,20,0,0,0
+4Mu_500GeV_0p25GeV_4p0mm,signal,4mu,"[100, 200)",235,0,0,0,2,0,19,33,0,0,0
+4Mu_500GeV_0p25GeV_4p0mm,signal,4mu,"[200, 500)",77,0,0,0,2,0,1,3,0,0,0
+4Mu_500GeV_0p25GeV_4p0mm,signal,4mu,>= 500,5,0,0,0,0,0,0,0,0,0,0
+4Mu_500GeV_5p0GeV_0p08mm,signal,4mu,all,10278,0,1,1,0,0,8,19,0,0,0
+4Mu_500GeV_5p0GeV_0p08mm,signal,4mu,none,7688,0,1,1,0,0,4,13,0,0,0
+4Mu_500GeV_5p0GeV_0p08mm,signal,4mu,"[0, 100)",1647,0,0,0,0,0,3,3,0,0,0
+4Mu_500GeV_5p0GeV_0p08mm,signal,4mu,"[100, 200)",721,0,0,0,0,0,1,3,0,0,0
+4Mu_500GeV_5p0GeV_0p08mm,signal,4mu,"[200, 500)",217,0,0,0,0,0,0,0,0,0,0
+4Mu_500GeV_5p0GeV_0p08mm,signal,4mu,>= 500,5,0,0,0,0,0,0,0,0,0,0
+4Mu_500GeV_5p0GeV_80p0mm,signal,4mu,all,892,0,0,0,15,0,35,119,0,0,0
+4Mu_500GeV_5p0GeV_80p0mm,signal,4mu,none,103,0,0,0,0,0,1,19,0,0,0
+4Mu_500GeV_5p0GeV_80p0mm,signal,4mu,"[0, 100)",225,0,0,0,5,0,13,39,0,0,0
+4Mu_500GeV_5p0GeV_80p0mm,signal,4mu,"[100, 200)",370,0,0,0,7,0,15,43,0,0,0
+4Mu_500GeV_5p0GeV_80p0mm,signal,4mu,"[200, 500)",180,0,0,0,3,0,5,16,0,0,0
+4Mu_500GeV_5p0GeV_80p0mm,signal,4mu,>= 500,14,0,0,0,0,0,1,2,0,0,0
+pooled data,data,cr_1egmOr1mu_lj,all,2236644,0,117,280,679,125,7204,9483,0,185,2432
+pooled data,data,cr_1egmOr1mu_lj,none,1804107,0,97,79,324,102,5058,7053,0,158,1987
+pooled data,data,cr_1egmOr1mu_lj,"[0, 100)",379673,0,20,52,147,19,1785,2043,0,26,383
+pooled data,data,cr_1egmOr1mu_lj,"[100, 200)",32731,0,0,68,103,3,246,264,0,1,42
+pooled data,data,cr_1egmOr1mu_lj,"[200, 500)",16689,0,0,71,86,1,100,108,0,0,18
+pooled data,data,cr_1egmOr1mu_lj,>= 500,3444,0,0,10,19,0,15,15,0,0,2
+pooled data,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,2027231,0,116,84,400,117,3971,5145,0,181,2201
+pooled data,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,1688949,0,96,72,312,96,2322,3308,0,154,1841
+pooled data,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",324495,0,20,10,84,17,1359,1530,0,26,335
+pooled data,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",10822,0,0,2,4,3,205,218,0,1,18
+pooled data,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",2694,0,0,0,0,1,75,79,0,0,6
+pooled data,data,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,271,0,0,0,0,0,10,10,0,0,1
+pooled MC,MC,cr_1egmOr1mu_lj,all,487036.6445,0,30.1323438,0,84.22918738,36.7279395,626.8245823,1015.487604,0,189.53956,14.37252944
+pooled MC,MC,cr_1egmOr1mu_lj,none,414550.5612,0,22.99335981,0,84.22918738,36.7279395,382.9933825,727.7208782,0,145.4732718,14.37252944
+pooled MC,MC,cr_1egmOr1mu_lj,"[0, 100)",70092.50995,0,7.138983988,0,0,0,214.8961592,258.8316852,0,44.06628822,0
+pooled MC,MC,cr_1egmOr1mu_lj,"[100, 200)",2141.326906,0,0,0,0,0,28.93504065,28.93504065,0,0,0
+pooled MC,MC,cr_1egmOr1mu_lj,"[200, 500)",245.0461092,0,0,0,0,0,0,0,0,0,0
+pooled MC,MC,cr_1egmOr1mu_lj,>= 500,7.20025884,0,0,0,0,0,0,0,0,0,0
+pooled MC,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,all,476106.6775,0,30.1323438,0,84.22918738,36.7279395,390.0639382,632.2096123,0,189.53956,14.37252944
+pooled MC,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,none,406805.104,0,22.99335981,0,84.22918738,36.7279395,212.6164538,410.8266018,0,145.4732718,14.37252944
+pooled MC,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[0, 100)",67015.12029,0,7.138983988,0,0,0,155.5938739,199.5293999,0,44.06628822,0
+pooled MC,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[100, 200)",2047.484113,0,0,0,0,0,21.85361058,21.85361058,0,0,0
+pooled MC,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,"[200, 500)",231.7688597,0,0,0,0,0,0,0,0,0,0
+pooled MC,MC,cr_1egmOr1mu_lj_spreadMu_spreadPfMu_CosMu,>= 500,7.20025884,0,0,0,0,0,0,0,0,0,0
+pooled 2Mu2E,signal,2mu2e,all,28062,0,1,1,17,60,101,265,0,3,0
+pooled 2Mu2E,signal,2mu2e,none,22761,0,1,1,4,52,42,144,0,2,0
+pooled 2Mu2E,signal,2mu2e,"[0, 100)",2278,0,0,0,3,1,16,46,0,0,0
+pooled 2Mu2E,signal,2mu2e,"[100, 200)",1972,0,0,0,4,3,23,41,0,0,0
+pooled 2Mu2E,signal,2mu2e,"[200, 500)",952,0,0,0,4,4,18,29,0,1,0
+pooled 2Mu2E,signal,2mu2e,>= 500,99,0,0,0,2,0,2,5,0,0,0
+pooled 2Mu2E 1000GeV,signal,2mu2e,all,9944,0,1,1,8,33,51,131,0,1,0
+pooled 2Mu2E 1000GeV,signal,2mu2e,none,7835,0,1,1,3,26,25,78,0,0,0
+pooled 2Mu2E 1000GeV,signal,2mu2e,"[0, 100)",584,0,0,0,0,1,4,12,0,0,0
+pooled 2Mu2E 1000GeV,signal,2mu2e,"[100, 200)",762,0,0,0,0,2,11,16,0,0,0
+pooled 2Mu2E 1000GeV,signal,2mu2e,"[200, 500)",679,0,0,0,3,4,9,20,0,1,0
+pooled 2Mu2E 1000GeV,signal,2mu2e,>= 500,84,0,0,0,2,0,2,5,0,0,0
+pooled 2Mu2E 100GeV,signal,2mu2e,all,360,0,0,0,0,0,1,1,0,0,0
+pooled 2Mu2E 100GeV,signal,2mu2e,none,264,0,0,0,0,0,0,0,0,0,0
+pooled 2Mu2E 100GeV,signal,2mu2e,"[0, 100)",92,0,0,0,0,0,1,1,0,0,0
+pooled 2Mu2E 100GeV,signal,2mu2e,"[100, 200)",3,0,0,0,0,0,0,0,0,0,0
+pooled 2Mu2E 100GeV,signal,2mu2e,"[200, 500)",1,0,0,0,0,0,0,0,0,0,0
+pooled 2Mu2E 100GeV,signal,2mu2e,>= 500,0,0,0,0,0,0,0,0,0,0,0
+pooled 2Mu2E 500GeV,signal,2mu2e,all,17758,0,0,0,9,27,49,133,0,2,0
+pooled 2Mu2E 500GeV,signal,2mu2e,none,14662,0,0,0,1,26,17,66,0,2,0
+pooled 2Mu2E 500GeV,signal,2mu2e,"[0, 100)",1602,0,0,0,3,0,11,33,0,0,0
+pooled 2Mu2E 500GeV,signal,2mu2e,"[100, 200)",1207,0,0,0,4,1,12,25,0,0,0
+pooled 2Mu2E 500GeV,signal,2mu2e,"[200, 500)",272,0,0,0,1,0,9,9,0,0,0
+pooled 2Mu2E 500GeV,signal,2mu2e,>= 500,15,0,0,0,0,0,0,0,0,0,0
+pooled 4Mu,signal,4mu,all,48164,0,5,2,34,2,309,700,0,2,0
+pooled 4Mu,signal,4mu,none,32767,0,5,2,1,1,108,300,0,2,0
+pooled 4Mu,signal,4mu,"[0, 100)",8040,0,0,0,10,0,75,152,0,0,0
+pooled 4Mu,signal,4mu,"[100, 200)",4769,0,0,0,11,1,82,158,0,0,0
+pooled 4Mu,signal,4mu,"[200, 500)",2345,0,0,0,11,0,41,84,0,0,0
+pooled 4Mu,signal,4mu,>= 500,243,0,0,0,1,0,3,6,0,0,0
+pooled 4Mu 1000GeV,signal,4mu,all,12888,0,1,0,10,2,122,279,0,1,0
+pooled 4Mu 1000GeV,signal,4mu,none,8201,0,1,0,1,1,47,131,0,1,0
+pooled 4Mu 1000GeV,signal,4mu,"[0, 100)",1651,0,0,0,0,0,25,45,0,0,0
+pooled 4Mu 1000GeV,signal,4mu,"[100, 200)",1480,0,0,0,2,1,20,45,0,0,0
+pooled 4Mu 1000GeV,signal,4mu,"[200, 500)",1365,0,0,0,6,0,29,55,0,0,0
+pooled 4Mu 1000GeV,signal,4mu,>= 500,191,0,0,0,1,0,1,3,0,0,0
+pooled 4Mu 100GeV,signal,4mu,all,4978,0,0,0,0,0,13,14,0,0,0
+pooled 4Mu 100GeV,signal,4mu,none,3907,0,0,0,0,0,2,2,0,0,0
+pooled 4Mu 100GeV,signal,4mu,"[0, 100)",1055,0,0,0,0,0,10,11,0,0,0
+pooled 4Mu 100GeV,signal,4mu,"[100, 200)",14,0,0,0,0,0,1,1,0,0,0
+pooled 4Mu 100GeV,signal,4mu,"[200, 500)",2,0,0,0,0,0,0,0,0,0,0
+pooled 4Mu 100GeV,signal,4mu,>= 500,0,0,0,0,0,0,0,0,0,0,0
+pooled 4Mu 500GeV,signal,4mu,all,30298,0,4,2,24,0,174,407,0,1,0
+pooled 4Mu 500GeV,signal,4mu,none,20659,0,4,2,0,0,59,167,0,1,0
+pooled 4Mu 500GeV,signal,4mu,"[0, 100)",5334,0,0,0,10,0,40,96,0,0,0
+pooled 4Mu 500GeV,signal,4mu,"[100, 200)",3275,0,0,0,9,0,61,112,0,0,0
+pooled 4Mu 500GeV,signal,4mu,"[200, 500)",978,0,0,0,5,0,12,29,0,0,0
+pooled 4Mu 500GeV,signal,4mu,>= 500,52,0,0,0,0,0,2,3,0,0,0
