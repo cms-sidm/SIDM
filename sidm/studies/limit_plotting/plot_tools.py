@@ -53,6 +53,7 @@ GRID_RC = {"font.size": 13, "axes.labelsize": 13, "axes.titlesize": 13,
 BAND_STYLE = {"1sigma": "#5BC236", "2sigma": "#F5DF4D"}
 THEORY_COLOUR = "#C0392B"
 OVERLAY_COLOUR = "#2B5FAD"      # a second set of limits drawn over a Brazil band
+FINAL_STATE_COLOURS = {"2Mu2E": "#2a78d6", "4Mu": "#eb6834"}   # a colour-blind-safe pair
 GROUP_COLOURS = {"QCD": "#4c72b0", "DY": "#dd8452", "TT": "#55a868",
                  "Diboson": "#c44e52", "other": "#8172b3"}
 GROUP_LABELS = {"DY": "DY+jets", "TT": r"$t\bar{t}$+jets", "QCD": "QCD",
@@ -1648,31 +1649,47 @@ def bias_plot(toys, outdir, campaign, name, title=""):
         return save(fig, outdir, name, campaign)
 
 
-def breakdown_plot(changes, outdir, campaign, name, title="", ylabel="change of the limit [%]"):
-    """Per-point changes of the expected limit, one column per label and one panel per
-    final state: every signal point is a dot, spread sideways, and the median a bar.
+def breakdown_plot(changes, outdir, campaign, name, *, title="",
+                   xlabel="change of the limit [%]", labels=None, split=None):
+    """Per-point changes of the expected limit, one row per label: every signal point is a
+    dot, one colour per final state, spread up and down within its row, and each median a
+    black tick.
 
-    ``changes`` is ``{final state: {label: [change at each signal point]}}``.
+    ``changes`` is ``{final state: {label: [change at each signal point]}}``. The rows run
+    top to bottom in its order, named ``labels[label]`` where given, with a thin line above
+    row ``split``; ``title`` heads the legend. Rows keep long names readable on a slide, and
+    one panel puts the final states next to each other in every row.
     """
     states = list(changes)
-    columns = max(len(per_label) for per_label in changes.values())
+    rows = list(dict.fromkeys(label for per_label in changes.values() for label in per_label))
+    values = np.concatenate([np.asarray(v, dtype=float) for per_label in changes.values()
+                             for v in per_label.values()] + [np.zeros(1)])
+    pad = 0.05 * (values.max() - values.min() or 1.0)
+    offsets = np.linspace(-0.2, 0.2, len(states)) if len(states) > 1 else [0.0]
     jitter = np.random.default_rng(0)
-    with plt.rc_context(GRID_RC):
-        fig, axes = plt.subplots(1, len(states), figsize=(1.1 * columns * len(states) + 2, 4.8),
-                                 sharey=True, squeeze=False, constrained_layout=True)
-        for ax, fs in zip(axes[0], states):
-            for i, (label, values) in enumerate(changes[fs].items()):
-                v = np.asarray(values, dtype=float)
-                ax.scatter(i + jitter.uniform(-0.25, 0.25, v.size), v, s=10,
-                           color=style_for(i)[0], alpha=0.6, lw=0, label=label)
+    with plt.rc_context({**GRID_RC, "xtick.labelsize": 12, "ytick.labelsize": 12}):
+        fig, ax = plt.subplots(figsize=(5.2, 1.3 + 0.25 * len(rows)), constrained_layout=True)
+        for k, fs in enumerate(states):
+            for i, label in enumerate(rows):
+                v = np.asarray(changes[fs].get(label, []), dtype=float)
+                y = i + offsets[k]
+                ax.scatter(v, y + jitter.uniform(-0.1, 0.1, v.size), s=12, lw=0, alpha=0.6,
+                           color=FINAL_STATE_COLOURS.get(fs, style_for(k)[0]),
+                           label=fs if i == 0 else None)
                 if v.size:
-                    ax.plot([i - 0.32, i + 0.32], [np.median(v)] * 2, color="black", lw=2)
-            ax.set_xticks(range(len(changes[fs])))
-            ax.set_xticklabels(list(changes[fs]), rotation=30, ha="right")
-            ax.axhline(0, color="0.5", lw=0.8)
-            ax.set_title(fs)
-            ax.grid(alpha=0.25, axis="y")
-        axes[0][0].set_ylabel(ylabel)
-        fig.suptitle(title)
-        cms_label(axes, fontsize=11)
+                    ax.plot([np.median(v)] * 2, [y - 0.16, y + 0.16], color="black", lw=1.8)
+        if split:
+            ax.axhline(split - 0.5, color="0.5", lw=0.8)
+        ax.axvline(0, color="0.5", lw=0.8)
+        ax.set_xlim(values.min() - pad, values.max() + pad)
+        ax.locator_params(axis="x", nbins=5)
+        ax.set_yticks(range(len(rows)), [(labels or {}).get(r, r) for r in rows])
+        ax.set_ylim(len(rows) - 0.5, -0.5)
+        ax.minorticks_on()
+        ax.tick_params(axis="y", which="minor", left=False, right=False)
+        ax.grid(alpha=0.25, axis="x")
+        ax.set_xlabel(xlabel)
+        ax.legend(title=title or None, loc="center right", frameon=False, fontsize=12,
+                  title_fontsize=12, markerscale=2)
+        cms_label(ax, fontsize=11)
         return save(fig, outdir, name, campaign)

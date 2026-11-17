@@ -5,7 +5,7 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-17, 11:10)
+## Current state (2026-11-17, 15:10)
 
 **Step 2 of the lepton-jet efficiency done for the prompt regime (`lj_reco_efficiency.md`).** The
 user set the 4mu working-point deck's safety criteria as the guide for reading data (now a general
@@ -20,7 +20,10 @@ rule in AGENTS.md) and allowed committing results from approved data uses.
 - **AN Sec. 7:** the lepton-jet reconstruction subsection now holds the measurement (two figures,
   `efficiency_jpsi_above50_data_simulation.pdf` and `efficiency_zmmg_data_simulation.pdf` in
   `an_systematics/`), replacing the authors' placeholder, in the advisor's style; compiles.
-- **Deck** `slides/systematics.tex`: 40 pages with the data results (local).
+- **Deck** `slides/systematics.tex`: 38 pages with the data results (local). It presents the
+  study only: no AN updates and no references to the advisor (the user's rules, 2026-11-17).
+  The limit breakdown figure is redrawn to be readable; the signal-injection slide (notebook 05)
+  has the same problem and is not redrawn yet.
 - **Upstream `main` merged** (2026-11-17): it holds its own version of the campaign tool, with the
   same `allow_data` opt-in, so the merge takes `main`'s campaign tool and re-applies only
   `file_stride`. `main` also selects the leading lepton-jet pair that survives the subtype cuts
@@ -31,12 +34,12 @@ rule in AGENTS.md) and allowed committing results from approved data uses.
   notebooks 03 to 05 and AN Sec. 7, predate it. A rerun (`systematics_v3`, `systematics_data_v2`)
   would align them with `main`; the new pair selection may also settle the spread-cut part of open
   question 4 (to check).
-- **Commits** on `systematicsStudy`, not pushed: `25fe827` (campaign tool), `0a5fd77` (AGENTS.md),
-  `3dd4114` (the study up to notebook 07), and the data step (notebook 08 and the documents).
+- **Commits** on `systematicsStudy`: pushed by the user up to the merge `e8db8ba`; after it, the
+  redrawn limit breakdown and the AGENTS.md rule that agents do not list themselves as authors.
 
 **The user's workflow (2026-11-16):** after running anything, update the AN (in the advisor's
-style, `an_systematics/WRITING_GUIDE.md`), then the summary deck, then commit and paste an updated
-PR description in chat. Keep `slides/` and `an_systematics/` local.
+style, `an_systematics/WRITING_GUIDE.md`), then the summary deck (the study's results, without
+the AN updates), then commit and paste an updated PR description in chat. Keep `slides/` and `an_systematics/` local.
 
 **Next:** step 3 (per-lepton-jet scale factors for the prompt regime, `Corrections` extension,
 two registry entries, rerun of 03 to 05), after the group's answers to questions 2 to 6 of
@@ -191,6 +194,19 @@ only.
 
 ### 2026-11-17
 
+- (15:10) The limit breakdown figure was unreadable on its slide: a 4:1 strip of columns with
+  the nuisance names, its scale set by the 132% point at the shortest lifetime.
+  `plot_tools.breakdown_plot` now draws one row per left-out nuisance with readable names, 2Mu2E
+  and 4Mu in one panel (a colour-blind-safe blue and orange) and the medians as black ticks;
+  notebook 04 plots the limit grid only (the shortest lifetime stays in its table). Notebook 04
+  rerun: every printed number unchanged. The deck no longer refers to the advisor (the
+  sparse-bin rule left its questions for the group). AGENTS.md: agents do not list themselves
+  as authors or contributors (the user's rule).
+- (13:25) At the user's request the deck no longer covers the AN: the two AN Sec. 7 slides and
+  the AN lines of the title, summary, what-changed and step-2 slides are gone (38 pages). The
+  caveats of the removed "kept out of the AN" slide were already on the study slides; the
+  AN Sec. 8 control-region counts moved to the background slide. The backup slides were brought
+  up to date with the merge and notebook 08. Rule added to `an_systematics/WRITING_GUIDE.md`.
 - (11:20) Upstream `main` had moved (15 commits, with its own campaign tool, reviewed in #85, and a
   new lepton-jet pair selection). Merged it: `main`'s campaign tool kept, `file_stride` re-applied
   with its test; `sidm_processor.py` keeps both `needs_probe_inputs` and `select_lepton_jets`.
