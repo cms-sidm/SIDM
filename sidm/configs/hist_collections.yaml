@@ -1278,6 +1278,18 @@ abcd_limits: &abcd_limits
   - "abcd6d_2mu2e_iso_up"
   - "abcd6d_4mu_iso_up"
 
+# The same histograms for collision data in the signal-region channels, without the
+# _iso_up copies of the jet energy systematic, which concern the simulated signal. Only
+# regions B, C and D of these are read (sidm/studies/systematics); region A stays blinded.
+abcd_limits_data: &abcd_limits_data
+  - "abcd6d_2mu2e"
+  - "abcd6d_4mu"
+
+# The number of good primary vertices alone, for the pileup check in data in the
+# Z -> mumu control region (sidm/studies/systematics, notebook 01).
+pv_npvs_good: &pv_npvs_good
+  - "pv_npvsGood"
+
 # Lepton-jet reconstruction efficiency in signal simulation, step 1 of the study proposed in
 # sidm/studies/systematics/lj_reco_efficiency.md: the generator-level dark photons of the
 # denominator channels (baseNoLj_A_mumu, baseNoLj_A_ee) and of the channels requiring a
@@ -1286,6 +1298,18 @@ lj_reco_effi_systematics: &lj_reco_effi_systematics
   - *lj_reco_effi_base
   - "genA_toMu_lxy_vs_daughters_dR"
   - "genA_toE_lxy_vs_daughters_dR"
+
+# the probes of the lepton-jet control samples, for the channels lj_cr_Z_to_mumugamma and
+# lj_cr_JPsi_to_mumu (sidm/studies/systematics/lj_reco_efficiency.md, step 2)
+lj_reco_control_samples: &lj_reco_control_samples
+  - "lj_cr_zmmg_probes"
+  - "lj_cr_jpsi_probes"
+
+# the versions a data campaign fills: probes without another lepton jet, so no event of the
+# signal region enters (never add the histograms above to a data campaign)
+lj_reco_control_samples_alone: &lj_reco_control_samples_alone
+  - "lj_cr_zmmg_probes_alone"
+  - "lj_cr_jpsi_probes_alone"
 
 mulj_decay_angle: &mulj_decay_angle
   - "mu_lj_mumu_absCosTheta"

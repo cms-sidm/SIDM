@@ -21,6 +21,9 @@ the next steps and a dated log of the work. Read it first, and update it with ev
 | pileup | `CMS_pileup` | per point, asymmetric: 0.2 to 0.4% for a typical point, at most 1.5% on the limit grid | minimum-bias cross section varied by its 4.6% uncertainty | [`01_pileup.ipynb`](01_pileup.ipynb) |
 | L1 prefiring | `CMS_l1_prefiring` | 1%, flat | NanoAOD variation (at most 0.3%) plus the DSA muons the weight leaves out (at most 0.7%) | none, [below](#l1-prefiring) |
 | jet energy | `CMS_jet_energy` | per point, symmetric: 0.1 to 0.5% for a typical point, at most 2.2% on the limit grid | isolation scaled by 10%, the energy scale of the few-GeV hadronic part of the matched jets | [`02_jet_energy.ipynb`](02_jet_energy.ipynb) |
+| muon identification | `CMS_eff_m_id` | per point, asymmetric: 0.06% (2Mu2E) and 0.3% (4Mu) for a typical point, at most 0.75% | the POG uncertainty of the PF-muon Loose ID SF | none, [lepton-jet constituents](#lepton-jet-constituent-scale-factors) |
+| electron reconstruction | `CMS_eff_e_reco` | per point, asymmetric: 0.2% for a typical 2Mu2E point, at most 1.1%; none in 4Mu | the POG uncertainty of the electron reconstruction SF | none, [lepton-jet constituents](#lepton-jet-constituent-scale-factors) |
+| photon pixel-seed veto | `CMS_eff_g_pixelveto` | per point, asymmetric: 0.2% for a typical 2Mu2E point, at most 0.35%; none in 4Mu | the POG uncertainty of the pixel-veto SF | none, [lepton-jet constituents](#lepton-jet-constituent-scale-factors) |
 
 * Each is one log-normal (`lnN`) nuisance on the signal only, with the same name in every
   card: fully correlated between 2mu2e and 4mu, across signal points, and across the ABCD
@@ -29,7 +32,7 @@ the next steps and a dated log of the work. Read it first, and update it with ev
   (the masses with a model cross section), without the shortest lifetime (median
   $L_{xy}$ about 0.2 cm), which the group no longer considers
   (`systematics_study.limit_grid`).
-* In quadrature they come to about 1.5% at a typical point and at most about 3%, small
+* In quadrature the seven come to about 1.5% at a typical point and at most about 3%, small
   next to the efficiencies that are still to be measured.
 * The pileup and jet energy values are those of region A at the working points, from
   [`03_limits.ipynb`](03_limits.ipynb) on the `systematics_v2` campaign. The two notebooks
@@ -109,6 +112,15 @@ Details in [`01_pileup.ipynb`](01_pileup.ipynb).
   changes the efficiency of region A by a few hundredths of a percent for a typical point,
   since the signal lepton jets are far below the cuts, and by several tenths at a few points
   with few events. Including it leaves the largest values on the limit grid unchanged.
+* **In data** (approved 2026-11-16): the number of good primary vertices in the Z → μμ control
+  region, in every 100th file of the 2018 data (campaign `npv_data_v1`, 264k events), against
+  the background of the corrections campaign with the pileup weight alone, both normalized to
+  unit area (`01_pileup.ipynb`, section 6; figure in `.../npv_data_v1_results/figures/`). The
+  means agree within the variations (24.8 in data, 24.4 weighted, 24.0 unweighted; 23.4 and
+  25.4 with the down and up variations), but the data are wider: up to 10% below the simulation
+  at 25 to 32 vertices and above it beyond 38. Weighting the simulated signal by the
+  data/simulation ratio moves its yield by a median of 0.1% (2Mu2E) and 0.2% (4Mu), at most
+  1.0%, the size of the pileup uncertainty itself.
 * The values must come from the limit selection (item 2 above). They are in every cutflow
   row of a run with the corrections on, so no extra histogram is needed.
 
@@ -185,56 +197,86 @@ Details in [`02_jet_energy.ipynb`](02_jet_energy.ipynb).
   question of the isolation's definition, not a systematic; it is open item 5 of the
   corrections study.
 
-## Notes for Sec. 7 of the AN
+## Lepton-jet constituent scale factors
 
-Sec. 7 belongs to its owner; these are points it may want to take up.
+**Assign the up and down change of each point's yield** under the POG variations of the three
+scale factors the corrections apply to the lepton-jet constituents (`CMS_eff_m_id`,
+`CMS_eff_e_reco`, `CMS_eff_g_pixelveto`; added 2026-11-16). Their `Up` and `Down` weight
+categories were already on the `syst` axis of `systematics_v2`, so each is one `syst` entry of
+`systematics.yaml`. They are a few tenths of a percent for a typical point: the muon ID 0.06%
+(2Mu2E) and 0.3% (4Mu), at most 0.75% (4Mu at 200 GeV); the electron reconstruction 0.2% and
+the pixel veto 0.2% in 2Mu2E, at most 1.1% and 0.35%, and nothing in 4Mu. The SFs are measured on
+prompt, isolated objects; what they miss for displaced and collimated constituents is for the
+lepton-jet reconstruction efficiency ([below](#lepton-jet-reconstruction-efficiency)).
+
+## AN Sec. 7
+
+The AN's Sec. 7 (`systematics.tex`) is rewritten from this study, at the advisor's suggestion
+(2026-11-16), in [`an_systematics/`](an_systematics/), a git-ignored folder with the `.tex`, its
+figures and new references for Overleaf, and `WRITING_GUIDE.md`, the writing rules for every
+such task. It takes up these points of the earlier text:
 
 * **Pileup**: the variation applied is 4.6% of the minimum-bias cross section (69.2 mb), the
-  LUM POG recommendation, rather than 5%.
+  LUM POG recommendation, rather than 5%; and the data vs simulation comparison of the number of
+  vertices (see [Pileup](#pileup)).
 * **L1 prefiring**: the loss reaches 1.2% for 4mu at short lifetimes, so "below 1%" holds for
   2mu2e only. The weight leaves out DSA muons without a PF match; the uncertainty above covers it.
 * **Jet energy**: the jet energy corrections are applied to the jet momenta in NanoAODv9,
   not as per-object weights, and the JER smearing is not applied. Jets enter only through the
   lepton-jet isolation.
 * **Lepton-jet constituents**: the photon pixel-veto SF is applied by default too, alongside
-  the muon ID and electron reconstruction SFs.
+  the muon ID and electron reconstruction SFs, and the uncertainties of all three are in the
+  limits.
+* **Effect on the expected limits**: a new subsection, from the data-driven results of
+  notebooks 03 to 05. It says that the selection here is not the one of Sec. 8 (open item 3) and
+  gives the background predicted from the data control regions.
 
 ## Limits with and without the corrections and systematics
 
-[`03_limits.ipynb`](03_limits.ipynb) sets the expected limits with the ABCD method and a
-shape fit in $m_{LJLJ}$, from simulation only. It compares two sets of limits:
+[`03_limits.ipynb`](03_limits.ipynb) sets the expected limits with the ABCD method, the background
+in region A predicted from regions B, C and D in data (campaign `systematics_data_v1`; approved
+2026-11-16, region A never read), at the advisor's request that the systematic results be based
+on data-driven expected limits. It builds two estimates of the region-A background:
 
-- **without corrections or systematics:** signal and background weighted by the genWeight
-  alone (the `uncorrected` category of the `syst` axis), with no systematic uncertainty on
-  the signal;
+- **integrated:** one $m_{LJLJ}$ bin, $A = B\cdot C/D$, the likelihood of AN Sec. 8; notebooks
+  04 and 05 check the fit on these cards (`systematics_study.LIMITS_METHOD`);
+- **binned:** the 8 $m_{LJLJ}$ bins, $A_i = B_i \sum C / \sum D$, with the agreed 20% per-bin
+  uncertainty of the prediction in 2mu2e;
+
+and, for each, two sets of limits:
+
+- **without corrections or systematics:** the signal weighted by the genWeight alone (the
+  `uncorrected` category of the `syst` axis), with no systematic uncertainty on the signal;
 - **with corrections and systematics:** the standard corrections applied (the `nominal`
   category) and one log-normal row on the signal for every entry of `systematics.yaml`.
 
 Both keep the statistical uncertainty of the simulated signal and the free background
 parameters of the ABCD model. The notebook works in five steps:
 
-1. One pass over the `systematics_v2` outputs gives the region shapes at the working
-   points with both event weights, and each signal point's per-region values for every
-   entry of `systematics.yaml`.
-2. It builds the shape cards of both sets (`abcd_workspace.py` in the Combine release).
-3. It runs blinded expected limits on both sets (`run_combine_limits.py`, at a relative
-   precision of $10^{-4}$).
-4. It draws both sets as Brazil plots with the model cross section, in two grids per final
-   state: against the bound state mass, one panel per dark photon mass and $L_{xy}$, and
-   against $L_{xy}$, one panel per dark photon mass and bound state mass
-   (`plot_tools.brazil_grid`). The set with corrections and systematics is the band (green
-   and yellow, black dashed median); the set without them is drawn over it in blue (solid
-   median, dotted band edges).
+1. One pass over the `systematics_v2` outputs gives the region shapes at the working points with
+   both event weights, and each signal point's per-region values for every entry of
+   `systematics.yaml`; one pass over the data gives regions B, C and D
+   (`systematics_study.data_control_regions`).
+2. It builds the cards of every set and estimate (`abcd_workspace.py --sr-data-blinded` in the
+   Combine release).
+3. It runs blinded expected limits on them (`run_combine_limits.py`, at a relative precision of
+   $10^{-4}$).
+4. It draws the integrated limits as Brazil plots with the model cross section, against the bound
+   state mass and against $L_{xy}$ (`plot_tools.brazil_grid`), the set with corrections and
+   systematics as the band and the one without them in blue.
 5. It shows the nuisance pulls of one point with corrections and systematics
    (`sidm/scripts/run_combine_pulls.py`: `FitDiagnostics` on the Asimov dataset,
    background-only and signal plus background).
 
-All of its inputs and outputs are on EOS, read and written through xrootd, so it runs at the
-LPC and on CoffeaCasa alike (see [Notebooks](#notebooks)).
+**Blinding.** `shape_tools.region_shapes_6d` leaves region A out of anything that is not
+simulation, `data_control_regions` stops if it gets it anyway, the payloads carry B, C and D
+only, `abcd_workspace.py --sr-data-blinded` sets region A's observation to the prediction and
+reopens every workspace to check it bin by bin, and Combine runs with `--run blind`.
 
-The simulated background uses `DYJetsToLL` for Drell-Yan, as the earlier limits did. The
-campaign also processed `DYJetsToMuMu`, which overlaps it and is therefore left out
-(`systematics_study.EXCLUDED_BACKGROUNDS`).
+All of its inputs and outputs are on EOS, read and written through xrootd, so it runs at the
+LPC and on CoffeaCasa alike (see [Notebooks](#notebooks)). The simulated background, kept for
+comparison, uses `DYJetsToLL` for Drell-Yan (`systematics_study.EXCLUDED_BACKGROUNDS` leaves out
+the overlapping `DYJetsToMuMu`).
 
 **The notebook follows the registry.** To add a systematic, add an entry to
 [`systematics.yaml`](systematics.yaml) and rerun the notebook, then notebooks 04 and 05
@@ -246,43 +288,33 @@ campaign also processed `DYJetsToMuMu`, which overlaps it and is therefore left 
 
 New weight variations or histograms need a campaign rerun first.
 
-**Results (`systematics_v2`, 2026-11-14).** The campaign ran in full: 3,158 jobs, no
-failures, all 200 samples merged. Four of its input files hold no events and were skipped.
-The 4mu working point takes at most 3 pixel hits on both lepton jets, the group's loosened
-cut (it was 2); the 2mu2e one is unchanged.
+**Results (data-driven, 2026-11-16; signal from `systematics_v2`, 4mu at most 3 pixel hits).**
+Both campaigns ran in full (`systematics_data_v1`: 2,580 jobs, all 127,415 files of the 2018
+SkimNano V2 DoubleMuon data, the only skipped files 463 empty ones).
 
-Each set has 177 expected limits for the 180 signal points (three 2Mu2E points have no signal
-in region A), the 96 points of the limit grid among them. The results:
-
-- **Corrections and systematics together:** the expected limits with them are higher than
-  without them by a median 2.0% for 2Mu2E (from 2.6% lower to 4.6% higher) and 1.3% for
-  4Mu (0.6 to 2.0% higher). The expected exclusion is the same in both sets: 12 of 48
-  points for 2Mu2E (all at 800 GeV) and 23 of 48 for 4Mu (twelve at 800 GeV, nine at
-  500 GeV, two at 1000 GeV).
-- **What moves them:** the corrections lower the signal in region A by a median 5.2% for
-  2Mu2E (1.7 to 6.4%) and 1.2% for 4Mu (0.5 to 1.6%). For 2Mu2E they also lower the
-  predicted background (B·C/D from 476 to 460 events), which offsets part of that.
-- **Systematics alone:** a run on 2026-11-13 compared the corrected limits with and
-  without the systematics. They changed the limits by at most 0.3% (2Mu2E) and not at all
-  (4Mu), since signal uncertainties of 1 to 2% enter an expected limit only at second
-  order. The change above therefore comes from the corrections.
-- **Generator-filter efficiency:** against the same limits on `systematics_v1`, every limit
-  is higher by exactly the inverse of its point's efficiency, a median 1.38 times (2Mu2E) and
-  1.32 times (4Mu), from 1.12 to 2.77 times; most at $L_{xy}$ = 300 cm, where the efficiency
-  is lowest (a median 0.55, against 0.80 at 3 and 30 cm). This costs one excluded point in
-  2Mu2E and four in 4Mu. The best limits are 0.70 fb (2Mu2E) and 0.15 fb (4Mu).
-- **Pulls:** in the Asimov fit every systematic stays at zero with its full pre-fit
+- **Control regions in data:** B, C and D hold 79, 19 and 28 events in 2mu2e, a prediction of
+  53.6 events in region A (statistical uncertainty about 32%), and 45, 12 and 5 in 4mu, a
+  prediction of 108 (about 55%, mostly from region D). The simulation predicts 460 and 0.38.
+- **Corrections and systematics together:** the limits with them are higher by a median of
+  5.5% for 2Mu2E (1.7 to 7.0%) and 1.3% for 4Mu (0.5 to 1.8%) on the limit grid, the same with
+  both estimates; over the AN's 60 hypotheses per final state 5.2% (up to 13% at the shortest
+  lifetime) and 1.4%. This is the loss of signal from the corrections, now that the background no
+  longer moves with them (2.0% for 2Mu2E with the simulated background, which fell too). The
+  expected exclusion is the same with and without them.
+- **Integrated estimate:** 3 of 48 points expected to be excluded for 2Mu2E (all at 800 GeV and
+  30 cm, as in AN Sec. 8) and 1 of 48 for 4Mu; best limits 3.7 and 4.3 fb.
+- **Binned estimate:** limits a median 5.5 (2Mu2E) and 11 (4Mu) times lower, 14 and 18 of 48
+  points expected to be excluded, best limits 0.61 and 0.32 fb; the heavier points' signal lies
+  above 600 GeV, where B, C and D in data are nearly empty.
+- **4Mu against 2Mu2E:** with the integrated estimate the 4Mu limits are a median 1.2 times the
+  2Mu2E ones (the 4mu prediction is twice the 2mu2e one), with the binned one 0.66 times.
+- **Pulls:** both fits converge, and every systematic stays at zero with its full pre-fit
   uncertainty, as it must for signal-only nuisances against a background-only dataset.
-- **4mu background:** B·C/D = 0.38 events, since region C is nearly empty (0.039 events), so
-  the 4Mu limits are close to zero-background limits and a median 10 times stronger than the
-  2Mu2E ones. Region A holds 20.9 events, 19.3 of them Drell-Yan (about 6 effective events,
-  below 300 GeV in $m_{LJLJ}$), which has no events in B, C or D, so the prediction does not
-  contain it. With 2 pixel hits, A held 3.6 events from one DY event, and B·C/D was 0.003.
-- **2mu2e background (caveat):** the simulated background at the working point is QCD,
-  with about 1.5 effective events in each of B and C. B·C/D is therefore 460 events,
-  against 25 in region A of the simulation; the `sixd_inclusive_v1` simulation gave 102.
-  The simulation-only 2Mu2E limits are therefore a test of the machinery, not an estimate
-  of the sensitivity, which needs B, C and D from data.
+
+**Earlier, with the simulated background** (2026-11-14, `systematics_v2`): every limit was the
+`systematics_v1` one divided by the point's generator-filter efficiency (a median 1.38 times for
+2Mu2E and 1.32 for 4Mu, from 1.12 to 2.77), which `systematics_v1` lacked. The simulated 4mu
+region A held 20.9 events, 19.3 of them Drell-Yan, which has no events in B, C or D.
 
 ## What each systematic does, and checks of the fit
 
@@ -333,39 +365,51 @@ systematics in:
 Each section of both notebooks ends with an interpretation of its results and what they mean for
 the analysis.
 
-**Results (`systematics_v2`, four systematics, 4mu at most 3 pixel hits, 2026-11-14).**
+**Results (data-driven, 2026-11-16: background from regions B, C and D in data, integrated
+estimate, seven systematics, 4mu at most 3 pixel hits).**
 
-- **Templates:** all four systematics act on the normalisation of each region; none changes
-  the shape of $m_{LJLJ}$ within a region, so log-normal values per region are an adequate
-  model. The jet energy moves a little signal from region A to region B.
-- **Sizes:** pileup shows no trend over the grid and is largely statistical (notebook 01); the
-  jet energy grows towards heavy dark photons and light bound states; the statistical
-  uncertainty of the simulated signal (0.3 to 5.3% in region A, largest at 300 cm) is the
-  largest signal uncertainty at many points.
-- **Impacts:** each systematic moves the fitted $r$ by about its own size (prefiring 1%,
-  luminosity 0.8%, the others 0.1 to 0.6%), against a statistical uncertainty of $r$ of 55 to
-  90% at the expected limit.
-- **Limit breakdown:** the systematics barely change the expected limits; a 1% signal
-  uncertainty enters at second order, about 0.01%. Of the ten points that move, by 0.1 to
-  0.4%, when one systematic is left out, six move in a way no systematic explains (by the same
-  amount whichever is removed, or without prefiring but not without the nearly equal
-  luminosity): jumps of the limit calculation. Four 2Mu2E points at 200 GeV move only without
-  the jet energy, by 0.1 to 0.25%; the jet energy is largest there (1.4 to 2.2%), so this is
-  likely a small real effect.
-- **Signal injection, 2Mu2E:** unbiased to within a few percent with the right uncertainty
-  (mean fitted $r$ 4% low at three times the expected limit, median pull −0.09, 68% half-width
-  1.00); at the expected limit 10% of the toys stop at the $r = 0$ boundary.
-- **Signal injection, 4Mu:** not validated. A third of the toy fits fail (32 to 35%); region C
-  expects 0.04 background events and is empty in more than 90% of the toys (D, with 2.75, in
-  6%). The fits that converge are close to unbiased ($r$ 2.5 to 4% low, against 13 to 15% at 2
-  pixel hits; pull half-widths 0.76 to 0.86), with discrete fitted values from the 2 to 6
-  signal events. The 4mu ABCD prediction is undefined whenever C and D are empty (open item 2).
+- **Templates:** all seven act on the normalisation of each region, flat in $m_{LJLJ}$, so one
+  log-normal value per region is an adequate model. The jet energy moves signal from region A
+  to region B: A loses about 0.5% (2Mu2E) and 0.1% (4Mu), and the small yield in B grows by 15
+  to 16%.
+- **Sizes:** pileup shows no trend over the grid (0.02 to 1.5% for 2Mu2E, at most 0.64% for 4Mu)
+  and is largely statistical (notebook 01). The jet energy grows towards heavy dark photons and
+  light bound states (up to 2.2%). The muon identification is largest for 4Mu at 200 GeV
+  (0.75%). In 2Mu2E the electron reconstruction is largest at 3 cm (up to 1.1%) and the pixel
+  veto at 150 and 300 cm (up to 0.35%), since the egamma-type lepton jets of displaced decays are
+  made of photons. The statistical uncertainty of the simulated signal (0.3 to 5.3% in region A,
+  largest at 300 cm) is the largest signal uncertainty at many points. At the shortest lifetime
+  it is 4 to 38% for 2Mu2E (22 to 38% at five of the twelve points), and the pileup values there
+  reach 22%.
+- **Impacts:** each nuisance moves the fitted $r$ by about its own size (prefiring 1%,
+  luminosity 0.8%, the others 0.6% or less), against a statistical uncertainty of $r$ of 60 to
+  100% at the expected limit (+60/−74% for 2Mu2E, +65/−100% for 4Mu).
+- **Limit breakdown:** on the 48 points of the limit grid, leaving out all seven raises no limit
+  by more than 0.27% (2Mu2E, median 0.13%) and 0.15% (4Mu), and statistics only by at most 1.2%
+  and 1.0%: a 1% signal uncertainty enters an expected limit at second order. At the shortest
+  lifetime, leaving out pileup moves the limit of the point with 22% by 4.7%, and leaving out the
+  signal statistics moves that of the point with 38% by 132%.
+- **Signal injection, 2Mu2E:** unbiased with the right uncertainty. At three times the expected
+  limit the mean fitted $r$ is 2% low, the median pull −0.02 and the 68% half-width 0.96; at the
+  expected limit 17 of 504 toys stop at $r = 0$, the median pull is −0.05 and the half-width
+  0.97. Every fit converges.
+- **Signal injection, 4Mu:** every fit converges, where a third failed with the simulated
+  background. The median pull is 0.01 with half-width 1.02 at three times the expected limit,
+  and −0.15 with 0.96 at the limit. A quarter of the toys at the limit, and 9% at three times
+  it, land near $r = 0$, which pulls the mean fitted $r$ 11 to 12% low: when region D (5 events
+  in data) fluctuates down to 1 or 2, $B \cdot C/D$ doubles and takes up the injected signal. A
+  counting model of the four regions with the same expected counts gives the same fractions (26%
+  and 10%). This is a property of the estimate, which the limits carry through the Poisson term
+  of region D (open item 2).
 - **Scans and correlations:** the systematics neither widen the likelihood nor correlate with
-  anything. In 2Mu2E, $r$ correlates (−0.78) with the background of region B, where the signal
-  leaks into it; in 4Mu, with nothing. Both correlation fits converge (status 0) since
-  `run_combine_pulls.py --expect-signal` starts from the injected $r$: from $r = 0$, Combine's
-  default, the likelihood is undefined wherever the injected signal is the only content of a
-  bin, and the 4Mu fit failed outright.
+  anything (at most 0.015). $r$ is anti-correlated with B and C and correlated with D, most
+  strongly with the smallest control region: C in 2Mu2E (−0.71, 19 events), D in 4Mu (+0.78, 5
+  events).
+
+**Earlier, with the simulated background** (2026-11-14, four systematics): the same picture for
+the templates, sizes, impacts and limit breakdown; the 4Mu injection test failed in a third of
+the toys, because the simulated region C expected 0.04 background events and was empty in most
+of them.
 
 ## Lepton-jet reconstruction efficiency
 
@@ -374,11 +418,32 @@ muon-type and egamma-type lepton jets, is in
 [`lj_reco_efficiency.md`](lj_reco_efficiency.md). Its first step, in simulation only, is done:
 [`06_lj_reco_efficiency.ipynb`](06_lj_reco_efficiency.ipynb) maps the efficiency against
 $L_{xy}$, $p_T$ and the opening angle over all 180 signal points (campaign `lj_reco_eff_v1`),
-and gives per point the fraction of its lepton jets from each decay-radius regime. Steps 2 and
-3 wait on the group (data approval, scale-factor granularity, provisional value, and a new
-question about the most collimated muon pairs).
+and gives per point the fraction of its lepton jets from each decay-radius regime. Step 2 is
+under way (2026-11-16): of the four control samples proposed, Z → μμγ (egamma-type) and boosted
+J/ψ → μμ (muon-type, prompt) can be measured with our data and simulation, cosmics and J/ψ → ee
+cannot; the channels `lj_cr_Z_to_mumugamma` and `lj_cr_JPsi_to_mumu`, and their `_alone`
+versions without events of the signal region (the only ones data read), ran in the simulation
+campaign `lj_reco_cr_v2`, whose signal side is the safety check (the group's criteria, bin by
+bin): every region of both samples is safe, and the data campaign `lj_reco_cr_data_v1` is
+running. Step 3 waits on the group (scale-factor
+granularity, provisional value, the most collimated muon pairs, and the regimes no control
+sample reaches).
 
-### Results (2026-11-14)
+### Results of step 2 in simulation (2026-11-16, `07_lj_reco_control_samples.ipynb`)
+
+- **Safety:** every region of both control samples is safe, with the sparse-bin rule and the
+  stress test; the worst signal point puts 0.010 events into the whole Z → μμγ sample and 3.0
+  events against 899 background events into the highest J/ψ bin (pair pT above 300 GeV).
+- **Muon-type (J/ψ → μμ):** passing fraction 0.75 ± 0.11 from 30 to 40 GeV and 0.94 to 1.00
+  above; flat near one for ΔR(μμ) from 0.03 to 0.12, falling to 0.87 ± 0.06 (0.02 to 0.03) and
+  0.32 ± 0.25 (0.01 to 0.02).
+- **Egamma-type (Z → μμγ):** Drell-Yan photons above 30 GeV pass in 0.86 to 0.99 of the cases;
+  the estimate is independent of the background mix only for unconverted photons (R9 ≥ 0.94),
+  since photons that do not come from the Z make a steeply rising background under the peak
+  (peak 85 to 95 GeV, adjacent sidebands). Converted photons need a purer probe.
+- **The alone condition** does not change the passing fraction.
+
+### Results of step 1 (2026-11-14)
 
 - **Regimes.** On the limit grid only the shortest lifetime of each mass pair decays mostly
   inside the pixel layers; the other three take 41 to 73% of their lepton jets from the strip
@@ -400,34 +465,39 @@ question about the most collimated muon pairs).
 1. The 2mu2e simulated background in regions B and C (about 1.5 effective events each,
    from heavily weighted QCD events). With B, C and D from data, as in the approved
    expected limits, this simulation is not needed for the background.
-2. The 4mu ABCD prediction: at the loosened working point (at most 3 pixel hits) region C still
-   expects almost no background (0.04 events), so it is empty in most toys and a third of the
-   fits of the signal-injection test fail; those that converge are close to unbiased
-   (`05_fit_checks.ipynb`). The method for 4mu is a group decision; rerun notebook 05 on
-   whatever is chosen.
+2. The 4mu ABCD estimate at the loosened working point (at most 3 pixel hits) rests on 5 events
+   in region D in data. Every fit of the signal-injection test converges and the median pull is
+   close to zero, but a quarter of the toys at the expected limit fit $r$ near zero and the mean
+   fitted $r$ is 11 to 12% low (`05_fit_checks.ipynb`). AN Sec. 8 still uses at most 2 pixel
+   hits, where C and D are empty in data. The method and working point for 4mu are a group
+   decision; rerun notebook 05 on whatever is chosen.
 3. The HEM electron veto and the `mu_veto` of the earlier limit selection: define them in
-   `cuts.py` and add them to `SR_2mu2e`/`SR_4mu`, if the group keeps them.
-4. Pileup in data: the number of reconstructed vertices in a control region, data against
-   the reweighted simulation, as Sec. 7 plans. Needs collision data, so it waits for the
-   group.
+   `cuts.py` and add them to `SR_2mu2e`/`SR_4mu`, if the group keeps them. Without them, and
+   with the spread cuts of `SR_2mu2e`/`SR_4mu`, which filter only the `mu_ljs` view and so never
+   reach the `abcd6d_*` histograms, the selection here is not the one of AN Sec. 8: its 2mu2e
+   control regions hold 79, 19 and 28 events in data, against 66, 17 and 29 there.
+4. Pileup in data: done (2026-11-16, see [Pileup](#pileup)). The data are wider in the vertex
+   count than the reweighted simulation; covering that explicitly (the larger of the pileup
+   variation and the reweighting change per point) is the group's choice.
 5. Prefiring of DSA muons: computing their prefiring probability from the muon prefiring
    maps would replace the estimate above.
 6. The JER smearing: apply it to the matched jets in the nominal simulation or keep it as an
    uncertainty, together with the isolation definition (corrections open item 5).
 7. The lepton-jet reconstruction efficiency: step 1 is done (`06_lj_reco_efficiency.ipynb`);
-   steps 2 and 3 wait on the four questions for the group in
-   [`lj_reco_efficiency.md`](lj_reco_efficiency.md).
+   step 2 is under way (simulation and safety check first, then data only where safe); step 3
+   waits on the questions for the group in [`lj_reco_efficiency.md`](lj_reco_efficiency.md).
 
 ## Notebooks
 
 | notebook | what it shows | input | runtime |
 |---|---|---|---|
-| [`01_pileup.ipynb`](01_pileup.ipynb) | the profile check, the yield change under the pileup variations with its statistical precision, and the effect of the isolation | `corrections_v1` | 2 min |
+| [`01_pileup.ipynb`](01_pileup.ipynb) | the profile check, the yield change under the pileup variations with its statistical precision, the effect of the isolation, and the number of vertices in data against the simulation | `corrections_v1`, `npv_data_v1` (data, Z → μμ region) | 2 min |
 | [`02_jet_energy.ipynb`](02_jet_energy.ipynb) | the matched jets, which JES uncertainty applies, the standard JES and JER variations, and the envelope | `corrections_v1` | 2 min |
-| [`03_limits.ipynb`](03_limits.ipynb) | expected limits (ABCD, $m_{LJLJ}$ shape fit) with and without the corrections and every systematic of `systematics.yaml`, as Brazil grids against bound state mass and $L_{xy}$, and the nuisance pulls of one point | `systematics_v2` | about 10 min |
+| [`03_limits.ipynb`](03_limits.ipynb) | expected limits (ABCD, $m_{LJLJ}$ shape fit) with and without the corrections and every systematic of `systematics.yaml`, as Brazil grids against bound state mass and $L_{xy}$, and the nuisance pulls of one point | `systematics_v2`, `systematics_data_v1` (data, regions B, C and D) | about 10 min |
 | [`04_systematic_effects.ipynb`](04_systematic_effects.ipynb) | what each systematic does: up and down templates, sizes across the grid, impacts, limit breakdown | outputs of 03 | about 12 min |
 | [`05_fit_checks.ipynb`](05_fit_checks.ipynb) | checks of the fit: signal injection with toys, likelihood scans, correlations | outputs of 03 | about 5 min |
 | [`06_lj_reco_efficiency.ipynb`](06_lj_reco_efficiency.ipynb) | step 1 of the lepton-jet reconstruction efficiency: the efficiency against $L_{xy}$, $p_T$ and the opening angle, its maps, and the decay-radius regimes of every signal point | `lj_reco_eff_v1` | about 1 min |
+| [`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb) | step 2 of the lepton-jet reconstruction efficiency, simulation part: the Z → μμγ and J/ψ → μμ probes, the safety check that decides which regions data may read (table written to EOS), the efficiencies the simulation expects | `lj_reco_cr_v2` | about 2 min |
 
 Notebooks 01 and 02 read the merged outputs of the corrections campaign
 (`corrections_study.CAMPAIGN_DIR`) through `corrections_study.load`, which copies them once

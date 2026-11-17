@@ -5,110 +5,194 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-14, 21:00)
+## Current state (2026-11-17, 09:40)
 
-**Done today:** the campaign `systematics_v2` (3,158 chunks, no failures, 200 samples merged in
-`.../systematics_v2`; `systematics_v1` remade with the merged processor, which applies the
-generator-filter efficiency of the v10 signal samples, 0.36 to 0.90 on the limit grid; the user
-chose a new campaign over correcting v1 at reading time), and notebooks 03, 04 and 05 rerun on
-it with the 4mu working point at 3 pixel hits, their interpretations rewritten. A watcher
-(`watch_v2.py` in the session's scratch directory), checking every 30 minutes as the user
-asked, moved 10 jobs off the slow nodes cmswn2236, cmswn2176 and cmswn2254.
+**In progress: the lepton-jet efficiency with data (`lj_reco_efficiency.md`, step 2): simulation
+done and interpreted, data campaign running.** The user asked to go ahead, and to use the 4mu
+working-point deck (`wp_4mu_px3_dphi24.pdf`, the group's safety criteria) as the guide for whether
+a data region may be read.
+- **Scoping:** Z → μμγ (egamma-type) and boosted J/ψ → μμ (muon-type, prompt) are feasible with
+  the DoubleMuon data and our simulation; cosmics (no cosmic simulation; both legs always
+  reconstructed in our triggered, skimmed data) and J/ψ → ee (needs EGamma data) are not: group
+  question 5 (the user's request).
+- **Blinding of the control samples:** data read only the `_alone` versions, whose probes have no
+  other lepton jet of the signal selection's kinds away from them, so no event of the signal
+  region (which holds two) enters (`objects._alone`).
+- **Simulation, done:** campaign `lj_reco_cr_v2` complete (1,926 chunks, 114 samples merged, two
+  empty skipped files); notebook 07 executed with interpretations. Every region of both samples
+  is safe (worst signal: 0.010 events in all of Z → μμγ; 3.0 against 899 background events in the
+  J/ψ bin above 300 GeV), so no pT cap. J/ψ passing fraction 0.94 to 1.00 above 40 GeV, falling
+  for ΔR(μμ) below 0.03. Z → μμγ: narrow peak (85 to 95 GeV) and adjacent sidebands, because the
+  non-Z photons rise steeply under the peak; reliable for unconverted photons (R9 ≥ 0.94) above
+  30 GeV (0.83 to 0.86), not for converted ones (purer probe needed, a new version).
+- **Data campaign** `lj_reco_cr_data_v1` (all 2018 DoubleMuon files, alone channels and collection
+  only, 2,580 jobs, submitted 2026-11-16 22:57, the same chunks as `systematics_data_v1`; one-file
+  technical test first, output deleted): all chunks done overnight. 528 skipped files: 463 empty
+  (as in `systematics_data_v1`) and 65 in 10 chunks of 2018D, resubmitted as extra chunks on
+  2026-11-17 (cluster 31182283). Merge after they finish. The session scratchpad, with the watcher
+  scripts, was cleared overnight; the per-sample rule is in the condor-slow-nodes memory.
+- **Code, uncommitted:** channels `lj_cr_Z_to_mumugamma`, `lj_cr_JPsi_to_mumu` and their `_alone`
+  versions (`selections.yaml`); probes `zmmg_probe_photons`, `jpsi_probe_dimuons` (options
+  `alone`, and `pt_max` for J/ψ) and the uncut copies `photonsRaw`/`muonsRaw` (`objects.py`,
+  loaded only when needed: `SidmProcessor.needs_probe_inputs`); their event cuts (`cuts.py`);
+  histogram factories and four probe histograms (`hists.py`, `probe_hists`); collections
+  `lj_reco_control_samples` and `lj_reco_control_samples_alone`; the test for on-demand inputs
+  extended (4 pass); in `systematics_study.py` the safety check (`lj_cr_inputs`, `lj_cr_safety`,
+  `lj_cr_readable`, `require_safe`, `write_verdicts`, `lj_cr_verdicts`; switch
+  `STRICT_SPARSE_BINS` for the sparse-bin rule, which the user agreed to use until the advisor
+  rules), the efficiency helpers (`probe_efficiency`, `efficiency_ratio`, plots) and the gated data
+  loader `lj_cr_data`; notebook 07; configs `lj_reco_cr_v2.yaml` and `lj_reco_cr_data_v1.yaml`;
+  sample lists `samples_lj_reco_cr_{2mu2e,4mu,background}.txt`.
 
-**Committed in `2a396f0`** (not pushed): the 4mu working point at 3 pixel hits
-(`WORKING_POINTS`, `pixel_hit_max=3.5`; the user's correction: the group loosened it from 2);
-`condor/campaign_configs/systematics_v2.yaml` and its Campaign in `datacard_tools`; notebooks
-03 to 05 on `systematics_v2`, executed, with new interpretations; `run_combine_pulls.py
---expect-signal`, which now runs only the signal-plus-background fit and starts it from the
-injected r (`--skipBOnlyFit --customStartingPoint --setParameters r=R`), since FitDiagnostics
-evaluates the likelihood at r = 0 first, undefined in bins whose only content is the injected
-signal (the 4Mu correlation fit of 05 failed there); the READMEs and this log. The slides in
-`slides/` are rebuilt with the v2 figures and numbers (40 pages) and stay uncommitted until the
-user decides.
+**The user's workflow (2026-11-16):** after running anything, update the AN (in the advisor's
+style, `an_systematics/WRITING_GUIDE.md`), then the summary deck, then commit and paste an updated
+PR description in chat. The deck `slides/systematics.tex` (the deck of 2026-11-14 kept as
+`systematics_2026-11-14.tex` with `figures_2026-11-14/`). Commit: include the data-campaign configs
+(`npv_data_v1.yaml`, `systematics_data_v1.yaml`, `samples_data_doublemuon_2018.txt`; the user
+agreed); keep `slides/` and `an_systematics/` local. Results from approved data uses may be
+committed (the user, 2026-11-17; AGENTS.md updated, with the safety criteria as a general rule). Under the advisor's rule the AN's lepton-jet
+subsection changes only when the data/simulation comparison exists.
+
+**Next (step 2):** when `lj_reco_cr_data_v1` is merged, a notebook `08_lj_reco_data` that reads the
+data only through `lj_cr_data` (gated by the safety table) and compares the passing fractions with
+the simulation (J/ψ against pT, ΔR and |η|; Z for unconverted photons above 30 GeV); then the AN,
+the deck, a commit and the PR description again. A purer Z → μμγ probe for converted photons is a
+later version.
+
+## State before step 2 (2026-11-16, 17:10)
+
+**Done: the advisor's comments on the PR, with data-driven results, and AN Sec. 7.** The
+advisor asked (via the user) for a data vs simulation plot of the number of primary vertices in
+the AN, for the systematics section to be fixed up in general, and for the systematic results
+and Combine checks to be based on data-driven expected limits; he approved looking at data in
+the control regions we suggested. The user approved: data through `Z_to_mumu_control_region`,
+good-PV count only; and data through `SR_2mu2e`/`SR_4mu`, regions B, C and D only (m_LJLJ
+included), region A never read, Combine blinded. Every data campaign runs on Condor and saves on
+EOS (the user's rule).
+- **Campaigns complete:** `npv_data_v1` (172 of 172 chunks, every 100th file of the 2018
+  SkimNano V2 DoubleMuon data; 5 skipped files, all empty) and `systematics_data_v1` (2,580 of
+  2,580 chunks, all 127,415 files; 463 skipped files, all empty); 68 data samples merged in each.
+  30 slow jobs moved (nodes cmswn2176 and cmswn2236 excluded for every queued job).
+- **Notebooks rerun:** 01 section 6 (NPV in data against the simulation), 03 (data-driven
+  cards, integrated and 8-bin estimates), 04 and 05 (on the integrated cards), each with
+  rewritten interpretations; the README is updated to match.
+- **AN Sec. 7:** `an_systematics/` (git-ignored as a whole) holds the finished `systematics.tex`,
+  its three figures (`npv_data_vs_simulation.pdf` and the two impacts plots), `references.bib`
+  (three new references) and `WRITING_GUIDE.md`. Checked against the current `results.tex`
+  (labels, macros, conventions) and compiled with stub macros: no errors, the only undefined
+  references are those defined elsewhere in the AN. It states that the selection here is not
+  the one of Sec. 8 (open question 4) and gives the predicted backgrounds (53.6 events in 2mu2e
+  against 38.7 in Sec. 8, and 108 in 4mu at 3 pixel hits).
+- **Code, uncommitted:** `campaign.py` `allow_data` (passes `--allow-data` through
+  `submit_campaign.sub` and `run_job.sh`; default false) and `file_stride` (every Nth file),
+  with tests (61 pass); the configs `npv_data_v1.yaml` and `systematics_data_v1.yaml` and the
+  sample list `condor/samples_data_doublemuon_2018.txt`; collections `abcd_limits_data` and
+  `pv_npvs_good`; `abcd_workspace.py --sr-data-blinded` (B, C, D from the payload's data block,
+  region A's observation the prediction, each workspace checked bin by bin; free bins span 50
+  times their content); `systematics_study.data_control_regions`, `write_payloads(data=...)`,
+  `an_hypotheses`, `LIMITS_SUFFIX` (`_limits_data`), `LIMITS_METHOD` (`integrated`) and the
+  NPV helpers; `systematics.yaml` with the three lepton scale-factor uncertainties; the
+  `systematics_v2` Campaign's `data_dir`; notebooks 01, 03, 04 and 05; the README, AGENTS.md and
+  `condor/README.md` notes on data campaigns.
 
 **Next steps**
-1. The user: push `systematicsStudy` and open the pull request (description given in the
-   session); decide whether `slides/systematics.tex` goes into the repository and whether the
-   PDF goes to EOS.
-2. Lepton-jet efficiency: wait on the group (open question 2 below, four parts).
-3. Offered to the user, not done: a campaign `lj_reco_eff_v2` that splits the muon-type lepton
-   jets by constituent (PF, DSA, both; the channels exist), to see which control sample covers
-   the decays at 10 to 100 cm (section 5 of 06).
+1. The user: review `an_systematics/` and say what to commit (the code, configs and notebooks
+   above; `an_systematics/` and `slides/` stay untracked).
+2. The lepton-jet efficiency with data (`lj_reco_efficiency.md`, step 2): scope each control
+   sample before its first read; the group questions below still apply.
+
+**Earlier, still open:** the slides (`slides/`, untracked, built on the simulation-driven v2
+results) await the user's decision; a campaign `lj_reco_eff_v2` splitting the muon-type lepton
+jets by constituent was offered.
 
 **Notebooks** (inputs and outputs on EOS, read and written through xrootd)
 
 | notebook | state | input | outputs |
 |---|---|---|---|
-| `01_pileup` | executed 2026-11-12 | campaign `corrections_v1` | in the notebook |
+| `01_pileup` | executed 2026-11-16 (section 6 with data) | campaigns `corrections_v1`, `npv_data_v1` | in the notebook, NPV figure on EOS |
 | `02_jet_energy` | executed 2026-11-12 | campaign `corrections_v1` | in the notebook |
-| `03_limits` | executed 2026-11-14 (4mu at 3 pixel hits), with interpretations | campaign `systematics_v2` | `.../systematics_v2_limits/` |
-| `04_systematic_effects` | executed 2026-11-14, with interpretations | outputs of 03 | `.../systematics_v2_limits/effects/` |
-| `05_fit_checks` | executed 2026-11-14, with interpretations | outputs of 03 | `.../systematics_v2_limits/fit_checks/` |
+| `03_limits` | executed 2026-11-16, data-driven, with interpretations | campaigns `systematics_v2`, `systematics_data_v1` | `.../systematics_v2_limits_data/` |
+| `04_systematic_effects` | executed 2026-11-16, with interpretations | outputs of 03 | `.../systematics_v2_limits_data/effects/` |
+| `05_fit_checks` | executed 2026-11-16, with interpretations | outputs of 03 | `.../systematics_v2_limits_data/fit_checks/` |
 | `06_lj_reco_efficiency` | executed 2026-11-14, with interpretations | campaign `lj_reco_eff_v1` | `.../lj_reco_eff_v1_results/` |
 
 `...` is `root://cmseos.fnal.gov//store/user/scampbel/sidm_coffea_outputs`. After a change to
-`systematics.yaml`, rerun 03, then 04 and 05; 04 and 05 stop if 03 is out of date.
+`systematics.yaml`, rerun 03, then 04 and 05; 04 and 05 stop if 03 is out of date. The
+simulation-driven outputs of 2026-11-14 stay in `.../systematics_v2_limits/`.
 
 **Campaigns** (configs in `condor/campaign_configs/`, run with `condor/campaign.py`, working
 state in `condor/campaigns/<name>/`)
 - `corrections_v1`: input of 01 and 02 (`.../corrections_v1`).
-- `systematics_v1`: complete on 2026-11-13 (3,158 jobs, 200 samples merged in
-  `.../systematics_v1`); superseded by v2, since it lacks the generator-filter efficiency.
+- `systematics_v1`: complete on 2026-11-13; superseded by v2, since it lacks the
+  generator-filter efficiency.
 - `systematics_v2`: complete on 2026-11-14 (3,158 jobs, 200 samples merged in
-  `.../systematics_v2`); input of 03 to 05. Same samples, chunks and files as v1.
+  `.../systematics_v2`); signal and simulated background of 03 to 05.
+- `npv_data_v1`: complete on 2026-11-16 (`.../npv_data_v1`); data of 01 section 6.
+- `systematics_data_v1`: complete on 2026-11-16 (`.../systematics_data_v1`); data of 03 to 05,
+  read for regions B, C and D only.
 - `lj_reco_eff_v1`: complete on 2026-11-14 (422 jobs, 180 samples merged in
   `.../lj_reco_eff_v1`); input of 06.
 
-**Registry** (`systematics.yaml`): `lumi_13TeV` flat 0.83%, `CMS_pileup` from the pileup
-weight variations, `CMS_l1_prefiring` flat 1%, `CMS_jet_energy` from the isolation scaled by
-1.10.
+**Registry** (`systematics.yaml`, seven entries): `lumi_13TeV` flat 0.83%, `CMS_pileup` from
+the pileup weight variations, `CMS_l1_prefiring` flat 1%, `CMS_jet_energy` from the isolation
+scaled by 1.10, and `CMS_eff_m_id`, `CMS_eff_e_reco`, `CMS_eff_g_pixelveto` from the scale-factor
+variations.
 
 **Results to keep in mind** (details in the README and in the notebooks' interpretations)
-- With corrections and systematics the expected limits are 2.0% (2Mu2E) and 1.3% (4Mu) higher
-  than without; the exclusion is the same (12 of 48 and 23 of 48 points). The generator-filter
-  efficiency raises every limit by exactly its inverse (a median 1.38 times for 2Mu2E and 1.32
-  for 4Mu against `systematics_v1`); best limits 0.70 and 0.15 fb.
-- 4mu at 3 pixel hits: simulated B·C/D = 0.38 (C 0.039 events); region A holds 20.9 events,
-  19.3 of them Drell-Yan, which has no events in B, C or D.
-- The four systematics barely change the expected limits (at most 0.4% at ten points, partly
-  jumps of the limit calculation); each moves the fitted r by about its own size, 1% or less.
-- The signal-injection test validates the 2Mu2E fit but not the 4Mu one: a third of the 4Mu
-  fits fail, as region C stays nearly empty, though the converged ones are now close to
-  unbiased (README open item 2).
-- The 2mu2e simulated background in B and C rests on about 1.5 effective QCD events each, so
-  the simulation-only 2Mu2E limits test the machinery, not the sensitivity.
+- Data control regions: 2mu2e B, C, D = 79, 19, 28 (prediction 53.6); 4mu at 3 pixel hits 45,
+  12, 5 (prediction 108). AN Sec. 8 has 66, 17, 29 (38.7) in 2mu2e, with its own selection.
+- NPV in the Z region: mean 24.8 in data and 24.4 in the simulation, inside the 23.4 to 25.4 of
+  the pileup variations; the data are wider. Reweighting the signal by the data/simulation
+  ratio changes it by a median 0.2%, at most 1.0%.
+- With corrections and systematics the data-driven expected limits are higher by a median of
+  5.2% (2Mu2E) and 1.4% (4Mu) over the AN's 60 hypotheses per final state, nearly all from the
+  corrections (signal in region A 4.6% and 1.4% lower); the seven systematics alone change no
+  limit of the grid by more than 0.27%.
+- Impacts about each nuisance's own size, at most 1%, against 60 to 100% statistical
+  uncertainty. Signal injection: every fit converges in both channels, median pulls −0.15 to
+  0.01, half-widths 0.96 to 1.02; in 4Mu a quarter of the toys at the expected limit fit r near
+  zero (region D holds 5 events), so the mean fitted r is 11 to 12% low.
+- At the shortest lifetime, five 2Mu2E points have 22 to 38% signal statistics in region A, and
+  their pileup values reach 22% (one limit moves by 4.7%).
 - Lepton-jet efficiency, step 1: on the limit grid only the shortest lifetime decays mostly
-  inside the pixel layers; the other three take 41 to 73% of their lepton jets from 10 to
-  100 cm. The 2Mu2E muon-type efficiency (0.97 to 0.99) is conditioned by the base selection,
-  which already requires both muons; the 4Mu one (0.91 below 10 cm, 0.82 from 10 to 100 cm,
-  0.33 beyond 300 cm) shows the size. Egamma-type: 0.89, 0.80, zero beyond 140 cm.
+  inside the pixel layers; the 4Mu muon-type efficiency is 0.91 below 10 cm, 0.82 from 10 to
+  100 cm and 0.33 beyond 300 cm; egamma-type 0.89, 0.80, zero beyond 140 cm.
 
 **Open questions for the user or the group**
-1. The 4mu method, given the nearly empty region C at the 3-pixel-hit working point (the
-   transfer factor from the validation regions is under discussion): group.
-2. Lepton-jet reconstruction efficiency (`lj_reco_efficiency.md`, "What is needed"): which data
-   control samples may be read (cosmics, Z → μμγ, J/ψ → μμ, J/ψ → ee), scale factors per
-   lepton jet or per constituent, the provisional value until step 2, and (new from step 1)
-   how to set the uncertainty of the most collimated muon pairs (m_Zd = 0.25 GeV at 800 and
-   1000 GeV), which no control sample reaches: group.
-3. Whether 03 should carry the agreed 20% per-bin shape uncertainty of the region-A prediction
-   for 2mu2e (`abcd_workspace.py --shape-sys 0.2`) and the agreed 4mu bin merging: offered to
-   the user, not done.
-4. The `mu_ljs` cuts of `SR_2mu2e`/`SR_4mu` (the dz and dxy spread cuts) never reach the
-   limits: they filter only the `mu_ljs` view, while the category cut and the `abcd6d_*`
-   histograms read `ljs`. A fix needs a decision (drop the lepton jet or veto the event) and a
-   new campaign: told the user, not changed.
-5. The HEM electron veto and the `mu_veto` of the earlier limit selection are not defined in
-   the repository.
+1. The 4mu method and working point: AN Sec. 8 uses at most 2 pixel hits (C and D empty in
+   data); here 3 pixel hits, where the estimate rests on 5 events in region D: group.
+2. Lepton-jet reconstruction efficiency (`lj_reco_efficiency.md`, "What is needed"): scale
+   factors per lepton jet or per constituent, the provisional value until step 2, and how to set
+   the uncertainty of the most collimated muon pairs (m_Zd = 0.25 GeV at 800 and 1000 GeV),
+   which no control sample reaches: group. Data control samples may now be read (the advisor's
+   approval), one at a time and scoped first.
+3. The shortest-lifetime points: cap their per-point values or take pileup from the
+   neighbouring lifetimes, if they stay in the limits; and whether to cover the wider NPV
+   distribution in data explicitly (README open item 4): group.
+4. The selection here is not the one of AN Sec. 8: the HEM electron veto and the `mu_veto` are
+   not defined in the repository, and the dz and dxy spread cuts of `SR_2mu2e`/`SR_4mu` filter
+   only the `mu_ljs` view, so they never reach the `abcd6d_*` histograms. A fix needs the
+   vetoes' definitions, a decision on the spread cuts (drop the lepton jet or veto the event)
+   and new campaigns: told the user, not changed.
+5. Whether 03 should carry the agreed 4mu bin merging: offered to the user, not done (the
+   20% per-bin uncertainty for 2mu2e is in the binned data-driven cards).
 6. Write access to the `lpcmetx` group area: until then merged outputs stay in the user area.
+7. Lepton-jet control samples that our inputs cannot give (`lj_reco_efficiency.md`, question 5):
+   cosmics (no cosmic simulation; both legs always reconstructed in our triggered, skimmed data)
+   and J/psi -> ee (needs EGamma data), so the displaced muon-type regime has no data
+   measurement: produce those inputs or cover the regime otherwise: group.
+8. The sparse-bin rule of the safety check (`lj_reco_efficiency.md`, question 6): used with the
+   user's agreement (2026-11-16) until the advisor rules; `STRICT_SPARSE_BINS` in
+   `systematics_study.py` switches it off: advisor.
 
-**Committed** (2026-11-14, branch `systematicsStudy`, for a pull request to `main`): the study
-folder, the framework and limit-tool changes it needs, the campaign configs, and AGENTS.md and
-CLAUDE.md; upstream `main` merged in (`39a2883`), the fix for its normalization (`8e337fc`) and
-the rerun (`2a396f0`). The branch also carries the campaign-configs commit `430542a`, not yet
-in `main`. Left
-out on purpose (AGENTS.md): job lists, filelists, logs, `condor/campaigns/`, outputs, and the
-local notes in `sidm/studies/limit_plotting/`. Later changes: stage by explicit path only.
+**Committed** (2026-11-14, branch `systematicsStudy`, for a pull request to `main`, not
+pushed): the study folder, the framework and limit-tool changes it needs, the campaign configs,
+and AGENTS.md and CLAUDE.md; upstream `main` merged in (`39a2883`), the fix for its
+normalization (`8e337fc`), the rerun (`2a396f0`) and its log (`298a412`). The branch also
+carries the campaign-configs commit `430542a`, not yet in `main`. Left out on purpose
+(AGENTS.md): job lists, filelists, logs, `condor/campaigns/`, outputs, and the local notes in
+`sidm/studies/limit_plotting/`. Everything of 2026-11-16 is uncommitted; stage by explicit path
+only.
 
 **Environment**
 - `cmsenv` in `CMSSW_17_0_0_pre4/src`, with `PYTHONUSERBASE` set to the repository's
@@ -121,6 +205,80 @@ local notes in `sidm/studies/limit_plotting/`. Later changes: stage by explicit 
   --inplace --ExecutePreprocessor.timeout=7200 --ExecutePreprocessor.kernel_name=python3 <notebook>`.
 
 ## Log (newest first)
+
+### 2026-11-17
+
+- (09:40) The data campaign finished overnight; 65 skipped files in 10 chunks resubmitted. The user
+  allowed committing results from approved data uses: AGENTS.md now says so, and states the
+  group's safety criteria for reading a data region as a general rule. Committed the work of
+  2026-11-16 (campaign tool, AGENTS.md, the study).
+
+### 2026-11-16
+
+- (23:10) `lj_reco_cr_v2` complete at 22:35 (all 1,926 chunks, no failures; 72 moves). Its watcher
+  had judged every job against the campaign-wide median (18 min, set by the fast signal chunks),
+  so at 20:41 to 20:47 it restarted 72 DYJetsToLL_M10to50 chunks that were running normally for
+  this campaign (52 min; the probe histograms make chunks 1.2 to 1.8 times slower than in
+  `systematics_v2`) and excluded 30 nodes; fixed to per-sample limits and the exclusions reset
+  (about 40 min lost). Notebook 07 executed: every region safe; the first Z → μμγ efficiencies
+  were above one because the non-Z photons rise steeply under the peak, so the Z windows are now
+  85 to 95 GeV with adjacent sidebands (`LJ_CR`), and section 4 shows the Z efficiency above 30 GeV
+  with a Drell-Yan curve. Data campaign `lj_reco_cr_data_v1` submitted at 22:57.
+- (20:05) The advisor's writing rule (from the review of `results.tex`) generalized in
+  `WRITING_GUIDE.md` ("The AN describes the analysis as it is", with a search-word checklist) and
+  applied to the parts of Sec. 7 written here: the selection caveat, the comparison with the
+  Sec. 8 background (53.6 against 38.7), the "loosened" working point, the forward reference of
+  the scale-factor paragraph to the unfinished lepton-jet section and the shortest-lifetime limit
+  shift (4.7%) moved out of the AN into the deck; the shortest-lifetime values now justify quoting
+  the sizes for L_xy >= 3 cm. Compiles. The trigger and lepton-jet placeholders are the authors'
+  text and stay. Summary deck drafted (33 pages, no overfull frames).
+- (19:50) The user agreed to the sparse-bin rule until the advisor rules (switch
+  `STRICT_SPARSE_BINS`, question 6) and asked that the control samples we cannot use be a group
+  question (question 5). Added the `_alone` versions of both control samples, so that no event of
+  the signal region enters what data will read (a J/ψ event with a second lepton jet could sit in
+  region A); the refactored v1 histograms reproduce the earlier local output bin for bin. Since
+  the safety check must judge what data will read, `lj_reco_cr_v1` was stopped at 24% and
+  `lj_reco_cr_v2` (both versions in one pass) submitted at 19:40. Notebook 07 written. The
+  watcher crashed once on a job without a start date yet (fixed, restarted).
+- (19:20) Lepton-jet efficiency, step 2 started. Scoped the four control samples against our
+  inputs (two feasible, two not; `lj_reco_efficiency.md`). Simulation scan of a few skimmed files:
+  in Drell-Yan about 0.1% of the Z-region events have an FSR photon probe; QCD and tt̄ events
+  passing the skim often hold a J/ψ candidate (b-hadron decays), Drell-Yan none with a generator
+  J/ψ. Wrote the two channels, probes, histograms and collection; local test on one file each of
+  Drell-Yan, QCD and a 4Mu point (the DSA cross-cleaning warning is pre-existing: it also appears
+  for `SR_2mu2e`). The user's guide for data reads is the 4mu working-point deck's criteria; the
+  safety check implements them per probe-pT bin with the stress test and the union check, and adds
+  a sparse-bin verdict because the J/ψ test put about 5 signal events in bins without simulated
+  background while the whole histogram passed the decks' verdicts. Campaign `lj_reco_cr_v1`
+  submitted (1,926 jobs); pylint: no E or F message in the changed files.
+- (17:10) AN Sec. 7 finished and proofread against the current `results.tex`: the summary
+  table lists median and largest values for L_xy >= 3 cm, re-derived from the EOS outputs
+  (the pixel-veto maximum is 0.35%, so 0.3%; the electron and photon rows are below 0.1% in
+  4mu); the signal statistics enter as in Sec. 8 (one parameter per region), not as one common
+  parameter; the evaluation states that its selection is not that of Sec. 8 and gives the
+  predicted backgrounds. Compiled with stub macros: no errors. The same imprecise shortest-
+  lifetime wording ("22 to 38%" holds for five of the twelve points) fixed in the interpretation
+  of notebook 04. README results of 04 and 05 rewritten for the data-driven run; open items 2
+  and 3 updated.
+- (16:50) Notebooks 03, 04 and 05 executed on the data-driven inputs, with interpretations: the
+  limits with corrections and systematics are a median 5.2% (2Mu2E) and 1.4% (4Mu) higher, nearly
+  all from the corrections; impacts at most 1%; every toy fit converges; in 4Mu a quarter of the
+  toys at the expected limit fit r near zero, which a counting model of the four regions
+  reproduces from the fluctuations of region D (5 events). Notebook 04 reports the limit
+  breakdown over the AN's hypotheses (`card_name()` maps them to the existing cards).
+- (15:20) Both data campaigns complete and merged (`npv_data_v1`: 172 chunks, 5 empty files
+  skipped; `systematics_data_v1`: 2,580 chunks, 463 empty files skipped); 30 slow jobs moved in
+  all. Notebook 01 section 6 executed: NPV in data against the simulation, and the signal
+  reweighted by their ratio (median 0.2%, at most 1.0%).
+- The advisor's comments (NPV data vs simulation, fix up Sec. 7, data-driven expected limits
+  for the systematic results and Combine checks) and the user's approvals (above). Two data
+  campaigns submitted after one-file local tests (deleted afterwards): the Z region gives about
+  5000 events per data file, so every 100th file suffices for the NPV shape; one data file has
+  no event in B, C or D of either plane, as expected for the tight selection.
+  `abcd_workspace.py --sr-data-blinded` tested end to end with synthetic control counts (B, C, D
+  = 21, 7, 10: transfer factor 0.7, prediction 14.7; check passed). The skim of the data
+  (SkimNano V2) is the basic skim of `selections.yaml` (`trigger_muPtCut`: triggers and two
+  muons with pT > 26 GeV), which both the signal-region channels and the Z region require.
 
 ### 2026-11-14
 

@@ -1,0 +1,32 @@
+# Collision data in the two analysis channels, for the data-driven expected limits of the
+# systematics study (sidm/studies/systematics/03_limits.ipynb and, through its outputs, 04
+# and 05): the background in the ABCD plane is predicted from regions B, C and D in data.
+#
+# Approved data use (2026-11-16, the advisor via the user): SR_2mu2e and SR_4mu at the
+# working points of sidm/studies/systematics/systematics_study.WORKING_POINTS, reading the
+# signal-plane regions B, C and D only, their m_LJLJ distributions in the 8 native bins
+# included. Region A is never read: in the cards its observation is the prediction, and
+# Combine runs with --run blind (no observed limits). Only the nominal abcd6d_* histograms
+# are filled.
+#
+#     python condor/campaign.py systematics_data_v1 jobs
+#     python condor/campaign.py systematics_data_v1 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py systematics_data_v1 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py systematics_data_v1 merge
+
+name: systematics_data_v1
+chunk_dir: /store/user/$USER/sidm_condor/SystematicsDataChunks_v1
+merged_dir: /store/user/$USER/sidm_coffea_outputs/systematics_data_v1
+
+channels: [SR_2mu2e, SR_4mu]
+hist_collections: [abcd_limits_data]
+corrections: none
+hist_mode: weighted
+allow_data: true
+
+job_lists:
+  - job_args: job_args_systematics_data_v1.txt
+    samples_file: samples_data_doublemuon_2018.txt
+    dataset: skimmed_llpNanoAOD_v2_skimsnano_v2
+    location_cfg: data_skimmed.yaml
+    files_per_job: 50

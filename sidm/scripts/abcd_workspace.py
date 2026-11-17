@@ -27,6 +27,16 @@ Transfer-factor models
 MC only: ``data_obs`` is filled from simulation, so an unblinded run here is a
 closure test and not a measurement.  Expected limits use ``--run blind`` and
 never read it.
+
+Blinded signal-plane data (``--sr-data-blinded``): with a payload whose ``data``
+block holds regions B, C and D of the signal plane and marks region A as never
+read, the control regions are those data, and region A's background template
+and ``data_obs`` are the prediction ``B_i * sum C / sum D``.  Region A of data
+is not in the payload and so cannot reach a workspace; each workspace is
+reopened after writing, and the job stops unless ``data_obs`` in A is the
+prediction from ``data_obs`` in B, C and D, bin by bin.  The free
+control-region bins then span 50 times their content, as the counting cards'
+rate parameters do, room for the Poisson fluctuations of toys.
 """
 
 from __future__ import annotations
@@ -63,15 +73,36 @@ LUMI_UNC = 1.0083                    # 0.83%, 2018 (CMS-LUM-20-001; was 2.5%)
 APPROVED_VR_DATA = {"VR1": 600.0, "VR2": 600.0, "VRaux": 400.0}
 
 
-def load_payload(path, allow_vr_data=False):
+# The signal-plane data mode: region A is marked like this in the payload, which
+# carries regions B, C and D only (sidm/studies/systematics, approved 2026-11-16).
+SR_BLIND = "blinded: never read"
+SR_DATA_RANGE_FACTOR = 50.0
+
+
+def blinded_sr_data(payload):
+    """True if the payload's ``data`` block is the signal plane's control regions only:
+    regions B, C and D of every channel, region A marked as never read"""
+    data = payload.get("data")
+    if not isinstance(data, dict) or data.get("A") != SR_BLIND:
+        return False
+    per_channel = data.get("channels", {})
+    return (set(per_channel) == set(payload.get("channels", []))
+            and all(set(regions) == {"B", "C", "D"} for regions in per_channel.values()))
+
+
+def load_payload(path, allow_vr_data=False, sr_data_blinded=False):
     """Read the JSON written by ``shape_tools.export_shapes``.
 
     Simulation only, unless ``allow_vr_data`` is given and the payload declares
     an approved validation region (inverted displacement, window inside its
     approved ceiling); then ``data_obs`` is observed data from that region.
+    With ``sr_data_blinded``, a payload with the blinded signal-plane data block
+    of :func:`blinded_sr_data` is accepted as well.
     """
     payload = json.loads(Path(path).read_text())
     if payload.get("mc_only", False):
+        return payload
+    if sr_data_blinded and blinded_sr_data(payload):
         return payload
     meta = payload.get("meta", {})
     key, window = meta.get("region_set"), meta.get("window") or [0, float("inf")]
@@ -80,6 +111,51 @@ def load_payload(path, allow_vr_data=False):
         return payload
     raise SystemExit(f"{path}: not marked mc_only and not approved validation-region "
                      f"data; refusing to proceed")
+
+
+def data_background(data_regions, new_edges=None):
+    """Regions B, C and D from data and, for region A, the prediction B_i sum C / sum D
+    with no statistical uncertainty of its own: ``{region index: (sumw, sumw2)}``, the
+    edges, and the transfer factor"""
+    bkg, edges = {}, None
+    for region, name in ((1, "B"), (2, "C"), (3, "D")):
+        block = data_regions[name]
+        e, w, w2 = list(block["edges"]), list(block["sumw"]), list(block["sumw2"])
+        if new_edges:
+            e, w, w2 = rebin_edges(e, w, w2, new_edges)
+        if edges is not None and e != edges:
+            raise SystemExit(f"data region {name}: edges differ from region B")
+        edges = e
+        bkg[region] = (w, w2)
+    if sum(bkg[3][0]) <= 0:
+        raise SystemExit("data region D is empty: the transfer factor sum C / sum D is undefined")
+    tf = sum(bkg[2][0]) / sum(bkg[3][0])
+    bkg[SIGNAL_REGION] = ([b * tf for b in bkg[1][0]], [0.0] * len(bkg[1][0]))
+    return bkg, edges, tf
+
+
+def check_blinded_workspace(path, bkg):
+    """Reopen a workspace of the blinded data mode: ``data_obs`` in region A must be the
+    prediction from ``data_obs`` in B, C and D, and B, C and D must be the inputs, bin by
+    bin; stops otherwise"""
+    f = ROOT.TFile.Open(str(path))
+    ws = f.Get("wspace")
+    obs = {}
+    for name in "ABCD":
+        dh = ws.data(f"data_obs_{name}")
+        values = []
+        for i in range(dh.numEntries()):
+            dh.get(i)
+            values.append(dh.weight())
+        obs[name] = values
+    f.Close()
+    tf = sum(obs["C"]) / sum(obs["D"])
+    for i, a in enumerate(obs["A"]):
+        if not math.isclose(a, obs["B"][i] * tf, rel_tol=1e-9, abs_tol=1e-12):
+            raise SystemExit(f"{path}: data_obs_A bin {i} is not the prediction: BLINDING")
+        for region, name in ((1, "B"), (2, "C"), (3, "D")):
+            if not math.isclose(obs[name][i], bkg[region][0][i], rel_tol=1e-9, abs_tol=1e-12):
+                raise SystemExit(f"{path}: data_obs_{name} bin {i} differs from the input")
 
 
 def summed_background(background, channel, region):
@@ -407,12 +483,14 @@ def write_datacard(path, ws_name, channel, point, bkg, signal, tf_model,
 # --------------------------------------------------------------------------- #
 def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
           channels="", signals="", all_pairings=False, allow_vr_data=False,
-          shape_sys=None, signal_systematics=None):
+          shape_sys=None, signal_systematics=None, sr_data_blinded=False):
     """Write one workspace per channel plus a datacard per signal point.
 
     ``signal_systematics`` is the path of a JSON file
     ``{"sources": [nuisance, ...], "kappas": {point: {nuisance: {region: kappa}}}}``
     (sidm/studies/systematics); its sources replace the default luminosity row.
+    ``sr_data_blinded`` takes the background from the payload's blinded signal-plane
+    data (module docstring) instead of from simulation.
     """
     args = argparse.Namespace(
         shapes=shapes, outdir=outdir, tf_model=tf_model, rebin=rebin,
@@ -421,7 +499,12 @@ def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
 
     systematics = (json.loads(Path(signal_systematics).read_text())
                    if signal_systematics else None)
-    payload = load_payload(args.shapes, allow_vr_data=allow_vr_data)
+    payload = load_payload(args.shapes, allow_vr_data=allow_vr_data,
+                           sr_data_blinded=sr_data_blinded)
+    from_data = sr_data_blinded and blinded_sr_data(payload)
+    if sr_data_blinded and not from_data:
+        raise SystemExit(f"{args.shapes}: --sr-data-blinded needs the blinded signal-plane "
+                         "data block (regions B, C and D only, region A never read)")
     background = payload["background"]
     signal_block = payload["signal"]
     observable = payload["observable"]["name"]
@@ -435,16 +518,22 @@ def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     written = []
+    card_channel = {}
+    predictions = {}
 
     for channel in channels:
         bkg = {}
         edges = None
-        for region in (SIGNAL_REGION,) + CONTROL_REGIONS:
-            e, w, w2 = summed_background(background, channel, region)
-            if new_edges:
-                e, w, w2 = rebin_edges(e, w, w2, new_edges)
-            edges = e
-            bkg[region] = (w, w2)
+        if from_data:
+            bkg, edges, tf = data_background(payload["data"]["channels"][channel], new_edges)
+            predictions[channel] = {"prediction": sum(bkg[SIGNAL_REGION][0]), "tf": tf}
+        else:
+            for region in (SIGNAL_REGION,) + CONTROL_REGIONS:
+                e, w, w2 = summed_background(background, channel, region)
+                if new_edges:
+                    e, w, w2 = rebin_edges(e, w, w2, new_edges)
+                edges = e
+                bkg[region] = (w, w2)
 
         points = {}
         for name, per_channel in signal_block.items():
@@ -478,8 +567,11 @@ def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
         out_root = ROOT.TFile(str(ws_path), "RECREATE")
         build_workspace(out_root, channel, edges, bkg, points, observable,
                         tf_model=args.tf_model, empty_floor=args.empty_floor,
-                        shape_sys=shape_sys)
+                        shape_sys=shape_sys,
+                        **({"range_factor": SR_DATA_RANGE_FACTOR} if from_data else {}))
         out_root.Close()
+        if from_data:
+            check_blinded_workspace(ws_path, bkg)
 
         for point in points:
             card = outdir / f"datacard_shape_{channel}_{point}.txt"
@@ -495,6 +587,7 @@ def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
                            args.tf_model, normalisation, observable, campaign,
                            shape_sys=shape_sys, signal_systematics=point_systematics)
             written.append(card)
+            card_channel[card] = channel
         print(f"  {channel}: {len(edges) - 1} bins, {len(points)} signal points "
               f"-> {ws_path.name}")
 
@@ -510,11 +603,28 @@ def build(shapes, outdir, tf_model="global_tf", rebin="", empty_floor=None,
                                {"file": str(Path(signal_systematics).resolve()),
                                 "sources": systematics["sources"]}),
         "n_cards": len(written),
-        "mc_only": True,
+        "mc_only": not from_data,
         "source_shapes": str(Path(args.shapes).resolve()),
     }
+    if from_data:
+        meta.update({"control_regions": f"data ({payload['data'].get('approved', '')})",
+                     "region_A_observation": "the prediction B_i*sumC/sumD (region A "
+                                             "never read)",
+                     "predictions": predictions,
+                     "range_factor": SR_DATA_RANGE_FACTOR})
     (outdir / "datacards.meta.json").write_text(json.dumps(meta, indent=1))
-    if not payload.get("mc_only", False):
+    if from_data:
+        # control regions from data, region A blinded: say so on every card
+        for card in written:
+            pred = predictions[card_channel[card]]["prediction"]
+            note = (f"# DATA in regions B, C and D of the signal plane (approved); region A "
+                    f"BLINDED, never read: its observation is the prediction B_i*sumC/sumD, "
+                    f"{pred:.6g} in all. Expected limits only (--run blind)")
+            text = Path(card).read_text().replace(
+                "# MC ONLY: data_obs is simulation, so an unblinded run is a closure "
+                "test and not a measurement", note)
+            Path(card).write_text(text)
+    elif not payload.get("mc_only", False):
         # observed data from an approved validation region: say so on every card
         meta = payload["meta"]
         note = (f"# DATA: data_obs is observed data in validation region "
@@ -548,10 +658,13 @@ def main(argv=None):
     p.add_argument("--signal-systematics", default=None,
                    help="JSON of per-point, per-region log-normal uncertainties of the signal "
                         "(sidm/studies/systematics); replaces the default luminosity row")
+    p.add_argument("--sr-data-blinded", action="store_true",
+                   help="background from the payload's signal-plane data, regions B, C and D "
+                        "only; region A's observation is the prediction (module docstring)")
     a = p.parse_args(argv)
     return build(a.shapes, a.outdir, a.tf_model, a.rebin, a.empty_floor,
                  a.channels, a.signals, a.all_pairings, a.allow_vr_data, a.shape_sys,
-                 a.signal_systematics)
+                 a.signal_systematics, a.sr_data_blinded)
 
 
 if __name__ == "__main__":

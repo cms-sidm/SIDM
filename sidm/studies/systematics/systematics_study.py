@@ -22,6 +22,7 @@ import sys
 from pathlib import Path
 
 import fsspec
+import hist
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -76,6 +77,12 @@ def limit_grid(samples):
     which the group no longer considers. 48 points per final state."""
     rank = lifetime_rank(samples)
     return [s for s in samples if study.parse_point(s)["m_phi"] >= 200 and rank[s] >= 2]
+
+
+def an_hypotheses(samples):
+    """The signal hypotheses of the AN's limits (Sec. 8): m_phi of 200 GeV and above, every
+    lifetime, the shortest included. 60 points per final state; limit_grid is a subset."""
+    return [s for s in samples if study.parse_point(s)["m_phi"] >= 200]
 
 
 def iso_efficiency(h, is_mu, cut, scale=1.0):
@@ -183,6 +190,128 @@ def pileup_halfwidth(h_nominal, h_up, h_down):
     y, v, r_up = _ratios(h_nominal, h_up)
     _, _, r_down = _ratios(h_nominal, h_down)
     return _weighted_mean(y, v, (r_up - r_down) / 2)
+
+
+# --- pileup in data: the good primary vertices in the Z -> mumu control region ---------
+# Approved 2026-11-16 (the advisor, via the user): data in Z_to_mumu_control_region, the
+# good-PV count only (campaign npv_data_v1, every 100th file of each run period). The
+# simulation is the corrections_v1 campaign, which has the same channel and histogram.
+NPV_CHANNEL = "Z_to_mumu_control_region"
+NPV_DATA_DIR = "/store/user/scampbel/sidm_coffea_outputs/npv_data_v1"
+NPV_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/npv_data_v1_results"
+# only_pileup: the pileup weight alone; pileupUp/Down are relative to nominal (all corrections)
+NPV_CATEGORIES = ("only_pileup", "uncorrected", "nominal", "pileupUp", "pileupDown")
+# the background groups of the limits: DYJetsToLL, which holds the muon pairs of DYJetsToMuMu
+NPV_BACKGROUNDS = {name: study.BACKGROUNDS[name]
+                   for name in (r"DY$\to\ell\ell$", "QCD", r"$t\bar{t}$", "diboson")}
+
+
+def npv_data(directory=NPV_DATA_DIR):
+    """(values, variances, edges) of the good-PV count in data in NPV_CHANNEL, summed over
+    the data samples of directory"""
+    total = None
+    for url in list_coffea(directory):
+        for sample, out in dt.read_coffea(url).items():
+            if dt.is_simulation(sample, out):
+                raise ValueError(f"{url}: {sample} is simulation, not data")
+            h = out["hists"]["pv_npvsGood"][{"channel": NPV_CHANNEL}]
+            total = h if total is None else total + h
+    return total.values(), total.variances(), total.axes[0].edges
+
+
+def npv_simulation(outputs):
+    """{category: {group: (values, variances)}} of the good-PV count of the simulated
+    background in NPV_CHANNEL, for each of NPV_CATEGORIES, from corrections_study.load"""
+    out = {category: {} for category in NPV_CATEGORIES}
+    for group, samples in NPV_BACKGROUNDS.items():
+        for category in NPV_CATEGORIES:
+            values = variances = 0.0
+            for sample in samples:
+                h = study.syst_hist(outputs[sample]["hists"]["pv_npvsGood"], category, NPV_CHANNEL)
+                h = h[{"channel": NPV_CHANNEL}]
+                values, variances = values + h.values(), variances + h.variances()
+            out[category][group] = (values, variances)
+    return out
+
+
+def plot_npv(data, simulation, edges, xmax=70):
+    """The good-PV count in data against the simulated background, stacked by group, every
+    simulated distribution normalised to the data: with the pileup weight (stack), with the
+    genWeight alone (dashed), and the change under the pileup variations (band in the ratio).
+    Returns (figure, {"data_mean", "mc_mean", "mc_mean_uncorrected", "chi2", "ndf"})."""
+    import plot_tools as pt   # pylint: disable=import-outside-toplevel,import-error
+    y, v = data[0], data[1]
+    totals = {c: sum(vals for vals, _ in simulation[c].values()) for c in NPV_CATEGORIES}
+    scale = {c: y.sum() / totals[c].sum() for c in NPV_CATEGORIES}
+    weighted = totals["only_pileup"] * scale["only_pileup"]
+    weighted_var = (sum(var for _, var in simulation["only_pileup"].values())
+                    * scale["only_pileup"] ** 2)
+    nominal = totals["nominal"] * scale["nominal"]
+    centers = 0.5 * (edges[1:] + edges[:-1])
+
+    fig, (ax, rax) = plt.subplots(2, 1, figsize=(10, 9), sharex=True,
+                                  gridspec_kw={"height_ratios": [3, 1], "hspace": 0.05})
+    bottom = np.zeros_like(y)
+    colors = (study.BLUE, study.ORANGE, study.AQUA, study.GRAY)
+    for (group, (vals, _)), color in zip(simulation["only_pileup"].items(), colors):
+        ax.stairs(bottom + vals * scale["only_pileup"], edges, baseline=bottom, fill=True,
+                  color=color, label=group)
+        bottom = bottom + vals * scale["only_pileup"]
+    ax.stairs(totals["uncorrected"] * scale["uncorrected"], edges, color=study.BLACK, ls="--",
+              lw=1.5, label="simulation, genWeight only")
+    ax.errorbar(centers, y, yerr=np.sqrt(v), fmt="o", color="k", ms=4, label="data")
+    ax.set_ylabel("events (simulation normalised to data)")
+    ax.set_xlim(edges[0], xmax)
+    ax.legend(fontsize=13)
+
+    ok = (weighted > 0) & (nominal > 0)
+    ratio = np.divide(y, weighted, out=np.full_like(y, np.nan), where=ok)
+    rax.errorbar(centers, ratio, yerr=np.divide(np.sqrt(v), weighted, out=np.zeros_like(y), where=ok),
+                 fmt="o", color="k", ms=4)
+    up, down = (np.divide(totals[c] * scale[c], nominal, out=np.ones_like(y), where=ok)
+                for c in ("pileupUp", "pileupDown"))
+    rax.fill_between(edges[:-1], np.minimum(up, down), np.maximum(up, down), step="post",
+                     color=study.ORANGE, alpha=0.4, lw=0, label="pileup weight variations")
+    rax.stairs(np.divide(totals["uncorrected"] * scale["uncorrected"], weighted,
+                         out=np.ones_like(y), where=ok), edges, color=study.BLACK, ls="--", lw=1.5)
+    rax.axhline(1.0, color="k", lw=0.8)
+    rax.set_ylim(0.5, 1.5)
+    rax.set_xlabel("number of good primary vertices")
+    rax.set_ylabel("data / simulation")
+    rax.legend(fontsize=12, loc="upper left")
+    pt.cms_label(ax, lumi=None, data=True, text="Work in progress")
+
+    # shape agreement where both have entries; the simulation is normalised to the data,
+    # so one degree of freedom goes into that
+    keep = ok & (y > 0)
+    chi2 = float(np.sum((y[keep] - weighted[keep]) ** 2 / (v[keep] + weighted_var[keep])))
+
+    def mean(values):
+        """mean number of good vertices of a distribution"""
+        return float(np.sum(values * centers) / np.sum(values))
+    summary = {"data_mean": mean(y), "mc_mean": mean(weighted),
+               "mc_mean_uncorrected": mean(totals["uncorrected"]),
+               "mc_mean_up": mean(totals["pileupUp"]), "mc_mean_down": mean(totals["pileupDown"]),
+               "chi2": chi2, "ndf": int(keep.sum()) - 1}
+    return fig, summary
+
+
+def npv_ratio(data, simulation):
+    """Data over the pileup-weighted simulation of the good-PV count in the Z -> mumu control
+    region, both normalised to unit area, per bin (one where the simulation is empty)"""
+    y = data[0] / data[0].sum()
+    total = sum(values for values, _ in simulation["only_pileup"].values())
+    mc = total / total.sum()
+    return np.divide(y, mc, out=np.ones_like(y), where=mc > 0)
+
+
+def npv_reweighted_shift(sample_out, channel, ratio):
+    """Relative change of a sample's yield in channel when its good-PV distribution (with the
+    pileup weight alone) is weighted by ratio (npv_ratio): how much the signal yield would move
+    if the simulation were made to match the vertex count of the data"""
+    h = study.syst_hist(sample_out["hists"]["pv_npvsGood"], "only_pileup", channel)
+    values = h[{"channel": channel}].values()
+    return float(np.sum(values * ratio) / values.sum() - 1) if values.sum() > 0 else float("nan")
 
 
 # --- the ABCD inputs of the limits ---------------------------------------------------
@@ -337,9 +466,49 @@ def sample_shapes(out, sample, channels, syst="nominal"):
     return {ch: regions for ch, regions in shapes.items() if regions}
 
 
-def write_payloads(outdir, background, signal, weights="nominal"):
+# --- collision data in the control regions ---------------------------------------------
+# Approved 2026-11-16 (the advisor, via the user): regions B, C and D of the signal plane in
+# data, their m_LJLJ distributions included, for blinded data-driven expected limits. Region
+# A of data is never sliced: shape_tools.region_shapes_6d leaves it out of anything not
+# positively identified as simulation, and data_control_regions stops if it gets it anyway.
+DATA_APPROVAL = ("signal-plane regions B, C and D in data, m_LJLJ included (approved "
+                 "2026-11-16); region A never read")
+# Where 03_limits.ipynb writes its data-driven limits (next to the campaign's merged
+# directory), and the estimate of the region-A background that 04 and 05 check: the
+# integrated one (one m_LJLJ bin), the likelihood of the AN's limits (Sec. 8).
+LIMITS_SUFFIX = "_limits_data"
+LIMITS_METHOD = "integrated"
+SR_BLIND = "blinded: never read"   # the mark abcd_workspace.py --sr-data-blinded checks
+
+
+def data_control_regions(directory):
+    """{channel: {region: Shape}} of regions B, C and D in data at the working points,
+    summed over the data samples of directory (one campaign's merged outputs)"""
+    files = list_coffea(directory)
+    if not files:
+        raise FileNotFoundError(f"no .coffea files in {directory}")
+    total = {}
+    for url in files:
+        for sample, out in dt.read_coffea(url).items():
+            if dt.is_simulation(sample, out):
+                raise ValueError(f"{url}: {sample} is simulation, not data")
+            for channel, selection in WORKING_POINTS.items():
+                regions = st.region_shapes_6d(out, channel, PLANE, sample, selection=selection)
+                if not regions:
+                    continue
+                if dt.SR_ABCD_REGION in regions:
+                    raise RuntimeError(f"{sample}: region A of data was sliced: BLINDING")
+                slot = total.setdefault(channel, {})
+                for region, shape in regions.items():
+                    slot[region] = slot[region] + shape if region in slot else shape
+    return total
+
+
+def write_payloads(outdir, background, signal, weights="nominal", data=None):
     """shapes_<channel>.json for abcd_workspace.py, one per channel with its working point,
-    recording the event weight (syst category) the shapes were made with"""
+    recording the event weight (syst category) the shapes were made with. With data
+    (data_control_regions), each payload also carries regions B, C and D of data, region A
+    marked as never read, for abcd_workspace.py --sr-data-blinded."""
     grouped = st.group_shapes(background)
     paths = {}
     for channel, selection in WORKING_POINTS.items():
@@ -353,6 +522,14 @@ def write_payloads(outdir, background, signal, weights="nominal"):
             meta={"plane": PLANE, "selection": selection.describe(), "weights": weights,
                   "normalisation": "signal normalised to 1 fb at 59.83 /fb (production "
                                    "cross section divided out), so r = sigma / 1 fb"})
+        if data is not None:
+            payload = json.loads(paths[channel].read_text())
+            payload["mc_only"] = False
+            payload["data"] = {
+                "A": SR_BLIND, "approved": DATA_APPROVAL,
+                "channels": {channel: {name: data[channel][region].to_dict()
+                                       for region, name in ((1, "B"), (2, "C"), (3, "D"))}}}
+            paths[channel].write_text(json.dumps(payload, indent=1))
     return paths
 
 
@@ -624,3 +801,435 @@ def plot_regimes(inputs, points, lj_type, title):
     mass_ticks(bottom, points)
     study.cms_label(top)
     return fig
+
+
+# ------------------------------------------------------------------------------------------
+# Lepton-jet control samples (lj_reco_efficiency.md, step 2)
+
+# The merged simulation outputs of condor/campaign_configs/lj_reco_cr_v2.yaml
+LJ_CR_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v2"
+# Per control sample: its channel and probe histogram (sidm/configs/selections.yaml,
+# sidm/definitions/hists.py) in the version a data campaign reads, whose probes have no other
+# lepton jet of the signal selection's kinds (objects._alone), so no event of the signal region
+# enters; the version without that condition (*_all), for the simulation only; the lepton-jet
+# type it tests; and its mass axis with the peak and the sidebands that subtract the background
+# under the peak (GeV). For the Z, the photons that do not come from the Z decay make a
+# background that rises steeply with m(mumu gamma), which a straight line between distant
+# sidebands overestimates under the peak; a narrow peak with adjacent sidebands keeps the
+# subtraction close to linear (first run of 07: Drell-Yan efficiencies above 1 with 80-100 GeV
+# and sidebands of 20 GeV, 0.86 to 0.99 with these windows, as a quadratic fit gives)
+LJ_CR = {
+    "Z -> mumu gamma": {"channel": "lj_cr_Z_to_mumugamma_alone", "hist": "lj_cr_zmmg_probes_alone",
+                        "channel_all": "lj_cr_Z_to_mumugamma", "hist_all": "lj_cr_zmmg_probes",
+                        "label": r"$Z \to \mu\mu\gamma$",
+                        "lj_type": "egamma-type", "mass": "m_mmg", "peak": (85.0, 95.0),
+                        "sidebands": ((75.0, 85.0), (95.0, 105.0))},
+    "J/psi -> mumu": {"channel": "lj_cr_JPsi_to_mumu_alone", "hist": "lj_cr_jpsi_probes_alone",
+                      "channel_all": "lj_cr_JPsi_to_mumu", "hist_all": "lj_cr_jpsi_probes",
+                      "label": r"$J/\psi \to \mu\mu$",
+                      "lj_type": "muon-type", "mass": "m_mumu", "peak": (2.9, 3.3),
+                      "sidebands": ((2.6, 2.9), (3.3, 3.6))},
+}
+
+# The group's criteria for reading a region of data, agreed in the review of the first VR-safety
+# deck (2026-11-04) and applied to every working point since (for example the 4mu working point
+# with |dphi| >= 2.4): judged in simulation, every quantity at its worst over the 96 points of
+# the limit grid (4mu and 2mu2e, L_xy >= 3 cm) at their model cross sections. Safe if the region
+# expects under one signal event, or if S/(S+B) < 5% and the Asimov significance Z < 1; not safe
+# if S/(S+B) > 10% or Z > 2; caution in between. A shape use is judged with the binned Z. The
+# same thresholds are in the local slides/vr_safety.py of sidm/studies/limit_plotting.
+SAFE_EVENTS = 1.0
+SAFE_CONTAM, UNSAFE_CONTAM = 0.05, 0.10
+SAFE_Z, UNSAFE_Z = 1.0, 2.0
+# One rule beyond the decks: the bins of a region that expect under one background event are
+# judged together as one more region with the same criteria. The decks report the signal in
+# those bins but leave it out of the verdict; a fine probe histogram can hold a signal-dominated
+# tail there while the region as a whole passes (the first J/psi test: about 5 signal events in
+# bins without simulated background). Used with the user's agreement (2026-11-16) until the
+# advisor rules on it; set to False to judge exactly as the decks do.
+STRICT_SPARSE_BINS = True
+
+
+def asimov(s, b):
+    """Asimov discovery significance of s over b, per element, with no background uncertainty:
+    leaving it out makes Z larger, the cautious direction for a safety call. b > 0."""
+    s, b = np.asarray(s, dtype=float), np.asarray(b, dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        z2 = 2.0 * ((s + b) * np.log1p(s / b) - s)
+    return np.sqrt(np.clip(np.nan_to_num(z2), 0.0, None))
+
+
+def safety_verdict(s, contam, z):
+    """("safe" | "caution" | "not safe", branch) of the group's criteria; branch is "events"
+    when the S < 1 rule decided it, "rel" otherwise"""
+    if s < SAFE_EVENTS:
+        return "safe", ("rel" if contam < SAFE_CONTAM and z < SAFE_Z else "events")
+    if contam < SAFE_CONTAM and z < SAFE_Z:
+        return "safe", "rel"
+    if contam > UNSAFE_CONTAM or z > UNSAFE_Z:
+        return "not safe", "rel"
+    return "caution", "rel"
+
+
+def region_metrics(s, b, b_w2):
+    """Contamination and visibility of the signal s over the background b, both flat arrays of
+    bins, b_w2 the background's sums of squared weights. z_binned combines the bins expecting at
+    least one background event, z_binned_all every bin with background; s_sparse is the signal
+    in the bins expecting under one background event."""
+    total_s, total_b = float(s.sum()), float(b.sum())
+    meas, pos = b >= 1.0, b > 0
+    return {"S": total_s, "B": total_b,
+            "neff": total_b ** 2 / float(b_w2.sum()) if b_w2.sum() > 0 else 0.0,
+            "contam": total_s / (total_s + total_b) if total_s + total_b > 0 else 0.0,
+            "z": float(asimov(total_s, total_b)) if total_b > 0 else (math.inf if total_s > 0 else 0.0),
+            "z_binned": float(np.sqrt(np.sum(asimov(s[meas], b[meas]) ** 2))),
+            "z_binned_all": float(np.sqrt(np.sum(asimov(s[pos], b[pos]) ** 2))),
+            "s_sparse": float(s[~meas].sum())}
+
+
+def lj_cr_inputs(directory=LJ_CR_DIR, alone=True):
+    """{"signal": {point: {control sample: hist}}, "background": {sample: {...}}} of the probe
+    histograms (LJ_CR) from the merged simulation outputs, the signal at the 1 fb reference
+    (datacard_tools.read_coffea): the versions a data campaign reads, or with alone=False those
+    without the condition on other lepton jets. Stops at a data sample: this reads simulation."""
+    channel, name = ("channel", "hist") if alone else ("channel_all", "hist_all")
+    inputs = {"signal": {}, "background": {}}
+    for url in list_coffea(directory):
+        for sample, out in dt.read_coffea(url).items():
+            if not dt.is_simulation(sample, out):
+                raise ValueError(f"{url}: {sample} is data; the safety check reads simulation only")
+            kind = "signal" if dt.parse_signal_name(sample) else "background"
+            inputs[kind][sample] = {cr: out["hists"][spec[name]][{"channel": spec[channel]}]
+                                    for cr, spec in LJ_CR.items()}
+    return inputs
+
+
+def _slices(axis):
+    """(label, index) of every bin of a histogram axis in the flow=True layout, flow bins
+    included, so that nothing a data histogram holds escapes the check"""
+    flow = axis.traits.underflow, axis.traits.overflow
+    edges = axis.edges
+    out = [(f"< {edges[0]:g}", 0)] if flow[0] else []
+    out += [(f"{lo:g} to {hi:g}", i + flow[0]) for i, (lo, hi) in enumerate(zip(edges[:-1], edges[1:]))]
+    if flow[1]:
+        out.append((f">= {edges[-1]:g}", len(edges) - 1 + flow[0]))
+    return out
+
+
+def _heaviest_event(background, take):
+    """(weight, sample, flat bin) of the heaviest simulated background event in a region,
+    estimated per sample and bin as sumw2/sumw: exact for a bin of one event or of events of one
+    weight, a lower bound otherwise"""
+    best = (0.0, None, None)
+    for sample, h in background.items():
+        w, w2 = take(h.values(flow=True)), take(h.variances(flow=True))
+        with np.errstate(divide="ignore", invalid="ignore"):
+            ratio = np.where(w > 0, w2 / w, 0.0)
+        i = int(np.argmax(ratio))
+        if ratio[i] > best[0]:
+            best = (float(ratio[i]), sample, i)
+    return best
+
+
+def _judge(signal, b, b_w2):
+    """The metrics of each point's signal (signal: {point: flat bins}) over the background b, the
+    worst point, and the verdicts of the group's criteria (counting, shape, sparse bins)"""
+    metrics = {p: region_metrics(s, b, b_w2) for p, s in signal.items()}
+    worst = max(metrics, key=lambda p: metrics[p]["S"])
+    contam = max(m["contam"] for m in metrics.values())
+    # the bins expecting under one background event, judged together as one more region
+    sparse = b < 1.0
+    s_sp = max(float(s[sparse].sum()) for s in signal.values())
+    b_sp = float(b[sparse].sum())
+    z_sp = float(asimov(s_sp, b_sp)) if b_sp > 0 else (math.inf if s_sp > 0 else 0.0)
+    verdicts = {
+        "counting": safety_verdict(metrics[worst]["S"], contam,
+                                   max(m["z"] for m in metrics.values())),
+        "shape": safety_verdict(metrics[worst]["S"], contam,
+                                max(m["z_binned_all"] for m in metrics.values())),
+        "sparse bins": safety_verdict(s_sp, s_sp / (s_sp + b_sp) if s_sp + b_sp > 0 else 0.0, z_sp),
+        "s_sparse": s_sp, "b_sparse": b_sp}
+    return metrics, worst, verdicts
+
+
+def _region_row(cr, region, take, ctx):
+    """One row of lj_cr_safety: the metrics of a region (take maps a flow=True array of the probe
+    histogram to the region's flat bins) and its verdicts, worst case over the points; ctx holds
+    the background histograms, the signal histograms and the model cross sections"""
+    total = sum(ctx["background"].values())
+    b, b_w2 = take(total.values(flow=True)), take(total.variances(flow=True))
+    signal = {p: take(h.values(flow=True)) * ctx["xs"][p] for p, h in ctx["signal"].items()}
+    metrics, worst, verdicts = _judge(signal, b, b_w2)
+    worst_z = max(metrics, key=lambda p: metrics[p]["z_binned_all"])
+    row = {"control sample": cr, "region": region, "points": len(signal),
+           "B": metrics[worst]["B"], "neff": metrics[worst]["neff"], "worst point": worst,
+           "S": metrics[worst]["S"], "contam": max(m["contam"] for m in metrics.values()),
+           "z": max(m["z"] for m in metrics.values()),
+           "z_binned": max(m["z_binned"] for m in metrics.values()),
+           "z_binned_all": metrics[worst_z]["z_binned_all"], "worst point binned": worst_z,
+           "s_sparse": verdicts["s_sparse"], "b_sparse": verdicts["b_sparse"]}
+    for use in ("counting", "shape", "sparse bins"):
+        row[use], row[f"{use} branch"] = verdicts[use]
+    # stress test: the heaviest simulated background event of the region taken out of its bin
+    weight, sample, i = _heaviest_event(ctx["background"], take)
+    b_cut = b.copy()
+    if sample is not None:
+        b_cut[i] = max(b_cut[i] - weight, 0.0)
+    cut = _judge(signal, b_cut, b_w2)[2]
+    row["heaviest event"] = f"{sample}, weight {weight:.3g}" if sample else "none"
+    row["B without it"] = float(b_cut.sum())
+    for use in ("counting", "shape", "sparse bins"):
+        row[f"{use}, stress test"] = cut[use][0]
+    return row
+
+
+def _taker(indices, axis):
+    """A function mapping a flow=True array of a probe histogram to the flat bins of the given
+    indices of one axis (None: every bin)"""
+    def take(arr):
+        return (arr if indices is None else np.take(arr, indices, axis=axis)).ravel()
+    return take
+
+
+VERDICT_KEYS = ("counting", "shape", "counting, stress test", "shape, stress test")
+SPARSE_VERDICT_KEYS = ("sparse bins", "sparse bins, stress test")
+
+
+def passes(row):
+    """Whether every verdict of a row of lj_cr_safety is safe, the sparse-bin ones only with
+    STRICT_SPARSE_BINS"""
+    keys = VERDICT_KEYS + (SPARSE_VERDICT_KEYS if STRICT_SPARSE_BINS else ())
+    return all(row[key] == "safe" for key in keys)
+
+
+def lj_cr_safety(inputs, split_axis="probe_pt"):
+    """The group's criteria applied to each control sample before any data, one row per region:
+    the whole probe histogram, each bin of split_axis with the other axes kept (the regions a data
+    step reads), and the union of the split-axis regions that are safe only through the S < 1
+    rule, which per region does not bound their sum (the union check of the working-point decks).
+
+    Each row has the background B and its effective number of simulated events, the worst signal
+    point and its S, the worst S/(S+B), Z and binned Z over the 96 points of the limit grid at
+    their model cross sections, and three verdicts: counting (integrated Z), shape (binned Z over
+    the bins with background) and sparse bins (the bins expecting under one background event,
+    judged together as one region; it decides only with STRICT_SPARSE_BINS), each also with the
+    heaviest simulated background event removed from its bin (the stress test)."""
+    # pylint: disable-next=import-outside-toplevel,import-error
+    import plot_tools as pt
+    xs = pt.theory_xs_fb()
+    # the points with a model cross section and L_xy >= 3 cm; not limit_grid, which ranks the
+    # lifetimes among the samples it is given, and the campaign holds only these points
+    points = sorted(p for p in inputs["signal"] if p in xs and pt.parse_point(p)["lxy"] >= 3.0)
+    if len(points) != 96:
+        raise ValueError(f"{len(points)} signal points with a model cross section and "
+                         "L_xy >= 3 cm, not the 96 of the limit grid")
+    rows = []
+    for cr in LJ_CR:
+        ctx = {"background": {s: per[cr] for s, per in inputs["background"].items()},
+               "signal": {p: inputs["signal"][p][cr] for p in points}, "xs": xs}
+        axes = next(iter(ctx["background"].values())).axes
+        k = [a.name for a in axes].index(split_axis)
+        slices = _slices(axes[split_axis])
+        mine = [_region_row(cr, "whole histogram", _taker(None, k), ctx)]
+        mine += [_region_row(cr, f"{split_axis} {label}", _taker([index], k), ctx)
+                 for label, index in slices]
+        by_events = [index for (_, index), row in zip(slices, mine[1:])
+                     if passes(row) and "events" in (row["counting branch"], row["shape branch"])]
+        if len(by_events) > 1:
+            mine.append(_region_row(cr, "union of the S < 1 regions", _taker(by_events, k), ctx))
+        rows += mine
+    return rows
+
+
+def lj_cr_readable(rows, cr):
+    """The split-axis regions of a control sample that may be read in data: those whose verdicts
+    are all safe (passes), without the ones safe only through S < 1 when their union is not"""
+    mine = [r for r in rows if r["control sample"] == cr]
+    union = next((r for r in mine if r["region"] == "union of the S < 1 regions"), None)
+    out = []
+    for r in mine:
+        if r["region"] in ("whole histogram", "union of the S < 1 regions") or not passes(r):
+            continue
+        if (union is not None and not passes(union)
+                and "events" in (r["counting branch"], r["shape branch"])):
+            continue
+        out.append(r["region"])
+    return out
+
+
+def require_safe(rows, cr, regions):
+    """Stop unless every region a data step reads is safe (lj_cr_readable): the data step of a
+    control sample calls this before it opens anything derived from data"""
+    allowed = set(lj_cr_readable(rows, cr))
+    refused = [r for r in regions if r not in allowed]
+    if refused or not regions:
+        raise RuntimeError(f"{cr}: not safe to read in data: {refused or 'nothing requested'}; "
+                           f"safe regions: {sorted(allowed)}")
+
+
+# where 07_lj_reco_control_samples.ipynb writes the safety table and its figures; the data step
+# reads the table back (lj_cr_verdicts) and refuses every region it does not mark safe
+LJ_CR_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v2_results"
+
+
+def write_verdicts(rows, directory=LJ_CR_RESULTS_DIR):
+    """Write the safety table of lj_cr_safety to directory as safety.json, with the switch it was
+    judged with and the readable regions per control sample"""
+    table = {"strict_sparse_bins": STRICT_SPARSE_BINS, "rows": rows,
+             "readable": {cr: lj_cr_readable(rows, cr) for cr in LJ_CR}}
+    fs, root = fsspec.core.url_to_fs(eos_url(directory))
+    fs.makedirs(root, exist_ok=True)
+    with fs.open(f"{root.rstrip('/')}/safety.json", "w") as f:
+        json.dump(table, f, indent=1, default=float)
+    fs.invalidate_cache()
+
+
+def lj_cr_verdicts(directory=LJ_CR_RESULTS_DIR):
+    """The safety table written by write_verdicts, checked to be judged with the current
+    STRICT_SPARSE_BINS, so that a change of the rule forces the check to be redone"""
+    with fsspec.open(f"{eos_url(directory)}/safety.json", "rt") as f:
+        table = json.load(f)
+    if table["strict_sparse_bins"] != STRICT_SPARSE_BINS:
+        raise RuntimeError("the safety table was judged with STRICT_SPARSE_BINS = "
+                           f"{table['strict_sparse_bins']}; rerun the safety check")
+    return table["rows"]
+
+
+def mass_window(h, axis, lo, hi):
+    """h summed over the bins of axis between the bin edges lo and hi"""
+    return h[{axis: slice(hist.loc(lo), hist.loc(hi), sum)}]
+
+
+def probe_efficiency(h, spec, axis):
+    """The passing fraction of the probes of one control sample (h: its probe histogram, summed
+    over samples; spec: its LJ_CR entry) against one axis, with the background under the mass
+    peak subtracted using the sidebands, scaled by the ratio of the widths (a linear background).
+    Returns {"edges", "eff", "err", "probes", "passing"} over the bins of axis, its flow bins
+    included at either end; err follows from the sums of squared weights, which are the counts
+    in data."""
+    (p_lo, p_hi), sidebands = spec["peak"], spec["sidebands"]
+    k = (p_hi - p_lo) / sum(hi - lo for lo, hi in sidebands)
+    peak = mass_window(h, spec["mass"], p_lo, p_hi).project(axis, "passing")
+    side = sum(mass_window(h, spec["mass"], lo, hi).project(axis, "passing")
+               for lo, hi in sidebands)
+    values = peak.values(flow=True) - k * side.values(flow=True)
+    variances = peak.variances(flow=True) + k * k * side.variances(flow=True)
+    passing, probes = values[:, 1], values.sum(axis=1)
+    var_pass, var_fail = variances[:, 1], variances[:, 0]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        eff = np.where(probes > 0, passing / probes, np.nan)
+        # passing and failing probes are independent: d(eff) = ((1-eff) dP, -eff dF) / N
+        err = np.sqrt((1 - eff) ** 2 * var_pass + eff ** 2 * var_fail) / probes
+    return {"axis": peak.axes[0], "edges": peak.axes[0].edges, "eff": eff, "err": err,
+            "probes": probes, "passing": passing}
+
+
+def efficiency_ratio(data, simulation):
+    """The data/simulation ratio of two probe_efficiency results, with its uncertainty"""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = data["eff"] / simulation["eff"]
+        err = ratio * np.sqrt((data["err"] / data["eff"]) ** 2
+                              + (simulation["err"] / simulation["eff"]) ** 2)
+    return ratio, err
+
+
+# the background groups of the control samples: those of corrections_study without DYJetsToMuMu,
+# whose muon pairs DYJetsToLL holds
+LJ_CR_GROUPS = {name: samples for name, samples in study.BACKGROUNDS.items()
+                if not set(samples) & set(EXCLUDED_BACKGROUNDS)}
+
+
+def in_range(axis, values):
+    """values over the flow=True bins of a histogram axis, cut to its in-range bins"""
+    start = 1 if axis.traits.underflow else 0
+    return values[start:start + len(axis)]
+
+
+def plot_probe_distribution(inputs, cr, axis, points=(), ax=None):
+    """The probes of one control sample in simulation against one axis of its probe histogram,
+    on a log scale: the background stacked by group (LJ_CR_GROUPS) and the given signal points at
+    their model cross sections, in-range bins only"""
+    # pylint: disable-next=import-outside-toplevel,import-error
+    import plot_tools as pt
+    xs = pt.theory_xs_fb()
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 6))
+    bottom, edges = None, None
+    colours = (study.BLUE, study.ORANGE, study.AQUA, study.GRAY)
+    for (group, samples), colour in zip(LJ_CR_GROUPS.items(), colours):
+        hists = [inputs["background"][s][cr] for s in samples if s in inputs["background"]]
+        if not hists:
+            continue
+        proj = sum(hists).project(axis)
+        edges, values = proj.axes[0].edges, proj.values()
+        base = np.zeros_like(values) if bottom is None else bottom
+        ax.stairs(base + values, edges, baseline=base, fill=True, color=colour, label=group)
+        bottom = base + values
+    for point, style in zip(points, ("-", "--", ":", "-.")):
+        proj = inputs["signal"][point][cr].project(axis)
+        ax.stairs(proj.values() * xs[point], proj.axes[0].edges, color=study.BLACK,
+                  linestyle=style, linewidth=2, label=f"{point} (model)")
+    ax.set_yscale("log")
+    ax.set_ylim(bottom=1e-2)
+    if edges is not None:
+        ax.set_xlim(edges[0], edges[-1])
+    ax.set_xlabel(inputs["background"][next(iter(inputs["background"]))][cr].axes[axis].label)
+    ax.set_ylabel("probes")
+    ax.legend(fontsize=11)
+    return ax
+
+
+def plot_probe_efficiency(results, ax=None):
+    """Passing fractions against one axis ({label: probe_efficiency result}), in-range bins"""
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 6))
+    for (label, r), colour in zip(results.items(), (study.BLACK, study.BLUE, study.ORANGE)):
+        edges = r["edges"]
+        centres = 0.5 * (edges[1:] + edges[:-1])
+        ax.errorbar(centres, in_range(r["axis"], r["eff"]), yerr=in_range(r["axis"], r["err"]),
+                    xerr=0.5 * np.diff(edges), fmt="o", color=colour, label=label)
+    ax.set_ylim(0, 1.1)
+    ax.set_xlabel(next(iter(results.values()))["axis"].label)
+    ax.set_ylabel("passing fraction")
+    ax.legend(fontsize=11)
+    return ax
+
+
+# The merged data outputs of the control samples (campaign lj_reco_cr_data_v1, not yet run): the
+# alone versions only, filled for the regions the safety table marks safe
+LJ_CR_DATA_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1"
+
+
+def readable_bins(rows, cr, axis):
+    """Indices, in the flow=True layout of axis, of the bins of the split axis (probe pT) that the
+    safety table marks readable for one control sample"""
+    allowed = set(lj_cr_readable(rows, cr))
+    return [index for label, index in _slices(axis)
+            if f"{axis.name} {label}" in allowed]
+
+
+def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt"):
+    """{control sample: probe histogram summed over the data samples} of the alone versions, with
+    every bin of split_axis that the safety table (rows, from lj_cr_verdicts) does not mark
+    readable set to zero before anything else is done with it; stops through require_safe unless
+    at least one region is readable, and at any simulated sample"""
+    out = {}
+    for url in list_coffea(directory):
+        for sample, sample_out in dt.read_coffea(url).items():
+            if dt.is_simulation(sample, sample_out):
+                raise ValueError(f"{url}: {sample} is simulation, not data")
+            for cr, spec in LJ_CR.items():
+                h = sample_out["hists"][spec["hist"]][{"channel": spec["channel"]}]
+                out[cr] = h if cr not in out else out[cr] + h
+    for cr, h in out.items():
+        axis = h.axes[split_axis]
+        keep = readable_bins(rows, cr, axis)
+        require_safe(rows, cr, [f"{split_axis} {label}" for label, index in _slices(axis)
+                                if index in keep])
+        k = [a.name for a in h.axes].index(split_axis)
+        view = h.view(flow=True)
+        index = [slice(None)] * view.ndim
+        index[k] = [i for i in range(view.shape[k]) if i not in keep]
+        for field in ("value", "variance"):     # the weighted view takes no scalar as a whole
+            view[field][tuple(index)] = 0.0
+    return out

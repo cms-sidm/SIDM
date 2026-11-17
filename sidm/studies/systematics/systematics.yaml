@@ -18,3 +18,14 @@ CMS_l1_prefiring:
   flat: 0.01
 CMS_jet_energy:
   variant: _iso_up
+# The scale factors of the lepton-jet constituents (sidm/configs/corrections.yaml, applied by
+# default), with the POG uncertainties of their measurements: the PF-muon Loose ID, the
+# electron reconstruction and the photon pixel-seed veto. They are measured on prompt,
+# isolated objects; the lepton-jet reconstruction efficiency (lj_reco_efficiency.md) is to
+# cover what those measurements do not.
+CMS_eff_m_id:
+  syst: muon_id
+CMS_eff_e_reco:
+  syst: electron_reco
+CMS_eff_g_pixelveto:
+  syst: photon_pixel_veto

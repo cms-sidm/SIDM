@@ -326,6 +326,69 @@ vtx_chi2_or_raw_dsa_hists = {
     "mu_lj_vtxChi2_genA_lxy_mumu_dR",
 }
 
+# The histograms of the lepton-jet control samples read the uncut photon and muon copies
+# (objects.on_demand_probe_objs), which SidmProcessor loads only when one of these histograms
+# is requested or a requested channel has a probe cut.
+probe_hists = {"lj_cr_zmmg_probes", "lj_cr_jpsi_probes", "lj_cr_zmmg_probes_alone",
+               "lj_cr_jpsi_probes_alone"}
+
+
+def zmmg_probe_hist(alone=False):
+    """The probe histogram of the Z -> mumu gamma control sample (objects.zmmg_probe_photons):
+    one entry per probe, passing when a selected egamma-type lepton jet lies within dR < 0.2"""
+    def probes(objs, mask):
+        return derived_objs["zmmg_probe_photons"](objs, alone)[mask]
+    return h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([20, 25, 30, 35, 40, 50, 60, 80, 120], name="probe_pt",
+                                      label=r"Probe photon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).pt),
+            h.Axis(hist.axis.Variable([0, 0.8, 1.4442, 1.566, 2.0, 2.4], name="probe_abseta",
+                                      label=r"Probe photon $|\eta|$"),
+                   lambda objs, mask: abs(probes(objs, mask).eta)),
+            h.Axis(hist.axis.Variable([0, 0.5, 0.8, 0.9, 0.94, 1.0], name="probe_r9",
+                                      label=r"Probe photon $R_9$"),
+                   lambda objs, mask: probes(objs, mask).r9),
+            h.Axis(hist.axis.Integer(0, 2, name="probe_pixelSeed", label="Probe photon pixel seed",
+                                     underflow=False, overflow=False),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).pixelSeed, np.int32)),
+            h.Axis(hist.axis.Regular(12, 60, 120, name="m_mmg", label=r"$m(\mu\mu\gamma)$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).m_mmg),
+            h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                     label=r"Probe matched to a selected $e\gamma$-type lepton jet"),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        ],
+    )
+
+
+def jpsi_probe_hist(alone=False, pt_max=None):
+    """The probe histogram of the J/psi -> mumu control sample (objects.jpsi_probe_dimuons):
+    one entry per probe, passing when a selected muon-type lepton jet lies within dR < 0.2"""
+    def probes(objs, mask):
+        return derived_objs["jpsi_probe_dimuons"](objs, alone, pt_max)[mask]
+    return h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([20, 30, 40, 50, 60, 80, 100, 150, 300], name="probe_pt",
+                                      label=r"Probe dimuon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).pt),
+            h.Axis(hist.axis.Variable([0, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.2, 0.4],
+                                      name="probe_dR", label=r"Probe $\Delta R(\mu, \mu)$"),
+                   lambda objs, mask: probes(objs, mask).dR),
+            h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="probe_abseta",
+                                      label=r"Probe dimuon $|\eta|$"),
+                   lambda objs, mask: abs(probes(objs, mask).eta)),
+            h.Axis(hist.axis.Variable([0, 10, 26, 13000], name="probe_min_pt",
+                                      label=r"Softer probe muon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).min_pt),
+            h.Axis(hist.axis.Regular(20, 2.6, 3.6, name="m_mumu", label=r"$m(\mu\mu)$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).mass),
+            h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                     label=r"Probe matched to a selected $\mu$-type lepton jet"),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        ],
+    )
+
+
 
 # helpers for the corrections study (sidm/studies/corrections). The weight
 # factors, the working points of the object SFs and the year are added to objs
@@ -4197,6 +4260,15 @@ hist_defs = {
                    lambda objs, mask: daughters_dR(objs, mask, "genAs_toE")),
         ],
     ),
+    # Probes of the lepton-jet control samples (sidm/studies/systematics/lj_reco_efficiency.md),
+    # one entry per probe. passing is 1 when a selected lepton jet of the tested type lies within
+    # dR < 0.2 of the probe; the efficiency is the passing fraction. Each probe definition keeps
+    # only its own mass window, so nothing else of the event's mass spectrum is filled.
+    "lj_cr_zmmg_probes": zmmg_probe_hist(),
+    "lj_cr_jpsi_probes": jpsi_probe_hist(),
+    # the versions without another lepton jet, which a data campaign fills (objects._alone)
+    "lj_cr_zmmg_probes_alone": zmmg_probe_hist(alone=True),
+    "lj_cr_jpsi_probes_alone": jpsi_probe_hist(alone=True),
     "genA_toE_daughters_dR": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1.0, name="genA_toE_daughters_dR",

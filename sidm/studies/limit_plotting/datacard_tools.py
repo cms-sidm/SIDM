@@ -210,14 +210,17 @@ CAMPAIGNS = {
     ),
     "systematics_v2": Campaign(
         name="systematics_v2",
-        # as systematics_v1: signal and background in one directory, no data
+        # as systematics_v1: signal and background in one directory; the data in the same
+        # channels come from the campaign systematics_data_v1, read for regions B, C and D
+        # only (approved 2026-11-16; region A never read)
         bkg_dir=f"{_EOS_SYST}/systematics_v2",
         signal_dir=f"{_EOS_SYST}/systematics_v2",
-        data_dir=f"{_EOS_SYST}/systematics_v2_has_no_data",
+        data_dir=f"{_EOS_SYST}/systematics_data_v1",
         channels=_channels("SR_2mu2e", "SR_4mu"),
         note="systematics_v1 remade with the processor that applies the generator-filter "
              "efficiency of the v10 signal samples (lumi * xs * gen_filter_eff, recorded in "
-             "the output metadata); same channels, histograms and samples.",
+             "the output metadata); same channels, histograms and samples. Data in the same "
+             "channels: systematics_data_v1, signal-plane regions B, C and D only.",
     ),
 }
 

@@ -88,17 +88,89 @@ notebook; outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_eff_v1_re
   muon-type efficiency (0.87 and 0.77 in 4Mu), and no dimuon resonance reaches that opening
   angle (question 4 below).
 
-### Step 2: data and simulation in control samples (needs the group's approval for each data sample)
+### Step 2: data and simulation in control samples (simulation done, data running, 2026-11-16)
 
-| LJ type | regime | control sample | measured, data against simulation |
+The advisor approved reading data in the control samples proposed here, asking that each be
+thought through before its first look, especially distributions whose tails may be
+signal-dominated. Scoping them against our inputs (the 2018 DoubleMuon SkimNano V2 data and the
+simulation already processed) gave:
+
+| LJ type | regime | control sample | with our inputs |
 |---|---|---|---|
-| muon-type | prompt, collimated | boosted J/ψ → μμ (and Υ), whose muons are within ΔR ≈ 2m/pT | probability that a dimuon found with tracker tracks gives a selected muon-type LJ, against ΔR(μμ) and pT |
-| muon-type | displaced, DSA | cosmic muons, one leg tagging the other | DSA reconstruction and ID efficiency against dxy |
-| egamma-type | displaced, collimated | photon conversions in Z → μμγ, the photon from final-state radiation | probability that a converted photon gives a selected egamma-type LJ, against conversion radius and pT |
-| egamma-type | prompt, collimated | boosted J/ψ → ee | as for J/ψ → μμ |
+| egamma-type | prompt photons, converted or not (the displaced egamma-type lepton jets are mostly photons without a pixel seed) | Z → μμγ, the photon from final-state radiation | **feasible**: DoubleMuon data against Drell-Yan simulation; channel `lj_cr_Z_to_mumugamma` |
+| muon-type | prompt, collimated | boosted J/ψ → μμ | **feasible**: DoubleMuon data; the simulation has only J/ψ from b-hadron decays (QCD, tt̄); channel `lj_cr_JPsi_to_mumu` |
+| muon-type | displaced, DSA | cosmic muons | **not as a scale factor**: there is no cosmic simulation, and in our data both legs are always reconstructed (the triggers need two L2 muons, the skim two muons above 26 GeV), so at large dxy the second leg is not a free probe. A data-only look at the DSA identification against dxy would remain, as a cross-check |
+| egamma-type | prompt, collimated | boosted J/ψ → ee | **not possible**: needs electron-triggered (EGamma) data, which are not in our ntuples |
 
-The simulated side uses the backgrounds already processed (DY, QCD, tt̄); the J/ψ rows would
-also need simulated boosted J/ψ events.
+So the displaced muon-type regime, the one that matters most for the long lifetimes, has no
+data/simulation measurement with the present inputs (question 5 below).
+
+**The probes.** In each channel the lepton jets are built and selected as in step 1; the probes
+come from the uncut collections (`objects.zmmg_probe_photons`, `objects.jpsi_probe_dimuons`), so
+the probe definition does not depend on the lepton jets, and each histogram entry is a probe
+flagged when a selected lepton jet of the tested type lies within ΔR < 0.2:
+
+- Z → μμγ: exactly two selected PF muons of opposite charge with 35 < m(μμ) < 85 GeV, and any
+  reconstructed photon with pT > 20 GeV, |η| < 2.4, ΔR > 0.5 from both muons (so the clustering
+  keeps it apart from them) and 60 < m(μμγ) < 120 GeV. Histogram `lj_cr_zmmg_probes`: photon pT,
+  |η|, R9 (a conversion proxy), pixel seed, m(μμγ), passing.
+- J/ψ → μμ: two tracker muons of opposite charge with |η| < 2.4, 2.6 < m < 3.6 GeV, ΔR < 0.4 and
+  pT(μμ) > 20 GeV. Only this window is kept, and no other part of the dimuon mass spectrum is
+  filled. The signal's dark photon masses (0.25, 1.2 and 5 GeV) are outside it, but mismeasured
+  pairs of displaced 5 GeV dark photons reach it (below). Histogram `lj_cr_jpsi_probes`: pair pT,
+  ΔR(μμ), |η|, the softer muon's pT, m(μμ), passing.
+
+**What data will read.** The control samples do not exclude events of the signal region by
+themselves: a J/ψ event with a second lepton jet could sit in region A. Data therefore read only
+the `_alone` versions (channels `lj_cr_Z_to_mumugamma_alone`, `lj_cr_JPsi_to_mumu_alone`,
+collection `lj_reco_control_samples_alone`), whose probes have no other lepton jet of the signal
+selection's kinds (in `ljs`, two or more muons or none) farther than ΔR = 0.4 away
+(`objects._alone`). An event of the signal region holds two such lepton jets, so none of its
+probes enters; the condition is the same for passing and failing probes. The versions without
+it stay in the simulation, to check that it does not change the passing fraction.
+
+**The safety check before any data.** Each control sample is judged in simulation with the
+group's criteria (as in the working-point decks): worst case over the 96 points of the limit
+grid at their model cross sections, safe if S < 1 event, or S/(S+B) < 5% and Z < 1; not safe if
+S/(S+B) > 10% or Z > 2. It is applied to the whole probe histogram and to each probe-pT bin
+(the regions a data step reads), as a count, as a distribution (binned Z), and, stricter than the
+decks, to the bins with under one expected background event taken together, because a fine
+histogram can hold a signal-dominated tail there (the decks report that signal but leave it out
+of the verdict). The stricter rule is used with the user's agreement (2026-11-16) until the
+advisor rules on it (question 6); `STRICT_SPARSE_BINS = False` in `systematics_study.py` returns
+to the decks' verdicts. Every verdict is repeated with the heaviest
+simulated background event removed, and the regions that pass only through S < 1 are judged
+again as one. A data step reads only regions that pass everything:
+`systematics_study.require_safe` stops it otherwise.
+
+**Results in simulation** (campaign `lj_reco_cr_v2`, notebook
+[`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb); outputs and the safety
+table in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v2_results/`):
+
+- **Safety: every region of both samples is safe**, with the sparse-bin rule and in the stress
+  test, so both are read in data in full. Z → μμγ: the worst signal point puts 0.010 events into
+  the whole sample. J/ψ → μμ: displaced 5 GeV dark photons with mismeasured pairs reach the window
+  at high pT, but the worst point puts 3.0 events against 899 background events above 300 GeV
+  (S/(S+B) = 0.33%, binned Z = 0.57) and at most 0.22 events in any bin below 150 GeV.
+- **J/ψ → μμ, muon-type:** a peak on a flat background, 98% QCD (J/ψ from b-hadron decays), about
+  380,000 probes after the subtraction. The passing fraction is 0.75 ± 0.11 from 30 to 40 GeV (the
+  lepton-jet threshold) and 0.94 to 1.00 above; flat near one for ΔR(μμ) from 0.03 to 0.12, 0.87 ±
+  0.06 from 0.02 to 0.03 and 0.32 ± 0.25 from 0.01 to 0.02. The pairs cover the 5 GeV dark photons,
+  the 1.2 GeV ones in part, not the 0.25 GeV ones.
+- **Z → μμγ, egamma-type:** photons that do not come from the Z make a background that rises
+  steeply with m(μμγ), so the peak is 85 to 95 GeV with the adjacent sidebands 75 to 85 and 95 to
+  105 GeV (wider windows gave efficiencies above one). Above 30 GeV, Drell-Yan photons pass in 0.86 ±
+  0.04 of the cases from 30 to 35 GeV and 0.95 to 0.99 from 35 to 50 GeV. The estimate with all
+  backgrounds agrees with Drell-Yan alone only for unconverted photons (R9 ≥ 0.94: 0.83 ± 0.06
+  against 0.86 ± 0.03); converted photons, the closest analogue of displaced egamma-type lepton
+  jets, need a purer probe (for example m(μμ) + m(μμγ) < 180 GeV and the photon nearer a muon),
+  that is a new version of the sample.
+- **The alone condition** keeps 98% of the J/ψ probes and does not change the passing fraction.
+
+**Running:** the data campaign `lj_reco_cr_data_v1` (all 2018 DoubleMuon files, the alone versions
+only, 2,580 jobs, submitted 2026-11-16 22:57). Next: the data/simulation passing fractions (J/ψ
+against pT, ΔR and |η|; Z for unconverted photons above 30 GeV), read only through
+`systematics_study.lj_cr_data`.
 
 ### Step 3: from ratios to a correction
 
@@ -126,11 +198,19 @@ the group to agree on, not a measurement.
 These are the questions for the group. Step 1 is done and did not depend on them; steps 2 and 3
 do.
 
-1. **Data approval.** Which control samples may be read: cosmics, Z → μμγ, J/ψ → μμ and
-   J/ψ → ee. As with the earlier approvals, the signal region is never read.
+1. **Data approval.** Given by the advisor (2026-11-16) for the control samples proposed here,
+   each to be thought through before its first look; the group's safety criteria decide which
+   regions are read. As with the earlier approvals, the signal region is never read.
 2. **SF granularity.** Per LJ or per constituent. This decides the change to `Corrections`.
 3. **Provisional value.** Which published data/simulation differences to take per regime until
    step 2 exists.
 4. **Collimated muon pairs** (raised by step 1). How to set the uncertainty of the muon-type LJs
    from the most collimated pairs (m_Zd = 0.25 GeV at 800 and 1000 GeV, 8 points of the limit
    grid per final state), which no control sample of step 2 reaches.
+5. **Displaced muon-type and prompt egamma-type lepton jets** (raised by step 2). No control
+   sample in our inputs measures the DSA muons against dxy (cosmics need cosmic simulation and
+   data without the dimuon skim) or electron pairs from J/ψ (EGamma data). Whether to produce
+   those inputs, or how to cover these regimes otherwise.
+6. **The sparse-bin rule** (raised by step 2, for the advisor). Whether a region's bins that expect
+   under one background event should be judged together as one more region, as done here, or
+   left out of the verdict, as in the working-point decks.
