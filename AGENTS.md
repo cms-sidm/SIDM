@@ -14,7 +14,15 @@ code, follow the rule and say so in the pull request.
 - Studies use simulation by default. Checks that need data (data/MC comparisons, closure
   in control regions) are written up as proposals for the group, not run.
 - `condor/run_sidm_chunk.py` refuses data unless given `--allow-data`, and Combine runs
-  blinded (`--run blind`) by default. Do not change either without approval.
+  blinded (`--run blind`) by default. Do not change either without approval. A campaign
+  passes `--allow-data` only when its config sets `allow_data: true`, for an approved use
+  that the config's header names.
+- Before data in a region are read for the first time, the region is judged in simulation with
+  the group's safety criteria: worst case over the signal points of the limit grid at their
+  model cross sections, a region is safe if it expects under one signal event, or if
+  S/(S+B) < 5% and the Asimov significance Z < 1; not safe if S/(S+B) > 10% or Z > 2. A
+  distribution is judged bin by bin as well. The data step reads only the regions judged safe
+  and stops on its own otherwise (for example `systematics_study.require_safe`).
 
 ## Extend the framework; do not build a parallel one
 
@@ -122,7 +130,9 @@ over collision data needs the group's approval first (see "The analysis is blind
 - Stage files by explicit path. Never use `git add -A` or `git add .`: working trees hold
   large untracked outputs (coffea files, condor logs, notes, slides) that must not be
   committed.
-- Do not commit `.coffea` or `.root` files, condor logs, job outputs, or anything derived
-  from data.
+- Do not commit `.coffea` or `.root` files, condor logs or job outputs. Results from
+  collision data, such as notebook outputs and the numbers a study's README or progress log
+  quotes, may be committed: data are read only for approved uses (see "The analysis is
+  blinded").
 - CI runs the chain report (the processor over the simulated fixture, compared with
   `main`; `tests/README.md`) and pylint. Read both on every pull request.
