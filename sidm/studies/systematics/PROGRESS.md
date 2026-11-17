@@ -21,6 +21,16 @@ rule in AGENTS.md) and allowed committing results from approved data uses.
   `efficiency_jpsi_above50_data_simulation.pdf` and `efficiency_zmmg_data_simulation.pdf` in
   `an_systematics/`), replacing the authors' placeholder, in the advisor's style; compiles.
 - **Deck** `slides/systematics.tex`: 40 pages with the data results (local).
+- **Upstream `main` merged** (2026-11-17): it holds its own version of the campaign tool, with the
+  same `allow_data` opt-in, so the merge takes `main`'s campaign tool and re-applies only
+  `file_stride`. `main` also selects the leading lepton-jet pair that survives the subtype cuts
+  (commits 0404af3, f0c4836 and later, S. Abbott). The control-sample histograms are identical
+  before and after the merge (checked on Drell-Yan, QCD and a signal file), but the signal-region
+  yields change (`abcd6d_2mu2e` -1.3% for 2Mu2E 500/1.2/30 cm, `abcd6d_4mu` -3.3% for 4Mu at the
+  same point): the campaigns `systematics_v2` and `systematics_data_v1`, and every number of
+  notebooks 03 to 05 and AN Sec. 7, predate it. A rerun (`systematics_v3`, `systematics_data_v2`)
+  would align them with `main`; the new pair selection may also settle the spread-cut part of open
+  question 4 (to check).
 - **Commits** on `systematicsStudy`, not pushed: `25fe827` (campaign tool), `0a5fd77` (AGENTS.md),
   `3dd4114` (the study up to notebook 07), and the data step (notebook 08 and the documents).
 
@@ -181,6 +191,11 @@ only.
 
 ### 2026-11-17
 
+- (11:20) Upstream `main` had moved (15 commits, with its own campaign tool, reviewed in #85, and a
+  new lepton-jet pair selection). Merged it: `main`'s campaign tool kept, `file_stride` re-applied
+  with its test; `sidm_processor.py` keeps both `needs_probe_inputs` and `select_lepton_jets`.
+  Tests pass (151). Regression check before and after the merge: control samples identical, signal
+  region changed (see the current state).
 - (11:10) Data campaign merged after the 10 extra chunks; notebook 08 written and executed (data
   read only through `lj_cr_data`, gated by the safety table): results above. The J/ψ figure for
   the AN shows the pT dependence from 30 GeV and the opening angle and |η| above 50 GeV, where the

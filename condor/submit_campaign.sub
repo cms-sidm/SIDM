@@ -5,14 +5,14 @@
 #     python condor/campaign.py <config> submit
 #
 # run from the repository root. run_sidm_chunk.py refuses collision data unless given
-# --allow-data, which campaign.py passes (DATA_MODE allow-data) only for a config with
-# allow_data: true.
+# --allow-data, which run_job.sh passes only when ALLOW_DATA is "allow-data": campaign.py
+# sets that only for a config with allow_data: true.
 
 universe = vanilla
 
 executable = run_job.sh
 
-arguments = $(sample) $(chunk) $(filelist) $(CHUNK_URL) $(CHANNELS) $(HIST_COLLECTIONS) $(CORRECTIONS) $(HIST_MODE) $(MONITOR) $(SELECTIONS_CFG) $(DATA_MODE)
+arguments = $(sample) $(chunk) $(filelist) $(CHUNK_URL) $(CHANNELS) $(HIST_COLLECTIONS) $(CORRECTIONS) $(HIST_MODE) $(MONITOR) $(SELECTIONS_CFG) $(ALLOW_DATA)
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT

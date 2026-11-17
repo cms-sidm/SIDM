@@ -19,7 +19,7 @@ from sidm.tools.corrections import Corrections, resolve_names, weight_categories
 from sidm.tools.lj_vertex_chi2 import lj_best_vertex_chi2
 from sidm.definitions.hists import hist_defs, counter_defs, vtx_chi2_or_raw_dsa_hists, probe_hists
 from sidm.definitions.objects import (preLj_objs, postLj_objs, postLj_objs_MC, on_demand_preLj_objs,
-                                     on_demand_probe_objs)
+                                     on_demand_probe_objs, add_lj_candidates)
 
 def _patched_local2global(stack):
     """
@@ -270,23 +270,8 @@ class SidmProcessor(processor.ProcessorABC):
                     if "dsaMuonsRaw" in sel_objs:
                         lj_cache[cache_key]["dsaMuonsRaw"] = copy.copy(sel_objs["dsaMuonsRaw"])
 
-                # apply obj selection to ljs
-                lj_selection = selection.JaggedSelection(cuts["lj"], self.verbose)
-                sel_objs = lj_selection.apply_obj_cuts(sel_objs)
-
-                # add post-lj objects to sel_objs, recording which collections
-                # each one is built from (e.g. mu_ljs from ljs)
-                if not is_data:
-                    self.postLj_objs = {**self.postLj_objs, **self.postLj_objs_MC}
-                built_from = {}
-                for obj in self.postLj_objs:
-                    recorder = selection.CollectionRecorder(sel_objs)
-                    sel_objs[obj] = self.postLj_objs[obj](recorder)
-                    built_from[obj] = recorder.looked_up
-
-                # apply post-lj obj selection
-                postLj_selection = selection.JaggedSelection(cuts["postLj_obj"], self.verbose)
-                sel_objs = postLj_selection.apply_obj_cuts(sel_objs)
+                built_from = {} if weights is not None else None
+                sel_objs = self.select_lepton_jets(sel_objs, cuts, is_data, built_from=built_from)
 
                 evt_selection = selection.Selection(cuts["evt"], self.verbose)
 
@@ -738,6 +723,32 @@ class SidmProcessor(processor.ProcessorABC):
             if set(utilities.flatten(hist_menu.get(collection, []))) & probe_hists:
                 return True
         return False
+
+    def select_lepton_jets(self, objs, cuts, is_data, *, built_from=None):
+        """Apply LJ cuts and select the pair, optionally recording collection sources.
+
+        This stage also accepts in-memory reconstructed jets, independently of
+        NanoEvents input, weights and event selection.
+        """
+        sel_objs = selection.JaggedSelection(cuts["lj"], self.verbose).apply_obj_cuts(objs)
+        post_objects = self.postLj_objs if is_data else {**self.postLj_objs, **self.postLj_objs_MC}
+        for name, definition in post_objects.items():
+            if built_from is None:
+                sel_objs[name] = definition(sel_objs)
+            else:
+                recorder = selection.CollectionRecorder(sel_objs)
+                sel_objs[name] = definition(recorder)
+                built_from[name] = recorder.looked_up
+        sel_objs = selection.JaggedSelection(cuts["postLj_obj"], self.verbose).apply_obj_cuts(sel_objs)
+        if built_from is None:
+            return add_lj_candidates(sel_objs)
+
+        recorder = selection.CollectionRecorder(sel_objs)
+        selected = add_lj_candidates(recorder)
+        built_from["candidate_ljs"] = recorder.looked_up
+        built_from["candidate_mu_ljs"] = {"candidate_ljs"}
+        built_from["candidate_egm_ljs"] = {"candidate_ljs"}
+        return selected
 
     def build_cuts(self):
         """ Make list of pre-lj object, lj, post-lj obj, and event cuts per channel"""

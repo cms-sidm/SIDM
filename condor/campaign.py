@@ -11,7 +11,7 @@ instead of a script. Run from the repository root:
     python condor/campaign.py CONFIG status [--stat-missing]
     python condor/campaign.py CONFIG retry [--submit]
     python condor/campaign.py CONFIG skipped [--submit]
-    python condor/campaign.py CONFIG merge [--samples a,b,...] [--remerge]
+    python condor/campaign.py CONFIG merge [--samples a,b,...] [--remerge] [--partial]
 
 CONFIG is a path, or the name of a file in condor/campaign_configs/ without .yaml.
 
@@ -38,11 +38,18 @@ skipped  finds the input files that finished chunks did not process (coffea runs
          transient reason is processed in a later round. A file skipped in two
          rounds is reported as bad and left out.
 merge    merges every complete sample that is not merged yet (or the --samples
-         given) into merged_dir, with a .meta.yaml sidecar per sample.
+         given) into merged_dir, with a .meta.yaml sidecar per sample. With --partial
+         it merges the chunks that are done so far, of every sample (or the --samples
+         given), into merged_dir/partial/, for a first look while stragglers run; the
+         full merge later goes to merged_dir as usual.
 
 Repeat retry and skipped until nothing is left to resubmit, then merge. The working
 state (the bad-file lists, the files skipped per chunk, merge scratch space) is kept
 in condor/campaigns/<name>/, which is not committed.
+
+The analysis is blinded: a campaign whose job lists hold collision data is refused
+unless its config sets allow_data: true, which passes --allow-data to the jobs. Set it
+only for a use of data the analysis group has approved.
 """
 
 import argparse
@@ -59,6 +66,7 @@ import yaml
 CONDOR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(CONDOR)
 CONFIG_DIR = os.path.join(CONDOR, "campaign_configs")
+NTUPLE_DIR = os.path.join(REPO, "sidm", "configs", "ntuples")
 SUBMIT_FILE = "submit_campaign.sub"
 sys.path.insert(0, CONDOR)
 import campaign_lib as cl  # noqa: E402  pylint: disable=wrong-import-position
@@ -73,6 +81,8 @@ DEFAULTS = {
     "corrections": "default",
     "hist_mode": "unweighted",
     "monitor_corrections": [],
+    "selections_cfg": "configs/selections.yaml",   # relative to sidm/
+    "allow_data": False,
     "logs_dir": None,          # logs_<name>
     "filelists_dir": None,     # filelists_<name>
     "job_list_prefix": None,   # job_args_<name>
@@ -82,11 +92,18 @@ DEFAULTS = {
     "max_retries": 2,
     "stall_hours": 12,
     "stall_restarts": 1,
-    "allow_data": False,       # the analysis is blinded: true only for a data use the group approved
 }
 JOB_LIST_REQUIRED = ("job_args", "samples_file", "dataset", "location_cfg")
 JOB_LIST_DEFAULTS = {"files_per_job": 1, "files_per_job_map": None, "replace_xcache": False,
                      "census_skip": None, "max_files": None, "file_stride": None}
+
+
+def _plain(value, key):
+    """value, refused if it holds whitespace or quotes: it goes on the jobs' arguments line"""
+    value = str(value)
+    if not value or re.search(r"[\s'\"]", value):
+        raise ValueError(f"{key} must be non-empty, without spaces or quotes, got {value!r}")
+    return value
 
 
 def _names(value, key):
@@ -95,7 +112,7 @@ def _names(value, key):
         value = [v.strip() for v in value.split(",")]
     if not isinstance(value, list) or not all(isinstance(v, str) and v for v in value):
         raise ValueError(f"{key} must be a list of names, got {value!r}")
-    return value
+    return [_plain(v, key) for v in value]
 
 
 class Campaign:
@@ -110,7 +127,7 @@ class Campaign:
             raise ValueError(f"{path}: missing keys {missing}, unknown keys {unknown}")
         c = {**DEFAULTS, **cfg}
         self.path = path
-        self.name = str(c["name"])
+        self.name = _plain(c["name"], "name")
         self.redirector = c["redirector"].rstrip("/")
         # $USER and other environment variables are expanded, so one config serves everyone
         self.chunk_dir = cl.strip_redirector(os.path.expandvars(c["chunk_dir"])).rstrip("/")
@@ -118,6 +135,7 @@ class Campaign:
         for key, value in (("chunk_dir", self.chunk_dir), ("merged_dir", self.merged_dir)):
             if not value.startswith("/store/") or "$" in value:
                 raise ValueError(f"{path}: {key} must be an EOS path under /store/, got {value!r}")
+            _plain(value, key)
         self.channels = _names(c["channels"], "channels")
         self.hist_collections = _names(c["hist_collections"], "hist_collections")
         if c["corrections"] in ("default", "none", None):
@@ -130,20 +148,31 @@ class Campaign:
         self.monitor = _names(c["monitor_corrections"], "monitor_corrections") if c["monitor_corrections"] else []
         if self.corrections == "none" and (self.monitor or self.hist_mode == "syst"):
             raise ValueError(f"{path}: monitor_corrections and hist_mode syst need corrections")
-        # run_sidm_chunk.py refuses collision data unless given --allow-data; a campaign
-        # passes it only when its config says so in so many words
+        # the jobs read their channels from this file (run_job.sh, argument 10)
+        self.selections_cfg = _plain(c["selections_cfg"], "selections_cfg")
+        selections_path = os.path.join(REPO, "sidm", self.selections_cfg)
+        if os.path.isabs(self.selections_cfg) or not os.path.isfile(selections_path):
+            raise ValueError(f"{path}: selections_cfg must be a file relative to sidm/, got "
+                             f"{self.selections_cfg!r}")
+        with open(selections_path, encoding="utf8") as f:
+            defined = yaml.safe_load(f) or {}
+        undefined = [ch for ch in self.channels if ch not in defined]
+        if undefined:
+            raise ValueError(f"{path}: channels {undefined} are not in {self.selections_cfg}")
         if not isinstance(c["allow_data"], bool):
-            raise ValueError(f"{path}: allow_data must be true or false, got {c['allow_data']!r}")
+            raise ValueError(f"{path}: allow_data must be true or false")
         self.allow_data = c["allow_data"]
-        self.logs_dir = os.path.join(CONDOR, c["logs_dir"] or f"logs_{self.name}")
-        self.filelists_dir = os.path.join(CONDOR, c["filelists_dir"] or f"filelists_{self.name}")
-        self.prefix = c["job_list_prefix"] or f"job_args_{self.name}"
+        self.logs_dir = os.path.join(CONDOR, _plain(c["logs_dir"] or f"logs_{self.name}", "logs_dir"))
+        self.filelists_dir = os.path.join(CONDOR, _plain(c["filelists_dir"] or f"filelists_{self.name}",
+                                                         "filelists_dir"))
+        self.prefix = _plain(c["job_list_prefix"] or f"job_args_{self.name}", "job_list_prefix")
         self.state_dir = os.path.join(CONDOR, "campaigns", self.name)
         self.max_files_per_job = c["max_files_per_job"]
         if self.max_files_per_job is not None and (not isinstance(self.max_files_per_job, int)
                                                    or self.max_files_per_job < 1):
             raise ValueError(f"{path}: max_files_per_job must be a positive integer or null")
-        self.request_memory, self.oom_memory = str(c["request_memory"]), str(c["oom_memory"])
+        self.request_memory = _plain(c["request_memory"], "request_memory")
+        self.oom_memory = _plain(c["oom_memory"], "oom_memory")
         self.max_retries, self.stall_hours = int(c["max_retries"]), float(c["stall_hours"])
         self.stall_restarts = int(c["stall_restarts"])
         if self.max_retries < 0 or self.stall_hours <= 0 or self.stall_restarts < 0:
@@ -156,6 +185,7 @@ class Campaign:
             unknown = sorted(set(spec or {}) - set(JOB_LIST_REQUIRED) - set(JOB_LIST_DEFAULTS))
             if missing or unknown:
                 raise ValueError(f"{path}: job_lists[{i}]: missing keys {missing}, unknown keys {unknown}")
+            _plain(spec["job_args"], f"job_lists[{i}].job_args")
             self.job_list_specs.append({**JOB_LIST_DEFAULTS, **spec})
         names = [s["job_args"] for s in self.job_list_specs]
         if len(set(names)) != len(names):
@@ -185,10 +215,10 @@ class Campaign:
             "HIST_COLLECTIONS": ",".join(self.hist_collections),
             "CORRECTIONS": self.corrections,
             "HIST_MODE": self.hist_mode,
-            # "none" rather than empty, so the arguments after it keep their positions
+            # "none" rather than empty, so that the arguments after it keep their places
             "MONITOR": ",".join(self.monitor) or "none",
-            "SELECTIONS_CFG": "configs/selections.yaml",
-            "DATA_MODE": "allow-data" if self.allow_data else "mc",
+            "SELECTIONS_CFG": self.selections_cfg,
+            "ALLOW_DATA": "allow-data" if self.allow_data else "no",
             "LOGS": os.path.relpath(self.logs_dir, CONDOR),
             "MEMORY": memory or self.request_memory,
             "MAX_RETRIES": str(self.max_retries),
@@ -213,6 +243,8 @@ class Campaign:
                "--job-args", os.path.join("condor", spec["job_args"])]
         if spec["files_per_job_map"]:
             cmd += ["--files-per-job-map", os.path.join("condor", spec["files_per_job_map"])]
+        if spec["file_stride"]:
+            cmd += ["--file-stride", str(spec["file_stride"])]
         if self.max_files_per_job:
             cmd += ["--max-files-per-job", str(self.max_files_per_job)]
         if spec["replace_xcache"]:
@@ -221,8 +253,45 @@ class Campaign:
             cmd += ["--census-skip", spec["census_skip"]]
         if spec["max_files"]:
             cmd += ["--max-files", str(spec["max_files"])]
-        if spec["file_stride"]:
-            cmd += ["--file-stride", str(spec["file_stride"])]
+        return cmd
+
+    def data_job_lists(self):
+        """The job lists whose samples are collision data, by the rule run_sidm_chunk.py uses
+
+        A location config whose name starts with "data", or whose samples say is_data.
+        """
+        lists = []
+        for spec in self.job_list_specs:
+            cfg = os.path.join(NTUPLE_DIR, spec["location_cfg"])
+            is_data = os.path.basename(cfg).startswith("data")
+            if not is_data and os.path.isfile(cfg):
+                with open(cfg, encoding="utf8") as f:
+                    menu = yaml.safe_load(f) or {}
+                samples = (menu.get(spec["dataset"]) or {}).get("samples") or {}
+                is_data = any(isinstance(s, dict) and s.get("is_data") for s in samples.values())
+            if is_data:
+                lists.append(spec["job_args"])
+        return lists
+
+    def check_data(self):
+        """Refuse a campaign over collision data unless its config allows it"""
+        data = self.data_job_lists()
+        if data and not self.allow_data:
+            sys.exit(f"{data} hold collision data and the analysis is blinded. Set allow_data: true "
+                     f"in {self.path} only for a use of data the analysis group has approved.")
+        if self.allow_data:
+            print(f"allow_data is true: the jobs of {self.name} may process collision data")
+
+    def merge_command(self, sample_file, filelists, output_dir):
+        """merge_coffea_chunks_eos.py command line for the samples in sample_file"""
+        cmd = [sys.executable, os.path.join(REPO, "sidm", "scripts", "merge_coffea_chunks_eos.py"),
+               "--input-eos-dir", self.chunk_dir, "--output-eos-dir", output_dir,
+               "--workdir", os.path.join(self.state_dir, "merge_tmp"), "--samples", sample_file,
+               "--filelists-dir", filelists, "--selections", ",".join(self.channels),
+               "--selections-cfg", self.selections_cfg,
+               "--hist-collections", ",".join(self.hist_collections)]
+        if self.hist_mode == "unweighted":
+            cmd.append("--unweighted-hist")   # recorded in the sidecar; the chunks say it too
         return cmd
 
 
@@ -303,6 +372,7 @@ def write_job_list(rows, name):
 
 def submit(camp, job_list, memory=None):
     """condor_submit one job list with condor/submit_campaign.sub"""
+    camp.check_data()
     cmd = camp.submit_command(job_list, memory)
     print("+", " ".join(cmd))
     subprocess.run(cmd, cwd=CONDOR, check=True)
@@ -357,6 +427,7 @@ def drop_files(filelist, bad):
 
 def cmd_jobs(camp, args):
     """Make the job lists of the campaign with condor/make_job_args.py"""
+    camp.check_data()
     for spec in camp.job_list_specs:
         path = os.path.join(CONDOR, spec["job_args"])
         if os.path.exists(path) and not args.force:
@@ -465,11 +536,8 @@ def local_copy(camp, eos_path):
 
 def processed_files(camp, eos_path):
     """Input files a chunk output says it processed"""
-    # only this command needs coffea; unpickling an output needs the sidm package, which
-    # running from the repository root does not put on the path of a script in condor/
+    # only this command needs coffea
     from coffea.util import load   # pylint: disable=import-outside-toplevel
-    if REPO not in sys.path:
-        sys.path.insert(0, REPO)
     out = load(local_copy(camp, eos_path))
     return {item.filename for item in out.get("processed", ())}
 
@@ -561,48 +629,87 @@ def cmd_skipped(camp, args):
     submit(camp, new_list)
 
 
-def cmd_merge(camp, args):
-    """Merge the complete samples into merged_dir"""
-    results = reconcile_all(camp)
+def merge_plan(results, wanted=None, partial=False, merged=()):
+    """The samples `merge` takes, the done chunks among them, and the samples left out
+
+    A full merge takes the wanted samples, which must be complete, or else every
+    complete sample that is not in merged. A partial merge takes every sample (or the
+    wanted ones) with a chunk done, except a sample with a zero-byte output on EOS,
+    which the merge script cannot read. Returns (samples, done chunk keys of those
+    samples, {sample left out: why}); raises ValueError for a wanted sample that is
+    not in the job lists, or that is incomplete in a full merge.
+    """
     samples = per_sample(results)
-    if args.samples:
-        wanted = [s.strip() for s in args.samples.split(",") if s.strip()]
-    else:
-        merged = set() if args.remerge else merged_samples(camp)
-        wanted = sorted(s for s, v in samples.items() if v["done"] == v["expected"] and s not in merged)
-    unknown = [s for s in wanted if s not in samples]
+    unknown = [s for s in (wanted or []) if s not in samples]
     if unknown:
-        sys.exit(f"{unknown} are not in this campaign's job lists")
-    incomplete = [s for s in wanted if samples[s]["done"] != samples[s]["expected"]]
-    if incomplete:
-        sys.exit(f"not every chunk of {incomplete} is done; refusing to merge them")
-    if not wanted:
+        raise ValueError(f"{unknown} are not in this campaign's job lists")
+    left_out = {}
+    if partial:
+        zero = {r.sample for r in results if r.state == cl.ZERO_BYTE_OUTPUT}
+        for s in wanted or sorted(samples):
+            if s in zero:
+                left_out[s] = "a chunk output on EOS has zero bytes (retry it first)"
+            elif not samples[s]["done"]:
+                left_out[s] = "no chunk is done yet"
+        chosen = [s for s in wanted or sorted(samples) if s not in left_out]
+    elif wanted:
+        incomplete = [s for s in wanted if samples[s]["done"] != samples[s]["expected"]]
+        if incomplete:
+            raise ValueError(f"not every chunk of {incomplete} is done; refusing to merge them "
+                             "(merge --partial merges the chunks done so far)")
+        chosen = list(wanted)
+    else:
+        chosen = sorted(s for s, v in samples.items() if v["done"] == v["expected"] and s not in merged)
+    done = {r.key for r in results if r.state == cl.DONE and r.sample in chosen}
+    return chosen, done, left_out
+
+
+def cmd_merge(camp, args):
+    """Merge the complete samples into merged_dir, or with --partial what is done into merged_dir/partial"""
+    results = reconcile_all(camp)
+    wanted = [s.strip() for s in args.samples.split(",") if s.strip()] if args.samples else None
+    merged = set() if (args.remerge or args.partial or wanted) else merged_samples(camp)
+    try:
+        chosen, done, left_out = merge_plan(results, wanted, args.partial, merged)
+    except ValueError as err:
+        sys.exit(str(err))
+    for sample, reason in sorted(left_out.items()):
+        print(f"  leaving out {sample}: {reason}")
+    if not chosen:
         print("nothing to merge")
         return
     os.makedirs(camp.state_dir, exist_ok=True)
-    sample_file = os.path.join(camp.state_dir, "merge_samples.txt")
+    suffix = "_partial" if args.partial else ""
+    sample_file = os.path.join(camp.state_dir, f"merge_samples{suffix}.txt")
     with open(sample_file, "w", encoding="utf8") as f:
-        f.write("\n".join(wanted) + "\n")
-    # the sidecar lists the input files of every chunk of a sample, extra chunks
-    # included, without the files dropped as unreadable
+        f.write("\n".join(chosen) + "\n")
+    # the sidecar lists the input files of the merged chunks, extra chunks included,
+    # without the files dropped as unreadable: every chunk in a full merge, only the
+    # done ones in a partial merge
     bad = set()
     for name in ("bad_files.txt", "bad_files_skipped.txt"):
         bad |= read_file_list(os.path.join(camp.state_dir, name))
-    filelists = os.path.join(camp.state_dir, "filelists_all")
-    os.makedirs(filelists, exist_ok=True)
-    for path in glob.glob(os.path.join(camp.filelists_dir, "**", "*.txt"), recursive=True):
-        if "/retry" in path:
-            continue    # a retry replaces its chunk's filelist, it does not add one
+    if args.partial:
+        specs = job_specs(camp)
+        paths = [os.path.join(CONDOR, specs[key].filelist) for key in sorted(done)]
+    else:
+        # a retry replaces its chunk's filelist, it does not add one
+        paths = [p for p in glob.glob(os.path.join(camp.filelists_dir, "**", "*.txt"), recursive=True)
+                 if "/retry" not in p]
+    filelists = os.path.join(camp.state_dir, "filelists_partial" if args.partial else "filelists_all")
+    shutil.rmtree(filelists, ignore_errors=True)
+    os.makedirs(filelists)
+    for path in paths:
         files = [f for f in cl.read_filelist(path) if cl.strip_redirector(f) not in bad]
         with open(os.path.join(filelists, os.path.basename(path)), "w", encoding="utf8") as f:
             f.write("\n".join(files) + "\n")
-    cmd = [sys.executable, os.path.join(REPO, "sidm", "scripts", "merge_coffea_chunks_eos.py"),
-           "--input-eos-dir", camp.chunk_dir, "--output-eos-dir", camp.merged_dir,
-           "--workdir", os.path.join(camp.state_dir, "merge_tmp"), "--samples", sample_file,
-           "--filelists-dir", filelists, "--selections", ",".join(camp.channels),
-           "--hist-collections", ",".join(camp.hist_collections)]
-    print(f"merging {len(wanted)} sample(s)")
-    subprocess.run(cmd, cwd=REPO, check=True)
+    output_dir = f"{camp.merged_dir}/partial" if args.partial else camp.merged_dir
+    if args.partial:
+        counts = per_sample(results)
+        for sample in chosen:
+            print(f"  {sample}: {counts[sample]['done']} of {counts[sample]['expected']} chunks done")
+    print(f"merging {len(chosen)} sample(s) into {output_dir}")
+    subprocess.run(camp.merge_command(sample_file, filelists, output_dir), cwd=REPO, check=True)
 
 
 def build_parser():
@@ -629,6 +736,8 @@ def build_parser():
     mg = sub.add_parser("merge", help="merge the complete samples")
     mg.add_argument("--samples", default=None, help="comma-separated samples to merge")
     mg.add_argument("--remerge", action="store_true", help="also merge samples merged before")
+    mg.add_argument("--partial", action="store_true",
+                    help="merge the chunks done so far into merged_dir/partial/, for a first look")
     mg.set_defaults(func=cmd_merge)
     return parser
 

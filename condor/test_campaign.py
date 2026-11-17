@@ -5,10 +5,11 @@ Run from the repository root:
 
     python condor/test_campaign.py
 
-Covers loading and validating the campaign configs, the condor_submit and
-make_job_args.py command lines built from them, the files-per-job cap, and the
-bookkeeping of retry rounds and of input files that keep failing, with synthetic
-fixtures.
+Covers loading and validating the campaign configs, the condor_submit,
+make_job_args.py and merge command lines built from them, the files-per-job cap,
+the refusal of collision data unless a config allows it, which samples a full or a
+partial merge takes, and the bookkeeping of retry rounds and of input files that
+keep failing, with synthetic fixtures.
 """
 
 import copy
@@ -124,12 +125,18 @@ def test_submit():
     check("every macro of the submit file is given", used == set(macros))
     arguments = re.search(r"^arguments = (.*)$", sub, re.M).group(1)
     expanded = re.sub(r"\$\((\w+)\)", lambda m: macros.get(m.group(1), m.group(0)), arguments)
+    # the nine arguments of the old submit_corrections.sub, then the selections file and the data guard
     old = ("$(sample) $(chunk) $(filelist) root://cmseos.fnal.gov//store/user/$ENV(USER)/sidm_condor/"
            "CorrectionsChunks_v1 base,2mu2e,4mu,2mu2e_sr,4mu_sr,Z_to_mumu_control_region "
-           "corrections_study pileup,l1_prefiring,muon_id,electron_reco syst photon_pixel_veto "
-           "configs/selections.yaml mc")
-    check("arguments as in submit_corrections.sub, plus the selections file and the data mode",
-          expanded == old.replace("$ENV(USER)", os.environ["USER"]))
+           "corrections_study pileup,l1_prefiring,muon_id,electron_reco syst photon_pixel_veto")
+    check("arguments as in submit_corrections.sub", expanded == old.replace("$ENV(USER)", os.environ["USER"])
+          + " configs/selections.yaml no")
+    template = campaign.load_campaign("template").submit_macros(job_list)
+    check("argument 9 is none, not empty", template["MONITOR"] == "none")
+    check("data guard kept", template["ALLOW_DATA"] == "no")
+    with open(os.path.join(campaign.CONDOR, "run_job.sh"), encoding="utf8") as f:
+        run_job = f.read()
+    check("run_job.sh takes the 11th argument", "${11:-no}" in run_job and "--allow-data" in run_job)
     check("job list relative to condor/", macros["JOB_ARGS"] == "job_args_corrections_2mu2e.txt")
     check("logs", macros["LOGS"] == "logs_corrections")
     check("memory", macros["MEMORY"] == "2GB" and camp.submit_macros(job_list, "8GB")["MEMORY"] == "8GB")
@@ -138,24 +145,92 @@ def test_submit():
     check("command ends with the submit file", cmd[-1] == campaign.SUBMIT_FILE and "CORRECTIONS=" + camp.corrections in cmd)
 
 
-def test_data_switch():
-    """Collision data only with allow_data: true, and nothing else turns it on"""
+def test_values():
+    """The selections file, its channels, and values that would break the arguments line"""
     good = corrections_config()
-    job_list = os.path.join(campaign.CONDOR, "job_args_corrections_2mu2e.txt")
-    camp = campaign.Campaign(copy.deepcopy(good))
-    check("data refused by default", not camp.allow_data and camp.submit_macros(job_list)["DATA_MODE"] == "mc")
-    cfg = copy.deepcopy(good)
-    cfg["allow_data"] = True
-    check("allow_data passes --allow-data",
-          campaign.Campaign(cfg).submit_macros(job_list)["DATA_MODE"] == "allow-data")
-    for value in ("true", "yes", 1, None):
+    for key, value in (("selections_cfg", "configs/no_such_file.yaml"),
+                       ("selections_cfg", os.path.join(campaign.REPO, "sidm", "configs", "selections.yaml")),
+                       ("channels", ["base", "no_such_channel"]),
+                       ("channels", ["base", "2mu2e sr"]),
+                       ("hist_collections", ["corrections_study'"]),
+                       ("chunk_dir", "/store/user/x/my chunks"),
+                       ("request_memory", "2 GB"),
+                       ("allow_data", "yes")):
         cfg = copy.deepcopy(good)
-        cfg["allow_data"] = value
-        check(f"allow_data {value!r} is not a boolean", raises(cfg))
+        cfg[key] = value
+        check(f"{key} = {value!r} refused", raises(cfg))
     cfg = copy.deepcopy(good)
-    cfg["monitor_corrections"] = []
-    check("an empty monitor list keeps its argument position",
-          campaign.Campaign(cfg).submit_macros(job_list)["MONITOR"] == "none")
+    cfg["selections_cfg"] = "configs/selections.yaml"
+    check("selections file given explicitly", campaign.Campaign(cfg).selections_cfg == "configs/selections.yaml")
+
+
+def test_data_campaigns():
+    """A campaign over collision data needs allow_data: true"""
+    saved = campaign.NTUPLE_DIR
+    with tempfile.TemporaryDirectory() as tmp:
+        try:
+            campaign.NTUPLE_DIR = tmp
+            menus = {"data_fake.yaml": {"v1": {"samples": {"DoubleMuon_A": {}}}},
+                     "mc_fake.yaml": {"v1": {"samples": {"S": {"is_data": False}}}},
+                     "flagged_fake.yaml": {"v1": {"samples": {"D": {"is_data": True}}}}}
+            for name, menu in menus.items():
+                with open(os.path.join(tmp, name), "w", encoding="utf8") as f:
+                    yaml.safe_dump(menu, f)
+            cfg = corrections_config()
+            cfg["job_lists"] = [{"job_args": f"job_args_{name}.txt", "samples_file": "x.txt", "dataset": "v1",
+                                 "location_cfg": name} for name in menus]
+            camp = campaign.Campaign(cfg)
+            check("data found by name and by is_data",
+                  camp.data_job_lists() == ["job_args_data_fake.yaml.txt", "job_args_flagged_fake.yaml.txt"])
+            try:
+                camp.check_data()
+                check("data refused without allow_data", False)
+            except SystemExit:
+                check("data refused without allow_data", True)
+            cfg["allow_data"] = True
+            allowed = campaign.Campaign(cfg)
+            allowed.check_data()
+            check("allow_data passes --allow-data", allowed.submit_macros(os.path.join(tmp, "j.txt"))["ALLOW_DATA"]
+                  == "allow-data")
+            cfg["allow_data"] = False
+            cfg["job_lists"] = cfg["job_lists"][1:2]
+            mc = campaign.Campaign(cfg)
+            mc.check_data()
+            check("simulation needs nothing", not mc.data_job_lists())
+        finally:
+            campaign.NTUPLE_DIR = saved
+
+
+def test_merge():
+    """The merge command, and which samples a full or a partial merge takes"""
+    camp = campaign.load_campaign("corrections_v1")
+    cmd = camp.merge_command("samples.txt", "filelists", "/store/user/x/merged")
+    check("selections file to the sidecar", cmd[cmd.index("--selections-cfg") + 1] == "configs/selections.yaml")
+    check("weighted campaign", "--unweighted-hist" not in cmd)
+    template = campaign.load_campaign("template")
+    check("unweighted campaign", "--unweighted-hist" in template.merge_command("s", "f", "/store/user/x/m"))
+
+    def result(sample, chunk, state):
+        return campaign.cl.ChunkResult(sample=sample, chunk=chunk, key=f"{sample}_{chunk}", state=state)
+    cl = campaign.cl
+    results = [result("A", 0, cl.DONE), result("A", 1, cl.DONE),
+               result("B", 0, cl.DONE), result("B", 1, cl.IN_PROGRESS),
+               result("C", 0, cl.ZERO_BYTE_OUTPUT), result("C", 1, cl.DONE),
+               result("D", 0, cl.IN_PROGRESS), result("D", 1, cl.OOM)]
+    chosen, done, left_out = campaign.merge_plan(results)
+    check("full merge: complete samples", chosen == ["A"] and done == {"A_0", "A_1"} and not left_out)
+    check("full merge: not merged twice", campaign.merge_plan(results, merged={"A"})[0] == [])
+    for wanted in (["B"], ["X"]):
+        try:
+            campaign.merge_plan(results, wanted)
+            check(f"full merge refuses {wanted}", False)
+        except ValueError:
+            check(f"full merge refuses {wanted}", True)
+    chosen, done, left_out = campaign.merge_plan(results, partial=True)
+    check("partial merge: every sample with a done chunk", chosen == ["A", "B"])
+    check("partial merge: only the done chunks", done == {"A_0", "A_1", "B_0"})
+    check("partial merge: zero-byte and empty samples left out", sorted(left_out) == ["C", "D"])
+    check("partial merge of one sample", campaign.merge_plan(results, ["B"], partial=True)[:2] == (["B"], {"B_0"}))
 
 
 def test_make_job_args():
@@ -235,8 +310,10 @@ def test_bookkeeping():
 if __name__ == "__main__":
     test_configs_load()
     test_validation()
+    test_values()
     test_submit()
-    test_data_switch()
+    test_data_campaigns()
+    test_merge()
     test_make_job_args()
     test_bookkeeping()
     print(f"{_PASS} passed, {_FAIL} failed")

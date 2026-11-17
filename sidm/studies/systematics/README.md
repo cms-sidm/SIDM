@@ -487,6 +487,9 @@ sample reaches).
    with the spread cuts of `SR_2mu2e`/`SR_4mu`, which filter only the `mu_ljs` view and so never
    reach the `abcd6d_*` histograms, the selection here is not the one of AN Sec. 8: its 2mu2e
    control regions hold 79, 19 and 28 events in data, against 66, 17 and 29 there.
+   Upstream `main`, merged on 2026-11-17, selects the leading lepton-jet pair that survives the
+   subtype cuts, which changes the signal-region yields (by -1.3% and -3.3% at the two points
+   checked) and may settle the spread-cut part; the campaigns of this study predate it.
 4. Pileup in data: done (2026-11-16, see [Pileup](#pileup)). The data are wider in the vertex
    count than the reweighted simulation; covering that explicitly (the larger of the pileup
    variation and the reweighting change per point) is the group's choice.
