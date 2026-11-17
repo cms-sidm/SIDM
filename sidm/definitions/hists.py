@@ -17,6 +17,7 @@ import numpy as np
 from sidm.tools import histogram as h
 from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs, dR_outer
 from sidm.definitions.objects import derived_objs, withMass
+from sidm.definitions.cuts import evt_cut_defs
 from sidm.tools.corrections import Corrections
 from sidm.definitions.cuts import obj_cut_defs
 # always reload local modules to pick up changes during development
@@ -325,6 +326,69 @@ vtx_chi2_or_raw_dsa_hists = {
     "mu_lj_vtxChi2_genA_lxy_mumu_dR",
 }
 
+# The histograms of the lepton-jet control samples read the uncut photon and muon copies
+# (objects.on_demand_probe_objs), which SidmProcessor loads only when one of these histograms
+# is requested or a requested channel has a probe cut.
+probe_hists = {"lj_cr_zmmg_probes", "lj_cr_jpsi_probes", "lj_cr_zmmg_probes_alone",
+               "lj_cr_jpsi_probes_alone"}
+
+
+def zmmg_probe_hist(alone=False):
+    """The probe histogram of the Z -> mumu gamma control sample (objects.zmmg_probe_photons):
+    one entry per probe, passing when a selected egamma-type lepton jet lies within dR < 0.2"""
+    def probes(objs, mask):
+        return derived_objs["zmmg_probe_photons"](objs, alone)[mask]
+    return h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([20, 25, 30, 35, 40, 50, 60, 80, 120], name="probe_pt",
+                                      label=r"Probe photon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).pt),
+            h.Axis(hist.axis.Variable([0, 0.8, 1.4442, 1.566, 2.0, 2.4], name="probe_abseta",
+                                      label=r"Probe photon $|\eta|$"),
+                   lambda objs, mask: abs(probes(objs, mask).eta)),
+            h.Axis(hist.axis.Variable([0, 0.5, 0.8, 0.9, 0.94, 1.0], name="probe_r9",
+                                      label=r"Probe photon $R_9$"),
+                   lambda objs, mask: probes(objs, mask).r9),
+            h.Axis(hist.axis.Integer(0, 2, name="probe_pixelSeed", label="Probe photon pixel seed",
+                                     underflow=False, overflow=False),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).pixelSeed, np.int32)),
+            h.Axis(hist.axis.Regular(12, 60, 120, name="m_mmg", label=r"$m(\mu\mu\gamma)$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).m_mmg),
+            h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                     label=r"Probe matched to a selected $e\gamma$-type lepton jet"),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        ],
+    )
+
+
+def jpsi_probe_hist(alone=False, pt_max=None):
+    """The probe histogram of the J/psi -> mumu control sample (objects.jpsi_probe_dimuons):
+    one entry per probe, passing when a selected muon-type lepton jet lies within dR < 0.2"""
+    def probes(objs, mask):
+        return derived_objs["jpsi_probe_dimuons"](objs, alone, pt_max)[mask]
+    return h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([20, 30, 40, 50, 60, 80, 100, 150, 300], name="probe_pt",
+                                      label=r"Probe dimuon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).pt),
+            h.Axis(hist.axis.Variable([0, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.2, 0.4],
+                                      name="probe_dR", label=r"Probe $\Delta R(\mu, \mu)$"),
+                   lambda objs, mask: probes(objs, mask).dR),
+            h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="probe_abseta",
+                                      label=r"Probe dimuon $|\eta|$"),
+                   lambda objs, mask: abs(probes(objs, mask).eta)),
+            h.Axis(hist.axis.Variable([0, 10, 26, 13000], name="probe_min_pt",
+                                      label=r"Softer probe muon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).min_pt),
+            h.Axis(hist.axis.Regular(20, 2.6, 3.6, name="m_mumu", label=r"$m(\mu\mu)$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).mass),
+            h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                     label=r"Probe matched to a selected $\mu$-type lepton jet"),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        ],
+    )
+
+
 
 # helpers for the corrections study (sidm/studies/corrections). The weight
 # factors, the working points of the object SFs and the year are added to objs
@@ -447,6 +511,59 @@ def lj_isolation_flip_hist(variant):
 
 def log_axis(nbins, xmin, xmax, name, label):
     return hist.axis.Regular(nbins, xmin, xmax, transform=hist.axis.transform.log, name=name, label=label)
+
+
+# Inputs of the ABCD limits (sidm/studies/limit_plotting/shape_tools.py, "the 6D inclusive
+# layout"): every variable that splits regions A to D is an axis, so shape_tools slices the
+# regions and the m_LJLJ shape out of one histogram per final state. LJ0 is the muon-type
+# lepton jet of the two leading ones (the leading one in 4mu), LJ1 the other one (the
+# egamma-type one in 2mu2e, the subleading one in 4mu). The edges hold the cuts of every
+# working point used so far, so that each region is a sum of whole bins.
+ABCD_ISO_EDGES = [0, 0.25, 0.3, 0.5]
+ABCD_HITS_EDGES = [-0.5, 0.5, 2.5, 3.5]
+ABCD_DPHI_EDGES = [0, 2.0, 2.4, 2.6, math.pi]
+ABCD_MASS_EDGES = [0, 150, 200, 300, 400, 600, 800, 1000, 1500, 2500]
+
+def abcd_ljs(objs, mask):
+    """The two leading lepton jets of the masked events, muon-type first
+
+    The sort is stable, so in 4mu, where both are muon-type, they stay in pT order.
+    """
+    ljs = objs["ljs"][mask, :2]
+    return ljs[ak.argsort(ljs.muon_n >= 2, ascending=False, stable=True)]
+
+def lj_pixel_hits(lj):
+    """Most pixel hits of a muon of the lepton jet, as in the muon-type LJ "displaced" cut"""
+    return ak.max(lj.muons.trkNumPixelHits, axis=-1)
+
+def lj_lost_hits(lj):
+    """Fewest missing inner hits of an electron or photon of the lepton jet, as in the
+    egamma-type LJ "displaced" cut; photons carry 999, which lands in the overflow"""
+    return ak.min(lj.egamma.lostHits, axis=-1)
+
+def abcd6d_hist(final_state, iso_scale=1.0):
+    """The 6D ABCD histogram of the 2mu2e or 4mu events
+
+    iso_scale multiplies both isolations: 1.10 gives the jet energy uncertainty of the
+    signal yield (sidm/studies/systematics, 02_jet_energy.ipynb), since the isolation is
+    proportional to the energy of the matched jet.
+    """
+    disp1, disp1_label = ((lj_lost_hits, "LJ1 missing inner hits") if final_state == "2mu2e"
+                          else (lj_pixel_hits, "LJ1 pixel hits"))
+    return h.Histogram([
+        h.Axis(hist.axis.Variable(ABCD_ISO_EDGES, name="iso0", label="LJ0 isolation"),
+               lambda objs, mask: abcd_ljs(objs, mask)[:, 0].isolation * iso_scale),
+        h.Axis(hist.axis.Variable(ABCD_ISO_EDGES, name="iso1", label="LJ1 isolation"),
+               lambda objs, mask: abcd_ljs(objs, mask)[:, 1].isolation * iso_scale),
+        h.Axis(hist.axis.Variable(ABCD_HITS_EDGES, name="disp0", label="LJ0 pixel hits"),
+               lambda objs, mask: lj_pixel_hits(abcd_ljs(objs, mask)[:, 0])),
+        h.Axis(hist.axis.Variable(ABCD_HITS_EDGES, name="disp1", label=disp1_label),
+               lambda objs, mask: disp1(abcd_ljs(objs, mask)[:, 1])),
+        h.Axis(hist.axis.Variable(ABCD_DPHI_EDGES, name="abs_dphi", label=r"$|\Delta\phi|$ (LJ0, LJ1)"),
+               lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
+        h.Axis(hist.axis.Variable(ABCD_MASS_EDGES, name="ljlj_mass", label=r"$m_{LJLJ}$ (GeV)"),
+               lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+    ], evt_mask=evt_cut_defs[final_state])
 
 # muon mass (GeV) used to build the four-vectors of muon-LJ constituents, which mix PF and DSA
 # muons and therefore do not carry a consistent mass field
@@ -4133,6 +4250,27 @@ hist_defs = {
                    lambda objs, mask: daughters_dR(objs, mask, "genAs_toMu")),
         ],
     ),
+    # the same for dark photons decaying to electrons
+    "genA_toE_lxy_vs_daughters_dR": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(50, 0, 500, name="genA_toE_lxy",
+                                     label=r"$Z_d \rightarrow ee$ $l_{xy}$ [cm]"),
+                   lambda objs, mask: lxy(decayed_daughter_pairs(objs, mask, "genAs_toE"))),
+            h.Axis(hist.axis.Regular(48, 1e-4, 1.0, name="genA_toE_daughters_dR",
+                                     label=r"$\Delta R(e, e)$ from same $Z_d$",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: daughters_dR(objs, mask, "genAs_toE")),
+        ],
+    ),
+    # Probes of the lepton-jet control samples (sidm/studies/systematics/lj_reco_efficiency.md),
+    # one entry per probe. passing is 1 when a selected lepton jet of the tested type lies within
+    # dR < 0.2 of the probe; the efficiency is the passing fraction. Each probe definition keeps
+    # only its own mass window, so nothing else of the event's mass spectrum is filled.
+    "lj_cr_zmmg_probes": zmmg_probe_hist(),
+    "lj_cr_jpsi_probes": jpsi_probe_hist(),
+    # the versions without another lepton jet, which a data campaign fills (objects._alone)
+    "lj_cr_zmmg_probes_alone": zmmg_probe_hist(alone=True),
+    "lj_cr_jpsi_probes_alone": jpsi_probe_hist(alone=True),
     "genA_toE_daughters_dR": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1.0, name="genA_toE_daughters_dR",
@@ -6756,6 +6894,14 @@ hist_defs = {
     "lj_isolation_jes_up_flips": lj_isolation_flip_hist("jes_up"),
     "lj_isolation_jes_down_flips": lj_isolation_flip_hist("jes_down"),
     "lj_isolation_jer_flips": lj_isolation_flip_hist("jer"),
+
+    # ABCD limit inputs (shape_tools, "the 6D inclusive layout"); the _iso_up ones have
+    # both isolations scaled by 1.10, for the jet energy uncertainty
+    "abcd6d_2mu2e": abcd6d_hist("2mu2e"),
+    "abcd6d_4mu": abcd6d_hist("4mu"),
+    "abcd6d_2mu2e_iso_up": abcd6d_hist("2mu2e", iso_scale=1.10),
+    "abcd6d_4mu_iso_up": abcd6d_hist("4mu", iso_scale=1.10),
+
     # muon-LJ leading mu-mu pair: decay angle in the pair rest frame and its companions
     "mu_lj_mumu_absCosTheta": h.Histogram(
         [

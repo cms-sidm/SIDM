@@ -252,6 +252,12 @@ def test_make_job_args():
     check("default", make_job_args.files_per_job_for("signal", fpj, 25) == 25)
     check("capped", make_job_args.files_per_job_for("tiny", fpj, 25, cap=100) == 100)
     check("below the cap", make_job_args.files_per_job_for("big", fpj, 25, cap=100) == 6)
+    check("no stride unless asked", "--file-stride" not in bkg)
+    cfg = corrections_config()
+    cfg["job_lists"][2]["file_stride"] = 100
+    strided = campaign.Campaign(cfg)
+    cmd = strided.make_job_args_command(strided.job_list_specs[2])
+    check("stride passed", cmd[cmd.index("--file-stride") + 1] == "100")
 
 
 def test_bookkeeping():

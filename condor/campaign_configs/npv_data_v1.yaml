@@ -1,0 +1,34 @@
+# Collision data through the Z -> mumu control region, for the comparison of the number of
+# good primary vertices in data and in the pileup-reweighted simulation (AN Sec. 7, pileup;
+# sidm/studies/systematics/01_pileup.ipynb). The simulation side is the corrections_v1
+# campaign, which has the same channel.
+#
+# Approved data use (2026-11-16, the advisor via the user): Z_to_mumu_control_region (two
+# loose muons, 60 <= m_mumu <= 120 GeV, dphi > 2.4), reading the good-PV count
+# (pv_npvsGood) only. Nothing else is filled.
+#
+# Every 100th file of each run period (file_stride) gives an even subset of the 2018
+# luminosity, far more than the shape of the distribution needs (about 5000 events per file).
+#
+#     python condor/campaign.py npv_data_v1 jobs
+#     python condor/campaign.py npv_data_v1 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py npv_data_v1 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py npv_data_v1 merge
+
+name: npv_data_v1
+chunk_dir: /store/user/$USER/sidm_condor/NpvDataChunks_v1
+merged_dir: /store/user/$USER/sidm_coffea_outputs/npv_data_v1
+
+channels: [Z_to_mumu_control_region]
+hist_collections: [pv_npvs_good]
+corrections: none
+hist_mode: weighted
+allow_data: true
+
+job_lists:
+  - job_args: job_args_npv_data_v1.txt
+    samples_file: samples_data_doublemuon_2018.txt
+    dataset: skimmed_llpNanoAOD_v2_skimsnano_v2
+    location_cfg: data_skimmed.yaml
+    files_per_job: 10
+    file_stride: 100

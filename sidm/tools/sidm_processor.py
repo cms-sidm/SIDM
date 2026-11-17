@@ -17,8 +17,9 @@ from sidm import BASE_DIR
 from sidm.tools import selection, cutflow, utilities
 from sidm.tools.corrections import Corrections, resolve_names, weight_categories
 from sidm.tools.lj_vertex_chi2 import lj_best_vertex_chi2
-from sidm.definitions.hists import hist_defs, counter_defs, vtx_chi2_or_raw_dsa_hists
-from sidm.definitions.objects import preLj_objs, postLj_objs, postLj_objs_MC, on_demand_preLj_objs, add_lj_candidates
+from sidm.definitions.hists import hist_defs, counter_defs, vtx_chi2_or_raw_dsa_hists, probe_hists
+from sidm.definitions.objects import (preLj_objs, postLj_objs, postLj_objs_MC, on_demand_preLj_objs,
+                                     on_demand_probe_objs, add_lj_candidates)
 
 def _patched_local2global(stack):
     """
@@ -100,8 +101,11 @@ class SidmProcessor(processor.ProcessorABC):
         # dsaMuonsRaw and the dimuon-vertex tables feed only mu_ljs.vtx_chi2 and the histograms
         # in vtx_chi2_or_raw_dsa_hists: load them, and compute vtx_chi2, only if requested
         self.vtx_chi2_needed = self.needs_vtx_chi2_inputs()
+        # the uncut photon and muon copies, for the probes of the lepton-jet control samples
+        self.probes_needed = self.needs_probe_inputs()
         self.obj_defs = {name: obj_def for name, obj_def in preLj_objs.items()
-                         if self.vtx_chi2_needed or name not in on_demand_preLj_objs}
+                         if (self.vtx_chi2_needed or name not in on_demand_preLj_objs)
+                         and (self.probes_needed or name not in on_demand_probe_objs)}
         self.postLj_objs = postLj_objs
         self.postLj_objs_MC = postLj_objs_MC
         self.verbose = verbose
@@ -702,6 +706,21 @@ class SidmProcessor(processor.ProcessorABC):
         hist_menu = utilities.load_yaml(f"{BASE_DIR}/{self.histograms_cfg}")
         for collection in self.hist_collection_names:
             if set(utilities.flatten(hist_menu.get(collection, []))) & vtx_chi2_or_raw_dsa_hists:
+                return True
+        return False
+
+    def needs_probe_inputs(self):
+        """True if a requested channel has a cut whose name contains "probe", or a requested
+        histogram is in probe_hists: the lepton-jet control samples, whose probes are found in
+        the uncut photon and muon collections (objects.on_demand_probe_objs)."""
+        selection_menu = utilities.load_yaml(f"{BASE_DIR}/{self.selections_cfg}")
+        for channel in self.channel_names:
+            cuts = selection_menu.get(channel, {})
+            if any("probe" in str(cut) for cut in utilities.flatten(cuts)):
+                return True
+        hist_menu = utilities.load_yaml(f"{BASE_DIR}/{self.histograms_cfg}")
+        for collection in self.hist_collection_names:
+            if set(utilities.flatten(hist_menu.get(collection, []))) & probe_hists:
                 return True
         return False
 

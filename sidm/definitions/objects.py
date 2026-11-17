@@ -2,7 +2,7 @@
 
 import awkward as ak
 import numpy as np
-from sidm.tools.utilities import matched, get_pairs
+from sidm.tools.utilities import matched, get_pairs, dR
 
 # define helper functions
 def pid(part, val):
@@ -137,6 +137,13 @@ preLj_objs["patMuonVertex"]    = lambda evts: evts.PatMuonVertex
 preLj_objs["patDsaMuonVertex"] = lambda evts: evts.PatDSAMuonVertex
 # loaded only when a requested channel or histogram needs them (see SidmProcessor.__init__)
 on_demand_preLj_objs = ("dsaMuonsRaw", "dsaMuonVertex", "patMuonVertex", "patDsaMuonVertex")
+# uncut copies of the photon and muon collections for the lepton-jet control samples
+# (sidm/studies/systematics/lj_reco_efficiency.md): their probes are found among all
+# reconstructed objects, while the lepton jets are built from the cut collections. Loaded only
+# when a requested channel or histogram needs them (SidmProcessor.needs_probe_inputs)
+preLj_objs["photonsRaw"] = lambda evts: evts.Photon
+preLj_objs["muonsRaw"]   = lambda evts: evts.Muon
+on_demand_probe_objs = ("photonsRaw", "muonsRaw")
 # define objects whose that will be added to objs by the sidm_processor after LJs are clustered
 # and LJ cuts are applied. postLj_obj cuts can be applied to these
 postLj_objs = {}
@@ -178,3 +185,77 @@ derived_objs["genBSs_toA"]       = lambda objs: toPid(derived_objs["genBSs"](obj
 derived_objs["genBS_from_genAs"] = lambda objs: pid(objs["gens"], 32).sum()
 # final-state generator photons above 5 GeV, to tell real photons from electrons
 derived_objs["genPhotons"] = lambda objs: (lambda g: g[(g.status == 1) & (g.pt > 5)])(pid(objs["gens"], 22))
+
+
+# Probes of the lepton-jet control samples (sidm/studies/systematics/lj_reco_efficiency.md).
+# Each probe carries "passing": whether a selected lepton jet of the type it tests lies within
+# dR < 0.2. The probe definitions do not depend on the lepton jets, so the efficiency is the
+# fraction of passing probes.
+def _alone(probes, objs):
+    """The probes with no lepton jet of the signal selection's kinds (in ljs, so pT > 30 GeV and
+    |eta| < 2.4, with two or more muons or none) farther than dR = 0.4 from them. An event of the
+    signal region holds two such lepton jets, at least one of them away from any probe, so none
+    of its probes is kept and region A is never read; the condition is the same for passing and
+    failing probes."""
+    ljs = objs["ljs"]
+    kinds = ljs[(ljs.muon_n >= 2) | (ljs.muon_n == 0)]
+    pairs = ak.cartesian({"p": probes, "lj": kinds}, nested=True)
+    return probes[~ak.any(pairs.p.delta_r(pairs.lj) > 0.4, axis=-1)]
+
+
+def zmmg_probe_photons(objs, alone=False):
+    """Photons from Z -> mumu gamma, the probes of the egamma-type lepton jets.
+
+    The event has exactly two selected PF muons, of opposite charge, with 35 < m(mumu) < 85 GeV
+    (final-state radiation lowers it). A probe is any reconstructed photon with pT > 20 GeV and
+    |eta| < 2.4, more than 0.5 in dR from both muons, so that the lepton-jet clustering
+    (R = 0.4) keeps it apart from them, and with 60 < m(mumu gamma) < 120 GeV. The field m_mmg
+    holds m(mumu gamma). With alone, only the probes without another lepton jet (_alone).
+    """
+    muons = objs["muons"]
+    pairs = ak.combinations(muons, 2, fields=["mu0", "mu1"])
+    # one pair in events with exactly two muons, none otherwise
+    pairs = pairs[ak.broadcast_arrays(ak.num(muons) == 2, pairs.mu0.pt)[0]]
+    trip = ak.cartesian({"mm": pairs, "g": objs["photonsRaw"]})
+    dimuon = trip.mm.mu0 + trip.mm.mu1
+    m_mmg = (dimuon + trip.g).mass
+    keep = ((trip.mm.mu0.charge != trip.mm.mu1.charge)
+            & (dimuon.mass > 35) & (dimuon.mass < 85)
+            & (trip.g.pt > 20) & (abs(trip.g.eta) < 2.4)
+            & (trip.g.delta_r(trip.mm.mu0) > 0.5) & (trip.g.delta_r(trip.mm.mu1) > 0.5)
+            & (m_mmg > 60) & (m_mmg < 120))
+    probes = trip.g[keep]
+    probes["m_mmg"] = m_mmg[keep]
+    probes["passing"] = dR(probes, objs["egm_ljs"]) < 0.2
+    return _alone(probes, objs) if alone else probes
+
+
+def jpsi_probe_dimuons(objs, alone=False, pt_max=None):
+    """Muon pairs near the J/psi mass, the probes of the muon-type lepton jets.
+
+    Any two tracker muons of the uncut collection, of opposite charge and with |eta| < 2.4,
+    with 2.6 < m < 3.6 GeV (the peak and its sidebands), dR < 0.4 (one lepton-jet cone) and
+    pT(mumu) > 20 GeV, below pt_max if given. No other mass is kept. The signal's dark photon
+    masses (0.25, 1.2 and 5 GeV) are outside the window, but mismeasured pairs of displaced
+    5 GeV dark photons reach it at high pT, which the safety check of the study measures.
+    Fields: the pair's four-vector, dR, and min_pt, the pT of the softer muon. With alone, only
+    the probes without another lepton jet (_alone).
+    """
+    muons = objs["muonsRaw"]
+    muons = muons[muons.isTracker & (abs(muons.eta) < 2.4)]
+    pairs = ak.combinations(muons, 2, fields=["mu0", "mu1"])
+    dimuon = pairs.mu0 + pairs.mu1
+    dr = pairs.mu0.delta_r(pairs.mu1)
+    keep = ((pairs.mu0.charge != pairs.mu1.charge) & (dimuon.mass > 2.6) & (dimuon.mass < 3.6)
+            & (dr < 0.4) & (dimuon.pt > 20))
+    if pt_max is not None:
+        keep = keep & (dimuon.pt < pt_max)
+    probes = dimuon[keep]
+    probes["dR"] = dr[keep]
+    probes["min_pt"] = np.minimum(pairs.mu0.pt, pairs.mu1.pt)[keep]
+    probes["passing"] = dR(probes, objs["mu_ljs"]) < 0.2
+    return _alone(probes, objs) if alone else probes
+
+
+derived_objs["zmmg_probe_photons"] = zmmg_probe_photons
+derived_objs["jpsi_probe_dimuons"] = jpsi_probe_dimuons

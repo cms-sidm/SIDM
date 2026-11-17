@@ -1,0 +1,36 @@
+# Collision data in the two lepton-jet control samples of step 2 of the lepton-jet reconstruction
+# efficiency study (sidm/studies/systematics/lj_reco_efficiency.md): Z -> mumu gamma
+# (egamma-type lepton jets) and boosted J/psi -> mumu (muon-type lepton jets).
+#
+# Approved data use (2026-11-16): the advisor approved reading data in the lepton-jet control
+# samples proposed in lj_reco_efficiency.md, each thought through before its first look; the
+# user set the group's safety criteria (the 4mu working-point decks) as the guide. Only the
+# _alone versions are filled, whose probes have no other lepton jet of the signal selection's
+# kinds, so no event of the signal region enters. Every region they fill is safe in simulation
+# (campaign lj_reco_cr_v2, notebook 07; table in .../lj_reco_cr_v2_results/safety.json), with the
+# stricter sparse-bin rule and the stress test: the worst signal point puts at most 0.01 events in
+# the whole Z -> mumu gamma sample and 3.0 events against 899 background events in the highest
+# J/psi bin (pair pT above 300 GeV). The data step reads the outputs only through
+# systematics_study.lj_cr_data, which checks that table first.
+#
+#     python condor/campaign.py lj_reco_cr_data_v1 jobs
+#     python condor/campaign.py lj_reco_cr_data_v1 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py lj_reco_cr_data_v1 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py lj_reco_cr_data_v1 merge
+
+name: lj_reco_cr_data_v1
+chunk_dir: /store/user/$USER/sidm_condor/LjRecoCrDataChunks_v1
+merged_dir: /store/user/$USER/sidm_coffea_outputs/lj_reco_cr_data_v1
+
+channels: [lj_cr_Z_to_mumugamma_alone, lj_cr_JPsi_to_mumu_alone]
+hist_collections: [lj_reco_control_samples_alone]
+corrections: none
+hist_mode: weighted
+allow_data: true
+
+job_lists:
+  - job_args: job_args_lj_reco_cr_data_v1.txt
+    samples_file: samples_data_doublemuon_2018.txt
+    dataset: skimmed_llpNanoAOD_v2_skimsnano_v2
+    location_cfg: data_skimmed.yaml
+    files_per_job: 50

@@ -156,6 +156,21 @@ base: &base
     - *evt_base
     - "2mu2e"
 
+# The analysis channels of the limits (sidm/studies/limit_plotting, sidm/studies/systematics):
+# the 2mu2e and 4mu categories with the MET filters. Isolation, |dphi|, displacement and
+# m_LJLJ are axes of the abcd6d_* histograms, which shape_tools slices into regions A to D.
+SR_2mu2e:
+  <<: *2mu2e
+  evt_cuts:
+    - *evt_2mu2e
+    - "pass flags"
+
+SR_4mu:
+  <<: *4mu
+  evt_cuts:
+    - *evt_4mu
+    - "pass flags"
+
 # add LJ iso, displacement, and lj-lj dPhi
 base_sr: &base_sr
   obj_cuts: &obj_sr
@@ -705,6 +720,16 @@ looseEndcapE_matched: &looseEndcapE_matched
     electrons:
       - *e_looseEndcapE
       - "dR(e, A) < 0.5"
+
+# denominator of the egamma-type LJ reconstruction efficiency, as baseNoLj_A_mumu is for
+# muon-type LJs (sidm/studies/systematics/lj_reco_efficiency.md)
+baseNoLj_A_ee: &baseNoLj_A_ee
+  <<: *baseNoLj
+  obj_cuts:
+    <<: *obj_baseNoLj
+  evt_cuts:
+    - *evt_baseNoLj
+    - "genAs_toE"
 
 baseNoLj_A_ee_matched_lj: &baseNoLj_A_ee_matched_lj
   <<: *baseNoLj
@@ -1541,6 +1566,41 @@ Z_to_mumu_control_region: &Z_to_mumu_control_region
     - "60 <= inv(Mu_0, Mu_1) <= 120"
     - "n_mu == 2"
     - "dPhi(Mu_0, Mu_1) > 2.4"
+
+# Lepton-jet control samples (sidm/studies/systematics/lj_reco_efficiency.md, step 2). The lepton
+# jets are built and selected as in the efficiency of step 1 (base_ljObjCut); the probes come from
+# the uncut collections (objects.zmmg_probe_photons, objects.jpsi_probe_dimuons), and the
+# histograms of lj_reco_control_samples hold one entry per probe, flagged when a selected lepton
+# jet of the tested type lies within dR < 0.2.
+lj_cr_Z_to_mumugamma: &lj_cr_Z_to_mumugamma
+  <<: *base_ljObjCut
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - ">=1 Z->mumugamma probe photon"
+
+lj_cr_JPsi_to_mumu: &lj_cr_JPsi_to_mumu
+  <<: *base_ljObjCut
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - ">=1 J/psi probe dimuon"
+
+# the version a data campaign reads: only probes without another lepton jet of the signal
+# selection's kinds (objects._alone), so no event of the signal region enters
+lj_cr_Z_to_mumugamma_alone: &lj_cr_Z_to_mumugamma_alone
+  <<: *base_ljObjCut
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - ">=1 Z->mumugamma probe photon alone"
+
+lj_cr_JPsi_to_mumu_alone: &lj_cr_JPsi_to_mumu_alone
+  <<: *base_ljObjCut
+  evt_cuts:
+    - *evt_baseNoLj
+    - "pass flags"
+    - ">=1 J/psi probe dimuon alone"
 
 ttjets_2j2btag: &ttjets_2j2btag
   obj_cuts:

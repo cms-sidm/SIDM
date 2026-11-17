@@ -33,6 +33,10 @@ def main():
     parser.add_argument("--dataset", default="llpNanoAOD_v2")
     parser.add_argument("--location-cfg", default="signal_2mu2e_v10.yaml")
     parser.add_argument("--max-files", type=int, default=None)
+    parser.add_argument("--file-stride", type=int, default=None,
+                        help="keep every Nth file of each sample, starting with the first: an "
+                             "even subset of a sample whose files are alike, e.g. data spread "
+                             "uniformly over the run periods")
     parser.add_argument("--files-per-job", type=int, default=1)
     parser.add_argument("--files-per-job-map", default=None,
                         help="YAML of {sample: files per job} overriding --files-per-job for the "
@@ -79,6 +83,8 @@ def main():
                 files = list(sample_info["files"])
             else:
                 files = list(sample_info)
+            if args.file_stride:
+                files = files[::args.file_stride]
 
             step = files_per_job_for(sample, files_per_job, args.files_per_job,
                                      args.max_files_per_job)
