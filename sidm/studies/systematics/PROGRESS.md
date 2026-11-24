@@ -5,45 +5,60 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-17, 15:10)
+## Current state (2026-11-23, 22:40)
 
-**Step 2 of the lepton-jet efficiency done for the prompt regime (`lj_reco_efficiency.md`).** The
-user set the 4mu working-point deck's safety criteria as the guide for reading data (now a general
-rule in AGENTS.md) and allowed committing results from approved data uses.
+**Working on the review of PR #90 and the feedback on step 2 (2026-11-23); the user approved the
+plan below.** Campaigns running on Condor; nothing of them read yet.
+- **PR comment on `hists.py` (PR #71):** the `abcd6d_*` axes read the two leading `ljs`, the
+  event cuts the analysis pair `candidate_ljs`; with `main`'s pair selection the old 2mu2e axes
+  could pick two muon-type jets and fail to fill for a whole chunk. Fixed in `43e9ae1` (axes on
+  `candidate_ljs`, test in `tests/test_lj_collections.py`). On signal at the working points it moves
+  at most 0.15% of region A (69 of 19,935 2mu2e and 3 of 15,689 4mu signal events have another
+  pair). This also makes the spread cuts reach the ABCD histograms (open question 4). Campaigns
+  `systematics_v3` (3,158 jobs) and `systematics_data_v2` (2,580 jobs, data B, C, D, the approved
+  use) submitted 2026-11-23 21:52, same chunks and files as v2 and data_v1. Notebooks 03 to 05
+  point at `systematics_v3` (not rerun yet), as does `sidm/studies/sr_mljlj` (untracked).
+- **PR comment on `selections.yaml` (MET filters):** moved into `baseNoLjNoLjsource` on its own
+  branch `passFlagsInBase` (`28a34f9`, off upstream `main`, for a separate PR, the user's choice):
+  83 selections gain the filters, none lose them. Whichever of it and PR #90 merges second drops
+  the explicit `"pass flags"` of `SR_2mu2e`/`SR_4mu`.
+- **Feedback on step 2:** strategy agreed; signal bins without a measurement take the nearest
+  measured bin, each case recorded (now in `lj_reco_efficiency.md`, step 3; questions 4 and 5 there
+  dropped). New code in `1aa8f3a`: Z -> mumu gamma with the FSR selection, J/psi against the
+  vertex displacement, the generator truth (closure test, efficiency against the J/psi production
+  radius) and the DSA muons of prompt muons (Z -> mumu tag and probe, J/psi pairs; simulation only,
+  no trigger in the channels, trigger decisions as axes). Campaign `lj_reco_cr_v3` (1,926 jobs,
+  simulation) submitted 22:30. Notebook 07 has a section 6 for it and notebook 09
+  (`09_dsa_prompt_muons.ipynb`) is new; both wait for the campaign, interpretations to be written.
+- **Checked already:** the DSA displaced ID equals its four hit and fit cuts for all 6,964 DSA
+  muons of a Drell-Yan file (no impact-parameter cut). On a few test files, the FSR selection makes
+  the Z peak 100% FSR photons (83% before) with 62% of the probes; the DSA passing fraction of
+  prompt Drell-Yan muons is 0.82, 0.84 with the analysis triggers, 0.82 with Mu37_TkMu27.
+
+**Next, in order:** merge `systematics_v3` and `systematics_data_v2`, rerun 03, 04, 05 and the
+sr_mljlj notebook, update the README, AN Sec. 7 and the decks; merge `lj_reco_cr_v3`, run 07
+(section 6) and 09, and with the safety table of section 6 write `lj_reco_cr_data_v2` (data,
+`lj_reco_control_samples_v3`, the safe regions only), then 08; a summary deck of all of it; the
+replies to the two PR comments and the PR description for the user.
+
+## State of 2026-11-17 (step 2 for the prompt regime)
+
 - **Simulation:** campaign `lj_reco_cr_v2`, notebook 07: every region of both control samples is
-  safe (with the sparse-bin rule, switch `STRICT_SPARSE_BINS`, used until the advisor rules).
-- **Data:** campaign `lj_reco_cr_data_v1` complete (2,590 chunks: 2,580 plus 10 extra chunks for 65
-  files that failed to read at first; 463 empty files skipped, as in `systematics_data_v1`; 68
+  safe (with the sparse-bin rule, switch `STRICT_SPARSE_BINS`).
+- **Data:** campaign `lj_reco_cr_data_v1` complete (2,590 chunks; 463 empty files skipped; 68
   samples merged). Notebook 08, read through the safety table: muon-type (J/ψ, above 50 GeV)
   data/simulation 0.988 ± 0.006 (endcaps 0.976 ± 0.008); egamma-type (Z → μμγ, unconverted
   photons above 30 GeV) 1.01 ± 0.04, 0.80 ± 0.08 above 60 GeV (112 probes).
-- **AN Sec. 7:** the lepton-jet reconstruction subsection now holds the measurement (two figures,
-  `efficiency_jpsi_above50_data_simulation.pdf` and `efficiency_zmmg_data_simulation.pdf` in
-  `an_systematics/`), replacing the authors' placeholder, in the advisor's style; compiles.
-- **Deck** `slides/systematics.tex`: 38 pages with the data results (local). It presents the
-  study only: no AN updates and no references to the advisor (the user's rules, 2026-11-17).
-  The limit breakdown figure is redrawn to be readable; the signal-injection slide (notebook 05)
-  has the same problem and is not redrawn yet.
-- **Upstream `main` merged** (2026-11-17): it holds its own version of the campaign tool, with the
-  same `allow_data` opt-in, so the merge takes `main`'s campaign tool and re-applies only
-  `file_stride`. `main` also selects the leading lepton-jet pair that survives the subtype cuts
-  (commits 0404af3, f0c4836 and later, S. Abbott). The control-sample histograms are identical
-  before and after the merge (checked on Drell-Yan, QCD and a signal file), but the signal-region
-  yields change (`abcd6d_2mu2e` -1.3% for 2Mu2E 500/1.2/30 cm, `abcd6d_4mu` -3.3% for 4Mu at the
-  same point): the campaigns `systematics_v2` and `systematics_data_v1`, and every number of
-  notebooks 03 to 05 and AN Sec. 7, predate it. A rerun (`systematics_v3`, `systematics_data_v2`)
-  would align them with `main`; the new pair selection may also settle the spread-cut part of open
-  question 4 (to check).
-- **Commits** on `systematicsStudy`: pushed by the user up to the merge `e8db8ba`; after it, the
-  redrawn limit breakdown and the AGENTS.md rule that agents do not list themselves as authors.
+- **AN Sec. 7** holds the measurement (two figures in `an_systematics/`); the deck
+  `slides/systematics.tex` (38 pages, local) presents the study only: no AN updates and no
+  references to the advisor (the user's rules).
+- **Upstream `main` merged** (2026-11-17), with its lepton-jet pair selection (S. Abbott): the
+  control-sample histograms are unchanged by it, the signal-region yields are not (−1.3% for 2Mu2E
+  500/1.2/30 cm, −3.3% for 4Mu), which `systematics_v3` and `systematics_data_v2` take in.
 
 **The user's workflow (2026-11-16):** after running anything, update the AN (in the advisor's
 style, `an_systematics/WRITING_GUIDE.md`), then the summary deck (the study's results, without
 the AN updates), then commit and paste an updated PR description in chat. Keep `slides/` and `an_systematics/` local.
-
-**Next:** step 3 (per-lepton-jet scale factors for the prompt regime, `Corrections` extension,
-two registry entries, rerun of 03 to 05), after the group's answers to questions 2 to 6 of
-`lj_reco_efficiency.md`; a purer Z → μμγ probe for converted photons (a new version of the sample).
 
 ## State before step 2 (2026-11-16, 17:10)
 
@@ -191,6 +206,13 @@ only.
   --inplace --ExecutePreprocessor.timeout=7200 --ExecutePreprocessor.kernel_name=python3 <notebook>`.
 
 ## Log (newest first)
+
+### 2026-11-23
+
+- (22:40) Review of PR #90 (two comments) and the feedback on step 2: fixed the ABCD axes
+  (`43e9ae1`), moved the MET filters into the base selection on a separate branch (`28a34f9`),
+  wrote the v3 control samples and the DSA study (`1aa8f3a`), and submitted `systematics_v3`,
+  `systematics_data_v2` and `lj_reco_cr_v3`. Notebooks 07 (section 6) and 09 written, not run.
 
 ### 2026-11-17
 
