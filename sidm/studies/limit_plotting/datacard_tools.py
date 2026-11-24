@@ -222,6 +222,19 @@ CAMPAIGNS = {
              "the output metadata); same channels, histograms and samples. Data in the same "
              "channels: systematics_data_v1, signal-plane regions B, C and D only.",
     ),
+    "systematics_v3": Campaign(
+        name="systematics_v3",
+        # as systematics_v2; the data come from systematics_data_v2, read for regions B, C
+        # and D only (the use approved 2026-11-16; region A never read)
+        bkg_dir=f"{_EOS_SYST}/systematics_v3",
+        signal_dir=f"{_EOS_SYST}/systematics_v3",
+        data_dir=f"{_EOS_SYST}/systematics_data_v2",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="systematics_v2 remade with the abcd6d_* axes on the analysis pair "
+             "(candidate_ljs, PR #71) instead of the two leading lepton jets, and with the "
+             "events selected by that pair; same channels, histograms and samples. Data in "
+             "the same channels: systematics_data_v2, signal-plane regions B, C and D only.",
+    ),
 }
 
 DEFAULT_CAMPAIGN = "golden_hotspot_iso025_v1"

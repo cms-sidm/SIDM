@@ -515,21 +515,22 @@ def log_axis(nbins, xmin, xmax, name, label):
 
 # Inputs of the ABCD limits (sidm/studies/limit_plotting/shape_tools.py, "the 6D inclusive
 # layout"): every variable that splits regions A to D is an axis, so shape_tools slices the
-# regions and the m_LJLJ shape out of one histogram per final state. LJ0 is the muon-type
-# lepton jet of the two leading ones (the leading one in 4mu), LJ1 the other one (the
-# egamma-type one in 2mu2e, the subleading one in 4mu). The edges hold the cuts of every
-# working point used so far, so that each region is a sum of whole bins.
+# regions and the m_LJLJ shape out of one histogram per final state. The axes read the
+# analysis pair (candidate_ljs, sidm/definitions/README.md), the pair the 2mu2e and 4mu
+# event cuts select: LJ0 is its muon-type lepton jet (the leading one in 4mu), LJ1 the other
+# one (the egamma-type one in 2mu2e, the subleading one in 4mu). The edges hold the cuts of
+# every working point used so far, so that each region is a sum of whole bins.
 ABCD_ISO_EDGES = [0, 0.25, 0.3, 0.5]
 ABCD_HITS_EDGES = [-0.5, 0.5, 2.5, 3.5]
 ABCD_DPHI_EDGES = [0, 2.0, 2.4, 2.6, math.pi]
 ABCD_MASS_EDGES = [0, 150, 200, 300, 400, 600, 800, 1000, 1500, 2500]
 
 def abcd_ljs(objs, mask):
-    """The two leading lepton jets of the masked events, muon-type first
+    """The analysis pair of the masked events, muon-type first
 
     The sort is stable, so in 4mu, where both are muon-type, they stay in pT order.
     """
-    ljs = objs["ljs"][mask, :2]
+    ljs = objs["candidate_ljs"][mask]
     return ljs[ak.argsort(ljs.muon_n >= 2, ascending=False, stable=True)]
 
 def lj_pixel_hits(lj):
@@ -560,9 +561,10 @@ def abcd6d_hist(final_state, iso_scale=1.0):
         h.Axis(hist.axis.Variable(ABCD_HITS_EDGES, name="disp1", label=disp1_label),
                lambda objs, mask: disp1(abcd_ljs(objs, mask)[:, 1])),
         h.Axis(hist.axis.Variable(ABCD_DPHI_EDGES, name="abs_dphi", label=r"$|\Delta\phi|$ (LJ0, LJ1)"),
-               lambda objs, mask: abs(delta_phi(objs["ljs"][mask, 1].phi, objs["ljs"][mask, 0].phi))),
+               lambda objs, mask: abs(delta_phi(objs["candidate_ljs"][mask, 1].phi,
+                                                objs["candidate_ljs"][mask, 0].phi))),
         h.Axis(hist.axis.Variable(ABCD_MASS_EDGES, name="ljlj_mass", label=r"$m_{LJLJ}$ (GeV)"),
-               lambda objs, mask: objs["ljs"][mask, :2].sum().mass),
+               lambda objs, mask: objs["candidate_ljs"][mask].sum().mass),
     ], evt_mask=evt_cut_defs[final_state])
 
 # muon mass (GeV) used to build the four-vectors of muon-LJ constituents, which mix PF and DSA

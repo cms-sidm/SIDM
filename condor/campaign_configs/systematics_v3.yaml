@@ -1,0 +1,47 @@
+# The ABCD limit inputs with every weight variation (sidm/studies/systematics): every v10
+# signal point and every skimmed background, simulation only, in the two analysis channels,
+# with the default corrections and the syst axis on the abcd6d_* histograms. The limits
+# notebook (sidm/studies/systematics/03_limits.ipynb) reads merged_dir.
+#
+# Supersedes systematics_v2, which has the same channels, histograms and samples: in v3 the
+# axes of the abcd6d_* histograms (isolations, displacements, |dphi|, m_LJLJ) read the
+# analysis pair, candidate_ljs (PR #71, sidm/definitions/README.md), the pair the 2mu2e and
+# 4mu event cuts select, instead of the two leading lepton jets; and the events are selected
+# with that pair (upstream main, merged 2026-11-17), which v2 predates.
+#
+#     python condor/campaign.py systematics_v3 jobs
+#     python condor/campaign.py systematics_v3 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py systematics_v3 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py systematics_v3 merge
+
+name: systematics_v3
+chunk_dir: /store/user/$USER/sidm_condor/SystematicsChunks_v3
+merged_dir: /store/user/$USER/sidm_coffea_outputs/systematics_v3
+
+channels: [SR_2mu2e, SR_4mu]
+hist_collections: [abcd_limits]
+corrections: default
+hist_mode: syst
+
+# the same samples and files per job as the corrections campaign
+job_lists:
+  - job_args: job_args_systematics_v3_2mu2e.txt
+    samples_file: samples_corrections_2mu2e.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_2mu2e_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_systematics_v3_4mu.txt
+    samples_file: samples_corrections_4mu.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_4mu_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_systematics_v3_background.txt
+    samples_file: samples_corrections_background.txt
+    dataset: skimmed_llpNanoAOD_v2
+    location_cfg: backgrounds.yaml
+    files_per_job: 25
+    files_per_job_map: files_per_job_corrections.yaml
+    census_skip: backgrounds_skimmed.skip.json
+    replace_xcache: true
