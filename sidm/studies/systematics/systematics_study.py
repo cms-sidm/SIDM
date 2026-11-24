@@ -1229,11 +1229,12 @@ def closure(h, spec, axis):
 
 
 def efficiency_ratio(data, simulation):
-    """The data/simulation ratio of two probe_efficiency results, with its uncertainty"""
+    """The data/simulation ratio of two probe_efficiency results, with its uncertainty (positive
+    also where the sideband subtraction leaves a passing fraction below zero)"""
     with np.errstate(divide="ignore", invalid="ignore"):
         ratio = data["eff"] / simulation["eff"]
-        err = ratio * np.sqrt((data["err"] / data["eff"]) ** 2
-                              + (simulation["err"] / simulation["eff"]) ** 2)
+        err = np.abs(ratio) * np.sqrt((data["err"] / data["eff"]) ** 2
+                                      + (simulation["err"] / simulation["eff"]) ** 2)
     return ratio, err
 
 
@@ -1341,13 +1342,22 @@ def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt", specs=None
         keep = readable_bins(rows, cr, axis)
         require_safe(rows, cr, [f"{split} {label}" for label, index in _slices(axis)
                                 if index in keep])
-        k = [a.name for a in h.axes].index(split)
-        view = h.view(flow=True)
-        index = [slice(None)] * view.ndim
-        index[k] = [i for i in range(view.shape[k]) if i not in keep]
-        for field in ("value", "variance"):     # the weighted view takes no scalar as a whole
-            view[field][tuple(index)] = 0.0
+        zero_unreadable(h, rows, cr, split)
     return out
+
+
+def zero_unreadable(h, rows, cr, split):
+    """Set to zero, in place, every bin of the split axis of h that the safety table (rows) does
+    not mark readable for control sample cr, and return h: what lj_cr_data does to the data, so
+    that the simulation compared with them can cover the same regions"""
+    keep = readable_bins(rows, cr, h.axes[split])
+    k = [a.name for a in h.axes].index(split)
+    view = h.view(flow=True)
+    index = [slice(None)] * view.ndim
+    index[k] = [i for i in range(view.shape[k]) if i not in keep]
+    for field in ("value", "variance"):     # the weighted view takes no scalar as a whole
+        view[field][tuple(index)] = 0.0
+    return h
 
 
 # where 08_lj_reco_data.ipynb writes its figures and the passing fractions in data and simulation

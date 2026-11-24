@@ -5,11 +5,12 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-24, 09:00)
+## Current state (2026-11-24, 12:20)
 
-**Working on the review of PR #90 and the feedback on step 2; the user approved the plan
-(2026-11-23).** Part 1 (the limits on the analysis pair) is done and committed; part 2 (version 3
-of the control samples) is done in simulation, and its data campaign is running.
+**The review of PR #90 and the feedback on step 2 are done and committed, not yet pushed.**
+Part 1 (the limits on the analysis pair) and part 2 (version 3 of the control samples, in
+simulation and in data) are finished; the user pushes, answers the two review comments, and opens
+the MET-filter PR.
 - **Part 1, done.** `systematics_v3` (3,158 chunks, 4 empty files skipped) and
   `systematics_data_v2` (2,580 chunks, 463 empty files skipped) merged; notebooks 03, 04, 05 rerun
   on them with rewritten interpretations; README and AN Sec. 7 (local) updated. Data B, C, D:
@@ -37,16 +38,24 @@ of the control samples) is done in simulation, and its data campaign is running.
 - **Safety of version 3:** every region of the FSR Z sample is safe; every J/ψ vertex bin below
   15 cm is safe; the bin above 15 cm is a caution for shape uses (4Mu, 800 GeV, 5 GeV, 5 mm: 4.1
   events against 9,300, binned Z 1.28) and is never read (`lj_cr_data` zeroes it).
-- **Part 2, data running.** `lj_reco_cr_data_v2` (2,580 jobs, cluster 5083933 on lpcschedd4)
-  submitted at 08:32, the config's header naming the approved use and the safety result; the code
-  tarball was current (same files and contents as the working tree). A scratch watcher moves slow
-  jobs every 30 minutes. v1 took 22 minutes a job.
+- **Part 2, data done.** `lj_reco_cr_data_v2` complete (2,580 chunks, the 463 empty files
+  skipped, 68 samples merged at 11:45; the watcher moved 12 slow jobs, which then ran 17 to 27
+  minutes). Notebook 08, section 6, run and interpreted. J/ψ above 50 GeV: the passing fraction in
+  data is 0.979 to 0.985 at every vertex L_xy from 0 to 15 cm, data/simulation 0.995 ± 0.003
+  above 1 mm; below 0.5 mm the simulated passing fraction exceeds one (few simulated prompt
+  J/ψ), which the integrated ratio of v2 (0.988 ± 0.006) contains. Converted photons (FSR
+  selection, above 30 GeV): data/Drell-Yan 0.94 ± 0.10, limited by the simulated statistics;
+  unconverted 1.02 ± 0.04 (0.86 ± 0.09 above 60 GeV). `efficiency_ratio` now gives a positive
+  uncertainty where the subtraction leaves a negative passing fraction (below the 30 GeV
+  threshold), which had stopped the plot. Sections 1 to 5 print the same as before.
+- **Documents:** README, `lj_reco_efficiency.md`, AN Sec. 7 (local: the J/ψ displacement with a
+  new figure, the egamma comparison rewritten with the FSR selection for converted and
+  unconverted photons) and the summary deck `slides/summary_2026-11-24.tex` (24 pages, local)
+  updated.
 
-**Next, in order:** when `lj_reco_cr_data_v2` is complete (`status`, `retry --submit`,
-`skipped --submit`), merge it; append section 6 to 08 with the scratch generator
-`make_nb08_v3.py`, run 08 and fill its interpretations; README, `lj_reco_efficiency.md` and AN
-Sec. 7 (local) with the data results; part 2 of the summary deck `slides/summary_2026-11-24.tex`;
-commit; the PR texts for the user.
+**Next:** the user pushes `systematicsStudy` and `passFlagsInBase` (replies and PR texts were
+given in chat); step 3 (per-lepton-jet scale factors) waits on the group's answers in
+`lj_reco_efficiency.md` ("What is needed").
 
 ## State of 2026-11-17 (step 2 for the prompt regime)
 
@@ -216,6 +225,11 @@ only.
 
 ### 2026-11-24
 
+- (12:20) `lj_reco_cr_data_v2` complete and merged; notebook 08 section 6 run with interpretations
+  (J/ψ flat in the vertex displacement out to 15 cm, data/simulation 0.995 ± 0.003 above 1 mm;
+  converted photons data/Drell-Yan 0.94 ± 0.10; unconverted 1.02 ± 0.04). `efficiency_ratio`
+  fixed for negative passing fractions. README, `lj_reco_efficiency.md`, AN Sec. 7 and the deck
+  (two data slides) updated; committed.
 - (09:00) `lj_reco_cr_v3` complete and merged (the last QCD chunk ran 175 minutes on a normal
   node after a move off a slow one). Notebooks 07 and 09 run and interpreted: the sideband
   subtraction closes for the J/ψ probes above ΔR = 0.03 and, with the FSR selection, for the

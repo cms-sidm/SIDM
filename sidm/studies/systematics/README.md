@@ -446,7 +446,9 @@ cannot; the channels `lj_cr_Z_to_mumugamma` and `lj_cr_JPsi_to_mumu`, and their 
 versions without events of the signal region (the only ones data read), ran in the simulation
 campaign `lj_reco_cr_v2`, whose signal side is the safety check (the group's criteria, bin by
 bin): every region of both samples is safe, so the data campaign `lj_reco_cr_data_v1` read them
-in full (`08_lj_reco_data.ipynb`). Step 3 waits on the group (scale-factor
+in full (`08_lj_reco_data.ipynb`). Version 3 (2026-11-24) adds converted photons, with a
+selection of final-state radiation, and the J/ψ probes against the displacement of their vertex,
+in simulation (`lj_reco_cr_v3`) and in data (`lj_reco_cr_data_v2`). Step 3 waits on the group (scale-factor
 granularity, provisional value, the most collimated muon pairs, and the regimes no control
 sample reaches).
 
@@ -498,6 +500,32 @@ baskets in muon-vertex branches, which only these histograms read, are left out.
 - **Not measured:** displaced DSA muons, converted photons, prompt electron pairs, the most
   collimated muon pairs.
 
+### Results of step 2, version 3, in data (2026-11-24, `08_lj_reco_data.ipynb` section 6)
+
+Campaign `lj_reco_cr_data_v2`: all 2018 DoubleMuon files (2,580 jobs, the 463 empty files
+skipped), the histograms of version 3 of the alone versions only, read through the safety table of
+version 3. Every region is read except the J/ψ vertex bin above 15 cm, which `lj_cr_data` sets to
+zero, and the comparison sets it to zero in the simulation too. Outputs in
+`/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v2_results/`.
+
+- **Muon-type against the vertex displacement:** above 50 GeV the passing fraction in data is
+  0.979 to 0.985 in every bin from 0 to 15 cm. For L_xy above 1 mm, where the simulation is precise,
+  data/simulation is **0.995 ± 0.003** (0.989 to 0.998 per bin out to 5 cm, 1.02 ± 0.12 from 5 to
+  15 cm). Below 0.5 mm the simulation, whose J/ψ come almost only from b-hadron decays (1.6% of its
+  probes within 0.1 mm against 7.9% in data), gives passing fractions at or above one after the
+  subtraction, so the ratio there (0.98) says nothing about the data. The integrated ratio of
+  version 2 (0.988 ± 0.006) contains that region.
+- **Converted photons (FSR selection, R9 < 0.94, above 30 GeV):** 0.908 ± 0.048 in data (512 probes)
+  and 0.966 ± 0.094 in Drell-Yan, a ratio of **0.94 ± 0.10** (0.95 ± 0.11 from 30 to 60 GeV; 30 data
+  probes above). The simulated statistics set the precision. The sidebands remove about half of the
+  peak, in data (0.54) as in the simulation (0.58), where the closure test agrees within its
+  uncertainties.
+- **Unconverted photons (FSR selection, R9 ≥ 0.94, above 30 GeV):** 0.834 ± 0.013 in data and 0.816
+  ± 0.026 in Drell-Yan, a ratio of **1.02 ± 0.04** (1.04 ± 0.04 from 30 to 60 GeV, 0.86 ± 0.09 above
+  60 GeV), in line with version 2.
+- **Still not measured:** displaced DSA muons, prompt electron pairs, muon pairs below ΔR = 0.03,
+  converted photons above 60 GeV.
+
 ### Results of step 1 (2026-11-14)
 
 - **Regimes.** On the limit grid only the shortest lifetime of each mass pair decays mostly
@@ -543,9 +571,9 @@ baskets in muon-vertex branches, which only these histograms read, are left out.
 6. The JER smearing: apply it to the matched jets in the nominal simulation or keep it as an
    uncertainty, together with the isolation definition (corrections open item 5).
 7. The lepton-jet reconstruction efficiency: step 1 is done (`06_lj_reco_efficiency.ipynb`);
-   step 2 is done for the prompt regime and version 3 is under way (simulation and safety check
-   done, data campaign `lj_reco_cr_data_v2` for the safe regions); step 3 and a data measurement
-   of DSA muons wait on the questions for the group in
+   step 2 is done for the prompt regime, with version 3 (converted photons, the J/ψ vertex
+   displacement) in simulation and data; step 3 and a data measurement of DSA muons wait on the
+   questions for the group in
    [`lj_reco_efficiency.md`](lj_reco_efficiency.md).
 
 ## Notebooks
@@ -559,7 +587,7 @@ baskets in muon-vertex branches, which only these histograms read, are left out.
 | [`05_fit_checks.ipynb`](05_fit_checks.ipynb) | checks of the fit: signal injection with toys, likelihood scans, correlations | outputs of 03 | about 5 min |
 | [`06_lj_reco_efficiency.ipynb`](06_lj_reco_efficiency.ipynb) | step 1 of the lepton-jet reconstruction efficiency: the efficiency against $L_{xy}$, $p_T$ and the opening angle, its maps, and the decay-radius regimes of every signal point | `lj_reco_eff_v1` | about 1 min |
 | [`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb) | step 2 of the lepton-jet reconstruction efficiency, simulation part: the Z → μμγ and J/ψ → μμ probes, the safety check that decides which regions data may read (table written to EOS), the efficiencies the simulation expects; section 6, version 3: the closure test of the sideband subtraction, the efficiency against the J/ψ production radius, converted photons with the FSR selection, the J/ψ vertex displacement, and their safety check | `lj_reco_cr_v2`, `lj_reco_cr_v3` | about 1 min |
-| [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb) | step 2 of the lepton-jet reconstruction efficiency, data part: the passing fractions of the control samples in data against the simulation, read only through the safety tables of 07 | `lj_reco_cr_data_v1`, `lj_reco_cr_v2` | about 2 min |
+| [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb) | step 2 of the lepton-jet reconstruction efficiency, data part: the passing fractions of the control samples in data against the simulation, read only through the safety tables of 07; section 6, version 3: converted and unconverted photons of the FSR selection, and the J/ψ probes against their vertex displacement | `lj_reco_cr_data_v1`, `lj_reco_cr_v2`, `lj_reco_cr_data_v2`, `lj_reco_cr_v3` | about 10 min |
 | [`09_dsa_prompt_muons.ipynb`](09_dsa_prompt_muons.ipynb) | the DSA muons of prompt muons, in simulation: the displaced ID, Z → μμ tag and probe and J/ψ pairs, the bias of each trigger, and what a data measurement needs | `lj_reco_cr_v3` | under 1 min |
 
 Notebooks 01 and 02 read the merged outputs of the corrections campaign

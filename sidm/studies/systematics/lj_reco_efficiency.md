@@ -216,6 +216,31 @@ DSA muons of prompt muons.
   measurement in data needs SingleMuon ntuples, since ours are skimmed on the analysis triggers
   (question 5).
 
+**Version 3 in data** (campaign `lj_reco_cr_data_v2`, all 2018 DoubleMuon files, the alone
+versions only, read through the safety table of version 3; notebook
+[`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb), section 6; outputs in
+`/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v2_results/`). Every region is read
+except the J/ψ vertex bin above 15 cm, which is set to zero in data and in the simulation.
+
+- **Muon-type against the vertex displacement.** Above 50 GeV the passing fraction in data is 0.979
+  to 0.985 in every bin of L_xy from 0 to 15 cm. For L_xy above 1 mm, where the simulation is
+  precise, data/simulation is **0.995 ± 0.003** (0.989 to 0.998 per bin out to 5 cm, 1.02 ± 0.12
+  from 5 to 15 cm). Below 0.5 mm the simulation holds few of its J/ψ (1.6% within 0.1 mm, against
+  7.9% of the data) and its subtraction gives passing fractions at or above one, so the ratio of
+  0.98 there, which the integrated ratio of version 2 (0.988 ± 0.006) contains, reflects the
+  simulation rather than the data.
+- **Converted photons** (the FSR selection, R9 < 0.94, above 30 GeV). 0.908 ± 0.048 in data (512
+  probes) and 0.966 ± 0.094 in Drell-Yan, a ratio of **0.94 ± 0.10** (0.95 ± 0.11 from 30 to 60
+  GeV; 30 data probes above), with the precision set by the simulated statistics. Against R9 the
+  ratio is 0.76 ± 0.19, 0.91 ± 0.19 and 0.91 ± 0.17 from 0.5 to 0.94. The sidebands remove about
+  half of the peak in data (0.54) as in the simulation (0.58), where the closure test agrees within
+  its uncertainties.
+- **Unconverted photons** (the FSR selection, R9 ≥ 0.94, above 30 GeV). 0.834 ± 0.013 in data and
+  0.816 ± 0.026 in Drell-Yan, a ratio of **1.02 ± 0.04** (1.04 ± 0.04 from 30 to 60 GeV, 0.86 ± 0.09
+  above 60 GeV), in line with the selection of version 2.
+- **Still not measured:** displaced DSA muons, prompt electron pairs, muon pairs below ΔR = 0.03,
+  converted photons above 60 GeV. Their scale factors come from the nearest measured bin (step 3).
+
 ### Step 3: from ratios to a correction
 
 - **Correction.** The data/simulation ratios become per-LJ scale factors with an up and a
