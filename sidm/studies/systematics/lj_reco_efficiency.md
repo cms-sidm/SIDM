@@ -184,6 +184,38 @@ outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1_results/
   and the most collimated muon pairs. Their scale factors come from the nearest measured bin, each
   case recorded (step 3, "Bins without a measurement").
 
+**Version 3 in simulation** (campaign `lj_reco_cr_v3`, 2026-11-24; notebook 07, section 6, and
+[`09_dsa_prompt_muons.ipynb`](09_dsa_prompt_muons.ipynb); outputs in
+`/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v3_results/`): the generator truth of the
+probes, a purer Z → μμγ sample, the J/ψ probes against the displacement of their vertex, and the
+DSA muons of prompt muons.
+
+- **Closure of the sideband subtraction.** Muon-type: it agrees with the generator truth to 0.02
+  where the statistics are large and within the uncertainties from 30 GeV and ΔR = 0.03 up, but not
+  below ΔR = 0.03 (0.29 ± 0.25 and 0.83 ± 0.07 against 0.96 and 0.94). Egamma-type: with the
+  selection of v2 the sidebands lie 0.11 above the truth on average (2.8 standard deviations
+  together), with the FSR selection 0.06 (1.6), every bin within 2 standard deviations;
+  unconverted photons agree in both.
+- **Production radius.** Above 50 GeV, 97% of the simulated J/ψ come from b-hadron decays, most made
+  0.2 to 2 cm from the beam line. The passing fraction is 1.00 within 0.5 mm and 0.98 to 0.99 out
+  to 5 cm, so the mix of prompt and non-prompt J/ψ in data matters at 2% at most.
+- **Converted photons.** The FSR selection (both muons isolated, m(μμ) + m(μμγ) < 180 GeV) removes
+  the QCD probes from the Z peak and keeps 84% of the Drell-Yan ones. With every background the
+  fraction of FSR photons for R9 from 0.5 to 0.94 rises from 0.22 to 0.64 to 0.65 to 0.82; about
+  680 such photons are expected in data.
+- **J/ψ vertex displacement.** The passing fraction is flat, 0.98 to 1.00 out to 5 cm (0.96 ± 0.11
+  from 5 to 15 cm).
+- **Safety.** Every region of the FSR sample is safe (0.002 signal events in the worst case), and
+  every J/ψ vertex bin below 15 cm (at most 0.55 events, binned Z at most 0.40). Above 15 cm, 4Mu at
+  800 GeV, 5 GeV, 5 mm puts 4.1 events against 9,300 (binned Z 1.28, a caution for shape uses), so
+  that bin is never read. The data campaign is `lj_reco_cr_data_v2`.
+- **DSA muons of prompt muons.** The displaced ID has no impact-parameter cut, so prompt muons test
+  it. 81% of the prompt muons of Z → μμ have a selected DSA muon (0.85 in the barrel, 0.56 above
+  |η| = 2.1); both muons of a boosted J/ψ have one only 44 to 52% of the time above 40 GeV. The
+  analysis triggers raise the fraction by 3.3 points (0.14 to 0.23 for pairs), IsoMu24 does not. A
+  measurement in data needs SingleMuon ntuples, since ours are skimmed on the analysis triggers
+  (question 5).
+
 ### Step 3: from ratios to a correction
 
 - **Correction.** The data/simulation ratios become per-LJ scale factors with an up and a
@@ -226,3 +258,7 @@ do.
 4. **The sparse-bin rule** (raised by step 2, for the advisor). Whether a region's bins that expect
    under one background event should be judged together as one more region, as done here, or
    left out of the verdict, as in the working-point decks.
+5. **DSA muons in data.** Whether to produce 2018 SingleMuon ntuples for a Z → μμ tag-and-probe
+   measurement of the DSA reconstruction and selection with IsoMu24 (notebook 09, section 5), and
+   whether the efficiency for two collimated DSA muons can come from the simulation with an
+   uncertainty set by the single-muon scale factor.

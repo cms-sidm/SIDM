@@ -5,11 +5,11 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-24, 06:20)
+## Current state (2026-11-24, 09:00)
 
 **Working on the review of PR #90 and the feedback on step 2; the user approved the plan
 (2026-11-23).** Part 1 (the limits on the analysis pair) is done and committed; part 2 (version 3
-of the control samples) waits on its last Condor jobs.
+of the control samples) is done in simulation, and its data campaign is running.
 - **Part 1, done.** `systematics_v3` (3,158 chunks, 4 empty files skipped) and
   `systematics_data_v2` (2,580 chunks, 463 empty files skipped) merged; notebooks 03, 04, 05 rerun
   on them with rewritten interpretations; README and AN Sec. 7 (local) updated. Data B, C, D:
@@ -24,20 +24,29 @@ of the control samples) waits on its last Condor jobs.
 - **MET filters:** branch `passFlagsInBase` (`28a34f9`, off upstream `main`) for a separate PR,
   not pushed yet; its description is ready for the user. Whichever of it and PR #90 merges second
   drops the explicit `"pass flags"` of `SR_2mu2e`/`SR_4mu`.
-- **Part 2, running.** `lj_reco_cr_v3`: 1,921 of 1,926 chunks done; 4 QCD chunks moved off slow
-  nodes at 04:55 and 05:25 (each about 2.5 hours from then), one retry and one skipped-file chunk
-  queued. Ten signal files fail every attempt: their `DSAMuonVertex_isValid` branch cannot be
-  decompressed (lzma data error, checked by reading every branch of one of them), a branch only
-  the v3 histograms read; the campaign tool dropped them (`condor/campaigns/lj_reco_cr_v3/bad_files.txt`).
-- **Notebooks 07 (section 6) and 09:** figures fixed (CMS label per panel, categorical axes,
-  an FSR-purity figure) and checked on a partial merge; interpretations still to be written.
+- **Part 2, simulation done.** `lj_reco_cr_v3` complete (1,927 chunks, 114 samples merged at
+  08:30; 2 empty files skipped). Ten signal files of the v10 production fail every attempt: each
+  has a damaged basket (lzma data error) in at least one muon-vertex branch (`PatMuonVertex_*`,
+  `PatDSAMuonVertex_*`, `DSAMuonVertex_*`), four of them in other branches too (`LHEPdfWeight`,
+  `TrigObj_pt`, ...), found by reading every branch of each file. Only the v3 histograms read
+  those branches, so `systematics_v3` read the same files without error. The campaign tool
+  dropped them for good (`condor/campaigns/lj_reco_cr_v3/bad_files.txt`); the merge normalizes
+  each sample to the events it processed, so this costs statistics only. Notebooks 07 (section 6)
+  and 09 run with interpretations; README and `lj_reco_efficiency.md` (step 2, version 3;
+  question 5 on DSA muons in data) updated.
+- **Safety of version 3:** every region of the FSR Z sample is safe; every J/ψ vertex bin below
+  15 cm is safe; the bin above 15 cm is a caution for shape uses (4Mu, 800 GeV, 5 GeV, 5 mm: 4.1
+  events against 9,300, binned Z 1.28) and is never read (`lj_cr_data` zeroes it).
+- **Part 2, data running.** `lj_reco_cr_data_v2` (2,580 jobs, cluster 5083933 on lpcschedd4)
+  submitted at 08:32, the config's header naming the approved use and the safety result; the code
+  tarball was current (same files and contents as the working tree). A scratch watcher moves slow
+  jobs every 30 minutes. v1 took 22 minutes a job.
 
-**Next, in order:** when `lj_reco_cr_v3` is complete, merge it; run 07 and 09 and fill their
-interpretations; from the safety table of 07 section 6 write `condor/campaign_configs/lj_reco_cr_data_v2.yaml`
-(data, `lj_reco_control_samples_v3`, the safe regions only), remake the code tarball, submit;
-then 08 (section 6 from the scratch generator `make_nb08_v3.py`); README, `lj_reco_efficiency.md`,
-AN Sec. 7 and the summary deck `slides/summary_2026-11-24.tex` (part 1 written); commit; the PR
-texts for the user.
+**Next, in order:** when `lj_reco_cr_data_v2` is complete (`status`, `retry --submit`,
+`skipped --submit`), merge it; append section 6 to 08 with the scratch generator
+`make_nb08_v3.py`, run 08 and fill its interpretations; README, `lj_reco_efficiency.md` and AN
+Sec. 7 (local) with the data results; part 2 of the summary deck `slides/summary_2026-11-24.tex`;
+commit; the PR texts for the user.
 
 ## State of 2026-11-17 (step 2 for the prompt regime)
 
@@ -207,6 +216,15 @@ only.
 
 ### 2026-11-24
 
+- (09:00) `lj_reco_cr_v3` complete and merged (the last QCD chunk ran 175 minutes on a normal
+  node after a move off a slow one). Notebooks 07 and 09 run and interpreted: the sideband
+  subtraction closes for the J/ψ probes above ΔR = 0.03 and, with the FSR selection, for the
+  photons (0.06 high on average); the FSR selection removes QCD from the Z peak and raises the
+  purity of converted photons to 0.65 to 0.82; the J/ψ passing fraction is flat in the production
+  radius and the vertex displacement out to 5 cm (1.00 to 0.98); 81% of prompt muons have a
+  selected DSA muon, both muons of a boosted J/ψ 44 to 52%, and the analysis triggers bias that
+  up. Safety: all safe except the J/ψ vertex bin above 15 cm. `lj_reco_cr_data_v2` submitted.
+  Deck: injection slide redrawn as one legible panel, `\pt` defined.
 - (06:20) Part 1 of the review: `systematics_v3` and `systematics_data_v2` merged, notebooks 03,
   04 and 05 rerun and their interpretations rewritten, README and AN Sec. 7 (local) updated; the
   v3/v2 comparison and the axes-only test at three 5 GeV points (no change in any region) done.

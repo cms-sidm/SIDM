@@ -866,6 +866,12 @@ DSA_CR = {
                            "label": r"$J/\psi \to \mu\mu$, DSA muons"},
 }
 
+# where 07_lj_reco_control_samples.ipynb writes the safety table and figures of version 3, and
+# 09_dsa_prompt_muons.ipynb its figures
+LJ_CR_V3_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v3_results"
+DSA_RESULTS_DIR = f"{LJ_CR_V3_RESULTS_DIR}/dsa_prompt"
+
+
 # The group's criteria for reading a region of data, agreed in the review of the first VR-safety
 # deck (2026-11-04) and applied to every working point since (for example the 4mu working point
 # with |dphi| >= 2.4): judged in simulation, every quantity at its worst over the 96 points of
@@ -1138,6 +1144,32 @@ def lj_cr_verdicts(directory=LJ_CR_RESULTS_DIR):
     return table["rows"]
 
 
+def probe_counts(inputs, specs, groups=None):
+    """[(control sample, group, probes in the peak, their effective number of simulated events,
+    the sidebands scaled to the peak's width)] of the simulated background, per group of
+    LJ_CR_GROUPS (or groups) and in total (group "total")"""
+    groups = LJ_CR_GROUPS if groups is None else groups
+    rows = []
+    for cr, spec in specs.items():
+        (lo, hi), sidebands = spec["peak"], spec["sidebands"]
+        k = (hi - lo) / sum(b - a for a, b in sidebands)
+        totals = [0.0, 0.0, 0.0]
+        for group, samples in groups.items():
+            hists = [inputs["background"][s][cr] for s in samples if s in inputs["background"]]
+            if not hists:
+                continue
+            h = sum(hists)
+            peak = mass_window(h, spec["mass"], lo, hi).sum(flow=True)
+            side = k * sum(mass_window(h, spec["mass"], a, b).sum(flow=True).value
+                           for a, b in sidebands)
+            neff = peak.value ** 2 / peak.variance if peak.variance > 0 else 0.0
+            rows.append((cr, group, peak.value, neff, side))
+            totals = [totals[0] + peak.value, totals[1] + peak.variance, totals[2] + side]
+        rows.append((cr, "total", totals[0], totals[0] ** 2 / totals[1] if totals[1] else 0.0,
+                     totals[2]))
+    return rows
+
+
 def mass_window(h, axis, lo, hi):
     """h summed over the bins of axis between the bin edges lo and hi"""
     return h[{axis: slice(hist.loc(lo), hist.loc(hi), sum)}]
@@ -1251,19 +1283,27 @@ def plot_probe_distribution(inputs, cr, axis, points=(), ax=None):
     return ax
 
 
-def plot_probe_efficiency(results, ax=None):
-    """Passing fractions against one axis ({label: probe_efficiency result}), in-range bins"""
+def plot_probe_efficiency(results, ax=None, offset=0.0, categorical=False):
+    """Passing fractions against one axis ({label: probe_efficiency result}, up to four), in-range
+    bins; offset shifts the curves apart by that fraction of each bin's width, so that their
+    error bars stay readable. With categorical, every bin is drawn one unit wide and labelled by
+    its edges, for axes that start at zero and span decades (a radius, a displacement)."""
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 6))
-    for (label, r), colour in zip(results.items(), (study.BLACK, study.BLUE, study.ORANGE)):
-        edges = r["edges"]
-        centres = 0.5 * (edges[1:] + edges[:-1])
+    colours = (study.BLACK, study.BLUE, study.ORANGE, study.AQUA)
+    for i, ((label, r), colour) in enumerate(zip(results.items(), colours)):
+        edges = np.arange(len(r["edges"]), dtype=float) if categorical else r["edges"]
+        centres = 0.5 * (edges[1:] + edges[:-1]) + (i - (len(results) - 1) / 2) * offset * np.diff(edges)
         ax.errorbar(centres, in_range(r["axis"], r["eff"]), yerr=in_range(r["axis"], r["err"]),
-                    xerr=0.5 * np.diff(edges), fmt="o", color=colour, label=label)
+                    xerr=0.5 * np.diff(edges) * (1 - offset * (len(results) > 1)), fmt="o",
+                    color=colour, label=label)
+    if categorical:
+        edges = next(iter(results.values()))["edges"]
+        ax.set_xticks(np.arange(len(edges)), [f"{e:g}" for e in edges], rotation=45, fontsize=13)
     ax.set_ylim(0, 1.1)
     ax.set_xlabel(next(iter(results.values()))["axis"].label)
     ax.set_ylabel("passing fraction")
-    ax.legend(fontsize=11)
+    ax.legend(fontsize=14)
     return ax
 
 
@@ -1312,6 +1352,10 @@ def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt", specs=None
 
 # where 08_lj_reco_data.ipynb writes its figures and the passing fractions in data and simulation
 LJ_CR_DATA_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1_results"
+# the data of version 3 (campaign lj_reco_cr_data_v2: the histograms of LJ_CR_V3, read through the
+# safety table of LJ_CR_V3_RESULTS_DIR), and where section 6 of 08_lj_reco_data.ipynb writes
+LJ_CR_DATA_V2_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v2"
+LJ_CR_DATA_V2_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v2_results"
 
 
 def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None):
@@ -1342,16 +1386,20 @@ def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None):
     return ax
 
 
-def plot_efficiency_comparison(results, reference, top, bottom):
+def plot_efficiency_comparison(results, reference, top, bottom, categorical=False):
     """Passing fractions ({label: probe_efficiency result}, the data under "data") in the top
-    panel, and the ratio of the data to the curve named reference in the bottom panel"""
-    plot_probe_efficiency(results, ax=top)
+    panel, and the ratio of the data to the curve named reference in the bottom panel;
+    categorical as for plot_probe_efficiency"""
+    plot_probe_efficiency(results, ax=top, categorical=categorical)
     ratio, err = efficiency_ratio(results["data"], results[reference])
     edges = results["data"]["edges"]
     axis = results["data"]["axis"]
-    bottom.errorbar(0.5 * (edges[1:] + edges[:-1]), in_range(axis, ratio),
-                    yerr=in_range(axis, err), xerr=0.5 * np.diff(edges), fmt="o",
+    x = np.arange(len(edges), dtype=float) if categorical else edges
+    bottom.errorbar(0.5 * (x[1:] + x[:-1]), in_range(axis, ratio),
+                    yerr=in_range(axis, err), xerr=0.5 * np.diff(x), fmt="o",
                     color=study.BLACK)
+    if categorical:
+        bottom.set_xticks(x, [f"{e:g}" for e in edges], rotation=45, fontsize=13)
     bottom.axhline(1.0, color=study.GRAY, linestyle=":")
     bottom.set_ylim(0.6, 1.4)
     bottom.set_ylabel(f"data / {reference}", fontsize=12)

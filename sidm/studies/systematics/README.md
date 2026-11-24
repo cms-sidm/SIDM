@@ -464,6 +464,29 @@ sample reaches).
   (peak 85 to 95 GeV, adjacent sidebands). Converted photons need a purer probe.
 - **The alone condition** does not change the passing fraction.
 
+### Results of step 2, version 3, in simulation (2026-11-24, notebook 07 section 6 and `09_dsa_prompt_muons.ipynb`)
+
+Campaign `lj_reco_cr_v3` (simulation): the generator truth of the probes, a purer Z → μμγ sample
+for converted photons (both muons isolated, m(μμ) + m(μμγ) < 180 GeV), the J/ψ probes against the
+displacement of their vertex, and the DSA muons of prompt muons. Ten signal files with damaged
+baskets in muon-vertex branches, which only these histograms read, are left out.
+
+- **Closure:** the sideband subtraction agrees with the generator truth for the J/ψ probes (to 0.02
+  where the statistics are large) except below ΔR(μμ) = 0.03, and with the FSR selection for the
+  photons (every bin within 2 standard deviations, 0.06 high on average, against 0.11 high with
+  the selection of v2).
+- **Converted photons:** the FSR selection removes QCD from the Z peak; with every background the
+  fraction of FSR photons for R9 from 0.5 to 0.94 rises from 0.22 to 0.64 to 0.65 to 0.82.
+- **Displacement:** the J/ψ passing fraction is 1.00 within 0.5 mm of the beam line and 0.98 to
+  0.99 out to 5 cm, both against the generated production radius and against the fitted vertex.
+- **Safety:** every region of both new histograms is safe except the J/ψ vertex bin above 15 cm
+  (4.1 events of 4Mu at 800 GeV, 5 GeV, 5 mm against 9,300; binned Z 1.28, a caution for shape
+  uses), which the data step never reads. The data campaign is `lj_reco_cr_data_v2`.
+- **DSA muons:** 81% of prompt muons have a selected DSA muon, both muons of a boosted J/ψ only 44
+  to 52% of the time above 40 GeV. The analysis triggers bias the measurement upward (by 3.3
+  points for single muons), so a data measurement needs SingleMuon ntuples and the group's
+  approval ([`lj_reco_efficiency.md`](lj_reco_efficiency.md), question 5).
+
 ### Results of step 2 in data (2026-11-17, `08_lj_reco_data.ipynb`)
 
 - **Muon-type (J/ψ → μμ):** above 50 GeV, data/simulation 0.988 ± 0.006 (endcaps 0.976 ± 0.008);
@@ -520,8 +543,10 @@ sample reaches).
 6. The JER smearing: apply it to the matched jets in the nominal simulation or keep it as an
    uncertainty, together with the isolation definition (corrections open item 5).
 7. The lepton-jet reconstruction efficiency: step 1 is done (`06_lj_reco_efficiency.ipynb`);
-   step 2 is under way (simulation and safety check first, then data only where safe); step 3
-   waits on the questions for the group in [`lj_reco_efficiency.md`](lj_reco_efficiency.md).
+   step 2 is done for the prompt regime and version 3 is under way (simulation and safety check
+   done, data campaign `lj_reco_cr_data_v2` for the safe regions); step 3 and a data measurement
+   of DSA muons wait on the questions for the group in
+   [`lj_reco_efficiency.md`](lj_reco_efficiency.md).
 
 ## Notebooks
 
@@ -533,8 +558,9 @@ sample reaches).
 | [`04_systematic_effects.ipynb`](04_systematic_effects.ipynb) | what each systematic does: up and down templates, sizes across the grid, impacts, limit breakdown | outputs of 03 | about 25 min |
 | [`05_fit_checks.ipynb`](05_fit_checks.ipynb) | checks of the fit: signal injection with toys, likelihood scans, correlations | outputs of 03 | about 5 min |
 | [`06_lj_reco_efficiency.ipynb`](06_lj_reco_efficiency.ipynb) | step 1 of the lepton-jet reconstruction efficiency: the efficiency against $L_{xy}$, $p_T$ and the opening angle, its maps, and the decay-radius regimes of every signal point | `lj_reco_eff_v1` | about 1 min |
-| [`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb) | step 2 of the lepton-jet reconstruction efficiency, simulation part: the Z → μμγ and J/ψ → μμ probes, the safety check that decides which regions data may read (table written to EOS), the efficiencies the simulation expects | `lj_reco_cr_v2` | about 2 min |
-| [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb) | step 2 of the lepton-jet reconstruction efficiency, data part: the passing fractions of the control samples in data against the simulation, read only through the safety table of 07 | `lj_reco_cr_data_v1`, `lj_reco_cr_v2` | about 2 min |
+| [`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb) | step 2 of the lepton-jet reconstruction efficiency, simulation part: the Z → μμγ and J/ψ → μμ probes, the safety check that decides which regions data may read (table written to EOS), the efficiencies the simulation expects; section 6, version 3: the closure test of the sideband subtraction, the efficiency against the J/ψ production radius, converted photons with the FSR selection, the J/ψ vertex displacement, and their safety check | `lj_reco_cr_v2`, `lj_reco_cr_v3` | about 1 min |
+| [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb) | step 2 of the lepton-jet reconstruction efficiency, data part: the passing fractions of the control samples in data against the simulation, read only through the safety tables of 07 | `lj_reco_cr_data_v1`, `lj_reco_cr_v2` | about 2 min |
+| [`09_dsa_prompt_muons.ipynb`](09_dsa_prompt_muons.ipynb) | the DSA muons of prompt muons, in simulation: the displaced ID, Z → μμ tag and probe and J/ψ pairs, the bias of each trigger, and what a data measurement needs | `lj_reco_cr_v3` | under 1 min |
 
 Notebooks 01 and 02 read the merged outputs of the corrections campaign
 (`corrections_study.CAMPAIGN_DIR`) through `corrections_study.load`, which copies them once
