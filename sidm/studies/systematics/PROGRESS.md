@@ -5,41 +5,39 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-23, 22:40)
+## Current state (2026-11-24, 06:20)
 
-**Working on the review of PR #90 and the feedback on step 2 (2026-11-23); the user approved the
-plan below.** Campaigns running on Condor; nothing of them read yet.
-- **PR comment on `hists.py` (PR #71):** the `abcd6d_*` axes read the two leading `ljs`, the
-  event cuts the analysis pair `candidate_ljs`; with `main`'s pair selection the old 2mu2e axes
-  could pick two muon-type jets and fail to fill for a whole chunk. Fixed in `43e9ae1` (axes on
-  `candidate_ljs`, test in `tests/test_lj_collections.py`). On signal at the working points it moves
-  at most 0.15% of region A (69 of 19,935 2mu2e and 3 of 15,689 4mu signal events have another
-  pair). This also makes the spread cuts reach the ABCD histograms (open question 4). Campaigns
-  `systematics_v3` (3,158 jobs) and `systematics_data_v2` (2,580 jobs, data B, C, D, the approved
-  use) submitted 2026-11-23 21:52, same chunks and files as v2 and data_v1. Notebooks 03 to 05
-  point at `systematics_v3` (not rerun yet), as does `sidm/studies/sr_mljlj` (untracked).
-- **PR comment on `selections.yaml` (MET filters):** moved into `baseNoLjNoLjsource` on its own
-  branch `passFlagsInBase` (`28a34f9`, off upstream `main`, for a separate PR, the user's choice):
-  83 selections gain the filters, none lose them. Whichever of it and PR #90 merges second drops
-  the explicit `"pass flags"` of `SR_2mu2e`/`SR_4mu`.
-- **Feedback on step 2:** strategy agreed; signal bins without a measurement take the nearest
-  measured bin, each case recorded (now in `lj_reco_efficiency.md`, step 3; questions 4 and 5 there
-  dropped). New code in `1aa8f3a`: Z -> mumu gamma with the FSR selection, J/psi against the
-  vertex displacement, the generator truth (closure test, efficiency against the J/psi production
-  radius) and the DSA muons of prompt muons (Z -> mumu tag and probe, J/psi pairs; simulation only,
-  no trigger in the channels, trigger decisions as axes). Campaign `lj_reco_cr_v3` (1,926 jobs,
-  simulation) submitted 22:30. Notebook 07 has a section 6 for it and notebook 09
-  (`09_dsa_prompt_muons.ipynb`) is new; both wait for the campaign, interpretations to be written.
-- **Checked already:** the DSA displaced ID equals its four hit and fit cuts for all 6,964 DSA
-  muons of a Drell-Yan file (no impact-parameter cut). On a few test files, the FSR selection makes
-  the Z peak 100% FSR photons (83% before) with 62% of the probes; the DSA passing fraction of
-  prompt Drell-Yan muons is 0.82, 0.84 with the analysis triggers, 0.82 with Mu37_TkMu27.
+**Working on the review of PR #90 and the feedback on step 2; the user approved the plan
+(2026-11-23).** Part 1 (the limits on the analysis pair) is done and committed; part 2 (version 3
+of the control samples) waits on its last Condor jobs.
+- **Part 1, done.** `systematics_v3` (3,158 chunks, 4 empty files skipped) and
+  `systematics_data_v2` (2,580 chunks, 463 empty files skipped) merged; notebooks 03, 04, 05 rerun
+  on them with rewritten interpretations; README and AN Sec. 7 (local) updated. Data B, C, D:
+  2mu2e 80, 17, 30 (prediction 45.3), 4mu 42, 5, 3 (prediction 70); 79, 19, 28 and 45, 12, 5 on the
+  leading pair. The limits are a median 11% (2Mu2E) and 15% (4Mu) lower than on the leading pair,
+  mostly from the background; the signal in region A is a median 1.7% and 4.9% lower (up to 26% for
+  4Mu at 5 GeV and 300 cm), from the pair selection of PR #71: the axes alone change region A by at
+  most 0.15% at eight points (three at 5 GeV, 150 to 300 cm; scratch script
+  `abcd_pair_compare_5gev.py`). The 4Mu injection test has more toys near zero (31% at the limit),
+  which a counting model of the four regions reproduces (C and D hold 5 and 3 events).
+  `sidm/studies/sr_mljlj` (untracked) rerun too.
+- **MET filters:** branch `passFlagsInBase` (`28a34f9`, off upstream `main`) for a separate PR,
+  not pushed yet; its description is ready for the user. Whichever of it and PR #90 merges second
+  drops the explicit `"pass flags"` of `SR_2mu2e`/`SR_4mu`.
+- **Part 2, running.** `lj_reco_cr_v3`: 1,921 of 1,926 chunks done; 4 QCD chunks moved off slow
+  nodes at 04:55 and 05:25 (each about 2.5 hours from then), one retry and one skipped-file chunk
+  queued. Ten signal files fail every attempt: their `DSAMuonVertex_isValid` branch cannot be
+  decompressed (lzma data error, checked by reading every branch of one of them), a branch only
+  the v3 histograms read; the campaign tool dropped them (`condor/campaigns/lj_reco_cr_v3/bad_files.txt`).
+- **Notebooks 07 (section 6) and 09:** figures fixed (CMS label per panel, categorical axes,
+  an FSR-purity figure) and checked on a partial merge; interpretations still to be written.
 
-**Next, in order:** merge `systematics_v3` and `systematics_data_v2`, rerun 03, 04, 05 and the
-sr_mljlj notebook, update the README, AN Sec. 7 and the decks; merge `lj_reco_cr_v3`, run 07
-(section 6) and 09, and with the safety table of section 6 write `lj_reco_cr_data_v2` (data,
-`lj_reco_control_samples_v3`, the safe regions only), then 08; a summary deck of all of it; the
-replies to the two PR comments and the PR description for the user.
+**Next, in order:** when `lj_reco_cr_v3` is complete, merge it; run 07 and 09 and fill their
+interpretations; from the safety table of 07 section 6 write `condor/campaign_configs/lj_reco_cr_data_v2.yaml`
+(data, `lj_reco_control_samples_v3`, the safe regions only), remake the code tarball, submit;
+then 08 (section 6 from the scratch generator `make_nb08_v3.py`); README, `lj_reco_efficiency.md`,
+AN Sec. 7 and the summary deck `slides/summary_2026-11-24.tex` (part 1 written); commit; the PR
+texts for the user.
 
 ## State of 2026-11-17 (step 2 for the prompt regime)
 
@@ -206,6 +204,14 @@ only.
   --inplace --ExecutePreprocessor.timeout=7200 --ExecutePreprocessor.kernel_name=python3 <notebook>`.
 
 ## Log (newest first)
+
+### 2026-11-24
+
+- (06:20) Part 1 of the review: `systematics_v3` and `systematics_data_v2` merged, notebooks 03,
+  04 and 05 rerun and their interpretations rewritten, README and AN Sec. 7 (local) updated; the
+  v3/v2 comparison and the axes-only test at three 5 GeV points (no change in any region) done.
+  `lj_reco_cr_v3`: 9 failed signal chunks retried without their damaged files, slow QCD chunks
+  moved, skipped files resubmitted.
 
 ### 2026-11-23
 
