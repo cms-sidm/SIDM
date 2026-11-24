@@ -831,6 +831,41 @@ LJ_CR = {
                       "sidebands": ((2.6, 2.9), (3.3, 3.6))},
 }
 
+# Version 3 of the control samples (campaign lj_reco_cr_v3, simulation; lj_reco_efficiency.md):
+# the purer Z -> mumu gamma probes (final-state radiation: isolated muons and
+# m(mumu) + m(mumu gamma) < 180 GeV, objects.zmmg_probe_photons with fsr), and the J/psi probes
+# against the displacement of their dimuon vertex, split along it for the safety check, since
+# displaced dark photons of 5 GeV reach the J/psi mass window at large displacement. Same peaks and
+# sidebands as LJ_CR.
+LJ_CR_V3_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v3"
+LJ_CR_V3 = {
+    "Z -> mumu gamma, FSR": {**LJ_CR["Z -> mumu gamma"], "hist": "lj_cr_zmmg_fsr_probes_alone",
+                             "label": r"$Z \to \mu\mu\gamma$, FSR selection"},
+    "J/psi -> mumu, vertex": {**LJ_CR["J/psi -> mumu"], "hist": "lj_cr_jpsi_vertex_probes_alone",
+                              "label": r"$J/\psi \to \mu\mu$ against $L_{xy}$", "split": "vtx_lxy"},
+}
+# The same probes with their generator truth, simulation only: "truth" is the axis that tells the
+# probes matched to a generated FSR photon or J/psi (closure, truth_efficiency)
+LJ_CR_GEN = {
+    "Z -> mumu gamma": {**LJ_CR["Z -> mumu gamma"], "hist": "lj_cr_zmmg_probes_alone_gen",
+                        "truth": "gen_fsr"},
+    "Z -> mumu gamma, FSR": {**LJ_CR_V3["Z -> mumu gamma, FSR"],
+                             "hist": "lj_cr_zmmg_fsr_probes_alone_gen", "truth": "gen_fsr"},
+    "J/psi -> mumu": {**LJ_CR["J/psi -> mumu"], "hist": "lj_cr_jpsi_probes_alone_gen",
+                      "truth": "gen_match"},
+}
+# The DSA-muon reconstruction and selection of prompt muons, simulation only: Z -> mumu probes
+# (objects.dsa_probe_muons) and the muon pairs of J/psi -> mumu, without a trigger in the channel
+# (the trigger axes of hists.trigger_axes tell the triggers apart)
+DSA_CR = {
+    "Z -> mumu, DSA": {"channel": "dsa_cr_Z_to_mumu_alone", "hist": "dsa_cr_z_probes_alone",
+                       "label": r"$Z \to \mu\mu$, DSA muons", "mass": "m_tp",
+                       "peak": (81.0, 101.0), "sidebands": ((71.0, 81.0), (101.0, 111.0))},
+    "J/psi -> mumu, DSA": {**LJ_CR["J/psi -> mumu"], "channel": "dsa_cr_JPsi_to_mumu_alone",
+                           "hist": "dsa_cr_jpsi_probes_alone",
+                           "label": r"$J/\psi \to \mu\mu$, DSA muons"},
+}
+
 # The group's criteria for reading a region of data, agreed in the review of the first VR-safety
 # deck (2026-11-04) and applied to every working point since (for example the 4mu working point
 # with |dphi| >= 2.4): judged in simulation, every quantity at its worst over the 96 points of
@@ -887,11 +922,13 @@ def region_metrics(s, b, b_w2):
             "s_sparse": float(s[~meas].sum())}
 
 
-def lj_cr_inputs(directory=LJ_CR_DIR, alone=True):
+def lj_cr_inputs(directory=LJ_CR_DIR, alone=True, specs=None):
     """{"signal": {point: {control sample: hist}}, "background": {sample: {...}}} of the probe
-    histograms (LJ_CR) from the merged simulation outputs, the signal at the 1 fb reference
-    (datacard_tools.read_coffea): the versions a data campaign reads, or with alone=False those
-    without the condition on other lepton jets. Stops at a data sample: this reads simulation."""
+    histograms of specs (LJ_CR by default) from the merged simulation outputs, the signal at the
+    1 fb reference (datacard_tools.read_coffea): the versions a data campaign reads, or with
+    alone=False those without the condition on other lepton jets. Stops at a data sample: this
+    reads simulation."""
+    specs = LJ_CR if specs is None else specs
     channel, name = ("channel", "hist") if alone else ("channel_all", "hist_all")
     inputs = {"signal": {}, "background": {}}
     for url in list_coffea(directory):
@@ -900,7 +937,7 @@ def lj_cr_inputs(directory=LJ_CR_DIR, alone=True):
                 raise ValueError(f"{url}: {sample} is data; the safety check reads simulation only")
             kind = "signal" if dt.parse_signal_name(sample) else "background"
             inputs[kind][sample] = {cr: out["hists"][spec[name]][{"channel": spec[channel]}]
-                                    for cr, spec in LJ_CR.items()}
+                                    for cr, spec in specs.items()}
     return inputs
 
 
@@ -1002,7 +1039,7 @@ def passes(row):
     return all(row[key] == "safe" for key in keys)
 
 
-def lj_cr_safety(inputs, split_axis="probe_pt"):
+def lj_cr_safety(inputs, split_axis="probe_pt", specs=None):
     """The group's criteria applied to each control sample before any data, one row per region:
     the whole probe histogram, each bin of split_axis with the other axes kept (the regions a data
     step reads), and the union of the split-axis regions that are safe only through the S < 1
@@ -1013,7 +1050,11 @@ def lj_cr_safety(inputs, split_axis="probe_pt"):
     their model cross sections, and three verdicts: counting (integrated Z), shape (binned Z over
     the bins with background) and sparse bins (the bins expecting under one background event,
     judged together as one region; it decides only with STRICT_SPARSE_BINS), each also with the
-    heaviest simulated background event removed from its bin (the stress test)."""
+    heaviest simulated background event removed from its bin (the stress test).
+
+    specs are the control samples (LJ_CR by default); one whose entry has a "split" key is split
+    along that axis instead of split_axis."""
+    specs = LJ_CR if specs is None else specs
     # pylint: disable-next=import-outside-toplevel,import-error
     import plot_tools as pt
     xs = pt.theory_xs_fb()
@@ -1024,14 +1065,15 @@ def lj_cr_safety(inputs, split_axis="probe_pt"):
         raise ValueError(f"{len(points)} signal points with a model cross section and "
                          "L_xy >= 3 cm, not the 96 of the limit grid")
     rows = []
-    for cr in LJ_CR:
+    for cr, spec in specs.items():
         ctx = {"background": {s: per[cr] for s, per in inputs["background"].items()},
                "signal": {p: inputs["signal"][p][cr] for p in points}, "xs": xs}
         axes = next(iter(ctx["background"].values())).axes
-        k = [a.name for a in axes].index(split_axis)
-        slices = _slices(axes[split_axis])
+        split = spec.get("split", split_axis)
+        k = [a.name for a in axes].index(split)
+        slices = _slices(axes[split])
         mine = [_region_row(cr, "whole histogram", _taker(None, k), ctx)]
-        mine += [_region_row(cr, f"{split_axis} {label}", _taker([index], k), ctx)
+        mine += [_region_row(cr, f"{split} {label}", _taker([index], k), ctx)
                  for label, index in slices]
         by_events = [index for (_, index), row in zip(slices, mine[1:])
                      if passes(row) and "events" in (row["counting branch"], row["shape branch"])]
@@ -1075,8 +1117,9 @@ LJ_CR_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v2_resu
 def write_verdicts(rows, directory=LJ_CR_RESULTS_DIR):
     """Write the safety table of lj_cr_safety to directory as safety.json, with the switch it was
     judged with and the readable regions per control sample"""
+    samples = list(dict.fromkeys(r["control sample"] for r in rows))
     table = {"strict_sparse_bins": STRICT_SPARSE_BINS, "rows": rows,
-             "readable": {cr: lj_cr_readable(rows, cr) for cr in LJ_CR}}
+             "readable": {cr: lj_cr_readable(rows, cr) for cr in samples}}
     fs, root = fsspec.core.url_to_fs(eos_url(directory))
     fs.makedirs(root, exist_ok=True)
     with fs.open(f"{root.rstrip('/')}/safety.json", "w") as f:
@@ -1100,28 +1143,57 @@ def mass_window(h, axis, lo, hi):
     return h[{axis: slice(hist.loc(lo), hist.loc(hi), sum)}]
 
 
-def probe_efficiency(h, spec, axis):
+def probe_efficiency(h, spec, axis, passing=("passing", (1,))):
     """The passing fraction of the probes of one control sample (h: its probe histogram, summed
     over samples; spec: its LJ_CR entry) against one axis, with the background under the mass
     peak subtracted using the sidebands, scaled by the ratio of the widths (a linear background).
-    Returns {"edges", "eff", "err", "probes", "passing"} over the bins of axis, its flow bins
-    included at either end; err follows from the sums of squared weights, which are the counts
-    in data."""
+    passing names the axis that tells passing probes and its bins that pass (for the DSA count of
+    the J/psi probes, ("n_dsa", (2,))). Returns {"edges", "eff", "err", "probes", "passing"} over
+    the bins of axis, its flow bins included at either end; err follows from the sums of squared
+    weights, which are the counts in data."""
     (p_lo, p_hi), sidebands = spec["peak"], spec["sidebands"]
     k = (p_hi - p_lo) / sum(hi - lo for lo, hi in sidebands)
-    peak = mass_window(h, spec["mass"], p_lo, p_hi).project(axis, "passing")
-    side = sum(mass_window(h, spec["mass"], lo, hi).project(axis, "passing")
+    name, bins = passing
+    peak = mass_window(h, spec["mass"], p_lo, p_hi).project(axis, name)
+    side = sum(mass_window(h, spec["mass"], lo, hi).project(axis, name)
                for lo, hi in sidebands)
     values = peak.values(flow=True) - k * side.values(flow=True)
     variances = peak.variances(flow=True) + k * k * side.variances(flow=True)
-    passing, probes = values[:, 1], values.sum(axis=1)
-    var_pass, var_fail = variances[:, 1], variances[:, 0]
+    is_pass = np.isin(np.arange(values.shape[1]), bins)
+    passing, probes = values[:, is_pass].sum(axis=1), values.sum(axis=1)
+    var_pass, var_fail = variances[:, is_pass].sum(axis=1), variances[:, ~is_pass].sum(axis=1)
     with np.errstate(divide="ignore", invalid="ignore"):
         eff = np.where(probes > 0, passing / probes, np.nan)
         # passing and failing probes are independent: d(eff) = ((1-eff) dP, -eff dF) / N
         err = np.sqrt((1 - eff) ** 2 * var_pass + eff ** 2 * var_fail) / probes
     return {"axis": peak.axes[0], "edges": peak.axes[0].edges, "eff": eff, "err": err,
             "probes": probes, "passing": passing}
+
+
+def truth_efficiency(h, spec, axis, passing=("passing", (1,))):
+    """The passing fraction of the probes the generator matches (the spec's "truth" axis at 1) in
+    the mass peak, against one axis: the efficiency the sideband subtraction of probe_efficiency
+    estimates, which needs no subtraction here. Same layout as probe_efficiency."""
+    p_lo, p_hi = spec["peak"]
+    name, bins = passing
+    view = mass_window(h[{spec["truth"]: 1}], spec["mass"], p_lo, p_hi).project(axis, name)
+    values, variances = view.values(flow=True), view.variances(flow=True)
+    is_pass = np.isin(np.arange(values.shape[1]), bins)
+    pass_, probes = values[:, is_pass].sum(axis=1), values.sum(axis=1)
+    var_pass, var_fail = variances[:, is_pass].sum(axis=1), variances[:, ~is_pass].sum(axis=1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        eff = np.where(probes > 0, pass_ / probes, np.nan)
+        err = np.sqrt((1 - eff) ** 2 * var_pass + eff ** 2 * var_fail) / probes
+    return {"axis": view.axes[0], "edges": view.axes[0].edges, "eff": eff, "err": err,
+            "probes": probes, "passing": pass_}
+
+
+def closure(h, spec, axis):
+    """The closure test of the sideband subtraction in simulation: {"sidebands": probe_efficiency
+    of all the probes of h, "truth": truth_efficiency of those the generator matches}; h holds the
+    spec's truth axis (an LJ_CR_GEN histogram)"""
+    return {"sidebands": probe_efficiency(h[{spec["truth"]: sum}], spec, axis),
+            "truth": truth_efficiency(h, spec, axis)}
 
 
 def efficiency_ratio(data, simulation):
@@ -1208,25 +1280,28 @@ def readable_bins(rows, cr, axis):
             if f"{axis.name} {label}" in allowed]
 
 
-def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt"):
-    """{control sample: probe histogram summed over the data samples} of the alone versions, with
-    every bin of split_axis that the safety table (rows, from lj_cr_verdicts) does not mark
-    readable set to zero before anything else is done with it; stops through require_safe unless
-    at least one region is readable, and at any simulated sample"""
+def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt", specs=None):
+    """{control sample: probe histogram summed over the data samples} of the alone versions of
+    specs (LJ_CR by default), with every bin of the split axis (split_axis, or the spec's
+    "split") that the safety table (rows, from lj_cr_verdicts) does not mark readable set to zero
+    before anything else is done with it; stops through require_safe unless at least one region
+    is readable, and at any simulated sample"""
+    specs = LJ_CR if specs is None else specs
     out = {}
     for url in list_coffea(directory):
         for sample, sample_out in dt.read_coffea(url).items():
             if dt.is_simulation(sample, sample_out):
                 raise ValueError(f"{url}: {sample} is simulation, not data")
-            for cr, spec in LJ_CR.items():
+            for cr, spec in specs.items():
                 h = sample_out["hists"][spec["hist"]][{"channel": spec["channel"]}]
                 out[cr] = h if cr not in out else out[cr] + h
     for cr, h in out.items():
-        axis = h.axes[split_axis]
+        split = specs[cr].get("split", split_axis)
+        axis = h.axes[split]
         keep = readable_bins(rows, cr, axis)
-        require_safe(rows, cr, [f"{split_axis} {label}" for label, index in _slices(axis)
+        require_safe(rows, cr, [f"{split} {label}" for label, index in _slices(axis)
                                 if index in keep])
-        k = [a.name for a in h.axes].index(split_axis)
+        k = [a.name for a in h.axes].index(split)
         view = h.view(flow=True)
         index = [slice(None)] * view.ndim
         index[k] = [i for i in range(view.shape[k]) if i not in keep]
@@ -1239,10 +1314,11 @@ def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt"):
 LJ_CR_DATA_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1_results"
 
 
-def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None):
+def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None):
     """The probe mass of one control sample in data (points) and in the simulation (stacked by
-    group, at its luminosity), for the probes that sel (a dict of histogram slices) keeps"""
-    spec = LJ_CR[cr]
+    group, at its luminosity), for the probes that sel (a dict of histogram slices) keeps; specs
+    are the control samples (LJ_CR by default)"""
+    spec = (LJ_CR if specs is None else specs)[cr]
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 6))
     bottom = None

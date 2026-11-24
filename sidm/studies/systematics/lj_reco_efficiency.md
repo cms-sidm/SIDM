@@ -86,7 +86,7 @@ notebook; outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_eff_v1_re
 - **Collimated muon pairs.** The heaviest bound states with the lightest dark photon
   (m_Zd = 0.25 GeV at 800 and 1000 GeV, muons about 0.0006 apart in ΔR) have the lowest prompt
   muon-type efficiency (0.87 and 0.77 in 4Mu), and no dimuon resonance reaches that opening
-  angle (question 4 below).
+  angle (step 3, "Bins without a measurement").
 
 ### Step 2: data and simulation in control samples (done for the prompt regime, 2026-11-17)
 
@@ -103,7 +103,7 @@ simulation already processed) gave:
 | egamma-type | prompt, collimated | boosted J/ψ → ee | **not possible**: needs electron-triggered (EGamma) data, which are not in our ntuples |
 
 So the displaced muon-type regime, the one that matters most for the long lifetimes, has no
-data/simulation measurement with the present inputs (question 5 below).
+data/simulation measurement with the present inputs (step 3, "Bins without a measurement").
 
 **The probes.** In each channel the lepton jets are built and selected as in step 1; the probes
 come from the uncut collections (`objects.zmmg_probe_photons`, `objects.jpsi_probe_dimuons`), so
@@ -137,7 +137,7 @@ S/(S+B) > 10% or Z > 2. It is applied to the whole probe histogram and to each p
 decks, to the bins with under one expected background event taken together, because a fine
 histogram can hold a signal-dominated tail there (the decks report that signal but leave it out
 of the verdict). The stricter rule is used with the user's agreement (2026-11-16) until the
-advisor rules on it (question 6); `STRICT_SPARSE_BINS = False` in `systematics_study.py` returns
+advisor rules on it (question 4); `STRICT_SPARSE_BINS = False` in `systematics_study.py` returns
 to the decks' verdicts. Every verdict is repeated with the heaviest
 simulated background event removed, and the regions that pass only through S < 1 are judged
 again as one. A data step reads only regions that pass everything:
@@ -181,7 +181,8 @@ outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1_results/
   in Drell-Yan, a ratio of **1.01 ± 0.04** (1.04 ± 0.04 from 30 to 60 GeV, which holds 90% of the
   probes; 0.80 ± 0.08 above 60 GeV, from 112 probes, 2.2 standard deviations).
 - **Not measured:** displaced DSA muons, converted photons (a purer probe), prompt electron pairs,
-  and the most collimated muon pairs. These are questions 4 and 5.
+  and the most collimated muon pairs. Their scale factors come from the nearest measured bin, each
+  case recorded (step 3, "Bins without a measurement").
 
 ### Step 3: from ratios to a correction
 
@@ -189,6 +190,13 @@ outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v1_results/
   down shift. They are written as a correctionlib file under `sidm/` and registered in
   `sidm/configs/corrections.yaml`, as described in "your own correction" in the
   corrections README.
+- **Bins without a measurement.** The control samples cannot reach every corner of the signal
+  phase space (the most displaced and most collimated lepton jets, the highest pT). There the
+  scale factor is taken from the nearest measured bin (agreed with the advisor, 2026-11-23), and
+  every such case is recorded in a coverage map: for each LJ type and each bin of pT,
+  displacement and collimation of the signal, the measured bin its scale factor comes from, with
+  the fraction of each signal point's lepton jets it covers. The group then assesses the cases one
+  by one.
 - **Code needed.** `Corrections` applies object SFs per constituent today, so a per-LJ SF
   needs a small extension there.
 - **Into the limits.** Two entries in [`systematics.yaml`](systematics.yaml),
@@ -215,13 +223,6 @@ do.
 2. **SF granularity.** Per LJ or per constituent. This decides the change to `Corrections`.
 3. **Provisional value.** Which published data/simulation differences to take per regime until
    step 2 exists.
-4. **Collimated muon pairs** (raised by step 1). How to set the uncertainty of the muon-type LJs
-   from the most collimated pairs (m_Zd = 0.25 GeV at 800 and 1000 GeV, 8 points of the limit
-   grid per final state), which no control sample of step 2 reaches.
-5. **Displaced muon-type and prompt egamma-type lepton jets** (raised by step 2). No control
-   sample in our inputs measures the DSA muons against dxy (cosmics need cosmic simulation and
-   data without the dimuon skim) or electron pairs from J/ψ (EGamma data). Whether to produce
-   those inputs, or how to cover these regimes otherwise.
-6. **The sparse-bin rule** (raised by step 2, for the advisor). Whether a region's bins that expect
+4. **The sparse-bin rule** (raised by step 2, for the advisor). Whether a region's bins that expect
    under one background event should be judged together as one more region, as done here, or
    left out of the verdict, as in the working-point decks.

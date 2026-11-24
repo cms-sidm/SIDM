@@ -257,8 +257,12 @@ class SidmProcessor(processor.ProcessorABC):
                     # reconstruct lepton jets
                     sel_objs["ljs"] = self.build_lepton_jets(sel_objs, float(lj_reco))
                     # the dimuon-vertex tables are inputs to the LJ vertex match only (vtx_chi2 is on
-                    # the LJs); drop them so later cuts never slice them
+                    # the LJs); drop them so later cuts never slice them. The probes of the J/psi
+                    # control sample also read the PAT table (hists.jpsi_vertex_probe_hist), which
+                    # is then kept; the event cuts mask it with the other collections.
                     for vtx_table in ("dsaMuonVertex", "patMuonVertex", "patDsaMuonVertex"):
+                        if vtx_table == "patMuonVertex" and self.probes_needed:
+                            continue
                         sel_objs.pop(vtx_table, None)
 
                     # the two lines above set fields of objs["muons"] and

@@ -417,6 +417,8 @@ evt_cut_defs = {
     # region enters: the versions a data campaign reads
     ">=1 Z->mumugamma probe photon alone": lambda objs: ak.num(derived_objs["zmmg_probe_photons"](objs, True)) >= 1,
     ">=1 J/psi probe dimuon alone": lambda objs: ak.num(derived_objs["jpsi_probe_dimuons"](objs, True)) >= 1,
+    # the prompt muons of the DSA-muon reconstruction study (objects.dsa_probe_muons)
+    ">=1 Z->mumu DSA probe muon alone": lambda objs: ak.num(derived_objs["dsa_probe_muons"](objs, True)) >= 1,
     "n_dsa >= 2": lambda objs : ak.num(objs["dsaMuons"]) >= 2,
     "n_bjet == 2": lambda objs : ak.num(objs["bjets"]) == 2,
     "n_jet == 2": lambda objs : ak.num(objs["jets"]) == 2,

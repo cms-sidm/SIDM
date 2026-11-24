@@ -1602,6 +1602,25 @@ lj_cr_JPsi_to_mumu_alone: &lj_cr_JPsi_to_mumu_alone
     - "pass flags"
     - ">=1 J/psi probe dimuon alone"
 
+# The prompt muons of the DSA-muon reconstruction study (sidm/studies/systematics/
+# lj_reco_efficiency.md), simulation only. No trigger: the trigger axes of their histograms
+# (hists.trigger_axes) compare the analysis triggers, which need a standalone muon on both legs,
+# with IsoMu24 and Mu37_TkMu27. The lepton jets are built as in base_ljObjCut, for the condition
+# on other lepton jets (objects._alone).
+dsa_cr_Z_to_mumu_alone: &dsa_cr_Z_to_mumu_alone
+  <<: *base_ljObjCut
+  evt_cuts:
+    - *evt_pv_cuts
+    - "pass flags"
+    - ">=1 Z->mumu DSA probe muon alone"
+
+dsa_cr_JPsi_to_mumu_alone: &dsa_cr_JPsi_to_mumu_alone
+  <<: *base_ljObjCut
+  evt_cuts:
+    - *evt_pv_cuts
+    - "pass flags"
+    - ">=1 J/psi probe dimuon alone"
+
 ttjets_2j2btag: &ttjets_2j2btag
   obj_cuts:
     <<: *obj_ljsource_cuts

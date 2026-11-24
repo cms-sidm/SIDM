@@ -21,7 +21,8 @@ sys.path.insert(0, _REPO)
 HISTS_PY = os.path.join(_REPO, "sidm", "definitions", "hists.py")
 TOKENS = frozenset({"vtx_chi2", "dsaMuonsRaw"})
 # the probe objects of the lepton-jet control samples read the uncut copies photonsRaw and muonsRaw
-PROBE_TOKENS = frozenset({"photonsRaw", "muonsRaw", "zmmg_probe_photons", "jpsi_probe_dimuons"})
+PROBE_TOKENS = frozenset({"photonsRaw", "muonsRaw", "zmmg_probe_photons", "jpsi_probe_dimuons",
+                          "dsa_probe_muons"})
 
 
 def _reads_token(node, readers=(), tokens=TOKENS):

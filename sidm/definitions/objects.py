@@ -143,7 +143,10 @@ on_demand_preLj_objs = ("dsaMuonsRaw", "dsaMuonVertex", "patMuonVertex", "patDsa
 # when a requested channel or histogram needs them (SidmProcessor.needs_probe_inputs)
 preLj_objs["photonsRaw"] = lambda evts: evts.Photon
 preLj_objs["muonsRaw"]   = lambda evts: evts.Muon
-on_demand_probe_objs = ("photonsRaw", "muonsRaw")
+# the generated primary vertex, for the production radius of the probes in simulation (absent in
+# data, where the processor skips it)
+preLj_objs["genVtx"]     = lambda evts: evts.GenVtx
+on_demand_probe_objs = ("photonsRaw", "muonsRaw", "genVtx")
 # define objects whose that will be added to objs by the sidm_processor after LJs are clustered
 # and LJ cuts are applied. postLj_obj cuts can be applied to these
 postLj_objs = {}
@@ -203,14 +206,20 @@ def _alone(probes, objs):
     return probes[~ak.any(pairs.p.delta_r(pairs.lj) > 0.4, axis=-1)]
 
 
-def zmmg_probe_photons(objs, alone=False):
+def zmmg_probe_photons(objs, alone=False, fsr=False):
     """Photons from Z -> mumu gamma, the probes of the egamma-type lepton jets.
 
     The event has exactly two selected PF muons, of opposite charge, with 35 < m(mumu) < 85 GeV
     (final-state radiation lowers it). A probe is any reconstructed photon with pT > 20 GeV and
     |eta| < 2.4, more than 0.5 in dR from both muons, so that the lepton-jet clustering
-    (R = 0.4) keeps it apart from them, and with 60 < m(mumu gamma) < 120 GeV. The field m_mmg
-    holds m(mumu gamma). With alone, only the probes without another lepton jet (_alone).
+    (R = 0.4) keeps it apart from them, and with 60 < m(mumu gamma) < 120 GeV. Fields: m_mmg,
+    m(mumu gamma); m_mumu; dR_mu, the dR to the nearer muon. With alone, only the probes without
+    another lepton jet (_alone).
+
+    With fsr, the selection of final-state radiation of the Z -> mumu gamma photon studies: both
+    muons isolated (relative PF isolation in dR < 0.4 below 0.15, a cone the photon lies outside)
+    and m(mumu) + m(mumu gamma) < 180 GeV, which removes photons added to a Z or to a
+    non-resonant pair at random; the photon's distance to the nearer muon is left to dR_mu.
     """
     muons = objs["muons"]
     pairs = ak.combinations(muons, 2, fields=["mu0", "mu1"])
@@ -224,10 +233,23 @@ def zmmg_probe_photons(objs, alone=False):
             & (trip.g.pt > 20) & (abs(trip.g.eta) < 2.4)
             & (trip.g.delta_r(trip.mm.mu0) > 0.5) & (trip.g.delta_r(trip.mm.mu1) > 0.5)
             & (m_mmg > 60) & (m_mmg < 120))
+    if fsr:
+        keep = keep & ((trip.mm.mu0.pfRelIso04_all < 0.15) & (trip.mm.mu1.pfRelIso04_all < 0.15)
+                       & (dimuon.mass + m_mmg < 180))
     probes = trip.g[keep]
     probes["m_mmg"] = m_mmg[keep]
+    probes["m_mumu"] = dimuon.mass[keep]
+    probes["dR_mu"] = np.minimum(trip.g.delta_r(trip.mm.mu0), trip.g.delta_r(trip.mm.mu1))[keep]
     probes["passing"] = dR(probes, objs["egm_ljs"]) < 0.2
     return _alone(probes, objs) if alone else probes
+
+
+def zmmg_probe_gen_fsr(probes):
+    """Whether each Z -> mumu gamma probe photon is matched (Photon_genPartIdx) to a generated
+    photon radiated by a muon, the final-state radiation the control sample selects. Simulation
+    only."""
+    gen = probes.matched_gen
+    return ak.fill_none((gen.pdgId == 22) & (abs(gen.parent.pdgId) == 13), False)
 
 
 def jpsi_probe_dimuons(objs, alone=False, pt_max=None):
@@ -238,8 +260,8 @@ def jpsi_probe_dimuons(objs, alone=False, pt_max=None):
     pT(mumu) > 20 GeV, below pt_max if given. No other mass is kept. The signal's dark photon
     masses (0.25, 1.2 and 5 GeV) are outside the window, but mismeasured pairs of displaced
     5 GeV dark photons reach it at high pT, which the safety check of the study measures.
-    Fields: the pair's four-vector, dR, and min_pt, the pT of the softer muon. With alone, only
-    the probes without another lepton jet (_alone).
+    Fields: the pair's four-vector, dR, min_pt, the pT of the softer muon, and mu0 and mu1, the
+    two muons. With alone, only the probes without another lepton jet (_alone).
     """
     muons = objs["muonsRaw"]
     muons = muons[muons.isTracker & (abs(muons.eta) < 2.4)]
@@ -253,9 +275,69 @@ def jpsi_probe_dimuons(objs, alone=False, pt_max=None):
     probes = dimuon[keep]
     probes["dR"] = dr[keep]
     probes["min_pt"] = np.minimum(pairs.mu0.pt, pairs.mu1.pt)[keep]
+    probes["mu0"], probes["mu1"] = pairs.mu0[keep], pairs.mu1[keep]
     probes["passing"] = dR(probes, objs["mu_ljs"]) < 0.2
+    return _alone(probes, objs) if alone else probes
+
+
+def jpsi_probe_gen(probes, gen_vtx):
+    """(matched, rxy) of the J/psi -> mumu probes: whether both muons are matched (Muon_genPartIdx)
+    to the muons of one generated J/psi, and the production radius of that J/psi, the transverse
+    distance of its vertex from the generated primary vertex (cm; 0 when unmatched). The J/psi
+    decays at once, so its muons start where it was made: at the primary vertex, or at the decay
+    of a b hadron, a few mm away. gen_vtx is the generated primary vertex of the events of the
+    probes, a list of one per event as the processor holds it. Simulation only."""
+    g0, g1 = probes.mu0.matched_gen, probes.mu1.matched_gen
+    from_jpsi = ak.fill_none((abs(g0.pdgId) == 13) & (abs(g1.pdgId) == 13)
+                             & (g0.parent.pdgId == 443)
+                             & (g0.genPartIdxMother == g1.genPartIdxMother), False)
+    gen_vtx = ak.firsts(gen_vtx)
+    rxy = np.hypot(g0.vx - gen_vtx.x, g0.vy - gen_vtx.y)
+    return from_jpsi, ak.where(from_jpsi, ak.fill_none(rxy, 0.0), 0.0)
+
+
+def jpsi_probe_vertex_lxy(probes, vertices, pv):
+    """The displacement of each J/psi -> mumu probe in data and simulation: the transverse
+    distance (cm) of the fitted vertex of its two muons (vertices: the PatMuonVertex table, whose
+    legs are indexed by Muon.idx) from the primary vertex pv (a list of one per event, as the
+    processor holds it), -1 when the pair has no valid vertex (the producer keeps converged fits
+    with a distance of closest approach under 15 cm)"""
+    cart = ak.cartesian({"p": probes, "v": vertices}, nested=True)
+    leg1, leg2 = cart.v.originalMuonIdx1, cart.v.originalMuonIdx2
+    idx0, idx1 = cart.p.mu0.idx, cart.p.mu1.idx
+    match = ((((leg1 == idx0) & (leg2 == idx1)) | ((leg1 == idx1) & (leg2 == idx0)))
+             & (cart.v.isDSAMuon1 == 0) & (cart.v.isDSAMuon2 == 0) & (cart.v.isValid == 1))
+    vertex = ak.firsts(cart.v[match], axis=-1)
+    pv = ak.firsts(pv)
+    lxy = np.hypot(vertex.vx - pv.x, vertex.vy - pv.y)
+    return ak.fill_none(lxy, -1.0)
+
+
+def dsa_probe_muons(objs, alone=False):
+    """Prompt muons from Z -> mumu, the probes of the DSA-muon reconstruction and selection.
+
+    The tag is a muon of the uncut collection with pT > 30 GeV, |eta| < 2.4, the tight ID and a
+    relative PF isolation (dR < 0.4) below 0.15. A probe is another tracker muon of opposite
+    charge with pT > 10 GeV, |eta| < 2.4, the same isolation, |dxy| < 0.2 cm and |dz| < 0.5 cm,
+    with 71 < m(tag, probe) < 111 GeV (the Z peak, 81 to 101 GeV, and its sidebands). Nothing in
+    the probe requires a standalone muon. Every tag and probe pairing counts, so a pair of two
+    tags gives two probes. The field m_tp holds m(tag, probe). With alone, only the probes
+    without another lepton jet (_alone).
+    """
+    muons = objs["muonsRaw"]
+    tags = muons[muons.tightId & (muons.pt > 30) & (abs(muons.eta) < 2.4)
+                 & (muons.pfRelIso04_all < 0.15)]
+    candidates = muons[muons.isTracker & (muons.pt > 10) & (abs(muons.eta) < 2.4)
+                       & (muons.pfRelIso04_all < 0.15) & (abs(muons.dxy) < 0.2)
+                       & (abs(muons.dz) < 0.5)]
+    pairs = ak.cartesian({"t": tags, "p": candidates})
+    m_tp = (pairs.t + pairs.p).mass
+    keep = (pairs.t.charge != pairs.p.charge) & (m_tp > 71) & (m_tp < 111)
+    probes = pairs.p[keep]
+    probes["m_tp"] = m_tp[keep]
     return _alone(probes, objs) if alone else probes
 
 
 derived_objs["zmmg_probe_photons"] = zmmg_probe_photons
 derived_objs["jpsi_probe_dimuons"] = jpsi_probe_dimuons
+derived_objs["dsa_probe_muons"] = dsa_probe_muons
