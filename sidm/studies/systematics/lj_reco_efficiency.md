@@ -212,9 +212,9 @@ DSA muons of prompt muons.
 - **DSA muons of prompt muons.** The displaced ID has no impact-parameter cut, so prompt muons test
   it. 81% of the prompt muons of Z → μμ have a selected DSA muon (0.85 in the barrel, 0.56 above
   |η| = 2.1); both muons of a boosted J/ψ have one only 44 to 52% of the time above 40 GeV. The
-  analysis triggers raise the fraction by 3.3 points (0.14 to 0.23 for pairs), IsoMu24 does not. A
-  measurement in data needs SingleMuon ntuples, since ours are skimmed on the analysis triggers
-  (question 5).
+  analysis triggers raise the fraction by 3.3 points (0.14 to 0.23 for pairs), Mu37_TkMu27 by 0.6
+  points, IsoMu24 not at all. Our skimmed ntuples keep only events of the analysis triggers, so the
+  measurement in data (below) uses Mu37_TkMu27 on the unskimmed DoubleMuon ntuples of 2018C.
 
 **Version 3 in data** (campaign `lj_reco_cr_data_v2`, all 2018 DoubleMuon files, the alone
 versions only, read through the safety table of version 3; notebook
@@ -241,6 +241,21 @@ except the J/ψ vertex bin above 15 cm, which is set to zero in data and in the 
 - **Still not measured:** displaced DSA muons, prompt electron pairs, muon pairs below ΔR = 0.03,
   converted photons above 60 GeV. Their scale factors come from the nearest measured bin (step 3).
 
+**DSA muons of prompt muons in data** (campaign `dsa_prompt_data_v1`, the unskimmed DoubleMuon
+ntuples of 2018C, the alone versions only, read through the safety table of notebook 09, which
+found both regions safe; notebook [`10_dsa_prompt_data.ipynb`](10_dsa_prompt_data.ipynb); outputs
+in `/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1_results/`).
+
+- **Single muons** (Z → μμ tag and probe, Mu37_TkMu27). 70.4% of the prompt muons have a selected
+  DSA muon in data and 81.7% in Drell-Yan, a ratio of **0.862**: 0.87 from 20 to 60 GeV falling to
+  0.80 above 120 GeV, 0.87 in the barrel and in the endcaps up to |η| = 2.1, 0.83 in the overlap,
+  0.77 above |η| = 2.1. With the analysis triggers it is 0.88, with IsoMu24 0.87, for tight probes
+  0.87. The simulation overestimates the DSA reconstruction and selection by about 14%.
+- **Two collimated muons** (J/ψ pairs above 40 GeV, analysis triggers). Both have a DSA muon in
+  50.3% of the pairs in data and 65.6% in the simulation, a ratio of **0.77 ± 0.01**, the square of
+  the single-muon ratio with the same triggers (0.88² = 0.78), so a scale factor per DSA muon also
+  describes the pairs from ΔR = 0.03 to 0.4.
+
 ### Step 3: from ratios to a correction
 
 - **Correction.** The data/simulation ratios become per-LJ scale factors with an up and a
@@ -253,7 +268,12 @@ except the J/ψ vertex bin above 15 cm, which is set to zero in data and in the 
   every such case is recorded in a coverage map: for each LJ type and each bin of pT,
   displacement and collimation of the signal, the measured bin its scale factor comes from, with
   the fraction of each signal point's lepton jets it covers. The group then assesses the cases one
-  by one.
+  by one. The map exists in the generator quantities of step 1
+  ([`11_lj_coverage_map.ipynb`](11_lj_coverage_map.ipynb), 2026-11-24): over the limit grid, a
+  median 97 to 99.7% of the muon-type lepton jets lie below ΔR = 0.03 (all for 0.25 GeV dark
+  photons, 10% for 5 GeV ones), 65 to 68% beyond L_xy = 15 cm and 28 to 29% above 300 GeV, and 97%
+  of the egamma-type ones above 120 GeV. The nearest-bin rule therefore applies to most of the
+  signal, and the per-point table on EOS lists every case.
 - **Code needed.** `Corrections` applies object SFs per constituent today, so a per-LJ SF
   needs a small extension there.
 - **Into the limits.** Two entries in [`systematics.yaml`](systematics.yaml),
@@ -283,7 +303,8 @@ do.
 4. **The sparse-bin rule** (raised by step 2, for the advisor). Whether a region's bins that expect
    under one background event should be judged together as one more region, as done here, or
    left out of the verdict, as in the working-point decks.
-5. **DSA muons in data.** Whether to produce 2018 SingleMuon ntuples for a Z → μμ tag-and-probe
-   measurement of the DSA reconstruction and selection with IsoMu24 (notebook 09, section 5), and
-   whether the efficiency for two collimated DSA muons can come from the simulation with an
-   uncertainty set by the single-muon scale factor.
+5. **DSA muons in data.** Measured on 2018C (notebook 10): data/simulation 0.862 per prompt muon,
+   and the square of it for J/ψ pairs. Open: whether to add the other periods (unskimmed
+   DoubleMuon ntuples are on EOS for period A and, in blocks, for period D, not yet in `data.yaml`),
+   and whether the DSA scale factor enters per DSA muon in bins of pT and |η|, as the pairs
+   suggest.

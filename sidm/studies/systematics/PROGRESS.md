@@ -5,12 +5,13 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-24, 12:20)
+## Current state (2026-11-24, 14:30)
 
 **The review of PR #90 and the feedback on step 2 are done and committed, not yet pushed.**
 Part 1 (the limits on the analysis pair) and part 2 (version 3 of the control samples, in
-simulation and in data) are finished; the user pushes, answers the two review comments, and opens
-the MET-filter PR.
+simulation and in data) are finished, and the follow-ups to the reply on step 2 (2026-11-24) are
+done: the DSA muons of prompt muons in data and the coverage map. The user pushes, answers the two
+review comments, opens the MET-filter PR, and shares the summary deck.
 - **Part 1, done.** `systematics_v3` (3,158 chunks, 4 empty files skipped) and
   `systematics_data_v2` (2,580 chunks, 463 empty files skipped) merged; notebooks 03, 04, 05 rerun
   on them with rewritten interpretations; README and AN Sec. 7 (local) updated. Data B, C, D:
@@ -53,9 +54,24 @@ the MET-filter PR.
   unconverted photons) and the summary deck `slides/summary_2026-11-24.tex` (24 pages, local)
   updated.
 
-**Next:** the user pushes `systematicsStudy` and `passFlagsInBase` (replies and PR texts were
-given in chat); step 3 (per-lepton-jet scale factors) waits on the group's answers in
-`lj_reco_efficiency.md` ("What is needed").
+- **Follow-ups to the reply on step 2 (2026-11-24).** Points 1 to 3 (J/ψ production radius and
+  vertex, converted photons, closure) were already done in version 3. Point 4, DSA muons in data:
+  approved for 2018C; the safety check of both DSA regions (notebook 09, section 5) found every
+  region safe; campaign `dsa_prompt_data_v1` (636 jobs over the unskimmed DoubleMuon 2018C,
+  `request_memory: 6GB`, since whole unskimmed files pass 2 GB; jobs that started at 2 GB were
+  released with 6 GB) merged at 13:40; notebook 10: data/simulation 0.862 per prompt muon with
+  Mu37_TkMu27 (0.80 above 120 GeV, 0.77 above |η| = 2.1; 0.87 to 0.88 with the other triggers),
+  0.77 ± 0.01 for J/ψ pairs above 40 GeV with the analysis triggers, the square of the single-muon
+  ratio. Point 5: the coverage map (notebook 11, from `lj_reco_eff_v1`): over the limit grid a
+  median 97 to 99.7% of the muon-type lepton jets lie below ΔR = 0.03, 65 to 68% beyond 15 cm, 28
+  to 29% above 300 GeV; 97% of the egamma-type ones above 120 GeV. README, `lj_reco_efficiency.md`,
+  AN Sec. 7 (local: a DSA paragraph and figure) and the deck (25 pages, local) updated.
+- Unskimmed DoubleMuon ntuples are on EOS for 2018A (2,762 files) and, in blocks, 2018D (not in
+  `data.yaml`); 2018C has 636 of its 637 files.
+
+**Next:** the user pushes `systematicsStudy` and `passFlagsInBase` (replies, PR texts and a
+Mattermost summary were given in chat); step 3 (scale factors, with the DSA muons per muon) waits
+on the group's answers in `lj_reco_efficiency.md` ("What is needed").
 
 ## State of 2026-11-17 (step 2 for the prompt regime)
 
@@ -225,6 +241,12 @@ only.
 
 ### 2026-11-24
 
+- (14:30) Follow-ups to the reply on step 2: DSA safety check (notebook 09, section 5),
+  `dsa_prompt_data_v1` on the unskimmed 2018C (approved), notebook 10 (DSA data/simulation 0.862
+  per muon, 0.77 per J/ψ pair), notebook 11 (the coverage map). `integrated_efficiency` takes a
+  `passing` argument, `plot_mass_data_mc` a `scale`; `LJ_COVERAGE`, `fraction_inside` and
+  `coverage_fractions` are new. README, `lj_reco_efficiency.md`, AN Sec. 7 and the deck updated;
+  committed.
 - (12:20) `lj_reco_cr_data_v2` complete and merged; notebook 08 section 6 run with interpretations
   (J/ψ flat in the vertex displacement out to 15 cm, data/simulation 0.995 ± 0.003 above 1 mm;
   converted photons data/Drell-Yan 0.94 ± 0.10; unconverted 1.02 ± 0.04). `efficiency_ratio`

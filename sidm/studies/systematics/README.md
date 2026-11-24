@@ -486,8 +486,10 @@ baskets in muon-vertex branches, which only these histograms read, are left out.
   uses), which the data step never reads. The data campaign is `lj_reco_cr_data_v2`.
 - **DSA muons:** 81% of prompt muons have a selected DSA muon, both muons of a boosted J/ψ only 44
   to 52% of the time above 40 GeV. The analysis triggers bias the measurement upward (by 3.3
-  points for single muons), so a data measurement needs SingleMuon ntuples and the group's
-  approval ([`lj_reco_efficiency.md`](lj_reco_efficiency.md), question 5).
+  points for single muons), Mu37_TkMu27 by 0.6 points, so the measurement in data (below) uses
+  Mu37_TkMu27 on the unskimmed DoubleMuon ntuples of 2018C. Both regions are safe (notebook 09,
+  section 5): at most 3.3 signal events against 64 million Z → μμ probes, and 4.0 against 10,900
+  J/ψ pairs above 300 GeV.
 
 ### Results of step 2 in data (2026-11-17, `08_lj_reco_data.ipynb`)
 
@@ -525,6 +527,47 @@ zero, and the comparison sets it to zero in the simulation too. Outputs in
   60 GeV), in line with version 2.
 - **Still not measured:** displaced DSA muons, prompt electron pairs, muon pairs below ΔR = 0.03,
   converted photons above 60 GeV.
+
+### DSA muons of prompt muons in data (2026-11-24, `10_dsa_prompt_data.ipynb`)
+
+Campaign `dsa_prompt_data_v1`: the 636 files of the unskimmed DoubleMuon ntuples of 2018C
+(`llpNanoAOD_v2` in `data.yaml`), the alone versions only, read through the safety table of
+notebook 09; the simulation is `lj_reco_cr_v3`. The approved use is this measurement on 2018C
+(2026-11-24). Outputs in `/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1_results/`.
+
+- **Single muons (Z → μμ tag and probe, Mu37_TkMu27):** 70.4% of the prompt muons have a selected
+  DSA muon in data (5.6 million probes) and 81.7% in Drell-Yan, a ratio of **0.862** (statistical
+  uncertainty 0.0003). It is 0.87 from 20 to 60 GeV and falls to 0.80 above 120 GeV; 0.87 in the
+  barrel and in the endcaps up to |η| = 2.1, 0.83 in the overlap, 0.77 above |η| = 2.1. With the
+  analysis triggers it is 0.88, with IsoMu24 0.87, for tight probes 0.87: the simulation
+  overestimates the reconstruction and selection of DSA muons by about 14%.
+- **Two collimated muons (J/ψ pairs above 40 GeV, analysis triggers, the only trigger their
+  histogram carries):** both muons have a DSA muon in 50.3% of the pairs in data and 65.6% in the
+  simulation, a ratio of **0.77 ± 0.01**, the square of the single-muon ratio with the same
+  triggers (0.88² = 0.78); 0.72 to 0.78 for separations from 0.03 to 0.2.
+- **For step 3:** a scale factor per DSA muon in bins of pT and |η|, which also describes the pairs
+  within these uncertainties. Period C only (unskimmed ntuples are on EOS for period A and, in
+  blocks, for period D); pairs
+  closer than ΔR = 0.03 and DSA muons above 200 GeV are not reached.
+- The jobs read whole unskimmed files and needed 6 GB (`request_memory` in the config).
+
+### The coverage map of the control samples (2026-11-24, `11_lj_coverage_map.ipynb`)
+
+Where the signal's lepton jets lie (step 1, `lj_reco_eff_v1`, the 48 points per final state of the
+limit grid: the generator dark photons matched to a selected lepton jet) against what the control
+samples measure (`systematics_study.LJ_COVERAGE`). Muon-type: 30 to 300 GeV, ΔR from 0.03 to 0.4
+and L_xy out to 15 cm with the J/ψ probes, and the DSA muons with prompt muons at any L_xy.
+Egamma-type: 30 to 120 GeV with the photons; their opening angle and displacement are not measured.
+The table per point is in
+`/store/user/scampbel/sidm_coffea_outputs/lj_reco_eff_v1_results/coverage/coverage.csv`.
+
+- **Muon-type:** below ΔR = 0.03 in a median 99.7% (2Mu2E) and 97% (4Mu) of the lepton jets, all
+  of them for 0.25 GeV dark photons and a median 10% for 5 GeV ones (ΔR ≈ 2m/pT); beyond 15 cm in
+  65% and 68%; above 300 GeV in 28% and 29%, up to 89% at 1000 GeV.
+- **Egamma-type:** above 120 GeV in a median 97% of the lepton jets, 3% at 200 GeV.
+- Nearly every lepton jet of the signal lies outside the measured range in at least one variable,
+  so the nearest-bin rule of step 3 applies to most of the signal; the table lists every case for
+  the group.
 
 ### Results of step 1 (2026-11-14)
 
@@ -572,9 +615,9 @@ zero, and the comparison sets it to zero in the simulation too. Outputs in
    uncertainty, together with the isolation definition (corrections open item 5).
 7. The lepton-jet reconstruction efficiency: step 1 is done (`06_lj_reco_efficiency.ipynb`);
    step 2 is done for the prompt regime, with version 3 (converted photons, the J/ψ vertex
-   displacement) in simulation and data; step 3 and a data measurement of DSA muons wait on the
-   questions for the group in
-   [`lj_reco_efficiency.md`](lj_reco_efficiency.md).
+   displacement) in simulation and data, and the DSA muons are measured with prompt muons in data
+   (2018C); the coverage map shows where step 3 extrapolates, and step 3 waits on the questions
+   for the group in [`lj_reco_efficiency.md`](lj_reco_efficiency.md).
 
 ## Notebooks
 
@@ -588,7 +631,9 @@ zero, and the comparison sets it to zero in the simulation too. Outputs in
 | [`06_lj_reco_efficiency.ipynb`](06_lj_reco_efficiency.ipynb) | step 1 of the lepton-jet reconstruction efficiency: the efficiency against $L_{xy}$, $p_T$ and the opening angle, its maps, and the decay-radius regimes of every signal point | `lj_reco_eff_v1` | about 1 min |
 | [`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb) | step 2 of the lepton-jet reconstruction efficiency, simulation part: the Z → μμγ and J/ψ → μμ probes, the safety check that decides which regions data may read (table written to EOS), the efficiencies the simulation expects; section 6, version 3: the closure test of the sideband subtraction, the efficiency against the J/ψ production radius, converted photons with the FSR selection, the J/ψ vertex displacement, and their safety check | `lj_reco_cr_v2`, `lj_reco_cr_v3` | about 1 min |
 | [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb) | step 2 of the lepton-jet reconstruction efficiency, data part: the passing fractions of the control samples in data against the simulation, read only through the safety tables of 07; section 6, version 3: converted and unconverted photons of the FSR selection, and the J/ψ probes against their vertex displacement | `lj_reco_cr_data_v1`, `lj_reco_cr_v2`, `lj_reco_cr_data_v2`, `lj_reco_cr_v3` | about 10 min |
-| [`09_dsa_prompt_muons.ipynb`](09_dsa_prompt_muons.ipynb) | the DSA muons of prompt muons, in simulation: the displaced ID, Z → μμ tag and probe and J/ψ pairs, the bias of each trigger, and what a data measurement needs | `lj_reco_cr_v3` | under 1 min |
+| [`09_dsa_prompt_muons.ipynb`](09_dsa_prompt_muons.ipynb) | the DSA muons of prompt muons, in simulation: the displaced ID, Z → μμ tag and probe and J/ψ pairs, the bias of each trigger, the safety check of both regions (table written to EOS), and what the data measurement needs | `lj_reco_cr_v3` | about 2 min |
+| [`10_dsa_prompt_data.ipynb`](10_dsa_prompt_data.ipynb) | the DSA muons of prompt muons in data against the simulation, read only through the safety table of 09: single muons (Z → μμ tag and probe, Mu37_TkMu27) and J/ψ pairs | `dsa_prompt_data_v1` (data, unskimmed 2018C), `lj_reco_cr_v3` | about 1 min |
+| [`11_lj_coverage_map.ipynb`](11_lj_coverage_map.ipynb) | the coverage map of the control samples: where the signal's lepton jets lie against what each measurement reaches, and per point of the limit grid the fraction outside each range | `lj_reco_eff_v1` | about 1 min |
 
 Notebooks 01 and 02 read the merged outputs of the corrections campaign
 (`corrections_study.CAMPAIGN_DIR`) through `corrections_study.load`, which copies them once

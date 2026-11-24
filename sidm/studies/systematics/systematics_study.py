@@ -655,11 +655,14 @@ LJ_RECO_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_eff_v1"
 LJ_EFFICIENCY = {
     "muon-type": {"num": "baseNoLj_A_mumu_matched_lj", "den": "baseNoLj_A_mumu",
                   "lxy": "genAs_toMu_lxy", "pt": "genAs_toMu_pt",
-                  "map": "genA_toMu_lxy_vs_daughters_dR"},
+                  "map": "genA_toMu_lxy_vs_daughters_dR",
+                  "pt_high": "genAs_toMu_pt_highRange", "lxy_low": "genAs_toMu_lxy_lowRange"},
     "egamma-type": {"num": "baseNoLj_A_ee_matched_lj", "den": "baseNoLj_A_ee",
                     "lxy": "genAs_toE_lxy", "pt": "genAs_toE_pt",
-                    "map": "genA_toE_lxy_vs_daughters_dR"},
+                    "map": "genA_toE_lxy_vs_daughters_dR",
+                    "pt_high": "genAs_toE_pt_highRange", "lxy_low": "genAs_toE_lxy_lowRange"},
 }
+LJ_EFFICIENCY_VARIABLES = ("lxy", "pt", "map", "pt_high", "lxy_low")
 
 # Where the dark photon decays: inside the pixel layers, in the strip tracker, beyond the
 # tracker; the bounds are bin edges of the L_xy histograms (5 cm bins)
@@ -669,8 +672,9 @@ LXY_REGIMES = {"Lxy < 10 cm": (0.0, 10.0), "10 cm <= Lxy < 100 cm": (10.0, 100.0
 
 def lj_efficiency_inputs(directory=LJ_RECO_DIR):
     """{sample: {lepton-jet type: {variable: (numerator, denominator)}}} from the merged
-    outputs of the lj_reco_eff_v1 campaign, variable being "lxy", "pt" or "map"; a type
-    without dark photons in a sample (egamma-type in 4mu) is left out"""
+    outputs of the lj_reco_eff_v1 campaign, variable one of LJ_EFFICIENCY_VARIABLES ("lxy",
+    "pt", "map", and "pt_high" and "lxy_low", the ranges up to 700 GeV and down to 20 cm); a
+    type without dark photons in a sample (egamma-type in 4mu) is left out"""
     inputs = {}
     for url in list_coffea(directory):
         for sample, out in dt.read_coffea(url).items():
@@ -678,7 +682,7 @@ def lj_efficiency_inputs(directory=LJ_RECO_DIR):
             per_type = {}
             for lj_type, spec in LJ_EFFICIENCY.items():
                 pairs = {v: (hists[spec[v]][{"channel": spec["num"]}],
-                             hists[spec[v]][{"channel": spec["den"]}]) for v in ("lxy", "pt", "map")}
+                             hists[spec[v]][{"channel": spec["den"]}]) for v in LJ_EFFICIENCY_VARIABLES}
                 if pairs["lxy"][1].sum(flow=True).value > 0:
                     per_type[lj_type] = pairs
             inputs[sample] = per_type
@@ -801,6 +805,71 @@ def plot_regimes(inputs, points, lj_type, title):
     mass_ticks(bottom, points)
     study.cms_label(top)
     return fig
+
+
+# ------------------------------------------------------------------------------------------
+# The coverage map of the control samples (lj_reco_efficiency.md, step 3, "Bins without a
+# measurement")
+
+# What the control samples of step 2 reach, per lepton-jet type, in the generator quantities of
+# step 1: the dark photon's pT (GeV) and L_xy (cm), and the opening angle dR of its two leptons.
+# Muon-type: the J/psi probes from the 30 GeV threshold to 300 GeV (notebooks 07 and 08), from
+# dR = 0.03, below which the sideband subtraction does not close (07, section 6.1), to 0.4, with
+# their vertex out to 15 cm (08, section 6); the DSA muons are measured with prompt muons (09, 10),
+# which test them at any L_xy, since the muons of a boosted dark photon point back to the beam
+# line. Egamma-type: the photons of Z -> mumu gamma from 30 to 120 GeV, converted and unconverted
+# (08); a photon is one object and its conversion radius is not in the ntuples, so neither the
+# opening angle nor the displacement is measured. A lepton jet outside a range takes the nearest
+# measured bin, which the coverage map records.
+LJ_COVERAGE = {
+    "muon-type": {"pt": (30.0, 300.0), "dR": (0.03, 0.4), "lxy": (0.0, 15.0)},
+    "egamma-type": {"pt": (30.0, 120.0)},
+}
+
+
+def _shares(axis, lo, hi):
+    """Per bin of axis, flow bins included, the fraction of its width inside [lo, hi): linear in
+    the axis value (also on a logarithmic axis), 0 for a flow bin unless the range reaches it"""
+    edges = axis.edges
+    inner = np.clip((np.minimum(hi, edges[1:]) - np.maximum(lo, edges[:-1])) / np.diff(edges), 0.0, 1.0)
+    under = [1.0 if lo < edges[0] else 0.0] if axis.traits.underflow else []
+    over = [1.0 if hi > edges[-1] else 0.0] if axis.traits.overflow else []
+    return np.concatenate([under, inner, over])
+
+
+def fraction_inside(h, ranges):
+    """The fraction of the content of h (flow bins included) inside the given ranges, one
+    (low, high) per axis or None for no limit; a bin that holds a boundary is split in
+    proportion to its width"""
+    values = h.values(flow=True)
+    total = float(values.sum())
+    if total <= 0:
+        return np.nan
+    weights = np.ones_like(values)
+    for k, (axis, rng) in enumerate(zip(h.axes, ranges)):
+        if rng is not None:
+            shape = [1] * values.ndim
+            shape[k] = -1
+            weights = weights * _shares(axis, *rng).reshape(shape)
+    return float((values * weights).sum()) / total
+
+
+def coverage_fractions(pairs, lj_type):
+    """For one sample (pairs: its {variable: (numerator, denominator)} from lj_efficiency_inputs)
+    and lepton-jet type, the fractions of its matched dark photons below and above each range of
+    LJ_COVERAGE, and for the muon-type ones outside the J/psi measurement in the plane of L_xy and
+    dR (L_xy beyond 15 cm or dR outside 0.03 to 0.4): the shares of its lepton jets that take the
+    nearest measured bin"""
+    hists = {"pt": pairs["pt_high"][0], "lxy": pairs["lxy_low"][0],
+             "dR": pairs["map"][0].project(pairs["map"][0].axes[1].name)}
+    out = {}
+    for variable, (lo, hi) in LJ_COVERAGE[lj_type].items():
+        out[f"{variable} below"] = fraction_inside(hists[variable], [(-np.inf, lo)])
+        out[f"{variable} above"] = fraction_inside(hists[variable], [(hi, np.inf)])
+    if "dR" in LJ_COVERAGE[lj_type]:
+        cov = LJ_COVERAGE[lj_type]
+        out["outside the J/psi plane"] = 1.0 - fraction_inside(pairs["map"][0], [cov["lxy"], cov["dR"]])
+    return out
 
 
 # ------------------------------------------------------------------------------------------
@@ -1366,12 +1435,18 @@ LJ_CR_DATA_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_da
 # safety table of LJ_CR_V3_RESULTS_DIR), and where section 6 of 08_lj_reco_data.ipynb writes
 LJ_CR_DATA_V2_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v2"
 LJ_CR_DATA_V2_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_data_v2_results"
+# the data of the DSA muons of prompt muons (campaign dsa_prompt_data_v1: the histograms of DSA_CR
+# from the unskimmed DoubleMuon ntuples of 2018C, read through the safety table of DSA_RESULTS_DIR),
+# and where 10_dsa_prompt_data.ipynb writes
+DSA_DATA_DIR = "/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1"
+DSA_DATA_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1_results"
 
 
-def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None):
+def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None, scale=1.0):
     """The probe mass of one control sample in data (points) and in the simulation (stacked by
-    group, at its luminosity), for the probes that sel (a dict of histogram slices) keeps; specs
-    are the control samples (LJ_CR by default)"""
+    group, at its luminosity times scale), for the probes that sel (a dict of histogram slices)
+    keeps; specs are the control samples (LJ_CR by default). A scale other than one compares the
+    shapes when the data cover only part of the luminosity."""
     spec = (LJ_CR if specs is None else specs)[cr]
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 6))
@@ -1381,12 +1456,12 @@ def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None):
         hists = [inputs["background"][s][cr] for s in samples if s in inputs["background"]]
         if not hists:
             continue
-        h = sum(hists)
-        mass = (h[sel] if sel else h).project(spec["mass"])
+        mass = sum(hists)
+        mass = (mass[sel] if sel else mass).project(spec["mass"])
         base = np.zeros(len(mass.values())) if bottom is None else bottom
-        ax.stairs(base + mass.values(), mass.axes[0].edges, baseline=base, fill=True,
+        ax.stairs(base + scale * mass.values(), mass.axes[0].edges, baseline=base, fill=True,
                   color=colour, label=group)
-        bottom = base + mass.values()
+        bottom = base + scale * mass.values()
     mass = (data[cr][sel] if sel else data[cr]).project(spec["mass"])
     ax.errorbar(mass.axes[0].centers, mass.values(), yerr=np.sqrt(mass.variances()), fmt="o",
                 color=study.BLACK, label="data")
@@ -1429,15 +1504,17 @@ def efficiency_table(results, reference):
                                                          *columns)]
 
 
-def integrated_efficiency(h, spec):
+def integrated_efficiency(h, spec, passing=("passing", (1,))):
     """(passing fraction, its uncertainty, probes) of all the probes of h, its other axes summed,
-    after the sideband subtraction of probe_efficiency"""
+    after the sideband subtraction of probe_efficiency; passing as for probe_efficiency"""
     (p_lo, p_hi), sidebands = spec["peak"], spec["sidebands"]
     k = (p_hi - p_lo) / sum(hi - lo for lo, hi in sidebands)
-    peak = mass_window(h, spec["mass"], p_lo, p_hi).project("passing")
-    side = sum(mass_window(h, spec["mass"], lo, hi).project("passing") for lo, hi in sidebands)
+    peak = mass_window(h, spec["mass"], p_lo, p_hi).project(passing[0])
+    side = sum(mass_window(h, spec["mass"], lo, hi).project(passing[0]) for lo, hi in sidebands)
     values = peak.values() - k * side.values()
     variances = peak.variances() + k * k * side.variances()
+    is_pass = np.isin(np.arange(len(values)), passing[1])
     probes = values.sum()
-    eff = values[1] / probes
-    return eff, math.sqrt((1 - eff) ** 2 * variances[1] + eff ** 2 * variances[0]) / probes, probes
+    eff = values[is_pass].sum() / probes
+    return eff, math.sqrt((1 - eff) ** 2 * variances[is_pass].sum()
+                          + eff ** 2 * variances[~is_pass].sum()) / probes, probes

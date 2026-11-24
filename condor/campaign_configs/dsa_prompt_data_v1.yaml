@@ -1,0 +1,47 @@
+# Collision data for the DSA reconstruction of prompt muons, part of step 2 of the lepton-jet
+# reconstruction efficiency study (sidm/studies/systematics/lj_reco_efficiency.md, question 5):
+# the histograms of dsa_prompt_probes, i.e. a Z -> mumu tag and probe of the DSA muons of prompt
+# muons and boosted J/psi -> mumu pairs, with the trigger decisions as axes. The simulation is
+# campaign lj_reco_cr_v3 (notebook 09); the comparison is notebook 10.
+#
+# The skimmed DoubleMuon ntuples keep only events of the analysis triggers, which need a
+# standalone muon on both legs and so bias the probe. These are the unskimmed DoubleMuon ntuples
+# of 2018C (llpNanoAOD_v2 in data.yaml), which also hold Mu37_TkMu27, whose second leg needs only
+# a tracker muon (a bias of 0.6 points in simulation, against 3.3 for the analysis triggers).
+#
+# Approved data use (2026-11-24): the tag and probe of DSA muons on prompt muons with a
+# tracker-only trigger, then boosted J/psi pairs as a check at the level of lepton jets, on the
+# unskimmed DoubleMuon ntuples of 2018C only. Only the _alone versions are filled, whose probes
+# have no other lepton jet of the signal selection's kinds, so no event of the signal region
+# enters. Both histograms were judged in simulation (campaign lj_reco_cr_v3, notebook 09,
+# section 5; table in .../lj_reco_cr_v3_results/dsa_prompt/safety.json), with the stricter
+# sparse-bin rule and the stress test: every region is safe. Z -> mumu: the worst signal point
+# puts 3.3 events into the 64 million background events of the sample, at most 1.4 in a bin of
+# the probe pT (binned Z at most 0.06). J/psi -> mumu: at most 4.0 events against 10,900 above
+# 300 GeV (0.04%, binned Z 0.35). The data step reads the outputs only through
+# systematics_study.lj_cr_data with that table.
+#
+#     python condor/campaign.py dsa_prompt_data_v1 jobs
+#     python condor/campaign.py dsa_prompt_data_v1 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py dsa_prompt_data_v1 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py dsa_prompt_data_v1 merge
+
+name: dsa_prompt_data_v1
+chunk_dir: /store/user/$USER/sidm_condor/DsaPromptDataChunks_v1
+merged_dir: /store/user/$USER/sidm_coffea_outputs/dsa_prompt_data_v1
+
+channels: [dsa_cr_Z_to_mumu_alone, dsa_cr_JPsi_to_mumu_alone]
+hist_collections: [dsa_prompt_probes]
+corrections: none
+hist_mode: weighted
+allow_data: true
+# an unskimmed file holds many more events than a skimmed one, and its chunks pass 2 GB
+request_memory: 6GB
+
+job_lists:
+  - job_args: job_args_dsa_prompt_data_v1.txt
+    samples_file: samples_data_doublemuon_2018c_unskimmed.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: data.yaml
+    files_per_job: 1
+    replace_xcache: true

@@ -1,0 +1,3 @@
+# The unskimmed 2018C DoubleMuon data (llpNanoAOD_v2, sidm/configs/ntuples/data.yaml). Collision
+# data: only for the approved uses named in the campaign configs.
+DoubleMuon_2018C
