@@ -1,0 +1,40 @@
+# The ABCD limit inputs with every weight variation (sidm/studies/systematics), signal only:
+# every v10 signal point in the two analysis channels, with the default corrections and the syst
+# axis on the abcd6d_* histograms. The limits notebook (sidm/studies/systematics/03_limits.ipynb)
+# reads the signal here and the simulated background of systematics_v3 (the Campaign
+# systematics_v4 in sidm/studies/limit_plotting/datacard_tools.py).
+#
+# Supersedes the signal of systematics_v3, which has the same channels, histograms and samples:
+# the default corrections now include dsa_muon_id, the scale factor per DSA muon measured in the
+# study (sidm/configs/corrections.yaml), so the signal carries it and its up and down shifts.
+# The background is not remade: the limits take it from data (regions B, C and D), and the
+# simulated background enters only as a printed comparison.
+#
+#     python condor/campaign.py systematics_v4 jobs
+#     python condor/campaign.py systematics_v4 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py systematics_v4 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py systematics_v4 merge
+
+name: systematics_v4
+chunk_dir: /store/user/$USER/sidm_condor/SystematicsChunks_v4
+merged_dir: /store/user/$USER/sidm_coffea_outputs/systematics_v4
+
+channels: [SR_2mu2e, SR_4mu]
+hist_collections: [abcd_limits]
+corrections: default
+hist_mode: syst
+
+# the same signal samples and files per job as systematics_v3
+job_lists:
+  - job_args: job_args_systematics_v4_2mu2e.txt
+    samples_file: samples_corrections_2mu2e.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_2mu2e_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_systematics_v4_4mu.txt
+    samples_file: samples_corrections_4mu.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_4mu_v10.yaml
+    files_per_job: 25
+    replace_xcache: true

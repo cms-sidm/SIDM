@@ -235,6 +235,21 @@ CAMPAIGNS = {
              "events selected by that pair; same channels, histograms and samples. Data in "
              "the same channels: systematics_data_v2, signal-plane regions B, C and D only.",
     ),
+    "systematics_v4": Campaign(
+        name="systematics_v4",
+        # the signal of systematics_v3 remade with the scale factor per DSA muon in the default
+        # corrections; the simulated background stays that of systematics_v3, since the limits
+        # take the background from data (it enters only as a printed comparison)
+        bkg_dir=f"{_EOS_SYST}/systematics_v3",
+        signal_dir=f"{_EOS_SYST}/systematics_v4",
+        data_dir=f"{_EOS_SYST}/systematics_data_v2",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="the signal of systematics_v3 with the default corrections of the lepton-jet "
+             "scale factors per constituent, which now include dsa_muon_id (the DSA-muon "
+             "scale factor measured in sidm/studies/systematics); same channels, histograms "
+             "and signal samples. Simulated background: systematics_v3 (without the DSA "
+             "scale factor). Data: systematics_data_v2, signal-plane regions B, C and D only.",
+    ),
 }
 
 DEFAULT_CAMPAIGN = "golden_hotspot_iso025_v1"

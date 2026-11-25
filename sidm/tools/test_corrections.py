@@ -222,6 +222,40 @@ def test_hist_syst_axis():
     check("no syst axis: nominal used", np.allclose(plain.hist[{"channel": "ch"}].values(), [1, 1, 2, 0]))
 
 
+def test_hist_entry_factors():
+    """Histogram with entry_factors fills one sf category per factor, each entry weighted by it"""
+    def factors(objs, _mask):
+        return {"none": ak.ones_like(objs["x"]), "nominal": objs["f"]}
+    h = Histogram([Axis(hist.axis.Regular(4, 0, 4, name="x"), lambda objs, mask: objs["x"])],
+                  entry_factors=(["none", "nominal"], factors))
+    h.make_hist("x", channels=["ch"], systematics=["nominal", "sfUp"])
+    check("sf axis after channel and syst", [a.name for a in h.hist.axes] == ["channel", "syst", "sf", "x"])
+    objs = {"ch": "ch", "x": ak.Array([[0.5, 1.5], [2.5]]), "f": ak.Array([[0.5, 1.0], [0.8]])}
+    w = ak.Array([1.0, 2.0])
+    h.fill(objs, {"nominal": w, "sfUp": 2 * w})
+    view = h.hist[{"channel": "ch", "syst": "nominal"}]
+    check("no factor in none", np.allclose(view[{"sf": "none"}].values(), [1, 1, 2, 0]))
+    check("entry factor times event weight", np.allclose(view[{"sf": "nominal"}].values(), [0.5, 1, 1.6, 0]))
+    check("factors in every syst category",
+          np.allclose(h.hist[{"channel": "ch", "syst": "sfUp", "sf": "nominal"}].values(), [1, 2, 3.2, 0]))
+
+
+def test_dsa_muon_sf():
+    """The DSA-muon scale factor of the repository (sidm/data/corrections) through the config"""
+    corr = corrections.Corrections("2018", ["dsa_muon_id"])
+    check("DSA SF at the displaced ID", corr.working_point("dsa_muon_id", {"dsaMuons": ["displaced ID"]})
+          == "displaced ID")
+    dsa = ak.Array([[{"pt": 45.0, "eta": 0.5}, {"pt": 150.0, "eta": -0.5}, {"pt": 450.0, "eta": 0.5}],
+                    [{"pt": 45.0, "eta": 2.4}]])
+    nominal = np.asarray(ak.flatten(corr.object_sf("dsa_muon_id", dsa, "displaced ID")))
+    up = np.asarray(ak.flatten(corr.object_sf("dsa_muon_id", dsa, "displaced ID", "up")))
+    down = np.asarray(ak.flatten(corr.object_sf("dsa_muon_id", dsa, "displaced ID", "down")))
+    check("DSA SFs measured below one", np.all((nominal > 0.6) & (nominal < 1.0)))
+    check("above the last pT edge, the last bin", nominal[2] == nominal[1])
+    check("DSA SF up above, down below", np.all(up > nominal) and np.all(down < nominal))
+    check("|eta| = 2.4 in the last eta bin", nominal[3] != nominal[0])
+
+
 def test_processor_config():
     """The processor applies the default list unless told otherwise"""
     from sidm.tools.sidm_processor import SidmProcessor  # pylint: disable=import-outside-toplevel
@@ -262,6 +296,8 @@ if __name__ == "__main__":
     test_evaluate_structure()
     test_cutflow_variations()
     test_hist_syst_axis()
+    test_hist_entry_factors()
+    test_dsa_muon_sf()
     test_processor_config()
     test_pog_files()
     print(f"{_P} passed, {_F} failed")

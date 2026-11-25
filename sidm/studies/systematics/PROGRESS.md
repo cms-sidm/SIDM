@@ -5,7 +5,37 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-24, 14:30)
+## Current state (2026-11-24, 23:00): step 3 done, uncommitted until the commit below
+
+**The advisor's answer on step 3 (2026-11-24):** proceed with the corrections and systematics,
+taking the value from the nearest populated bin, with scale factors **per constituent** and their
+uncertainties, then evaluate the lepton-jet reconstruction and selection with the corrections
+applied, and assign an additional systematic if needed. He also asked whether the points of one bin
+are offset in x in the deck's figures: they were, on purpose (10 to 12% of the bin width); the bins
+are the same, and every point now sits at its bin centre (`CURVE_STYLES`).
+- **Done.** The DSA-muon scale factor per DSA muon (notebook 10, section 6,
+  `sidm/data/corrections/dsa_muon_sf_2018.json`, `dsa_muon_id` in the default corrections);
+  `Histogram(entry_factors=...)` and the `_sf` probe histograms (collection `lj_reco_closure`);
+  campaign `lj_reco_cr_v4` (1,699 jobs, no file skipped, 18 samples merged);
+  `12_lj_corrected_closure.ipynb` run and interpreted; `CMS_ljreco_mu` (1.7% per muon-type lepton
+  jet) and `CMS_ljreco_egm` (4.4% per egamma-type) in `systematics.yaml` (kind `per_lj`);
+  `systematics_v4` (signal, 422 jobs); notebooks 03, 04, 05 rerun on it with ten systematics.
+- **Results.** With every scale factor applied, data/simulation is 1.009 ± 0.006 for J/ψ lepton
+  jets above 50 GeV (1.017 ± 0.003 at displaced vertices), 1.008 ± 0.017 for J/ψ pairs with two
+  DSA muons, 1.044 ± 0.041 for FSR photons above 30 GeV. The corrections lower the signal in region
+  A by a median 18% (2Mu2E) and 26% (4Mu), most of it the DSA factor; the expected limits rise by
+  23% and 37%; the two lepton-jet terms add about 0.5%. Exclusion: 3 and 1 of 48 integrated, 14 and
+  17 binned.
+- **Checks on a few simulated files (scratch, not committed):** a quarter of the passing J/ψ
+  lepton jets above 50 GeV are one PF plus one DSA muon (so the J/ψ closure tests the DSA factor
+  inside lepton jets); in the signal a DSA muon of a selected muon-type lepton jet is nearly always
+  needed for its two muons (one besides two PF muons in 0.4 to 1.1%). `ljs.muons` holds PF and DSA
+  muons together; PF muons alone are `ljs.pfMuons`.
+- **Waits on the group:** the size rule (nearest regions regardless would give up to 8.3% and 12%);
+  2018A/D for the DSA factor; the trigger part of its uncertainty.
+- **Next:** the user pushes `systematicsStudy` and posts the reply; then the group's answers.
+
+## State of 2026-11-24, 14:30
 
 **The review of PR #90 and the feedback on step 2 are done and committed, not yet pushed.**
 Part 1 (the limits on the analysis pair) and part 2 (version 3 of the control samples, in
@@ -241,6 +271,15 @@ only.
 
 ### 2026-11-24
 
+- (23:00) Step 3 finished: `lj_reco_cr_v4` merged (no file skipped), notebook 12 run and
+  interpreted, `CMS_ljreco_mu`/`CMS_ljreco_egm` registered, notebooks 03, 04 and 05 rerun on
+  `systematics_v4` with ten systematics and their interpretations rewritten; README,
+  `lj_reco_efficiency.md`, AN Sec. 7 (local), the deck `slides/lj_corrections_2026-11-24.tex`
+  (results, questions) updated; a variable in `nearest_factors` renamed for pylint;
+  `systematics_study.acts_in`, so that notebook 05 skips `CMS_ljreco_egm` in 4mu (a row of ones,
+  which Combine leaves out of the workspace; the scan failed on it); committed.
+- (17:30) Step 3 code and campaigns: the DSA scale factor, the `sf` axis, `lj_reco_cr_v4` and
+  `systematics_v4` submitted; the plots without x offsets.
 - (14:30) Follow-ups to the reply on step 2: DSA safety check (notebook 09, section 5),
   `dsa_prompt_data_v1` on the unskimmed 2018C (approved), notebook 10 (DSA data/simulation 0.862
   per muon, 0.77 per J/ψ pair), notebook 11 (the coverage map). `integrated_efficiency` takes a

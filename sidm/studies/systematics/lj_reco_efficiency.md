@@ -7,19 +7,19 @@ signal uncertainty, larger than the four in [`README.md`](README.md).
 
 ## What is covered today, and what is not
 
-The default corrections include three standard scale factors for LJ constituents: the
-PF-muon Loose ID, the electron reconstruction, and the photon pixel veto. All three were
-measured with prompt, isolated objects. Our objects are different:
+The default corrections include four scale factors for LJ constituents: the PF-muon Loose ID,
+the electron reconstruction and the photon pixel veto (POG), and since step 3 the DSA muon,
+measured here. All were measured with prompt objects. Our objects are different:
 
 - 79 to 100% of the lepton-jet PF muons are outside the phase space of the muon SF
   (displaced, or with another muon closer than ΔR = 0.3; corrections README).
-- DSA muons, the electron ID of the analysis (MVA WPL with missing inner hits) and the
-  custom photon ID have no SF at all.
+- The electron ID of the analysis (MVA WPL with missing inner hits) and the custom photon ID
+  have no SF at all, and the DSA SF is measured on prompt muons only.
 - Nothing describes the LJ clustering itself or the LJ-level cuts (pT, η, the dxy and dz
   spread of the muons).
 
-So the provisional SFs stay as the nominal correction, and this study measures what they
-miss.
+So the SFs per constituent are the nominal correction, and this study measures what they miss
+(step 3).
 
 ## Why 2mu2e and 4mu need different values
 
@@ -32,9 +32,9 @@ miss.
   has one of each, and the two uncertainties come from independent measurements, so they
   add in quadrature.
 
-This gives two nuisances, `CMS_ljreco_mu` and `CMS_ljreco_egm`. Each is a per-LJ weight
-with an up and a down shift, so the processor turns it into the right per-event value in
-each channel, as it does for the existing object SFs.
+This gives two nuisances, `CMS_ljreco_mu` and `CMS_ljreco_egm`, each a size per LJ (kind
+`per_lj` in `systematics.yaml`) that a 2mu2e event takes once per type and a 4mu event twice for
+the muon type.
 
 ## Plan
 
@@ -256,12 +256,45 @@ in `/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1_results/`).
   the single-muon ratio with the same triggers (0.88² = 0.78), so a scale factor per DSA muon also
   describes the pairs from ΔR = 0.03 to 0.4.
 
-### Step 3: from ratios to a correction
+### Step 3: corrections per constituent, and the lepton-jet modelling with them applied (2026-11-24)
 
-- **Correction.** The data/simulation ratios become per-LJ scale factors with an up and a
-  down shift. They are written as a correctionlib file under `sidm/` and registered in
-  `sidm/configs/corrections.yaml`, as described in "your own correction" in the
-  corrections README.
+The advisor's answer (2026-11-24): proceed with the corrections and systematics, taking the value
+from the nearest populated bin, with scale factors **per constituent** and their uncertainties;
+then evaluate the lepton-jet reconstruction and selection with the corrections applied, and assign
+an additional systematic where needed.
+
+- **Scale factors per constituent.** Every PF muon, DSA muon, electron and photon of a selected
+  lepton jet carries a scale factor (`sidm/configs/corrections.yaml`, all in the default set): the
+  PF-muon Loose ID, the electron reconstruction and the photon pixel veto from the POGs, and the
+  DSA muon from this study (`dsa_muon_id`). Their uncertainties are the nuisances `CMS_eff_m_id`,
+  `CMS_eff_m_dsa`, `CMS_eff_e_reco` and `CMS_eff_g_pixelveto`.
+- **The DSA-muon scale factor** ([`10_dsa_prompt_data.ipynb`](10_dsa_prompt_data.ipynb), section
+  6; `sidm/data/corrections/dsa_muon_sf_2018.json`): the Z → μμ tag and probe with Mu37_TkMu27 in
+  the bins of muon pT (10 to 200 GeV) and |η| (0, 0.9, 1.2, 2.1, 2.4), evaluated at the DSA muon's
+  own pT and |η|. It is 0.80 to 0.89 up to |η| = 2.1 and 0.76 to 0.89 above, falling with pT in
+  every region. Bins with fewer than 2,000 probes in data take the value of their merged neighbours
+  (below 20 GeV, and above 80 GeV for |η| > 2.1), and a DSA muon above 200 GeV takes the last bin.
+  The uncertainty is the statistical one (mostly below 0.01) and the largest change with the
+  analysis triggers, IsoMu24 or tight probes: 0.01 to 0.03 per muon up to |η| = 2.1 and 0.05 to
+  0.08 above, mostly from the analysis triggers, which select probes more likely to have a DSA muon.
+- **The lepton-jet modelling with the corrections applied** (campaign `lj_reco_cr_v4`, every
+  background; [`12_lj_corrected_closure.ipynb`](12_lj_corrected_closure.ipynb)). The probes of the
+  control samples in simulation, each passing probe weighted by the scale factors of the
+  constituents of the lepton jet that makes it pass (or of its DSA muons for the DSA probes), as the
+  analysis weights its selected lepton jets; the `_sf` histograms carry this on an `sf` axis with
+  the shifted scale factors. The passing fraction with the corrections is the weighted passing
+  probes over all the probes unweighted, since a scale factor changes the probability to pass, not
+  the number of probes. Data are those already read (no new data).
+- **The additional systematic** (`CMS_ljreco_mu`, `CMS_ljreco_egm`, kind `per_lj` in
+  [`systematics.yaml`](systematics.yaml)): per lepton-jet type, max(|1 − r|, σ_r) of the
+  data/simulation ratio r with the corrections applied, over the measured range above the turn-on,
+  or in the measured bin nearest to the signal where that differs by more than two standard
+  deviations; the muon-type value is the larger of its PF-muon and DSA-muon regimes. One log-normal
+  term per type, which a 2mu2e event takes once per type and a 4mu event twice (muon-type, fully
+  correlated).
+- **Into the limits.** Campaign `systematics_v4` (the signal with `dsa_muon_id` in the default
+  corrections; the simulated background of `systematics_v3`, which the data-driven limits do not
+  use), then notebooks 03, 04 and 05.
 - **Bins without a measurement.** The control samples cannot reach every corner of the signal
   phase space (the most displaced and most collimated lepton jets, the highest pT). There the
   scale factor is taken from the nearest measured bin (agreed with the advisor, 2026-11-23), and
@@ -273,38 +306,47 @@ in `/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1_results/`).
   median 97 to 99.7% of the muon-type lepton jets lie below ΔR = 0.03 (all for 0.25 GeV dark
   photons, 10% for 5 GeV ones), 65 to 68% beyond L_xy = 15 cm and 28 to 29% above 300 GeV, and 97%
   of the egamma-type ones above 120 GeV. The nearest-bin rule therefore applies to most of the
-  signal, and the per-point table on EOS lists every case.
-- **Code needed.** `Corrections` applies object SFs per constituent today, so a per-LJ SF
-  needs a small extension there.
-- **Into the limits.** Two entries in [`systematics.yaml`](systematics.yaml),
-  `CMS_ljreco_mu: {syst: lj_reco_mu}` and `CMS_ljreco_egm: {syst: lj_reco_egm}`, then a
-  rerun of [`03_limits.ipynb`](03_limits.ipynb).
+  signal, and the per-point table on EOS lists every case. The DSA scale factor takes its last pT
+  bin above 200 GeV; the additional systematic compares the measured regions nearest to the
+  signal with the whole range, by the rule above.
 
-### Until step 2 exists
+**Results of step 3** ([`12_lj_corrected_closure.ipynb`](12_lj_corrected_closure.ipynb), campaign
+`lj_reco_cr_v4`, 2026-11-24). Data/simulation with every scale factor applied:
 
-A provisional value per LJ type could come from the data/simulation differences CMS has
-published for the nearest objects (displaced muons, photon conversions). It would be
-applied to the fraction of each point's LJs in the regime where it holds, which step 1
-provides (`efficiency_regimes.csv`). For muon-type LJs it would be judged on the 4Mu
-efficiency, since the 2Mu2E one is conditioned by the base selection. This is a placeholder for
-the group to agree on, not a measurement.
+- **Muon-type, J/ψ above 50 GeV:** 1.009 ± 0.006 (0.988 ± 0.006 without), 1.00 to 1.025 in every
+  pT bin, 1.017 ± 0.003 at vertex displacements from 1 mm to 15 cm. A quarter of these lepton jets
+  hold one PF and one DSA muon (a check on a few simulated QCD files), so the sample also tests the
+  DSA factor inside lepton jets, and that factor makes most of the change.
+- **Two collimated DSA muons, J/ψ pairs above 40 GeV:** 1.008 ± 0.017 (0.767 ± 0.013 without): the
+  factor per DSA muon describes the pairs. On its own measurement (Z → μμ) it gives 0.999.
+- **Egamma-type, FSR photons above 30 GeV:** 1.044 ± 0.041 (0.991 ± 0.039 without; the pixel-seed
+  veto factor, 0.964 per barrel photon, lowers Drell-Yan by about 5%).
+- **The additional systematic:** no region nearest the signal differs from its whole range by more
+  than 1.3 standard deviations, so `CMS_ljreco_mu` is 1.7% per muon-type lepton jet (the DSA
+  regime, which also covers the displaced J/ψ) and `CMS_ljreco_egm` 4.4% per egamma-type one. They
+  raise the expected limits by about 0.5%; the corrections, most of all the DSA factor, by a median
+  23% (2Mu2E) and 37% (4Mu).
 
 ## What is needed
 
-These are the questions for the group. Step 1 is done and did not depend on them; steps 2 and 3
-do.
+These were the questions for the group; the answers so far are marked.
 
 1. **Data approval.** Given by the advisor (2026-11-16) for the control samples proposed here,
    each to be thought through before its first look; the group's safety criteria decide which
    regions are read. As with the earlier approvals, the signal region is never read.
-2. **SF granularity.** Per LJ or per constituent. This decides the change to `Corrections`.
-3. **Provisional value.** Which published data/simulation differences to take per regime until
-   step 2 exists.
+2. **SF granularity.** Answered (2026-11-24): per constituent, with the lepton-jet modelling
+   checked with the corrections applied and an additional systematic where needed (step 3); the
+   nearest populated bin where the control samples do not reach. Done (step 3). Open: the rule
+   takes the whole measured range unless a region nearest the signal disagrees with it by more than
+   two standard deviations; taking the nearest regions regardless would give up to 8.3% (muon-type)
+   and 12% (egamma-type), set by their statistics, instead of 1.7 and 4.4%.
+3. **Provisional value.** No longer needed: step 2 measured the prompt regime and step 3 applies
+   it.
 4. **The sparse-bin rule** (raised by step 2, for the advisor). Whether a region's bins that expect
    under one background event should be judged together as one more region, as done here, or
    left out of the verdict, as in the working-point decks.
-5. **DSA muons in data.** Measured on 2018C (notebook 10): data/simulation 0.862 per prompt muon,
-   and the square of it for J/ψ pairs. Open: whether to add the other periods (unskimmed
-   DoubleMuon ntuples are on EOS for period A and, in blocks, for period D, not yet in `data.yaml`),
-   and whether the DSA scale factor enters per DSA muon in bins of pT and |η|, as the pairs
-   suggest.
+5. **DSA muons in data.** Measured on 2018C (notebook 10) and applied per DSA muon in bins of pT
+   and |η| (step 3, answered 2026-11-24). Open: whether to add the other periods of 2018
+   (unskimmed DoubleMuon ntuples are on EOS for period A and, in blocks, for period D, not yet in
+   `data.yaml`), and whether the analysis-trigger difference belongs in its uncertainty (it sets
+   most of it).

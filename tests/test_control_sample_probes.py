@@ -7,7 +7,7 @@ import awkward as ak
 import numpy as np
 from coffea.nanoevents.methods import vector
 
-from sidm.definitions.hists import jpsi_dsa_count
+from sidm.definitions.hists import combine_sfs, jpsi_dsa_count, nearest_factors
 from sidm.definitions.objects import dsa_probe_muons, jpsi_probe_vertex_lxy
 
 
@@ -61,6 +61,26 @@ class ControlSampleProbesTest(unittest.TestCase):
         probes = dsa_probe_muons({"muonsRaw": muons})
         self.assertEqual(sorted(ak.to_list(probes.idx[0])), [0, 1])
         np.testing.assert_allclose(ak.to_list(probes.m_tp[0]), [90.0, 90.0], rtol=1e-4)
+
+    def test_combine_sfs_shifts_one_correction_at_a_time(self):
+        """nominal multiplies every correction's nominal factor, <name>Up shifts that one only"""
+        ones = ak.Array([[1.0, 1.0]])
+        factors = combine_sfs({"a": {"nominal": ak.Array([[0.9, 0.8]]), "up": ak.Array([[1.0, 0.9]]),
+                                     "down": ak.Array([[0.8, 0.7]])},
+                               "b": {"nominal": ak.Array([[0.5, 1.0]]), "up": ak.Array([[0.6, 1.0]]),
+                                     "down": ak.Array([[0.4, 1.0]])}}, ones)
+        self.assertEqual(list(factors), ["none", "nominal", "aUp", "aDown", "bUp", "bDown"])
+        np.testing.assert_allclose(ak.to_list(factors["nominal"][0]), [0.45, 0.8])
+        np.testing.assert_allclose(ak.to_list(factors["aUp"][0]), [0.5, 0.9])
+        np.testing.assert_allclose(ak.to_list(factors["bDown"][0]), [0.36, 0.8])
+        np.testing.assert_allclose(ak.to_list(factors["none"][0]), [1.0, 1.0])
+
+    def test_nearest_factors_go_to_passing_probes_only(self):
+        """A probe within dR < 0.2 of an object takes its factor, a probe without one gets 1"""
+        probes = candidates([[point(0, 0.0), point(1, 1.0)], [point(0, 0.0)]])
+        others = candidates([[point(5, 0.05), point(6, 2.0)], []])
+        factors = nearest_factors(probes, others, {"nominal": ak.Array([[0.8, 0.5], []])})
+        self.assertEqual(ak.to_list(factors["nominal"]), [[0.8, 1.0], [1.0]])
 
 
 if __name__ == "__main__":

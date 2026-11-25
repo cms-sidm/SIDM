@@ -1329,6 +1329,17 @@ dsa_prompt_probes: &dsa_prompt_probes
   - "dsa_cr_z_probes_alone"
   - "dsa_cr_jpsi_probes_alone"
 
+# the probes of the control samples in simulation with the scale factors of the lepton-jet
+# constituents applied to each passing probe (an sf axis), against data in the same bins: the
+# lepton-jet reconstruction and selection with the corrections applied (lj_reco_efficiency.md,
+# step 3). For simulation only, in a campaign with event-level corrections only.
+lj_reco_closure: &lj_reco_closure
+  - "lj_cr_jpsi_probes_alone_sf"
+  - "lj_cr_jpsi_vertex_probes_alone_sf"
+  - "lj_cr_zmmg_fsr_probes_alone_sf"
+  - "dsa_cr_z_probes_alone_sf"
+  - "dsa_cr_jpsi_probes_alone_sf"
+
 mulj_decay_angle: &mulj_decay_angle
   - "mu_lj_mumu_absCosTheta"
   - "mu_lj_mumu_ptRatio"

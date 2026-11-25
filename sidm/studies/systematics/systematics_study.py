@@ -336,14 +336,39 @@ FINAL_STATE_CHANNEL = {"2Mu2E": "SR_2mu2e", "4Mu": "SR_4mu"}
 EXCLUDED_BACKGROUNDS = ("DYJetsToMuMu_M10to50", "DYJetsToMuMu_M50")
 
 
+# the lepton jets of each type that an event of each channel holds, for the per_lj entries of
+# systematics.yaml: a 2mu2e event has one muon-type and one egamma-type lepton jet, a 4mu event
+# two muon-type ones
+LJ_MULTIPLICITY = {"SR_2mu2e": {"muon": 1, "egamma": 1}, "SR_4mu": {"muon": 2, "egamma": 0}}
+
+
 def load_registry(path=REGISTRY):
     """{nuisance: entry} of systematics.yaml, each entry checked to be of exactly one kind"""
     registry = load_yaml(path)
     for name, entry in registry.items():
-        kinds = [k for k in ("flat", "syst", "variant") if k in entry]
+        kinds = [k for k in ("flat", "syst", "variant", "per_lj") if k in entry]
         if len(kinds) != 1:
-            raise ValueError(f"{path}: {name} needs exactly one of flat, syst, variant; has {kinds}")
+            raise ValueError(f"{path}: {name} needs exactly one of flat, syst, variant, per_lj; "
+                             f"has {kinds}")
+        if "per_lj" in entry and entry.get("lj_type") not in ("muon", "egamma"):
+            raise ValueError(f"{path}: {name} needs lj_type muon or egamma")
     return registry
+
+
+def flat_factor(entry, channel):
+    """1 + the relative size of a flat or per_lj entry of systematics.yaml in one channel: a
+    flat entry as it is, a per_lj entry compounded over the channel's lepton jets of its type
+    (LJ_MULTIPLICITY), which shift together"""
+    if "flat" in entry:
+        return 1 + entry["flat"]
+    return (1 + entry["per_lj"]) ** LJ_MULTIPLICITY[channel][entry["lj_type"]]
+
+
+def acts_in(entry, channel):
+    """Whether an entry of systematics.yaml can change the signal in a channel: a per_lj entry
+    cannot where the channel has no lepton jets of its type, and Combine leaves its row of ones
+    out of the workspace, so it can be neither scanned nor fitted there"""
+    return "per_lj" not in entry or LJ_MULTIPLICITY[channel][entry["lj_type"]] > 0
 
 
 def region_totals(regions):
@@ -355,12 +380,12 @@ def variations(out, sample, channel, entry, nominal):
     """{"up": {region index: Shape}, "down": ...} of one systematics.yaml entry for one
     signal sample in its channel, nominal being its {region index: Shape}
 
-    A flat entry scales the nominal shapes, a syst entry takes the Up and Down weight
-    categories of the syst axis, and a variant has an up variation only: the histogram
-    filled with the varied input.
+    A flat or per_lj entry scales the nominal shapes (flat_factor), a syst entry takes the Up
+    and Down weight categories of the syst axis, and a variant has an up variation only: the
+    histogram filled with the varied input.
     """
-    if "flat" in entry:
-        factor = 1 + entry["flat"]
+    if "flat" in entry or "per_lj" in entry:
+        factor = flat_factor(entry, channel)
         return {"up": {r: s.scaled(factor) for r, s in nominal.items()},
                 "down": {r: s.scaled(1 / factor) for r, s in nominal.items()}}
 
@@ -378,13 +403,13 @@ def signal_kappas(out, sample, channel, nominal, registry):
     """{nuisance: {region name: kappa}} of one signal point, a kappa being a number or [down, up]
 
     nominal is the point's {region index: Shape} in its channel; the varied yields are
-    sliced the same way (variations). A flat entry gives its value as it is.
+    sliced the same way (variations). A flat or per_lj entry gives its value (flat_factor).
     """
     nom = region_totals(nominal)
     kappas = {}
     for name, entry in registry.items():
-        if "flat" in entry:
-            values = {r: 1 + entry["flat"] for r in nom}
+        if "flat" in entry or "per_lj" in entry:
+            values = {r: flat_factor(entry, channel) for r in nom}
         else:
             ratio = {}
             for direction, shapes in variations(out, sample, channel, entry, nominal).items():
@@ -421,12 +446,14 @@ def freeze_variants(registry):
     return variants
 
 
-def abcd_inputs(directory, registry, weights=("nominal",)):
+def abcd_inputs(directory, registry, weights=("nominal",), background_directory=None):
     """Background shapes, signal shapes and signal kappas from one campaign's merged outputs
 
     One pass over the .coffea files of directory, which holds signal and background
     (told apart by name, as abcd_datacards.py does for such a campaign), leaving out
-    EXCLUDED_BACKGROUNDS. The shapes are made with each event weight in weights, a
+    EXCLUDED_BACKGROUNDS. With background_directory, the background comes from there instead
+    (its signal files left out) and only the signal from directory, for a campaign that remade
+    the signal alone. The shapes are made with each event weight in weights, a
     category of the syst axis ("nominal" is with the corrections, "uncorrected" the
     genWeight alone), and with "nominal" in any case, since the kappas are relative to it.
     Returns {weights: (background, signal)}, background being
@@ -436,8 +463,14 @@ def abcd_inputs(directory, registry, weights=("nominal",)):
     categories = ["nominal"] + [w for w in weights if w != "nominal"]
     shapes = {w: ({}, {}) for w in categories}
     kappas = {}
-    files = [url for url in list_coffea(directory)
-             if url.rsplit("/", 1)[-1][:-len(".coffea")] not in EXCLUDED_BACKGROUNDS]
+    def sample(url):
+        return url.rsplit("/", 1)[-1][:-len(".coffea")]
+    files = [url for url in list_coffea(directory) if sample(url) not in EXCLUDED_BACKGROUNDS]
+    if background_directory is not None and background_directory != directory:
+        files = [url for url in files if dt.parse_signal_name(sample(url)) is not None]
+        files += [url for url in list_coffea(background_directory)
+                  if sample(url) not in EXCLUDED_BACKGROUNDS
+                  and dt.parse_signal_name(sample(url)) is None]
     if not files:
         raise FileNotFoundError(f"no .coffea files in {directory}")
     for url in files:
@@ -1353,20 +1386,32 @@ def plot_probe_distribution(inputs, cr, axis, points=(), ax=None):
     return ax
 
 
-def plot_probe_efficiency(results, ax=None, offset=0.0, categorical=False):
+# the colour, marker, fill and marker size of up to four curves drawn in the same bins: each style
+# has its own size, so the points of two curves that coincide both stay visible
+CURVE_STYLES = ((study.BLACK, "o", "full", 7), (study.BLUE, "s", "none", 9),
+                (study.ORANGE, "^", "full", 5), (study.AQUA, "D", "none", 11))
+
+
+def errorbar(ax, points, errors, style, label=None):
+    """Points (x, y) with error bars (xerr, yerr) in one of CURVE_STYLES (colour, marker, fill,
+    marker size)"""
+    colour, marker, fill, size = style
+    ax.errorbar(*points, xerr=errors[0], yerr=errors[1], fmt=marker, fillstyle=fill,
+                markersize=size, markeredgewidth=1.5, color=colour, label=label)
+
+
+def plot_probe_efficiency(results, ax=None, categorical=False):
     """Passing fractions against one axis ({label: probe_efficiency result}, up to four), in-range
-    bins; offset shifts the curves apart by that fraction of each bin's width, so that their
-    error bars stay readable. With categorical, every bin is drawn one unit wide and labelled by
-    its edges, for axes that start at zero and span decades (a radius, a displacement)."""
+    bins: each point at the centre of its bin, with the bin's width as its horizontal bar. The
+    curves share the bins and differ in colour and marker (CURVE_STYLES). With categorical, every
+    bin is drawn one unit wide and labelled by its edges, for axes that start at zero and span
+    decades (a radius, a displacement)."""
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 6))
-    colours = (study.BLACK, study.BLUE, study.ORANGE, study.AQUA)
-    for i, ((label, r), colour) in enumerate(zip(results.items(), colours)):
+    for (label, r), style in zip(results.items(), CURVE_STYLES):
         edges = np.arange(len(r["edges"]), dtype=float) if categorical else r["edges"]
-        centres = 0.5 * (edges[1:] + edges[:-1]) + (i - (len(results) - 1) / 2) * offset * np.diff(edges)
-        ax.errorbar(centres, in_range(r["axis"], r["eff"]), yerr=in_range(r["axis"], r["err"]),
-                    xerr=0.5 * np.diff(edges) * (1 - offset * (len(results) > 1)), fmt="o",
-                    color=colour, label=label)
+        errorbar(ax, (0.5 * (edges[1:] + edges[:-1]), in_range(r["axis"], r["eff"])),
+                 (0.5 * np.diff(edges), in_range(r["axis"], r["err"])), style, label)
     if categorical:
         edges = next(iter(results.values()))["edges"]
         ax.set_xticks(np.arange(len(edges)), [f"{e:g}" for e in edges], rotation=45, fontsize=13)
@@ -1473,21 +1518,25 @@ def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None, scale=1.0
 
 def plot_efficiency_comparison(results, reference, top, bottom, categorical=False):
     """Passing fractions ({label: probe_efficiency result}, the data under "data") in the top
-    panel, and the ratio of the data to the curve named reference in the bottom panel;
-    categorical as for plot_probe_efficiency"""
+    panel, and in the bottom panel the ratio of the data to the curve named reference, or to each
+    curve of a list of references, drawn in that curve's colour and marker; categorical as for
+    plot_probe_efficiency"""
     plot_probe_efficiency(results, ax=top, categorical=categorical)
-    ratio, err = efficiency_ratio(results["data"], results[reference])
-    edges = results["data"]["edges"]
-    axis = results["data"]["axis"]
+    references = [reference] if isinstance(reference, str) else list(reference)
+    styles = dict(zip(results, CURVE_STYLES))
+    edges, axis = results["data"]["edges"], results["data"]["axis"]
     x = np.arange(len(edges), dtype=float) if categorical else edges
-    bottom.errorbar(0.5 * (x[1:] + x[:-1]), in_range(axis, ratio),
-                    yerr=in_range(axis, err), xerr=0.5 * np.diff(x), fmt="o",
-                    color=study.BLACK)
+    for ref in references:
+        ratio, err = efficiency_ratio(results["data"], results[ref])
+        errorbar(bottom, (0.5 * (x[1:] + x[:-1]), in_range(axis, ratio)),
+                 (0.5 * np.diff(x), in_range(axis, err)),
+                 CURVE_STYLES[0] if len(references) == 1 else styles[ref])
     if categorical:
         bottom.set_xticks(x, [f"{e:g}" for e in edges], rotation=45, fontsize=13)
     bottom.axhline(1.0, color=study.GRAY, linestyle=":")
     bottom.set_ylim(0.6, 1.4)
-    bottom.set_ylabel(f"data / {reference}", fontsize=12)
+    bottom.set_ylabel(f"data / {reference}" if len(references) == 1 else "data / simulation",
+                      fontsize=12)
     bottom.set_xlabel(top.get_xlabel())
     top.set_xlabel("")
     top.tick_params(labelbottom=False)
@@ -1518,3 +1567,233 @@ def integrated_efficiency(h, spec, passing=("passing", (1,))):
     eff = values[is_pass].sum() / probes
     return eff, math.sqrt((1 - eff) ** 2 * variances[is_pass].sum()
                           + eff ** 2 * variances[~is_pass].sum()) / probes, probes
+
+
+# --- step 3: the scale factor per DSA muon (lj_reco_efficiency.md) ---------------------------
+
+# the trigger axes of the DSA probe histograms (hists.trigger_axes)
+DSA_TRIGGERS = ("trig_analysis", "trig_isomu24", "trig_tkmu")
+# the correctionlib file of the scale factor per DSA muon, in the repository, which
+# sidm/configs/corrections.yaml registers as dsa_muon_id; 10_dsa_prompt_data.ipynb writes it
+DSA_SF_FILE = os.path.join(os.path.dirname(BASE_DIR), "sidm", "data", "corrections",
+                           "dsa_muon_sf_2018.json")
+DSA_SF_NAME = "DSA_muon_reco_ID_SF"
+# the trigger of the nominal measurement, Mu37_TkMu27: its second leg needs only a tracker muon
+DSA_SF_TRIGGER = "trig_tkmu"
+# the measurements whose difference from the nominal one (Mu37_TkMu27, every probe) is the
+# systematic uncertainty of the scale factor: (label, trigger, more slices)
+DSA_SF_ALTERNATIVES = (("analysis triggers", "trig_analysis", {}),
+                       ("IsoMu24", "trig_isomu24", {}),
+                       ("tight probes", "trig_tkmu", {"probe_tight": 1}))
+
+
+def select_trigger(h, trigger, **extra):
+    """The probes of a DSA probe histogram that fired one trigger (an axis of DSA_TRIGGERS), its
+    other trigger axes summed, with more slices in extra"""
+    present = [a.name for a in h.axes if a.name in DSA_TRIGGERS]
+    return h[{trigger: 1, **{k: sum for k in present if k != trigger}, **extra}]
+
+
+def subtracted_counts(h, spec, axis, passing=("passing", (1,))):
+    """(passing, failing, their variances) of the probes of h per bin of axis, flow bins
+    included, after the sideband subtraction of probe_efficiency; with axis None, of all the
+    probes, as arrays of one element"""
+    (p_lo, p_hi), sidebands = spec["peak"], spec["sidebands"]
+    k = (p_hi - p_lo) / sum(hi - lo for lo, hi in sidebands)
+    name, bins = passing
+    axes = (name,) if axis is None else (axis, name)
+    peak = mass_window(h, spec["mass"], p_lo, p_hi).project(*axes)
+    side = sum(mass_window(h, spec["mass"], lo, hi).project(*axes) for lo, hi in sidebands)
+    values = np.atleast_2d(peak.values(flow=True) - k * side.values(flow=True))
+    variances = np.atleast_2d(peak.variances(flow=True) + k * k * side.variances(flow=True))
+    is_pass = np.isin(np.arange(values.shape[1]), bins)
+    return (values[:, is_pass].sum(axis=1), values[:, ~is_pass].sum(axis=1),
+            variances[:, is_pass].sum(axis=1), variances[:, ~is_pass].sum(axis=1))
+
+
+def in_range_with_overflow(axis, values):
+    """values over the flow=True bins of a histogram axis, cut to its in-range bins, with the
+    overflow added to the last one"""
+    start = 1 if axis.traits.underflow else 0
+    out = np.array(values[start:start + len(axis)], dtype=float)
+    if axis.traits.overflow:
+        out[-1] += values[start + len(axis)]
+    return out
+
+
+def merge_groups(probes, min_probes):
+    """Groups of adjacent bins (lists of indices into probes) holding at least min_probes probes
+    each: a bin with fewer joins the bins above it, and a short group left at the top joins the
+    group below, so a sparse bin takes the value of its nearest well-measured neighbours"""
+    groups, current = [], []
+    for i in range(len(probes)):
+        current.append(i)
+        if sum(probes[j] for j in current) >= min_probes:
+            groups.append(current)
+            current = []
+    if current:
+        if groups:
+            groups[-1] += current
+        else:
+            groups.append(current)
+    return groups
+
+
+def _dsa_counts(h, spec, trigger, extra, i):
+    """(passing, failing, their variances) per in-range probe-pT bin, the overflow in the last, of
+    |eta| bin i of a Z -> mumu DSA probe histogram, for one trigger and more slices"""
+    view = select_trigger(h, trigger, **{"probe_tight": sum, **extra})[{"probe_abseta": i}]
+    return [in_range_with_overflow(h.axes["probe_pt"], a)
+            for a in subtracted_counts(view, spec, "probe_pt")]
+
+
+def _group_fraction(tallies, group):
+    """(passing fraction, its uncertainty) of the probes of a group of bins of _dsa_counts"""
+    p, f, vp, vf = (a[group].sum() for a in tallies)
+    eff = p / (p + f)
+    return eff, math.sqrt((1 - eff) ** 2 * vp + eff ** 2 * vf) / (p + f)
+
+
+def _fill_dsa_group(out, i, group, tallies):
+    """Fill one group of probe-pT bins of |eta| bin i into the table of dsa_scale_factors; tallies
+    is {label: (data, simulation) _dsa_counts}, the nominal measurement under None"""
+    (e_d, u_d), (e_s, u_s) = (_group_fraction(c, group) for c in tallies[None])
+    sf = e_d / e_s
+    out["sf"][i, group] = sf
+    out["stat"][i, group] = sf * math.hypot(u_d / e_d, u_s / e_s)
+    out["probes"][i, group] = tallies[None][0][0][group].sum() + tallies[None][0][1][group].sum()
+    for label, (c_d, c_s) in tallies.items():
+        if label is not None:
+            out["alternatives"][label][i, group] = (_group_fraction(c_d, group)[0]
+                                                    / _group_fraction(c_s, group)[0])
+    out["syst"][i, group] = max((abs(alt[i, group[0]] - sf)
+                                 for alt in out["alternatives"].values()), default=0.0)
+
+
+def dsa_scale_factors(data, simulation, spec, *, alternatives=DSA_SF_ALTERNATIVES,
+                      min_probes=2000):
+    """The scale factor per DSA muon from the Z -> mumu tag and probe (data and simulation: its
+    probe histograms, spec: DSA_CR["Z -> mumu, DSA"]): data over simulation of the fraction of
+    prompt muons with a selected DSA muon, with the trigger DSA_SF_TRIGGER, in the bins of probe
+    pT and |eta| of the histogram. In each |eta| bin, pT bins with fewer than min_probes probes in
+    data after the subtraction are merged with their neighbours (merge_groups), and the probes
+    above the last pT edge join the last bin. Each bin's uncertainty is its statistical one and,
+    as a systematic, the largest change of the scale factor with any of alternatives ((label,
+    trigger, more slices)), measured on the same groups of bins.
+
+    Returns {"pt_edges", "abseta_edges", "sf", "stat", "syst", "up", "down", "probes",
+    "alternatives": {label: sf}}, each array of shape (|eta| bins, pT bins)."""
+    pt_axis, eta_axis = data.axes["probe_pt"], data.axes["probe_abseta"]
+    shape = (len(eta_axis), len(pt_axis))
+    out = {"pt_edges": np.asarray(pt_axis.edges), "abseta_edges": np.asarray(eta_axis.edges),
+           "sf": np.zeros(shape), "stat": np.zeros(shape), "syst": np.zeros(shape),
+           "probes": np.zeros(shape), "alternatives": {label: np.zeros(shape)
+                                                       for label, _, _ in alternatives}}
+    for i in range(len(eta_axis)):
+        tallies = {label: [_dsa_counts(h, spec, trigger, extra, i) for h in (data, simulation)]
+                  for label, trigger, extra in ((None, DSA_SF_TRIGGER, {}), *alternatives)}
+        probes = tallies[None][0][0] + tallies[None][0][1]
+        for group in merge_groups(probes, min_probes):
+            _fill_dsa_group(out, i, group, tallies)
+    total = np.hypot(out["stat"], out["syst"])
+    out["up"], out["down"] = out["sf"] + total, out["sf"] - total
+    return out
+
+
+def write_dsa_correction(table, path=DSA_SF_FILE):
+    """Write the scale factor per DSA muon (dsa_scale_factors) as a correctionlib file with the
+    inputs abseta, pt (of the DSA muon) and ValType (sf, sfup or sfdown), binned as the table.
+    Its flow is clamp: a DSA muon above the last pT edge takes the last bin, the nearest
+    measured one."""
+    # pylint: disable-next=import-outside-toplevel
+    from sidm.tools.corrections import import_correctionlib
+    import_correctionlib()
+    # pylint: disable-next=import-outside-toplevel,import-error
+    import correctionlib.schemav2 as cs
+
+    def binning(values):
+        return cs.MultiBinning(nodetype="multibinning", inputs=["abseta", "pt"],
+                               edges=[[float(e) for e in table["abseta_edges"]],
+                                      [float(e) for e in table["pt_edges"]]],
+                               content=[float(v) for v in np.asarray(values).ravel()],
+                               flow="clamp")
+
+    correction = cs.Correction(
+        name=DSA_SF_NAME, version=1,
+        description=("Data/simulation scale factor of the reconstruction and selection of a DSA "
+                     "muon (pT > 10 GeV, |eta| < 2.4, displaced ID, eta-phi veto) for a muon: "
+                     "Z -> mumu tag and probe on the unskimmed DoubleMuon data of 2018C with "
+                     "HLT_Mu37_TkMu27 against Drell-Yan simulation (sidm/studies/systematics, "
+                     "10_dsa_prompt_data.ipynb). Up and down: the statistical uncertainty and the "
+                     "largest change with the trigger or the probe ID, in quadrature."),
+        inputs=[cs.Variable(name="abseta", type="real", description="|eta| of the DSA muon"),
+                cs.Variable(name="pt", type="real", description="pT of the DSA muon (GeV)"),
+                cs.Variable(name="ValType", type="string", description="sf, sfup or sfdown")],
+        output=cs.Variable(name="weight", type="real", description="scale factor"),
+        data=cs.Category(nodetype="category", input="ValType", content=[
+            cs.CategoryItem(key=key, value=binning(table[name]))
+            for key, name in (("sf", "sf"), ("sfup", "up"), ("sfdown", "down"))]))
+    cset = cs.CorrectionSet(schema_version=2, corrections=[correction],
+                            description="Scale factors measured by the SIDM analysis, 2018")
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    Path(path).write_text(cset.model_dump_json(indent=1, exclude_unset=True) + "\n",
+                          encoding="utf8")
+    return path
+
+
+# --- step 3: the lepton-jet reconstruction and selection with the corrections applied --------
+
+# campaign lj_reco_cr_v4: the probes of the control samples in simulation with the scale factors
+# of the lepton-jet constituents on each passing probe (an sf axis); 12_lj_corrected_closure.ipynb
+# compares them with the data of lj_reco_cr_data_v1, lj_reco_cr_data_v2 and dsa_prompt_data_v1
+# and writes to LJ_CLOSURE_RESULTS_DIR
+LJ_CR_V4_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v4"
+LJ_CLOSURE_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr_v4_results"
+
+
+def with_sf(specs):
+    """The specs of the probe histograms with scale factors (the _sf versions in
+    sidm/definitions/hists.py) of the same control samples, for campaign lj_reco_cr_v4"""
+    return {cr: {**spec, "hist": f"{spec['hist']}_sf"} for cr, spec in specs.items()}
+
+
+def corrected_efficiency(h, spec, axis, category, passing=("passing", (1,))):
+    """probe_efficiency of a probe histogram with scale factors (an sf axis) with the corrections
+    of one category applied: the passing probes weighted by their scale factors over all the
+    probes unweighted (category "none"), since a scale factor changes the probability to pass,
+    not the number of probes. The statistical uncertainty is that of the unweighted passing
+    fraction, scaled by the mean scale factor of the passing probes. axis None integrates over
+    every bin."""
+    p_c = subtracted_counts(h[{"sf": category}], spec, axis, passing)[0]
+    p_0, f_0, vp_0, vf_0 = subtracted_counts(h[{"sf": "none"}], spec, axis, passing)
+    total = p_0 + f_0
+    with np.errstate(divide="ignore", invalid="ignore"):
+        eff_0 = p_0 / total
+        err_0 = np.sqrt((1 - eff_0) ** 2 * vp_0 + eff_0 ** 2 * vf_0) / total
+        scale = p_c / p_0
+    out = {"eff": eff_0 * scale, "err": np.abs(err_0 * scale), "probes": total, "passing": p_c}
+    if axis is not None:
+        out["axis"], out["edges"] = h.axes[axis], h.axes[axis].edges
+    return out
+
+
+def corrected_ratios(data, simulation, spec, sel=None, passing=("passing", (1,))):
+    """{category of the sf axis: (data/simulation, its statistical uncertainty)} of the passing
+    fraction of all the probes that sel (a dict of slices) keeps, after the sideband subtraction:
+    "none" is the simulation without scale factors, "nominal" with them (the corrections
+    applied, corrected_efficiency), and <correction>Up/Down with one of them shifted"""
+    sel = sel or {}
+    d, du, _ = integrated_efficiency(data[sel], spec, passing)
+    out = {}
+    for category in simulation.axes["sf"]:
+        r = corrected_efficiency(simulation[sel], spec, None, category, passing)
+        s, su = float(r["eff"][0]), float(r["err"][0])
+        out[category] = (d / s, d / s * math.hypot(du / d, su / s))
+    return out
+
+
+def closure_size(ratio, err):
+    """The size of the additional lepton-jet systematic from a data/simulation ratio with the
+    corrections applied: the non-closure |1 - ratio|, or its statistical uncertainty where that
+    is larger, since the test cannot exclude a non-closure of that size"""
+    return max(abs(1 - ratio), err)

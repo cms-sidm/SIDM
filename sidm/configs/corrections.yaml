@@ -37,6 +37,7 @@ default:
   - pileup
   - l1_prefiring
   - muon_id
+  - dsa_muon_id
   - electron_reco
   - photon_pixel_veto
 
@@ -88,6 +89,29 @@ default:
       resonance decays. Lepton-jet muons are often displaced (the SR requires
       at most 2 pixel hits) and within dR < 0.1 of another muon, where the
       efficiency is not measured.
+
+  dsa_muon_id:
+    kind: object
+    collection: dsaMuons
+    cut_object: dsaMuons
+    # Our own measurement (sidm/data/corrections): the reconstruction and selection of a DSA
+    # muon for a muon, applied where a channel selects DSA muons with the displaced ID
+    working_points:
+      displaced ID:
+        - {file: sidm/data/corrections/dsa_muon_sf_2018.json, correction: DSA_muon_reco_ID_SF}
+    variations: {nominal: sf, up: sfup, down: sfdown}
+    max_abs_eta: 2.4
+    validity: approximate
+    note: >-
+      Measured by the analysis (sidm/studies/systematics, 10_dsa_prompt_data.ipynb): the
+      fraction of prompt muons from Z -> mumu with a DSA muon passing the lepton-jet source cuts
+      (pT > 10 GeV, |eta| < 2.4, displaced ID, eta-phi veto), in the unskimmed DoubleMuon data of
+      2018C with HLT_Mu37_TkMu27 against Drell-Yan simulation, in bins of the muon pT and |eta|,
+      and evaluated at the DSA muon's own pT and |eta|. Data/simulation is 0.76 to 0.89. Prompt
+      muons test the displaced ID, which has no impact-parameter cut; its dependence on the
+      displacement is not measured. A DSA muon above 200 GeV takes the last bin (clamp). Up and
+      down: the statistical uncertainty and the largest change with the trigger (the analysis
+      triggers, IsoMu24) or the probe ID (tight), in quadrature.
 
   electron_reco:
     kind: object
