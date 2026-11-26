@@ -340,7 +340,7 @@ probe_hists = {"lj_cr_zmmg_probes", "lj_cr_jpsi_probes", "lj_cr_zmmg_probes_alon
                "dsa_cr_z_probes_alone", "dsa_cr_jpsi_probes_alone",
                "lj_cr_jpsi_probes_alone_sf", "lj_cr_jpsi_vertex_probes_alone_sf",
                "lj_cr_zmmg_fsr_probes_alone_sf", "dsa_cr_z_probes_alone_sf",
-               "dsa_cr_jpsi_probes_alone_sf"}
+               "dsa_cr_jpsi_probes_alone_sf", "lj_cr_zmmg_fsr_probes_alone_seed"}
 
 
 def zmmg_probe_hist(alone=False, fsr=False, gen=False, sf=False):
@@ -391,6 +391,73 @@ def zmmg_probe_hist(alone=False, fsr=False, gen=False, sf=False):
                        lambda objs, mask: lj_probe_sf(objs, mask, probes(objs, mask), "egm_ljs"))
         if sf else None,
     )
+
+
+# the cuts of the lepton-jet photons (selections.yaml, ljsource_cuts) apart from the pixel-seed
+# veto and the dR veto against electrons, which zmmg_probe_seed_hist keeps as axes of their own
+LJ_PHOTON_ID_CUTS = ("pT > 20 GeV", "|eta| < 2.5", "Custom Cutbased", "eta-phi_veto")
+
+
+def probe_photon_cut(electrons, probes, cut):
+    """One cut of the lepton-jet photons (cuts.obj_cut_defs) evaluated on probe photons from the
+    uncut collection: the cut reads them as objs["photons"], and the selected electrons for the
+    dR veto. Returned as bool jagged like probes, since a cut built from Python lists (Custom
+    Cutbased) has an unknown type in a chunk without probes"""
+    passed = obj_cut_defs["photons"][cut]({"photons": probes, "electrons": electrons})
+    return ak.unflatten(np.asarray(ak.flatten(passed), dtype=bool), ak.num(probes))
+
+
+def zmmg_probe_seed_hist():
+    """The FSR probes of the Z -> mumu gamma control sample (objects.zmmg_probe_photons, alone,
+    FSR selection) for the pixel-seed veto of the lepton-jet photons: whether the probe has a
+    pixel seed, whether it passes the other cuts of the lepton-jet photons (LJ_PHOTON_ID_CUTS),
+    whether a selected electron lies within dR < 0.025 (the dR veto, which hands the deposit to
+    the electron), and what the egamma-type lepton jet that makes it pass is made of
+    (lj_composition; -1 for a failing probe). It tells whether a photon that fails the veto still
+    makes a lepton jet through an electron, which a scale factor per photon does not describe.
+    Simulation only: gen_fsr reads the generator record."""
+    def probes(objs, mask):
+        return derived_objs["zmmg_probe_photons"](objs, True, True)[mask]
+
+    def photon_id(objs, mask):
+        p = probes(objs, mask)
+        passed = p.pt > 0
+        for cut in LJ_PHOTON_ID_CUTS:
+            passed = passed & probe_photon_cut(objs["electrons"][mask], p, cut)
+        return ak.values_astype(passed, np.int32)
+
+    def electron_near(objs, mask):
+        veto = probe_photon_cut(objs["electrons"][mask], probes(objs, mask), "Photon DR Veto 0p025")
+        return ak.values_astype(~veto, np.int32)
+
+    def composition(objs, mask, which):
+        return lj_composition(probes(objs, mask), objs["egm_ljs"][mask])[which]
+
+    def flag(name, label, fill):
+        return h.Axis(hist.axis.Integer(0, 2, name=name, label=label, underflow=False, overflow=False), fill)
+
+    return h.Histogram([
+        flag("gen_fsr", "Probe matched to a generated FSR photon",
+             lambda objs, mask: ak.values_astype(zmmg_probe_gen_fsr(probes(objs, mask)), np.int32)),
+        h.Axis(hist.axis.Variable([20, 30, 40, 60, 120], name="probe_pt", label=r"Probe photon $p_T$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).pt),
+        h.Axis(hist.axis.Variable([0, 1.4442, 1.566, 2.4], name="probe_abseta", label=r"Probe photon $|\eta|$"),
+               lambda objs, mask: abs(probes(objs, mask).eta)),
+        h.Axis(hist.axis.Variable([0, 0.94, 1.5], name="probe_r9", label=r"Probe photon $R_9$"),
+               lambda objs, mask: probes(objs, mask).r9),
+        flag("probe_pixelSeed", "Probe photon pixel seed",
+             lambda objs, mask: ak.values_astype(probes(objs, mask).pixelSeed, np.int32)),
+        flag("probe_photon_id", "Probe passes the other lepton-jet photon cuts", photon_id),
+        flag("probe_electron_near", r"Selected electron within $\Delta R < 0.025$ of the probe", electron_near),
+        h.Axis(hist.axis.Variable([75, 85, 95, 105], name="m_mmg", label=r"$m(\mu\mu\gamma)$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).m_mmg),
+        h.Axis(hist.axis.Integer(-1, 3, name="lj_photons", underflow=False,
+                                 label="Photons of the lepton jet that makes the probe pass (-1: none)"),
+               lambda objs, mask: composition(objs, mask, 0)),
+        h.Axis(hist.axis.Integer(-1, 3, name="lj_electrons", underflow=False,
+                                 label="Electrons of the lepton jet that makes the probe pass (-1: none)"),
+               lambda objs, mask: composition(objs, mask, 1)),
+    ])
 
 
 def jpsi_probe_hist(alone=False, pt_max=None, sf=False):
@@ -672,6 +739,17 @@ def nearest_factors(probes, others, factors):
         others = ak.with_field(others, factor, f"sf_{category}")
     closest = probes.nearest(others, threshold=0.2)
     return {category: ak.fill_none(closest[f"sf_{category}"], 1.0) for category in factors}
+
+
+def lj_composition(probes, ljs):
+    """(photons, electrons): the number of each in the lepton jet of ljs within dR < 0.2 of each
+    probe, the one that makes it pass, as int32 arrays jagged like probes; -1 for a probe without
+    one"""
+    ljs = ak.with_field(ljs, ak.num(ljs.photons, axis=2), "n_photons")
+    ljs = ak.with_field(ljs, ak.num(ljs.electrons, axis=2), "n_electrons")
+    closest = probes.nearest(ljs, threshold=0.2)
+    return tuple(ak.values_astype(ak.fill_none(closest[field], -1), np.int32)
+                 for field in ("n_photons", "n_electrons"))
 
 
 def lj_probe_sf(objs, mask, probes, ljs_name):
@@ -4590,6 +4668,9 @@ hist_defs = {
     "lj_cr_zmmg_fsr_probes_alone_sf": zmmg_probe_hist(alone=True, fsr=True, sf=True),
     "dsa_cr_z_probes_alone_sf": dsa_z_probe_hist(alone=True, sf=True),
     "dsa_cr_jpsi_probes_alone_sf": dsa_jpsi_probe_hist(alone=True, sf=True),
+    # the FSR probes with their pixel seed and what the lepton jet that makes them pass is made
+    # of, for the pixel-seed veto of the lepton-jet photons (simulation only)
+    "lj_cr_zmmg_fsr_probes_alone_seed": zmmg_probe_seed_hist(),
     "genA_toE_daughters_dR": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1.0, name="genA_toE_daughters_dR",

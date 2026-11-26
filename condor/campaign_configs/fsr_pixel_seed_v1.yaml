@@ -1,0 +1,38 @@
+# The pixel-seed veto of the lepton-jet photons in the FSR closure of the lepton-jet
+# reconstruction efficiency (sidm/studies/systematics/lj_reco_efficiency.md, step 3), simulation
+# only. With every scale factor applied, data/Drell-Yan for the FSR photons moves from 0.991 to
+# 1.044, mostly from the EGM pixel-seed veto factor (0.962 barrel, 0.883 endcap), which is applied
+# per photon. A photon that fails the veto can still make an egamma-type lepton jet through an
+# electron (the dR veto of the lepton-jet photons hands the deposit to a selected electron), which
+# a factor per photon does not describe.
+#
+# lj_reco_pixel_seed holds the FSR probes with their pixel seed, whether they pass the other
+# cuts of the lepton-jet photons, whether a selected electron lies within dR < 0.025, and what
+# the lepton jet that makes them pass is made of; and the closure histogram with the scale
+# factors. DYJetsToMuMu_M50 (independent events, about three times the skimmed events of
+# DYJetsToLL_M50, PHOTOS for the radiation) adds Drell-Yan statistics, which limit the FSR
+# closure.
+#
+#     python condor/campaign.py fsr_pixel_seed_v1 jobs
+#     python condor/campaign.py fsr_pixel_seed_v1 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py fsr_pixel_seed_v1 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py fsr_pixel_seed_v1 merge
+
+name: fsr_pixel_seed_v1
+chunk_dir: /store/user/$USER/sidm_condor/FsrPixelSeedChunks_v1
+merged_dir: /store/user/$USER/sidm_coffea_outputs/fsr_pixel_seed_v1
+
+channels: [lj_cr_Z_to_mumugamma_alone]
+hist_collections: [lj_reco_pixel_seed]
+corrections: [pileup, l1_prefiring]
+hist_mode: weighted
+
+job_lists:
+  - job_args: job_args_fsr_pixel_seed_v1_dy.txt
+    samples_file: samples_fsr_pixel_seed.txt
+    dataset: skimmed_llpNanoAOD_v2
+    location_cfg: backgrounds.yaml
+    files_per_job: 25
+    files_per_job_map: files_per_job_corrections.yaml
+    census_skip: backgrounds_skimmed.skip.json
+    replace_xcache: true

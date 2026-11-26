@@ -1329,6 +1329,11 @@ dsa_prompt_probes: &dsa_prompt_probes
   - "dsa_cr_z_probes_alone"
   - "dsa_cr_jpsi_probes_alone"
 
+# its Z -> mumu tag and probe alone: the DSA-muon scale factor per 2018 run period in the skimmed
+# data (campaign dsa_prompt_data_v2)
+dsa_prompt_probes_z:
+  - "dsa_cr_z_probes_alone"
+
 # the probes of the control samples in simulation with the scale factors of the lepton-jet
 # constituents applied to each passing probe (an sf axis), against data in the same bins: the
 # lepton-jet reconstruction and selection with the corrections applied (lj_reco_efficiency.md,
@@ -1339,6 +1344,13 @@ lj_reco_closure: &lj_reco_closure
   - "lj_cr_zmmg_fsr_probes_alone_sf"
   - "dsa_cr_z_probes_alone_sf"
   - "dsa_cr_jpsi_probes_alone_sf"
+
+# the pixel-seed veto of the lepton-jet photons in the FSR closure (simulation only): the probes
+# with their pixel seed and the make-up of the lepton jet that makes them pass, and the closure
+# histogram with the scale factors (sidm/studies/systematics/lj_reco_efficiency.md, step 3)
+lj_reco_pixel_seed: &lj_reco_pixel_seed
+  - "lj_cr_zmmg_fsr_probes_alone_seed"
+  - "lj_cr_zmmg_fsr_probes_alone_sf"
 
 mulj_decay_angle: &mulj_decay_angle
   - "mu_lj_mumu_absCosTheta"

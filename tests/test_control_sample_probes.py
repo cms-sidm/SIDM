@@ -7,7 +7,7 @@ import awkward as ak
 import numpy as np
 from coffea.nanoevents.methods import vector
 
-from sidm.definitions.hists import combine_sfs, jpsi_dsa_count, nearest_factors
+from sidm.definitions.hists import combine_sfs, jpsi_dsa_count, lj_composition, nearest_factors
 from sidm.definitions.objects import dsa_probe_muons, jpsi_probe_vertex_lxy
 
 
@@ -28,7 +28,8 @@ def point(idx, phi):
 
 
 class ControlSampleProbesTest(unittest.TestCase):
-    """The DSA count of J/psi probes, the dimuon-vertex lookup and the Z -> mumu DSA probes"""
+    """The DSA count of J/psi probes, the dimuon-vertex lookup, the Z -> mumu DSA probes, the scale
+    factors of passing probes and the make-up of their lepton jets"""
 
     def test_dsa_count_counts_distinct_matches(self):
         """Two DSA muons near the two muons give 2, one DSA muon nearest to both gives 1"""
@@ -81,6 +82,18 @@ class ControlSampleProbesTest(unittest.TestCase):
         others = candidates([[point(5, 0.05), point(6, 2.0)], []])
         factors = nearest_factors(probes, others, {"nominal": ak.Array([[0.8, 0.5], []])})
         self.assertEqual(ak.to_list(factors["nominal"]), [[0.8, 1.0], [1.0]])
+
+    def test_lj_composition_counts_the_matched_lepton_jet(self):
+        """A probe takes the photon and electron counts of the lepton jet within dR < 0.2, a
+        probe without one gets -1"""
+        def lepton_jet(phi, n_photons, n_electrons):
+            return {**point(0, phi), "photons": [{"pt": 30.0}] * n_photons,
+                    "electrons": [{"pt": 30.0}] * n_electrons}
+        probes = candidates([[point(0, 0.0), point(1, 1.0)], [point(0, 0.0)]])
+        ljs = candidates([[lepton_jet(0.05, 0, 1), lepton_jet(2.0, 1, 0)], []])
+        photons, electrons = lj_composition(probes, ljs)
+        self.assertEqual(ak.to_list(photons), [[0, -1], [-1]])
+        self.assertEqual(ak.to_list(electrons), [[1, -1], [-1]])
 
 
 if __name__ == "__main__":

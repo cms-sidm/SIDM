@@ -5,7 +5,37 @@ methods and results. Update it as part of every piece of work on the study: the 
 state below, and a dated entry in the log (newest first). [`AGENTS.md`](../../../AGENTS.md)
 asks for this.
 
-## Current state (2026-11-24, 23:00): step 3 done, uncommitted until the commit below
+## Current state (2026-11-26, 12:30): step 3 done and pushed (bab7cf0); the advisor's answers implemented
+
+**The advisor's answers (2026-11-26).** (1) The FSR closure: MadGraph+Pythia is the most representative of
+the signal simulation, so everything stays as it is (the pixel-veto factor per photon, 4.4% for
+`CMS_ljreco_egm`). (2) The size rule makes sense: the whole range sets the size unless there is
+meaningful evidence of a dependence on the kinematics. (3) Low priority: look at the stability of the
+scale factors against the run period where the statistics allow (the DSA question). (4) An uncertainty
+that covers the possible trigger bias is reasonable, as it hardly affects the results.
+- **Done (2026-11-26).** Notebook 12, section 3.1: the pixel-seed check and the second generator from
+  `fsr_pixel_seed_v1`, run (numbers as below), with the decision. Helpers in `systematics_study.py`
+  (`pixel_veto_sf`, `fsr_seed_inputs`, `seed_outcomes`, `seed_passing`, `pixel_veto_factors`) and two
+  synthetic tests in `tests/test_systematics_helpers.py`. README, `lj_reco_efficiency.md` (questions 2,
+  5 and 6 answered), a comment at `CMS_ljreco_egm` in `systematics.yaml` (the registry is unchanged),
+  and the AN (local): the generator choice in one sentence of the FSR paragraph, and the
+  two-standard-deviation criterion of the size rule stated in the method.
+- **Done (2026-11-26): the DSA factor per run period** (notebook 10, section 7; campaign
+  `dsa_prompt_data_v2`, collision data approved 2026-11-26 for this use: 2,580 jobs over the skimmed
+  DoubleMuon 2018 A to D, analysis triggers, collection `dsa_prompt_probes_z`, 68 blocks merged, the
+  463 skipped files are empty). The skim keeps 99% of the 2018C probes with the same data/DY (0.8840).
+  Data/DY with the analysis triggers: 0.891 (A), 0.886 (B), 0.884 (C), 0.881 (D), 0.884 for 2018. In
+  common bins (those of 2018B after merging) every period agrees with the year within the factor's
+  total uncertainty in all 32 bins (largest 1.3% below |eta| 0.9, 4.7% above 2.1), and 2018C sits at
+  the average: the factor of 2018C applies to all of 2018. Helpers: `lj_cr_data(samples=)`,
+  `in_period`, `period_spread`, `dsa_sf_groups`, `dsa_scale_factors(trigger=, groups=)`.
+- **Deck and message (local):** `slides/dsa_periods_2026-11-26.tex` (9 slides) and
+  `slides/dsa_periods_2026-11-26_mattermost.md`. The AN (local) has one sentence on the periods in the
+  DSA paragraph.
+- **Next:** the commit of all of this (asked for 2026-11-26), then the user pushes; the PR
+  description is updated in chat.
+
+## State of 2026-11-25, 17:30
 
 **The advisor's answer on step 3 (2026-11-24):** proceed with the corrections and systematics,
 taking the value from the nearest populated bin, with scale factors **per constituent** and their
@@ -33,7 +63,20 @@ are the same, and every point now sits at its bin centre (`CURVE_STYLES`).
   muons together; PF muons alone are `ljs.pfMuons`.
 - **Waits on the group:** the size rule (nearest regions regardless would give up to 8.3% and 12%);
   2018A/D for the DSA factor; the trigger part of its uncertainty.
-- **Next:** the user pushes `systematicsStudy` and posts the reply; then the group's answers.
+- **Done (2026-11-25): `fsr_pixel_seed_v1`** (see the log; analysed with scratch scripts, not
+  yet in a notebook). The pixel seed: 11.5% of the FSR photons above 30 GeV have one; they still
+  pass 42% (MiNNLO+PHOTOS) or 32% (MadGraph+Pythia) of the time, always through an electron-only
+  lepton jet, so the veto factor applied as an efficiency reweighting lowers Drell-Yan by 2.6 to
+  3.0% instead of the 4.9 to 5.0% of the per-photon factor (data/DY x0.976 to 0.979). The
+  generator matters more: without scale factors the M50 samples pass 0.894 ± 0.010 (MiNNLO) and
+  0.829 ± 0.024 (MadGraph); data/DY above 30 GeV, no SF / SF per photon / veto reweighted, is
+  0.991 / 1.044 / 1.022 (MadGraph) and 0.924 / 0.973 / 0.949 (MiNNLO M50 with MadGraph M10to50).
+  The 4.4% of `CMS_ljreco_egm` covers both generators as the factors are applied now; with the
+  veto reweighted the envelope would be 5.1%.
+- **Waits on the user and the advisor:** the follow-up on question 2 (drafted in chat); whether to
+  keep the per-photon pixel-veto factor and 4.4% (proposed) or move to the reweighting.
+- **Next:** on the answer, put the analysis into notebook 12 and `systematics_study.py` (and the
+  README), then commit the new histogram, its test and the campaign config.
 
 ## State of 2026-11-24, 14:30
 
@@ -268,6 +311,73 @@ only.
   --inplace --ExecutePreprocessor.timeout=7200 --ExecutePreprocessor.kernel_name=python3 <notebook>`.
 
 ## Log (newest first)
+
+### 2026-11-26
+
+- (12:30) `dsa_prompt_data_v2` submitted 10:00 (cluster 86619898, lpcschedd6), the nine known-slow nodes
+  excluded at submission and the 30-minute mover running; done 11:44. The last 21 jobs sat on a new slow
+  node, cmswn2246 (58 min, period medians 20 to 31 min), and were moved by hand. Merged (68 blocks).
+  Notebook 10, section 7: a first comparison against the factor's systematic alone, with each period's
+  own merging of sparse bins, flagged 3 of 32 bins; two were sparse bins within the factor's total
+  uncertainty, and one compared differently merged bins (80-200 GeV of 2018B against 120-200 GeV of
+  2018). With common bins and the total uncertainty, which is what the correction applies, no bin
+  departs. The rerun rewrites `dsa_muon_sf_2018.json` byte for byte.
+- Advisor's answers (above). Notebook 12, section 3.1 added and run: it reproduces the scratch
+  analysis of 2026-11-25 (seeded 11.2% / 11.5%, recovered through electrons 32% / 42%, veto factor
+  per photon x0.9505 / x0.9509 against x0.9705 / x0.9744 reweighted, M10to50 -77.0 +- 24.2 probes
+  from 22 effective events of mean weight 9.4, data/DY 0.991 / 1.044 / 1.022 and 0.924 / 0.973 /
+  0.949). The pixel-veto factors are read through `Corrections` (0.9623, 0.8833, the same from CVMFS
+  and the CI copy). The scratchpad was cleared again overnight; nothing in use depended on it.
+- `dsa_prompt_data_v2` prepared (see above); its submission was blocked by the permission check and
+  waits for the user. The 2018C safety table already covers it: notebook 09 judged the DSA probes at
+  the luminosity of all of 2018 (64 million background events), with the trigger axes kept.
+
+### 2026-11-25
+
+- (18:30) Deck `slides/fsr_pixel_seed_2026-11-25.tex` (10 slides, local like every deck): seeded
+  FSR photons, the veto per photon against reweighted, the two generators against the data, the
+  M10to50 sample in the subtraction, data/Drell-Yan for every prediction, the egamma-type size and
+  open points. Figures in `slides/figures_fsr_seed/`, drawn at slide size by the scratch script
+  `fsr_deck_figures.py`; it shows control-sample data, so it stays off the MC-only EOS area.
+- (17:30) `fsr_pixel_seed_v1` analysed. The last chunk (`DYJetsToLL_M50` 125) sat 3 h 10 min
+  on cmswn2245, a known slow node that was not excluded at submission (sample median 9 min);
+  moved at 16:34, done 16:46; merged 16:51, no file skipped. Checks: the campaign's
+  `DYJetsToLL_M50` reproduces `lj_reco_cr_v4` exactly (0.8288 ± 0.0238 without factors), and the
+  seed histogram gives the closure histogram's efficiencies (the m_mmg bins are the peak and
+  sidebands). Gen-matched FSR probes above 30 GeV, MiNNLO+PHOTOS / MadGraph+Pythia: seeded 11.5% /
+  11.2%; seeded pass 0.422 ± 0.024 / 0.321 ± 0.055, all through electron-only lepton jets;
+  unseeded probes that pass the other photon cuts always pass; the other photon cuts pass 91.0% /
+  88.4%. The veto reweighted (pass x SF, fail x (1 - SF e)/(1 - e), e the simulated fraction
+  without a seed, 0.94 barrel and 0.72 endcap) against per photon, all probes after the
+  subtraction: 2.6% / 3.0% against 4.9% / 5.0%. `DYJetsToLL_M10to50` is about 22 events of weight
+  about 10, mostly in the upper sideband: -77 ± 24 probes at 0.19 ± 0.10 against 1,482 for
+  `DYJetsToLL_M50`, which lowers data/DY by about 4%. To add it to `DYJetsToMuMu_M50`, the latter
+  goes through `corrections_study.drop_genweight_outliers` (the 1.45e14 event, x632). Data/DY
+  above 30 GeV, no SF / SF / reweighted: MadGraph M50 only 1.033 / 1.088 / 1.066; MadGraph
+  M10to50 + M50 0.991 ± 0.039 / 1.044 ± 0.041 / 1.022; MiNNLO M50 only 0.958 ± 0.022 / 1.008 ±
+  0.023 / 0.984; MiNNLO M50 + MadGraph M10to50 0.924 ± 0.025 / 0.973 ± 0.026 / 0.949. Scratch
+  scripts (scratchpad, may be cleared): `fsr_seed_analysis.py`, `fsr_seed_closure_reweighted.py`,
+  `fsr_closure_by_generator.py`.
+- (13:15) Campaign `fsr_pixel_seed_v1` submitted (1,412 jobs, cluster 5088141, lpcschedd4;
+  simulation only): `DYJetsToLL_M50` and `DYJetsToMuMu_M50` (independent, about three times the
+  skimmed events, PHOTOS), channel `lj_cr_Z_to_mumugamma_alone`, collection `lj_reco_pixel_seed`:
+  the new `lj_cr_zmmg_fsr_probes_alone_seed` (`zmmg_probe_seed_hist`: the probe's pixel seed,
+  whether it passes the other lepton-jet photon cuts, a selected electron within dR < 0.025, and
+  the photons and electrons of the lepton jet that makes it pass, `lj_composition`) and the FSR
+  closure histogram with the scale factors (a second Drell-Yan sample for the closure).
+  `zmmg_probe_gen_fsr` now also accepts a photon whose mother is the Z: PHOTOS attaches the
+  radiation to the decaying Z, Pythia to the muon (checked on one file of each). Tested locally
+  on 46 files (fills, no warnings); unit test for `lj_composition`; code tarball remade.
+- First look from `lj_reco_cr_v3` (Drell-Yan, gen-matched FSR probes above 30 GeV): 11.6% have
+  a pixel seed; with a seed they still pass 32% of the time (n_eff 72), without 88% (n_eff 577).
+  About a third of the photons that fail the veto are recovered, so the per-photon pixel-veto
+  factor (about 0.95 on these photons) would over-correct by about 2% of its 5%.
+- Advisor's follow-up on step 3 (reply drafted in chat, not yet sent): (2) why the EGM scale
+  factors do not improve the FSR closure (0.991 ± 0.039 without, 1.044 ± 0.041 with; mostly the
+  pixel-seed veto, EGM 2018 Loose 0.962 barrel, 0.883 endcap, inclusive in R9 as applied): within
+  the 4% precision of the test, plus the recovery above; (3) the derivation of the additional
+  systematic, explained step by step. The scratchpad was cleared overnight (old drafts, the
+  watcher, the unused AN figures).
 
 ### 2026-11-24
 

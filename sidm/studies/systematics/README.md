@@ -496,9 +496,26 @@ this simulation. Outputs in `/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr
   above 100 GeV. A factor per DSA muon describes the pairs.
 - **The DSA factor on its own measurement** (Z → μμ, Mu37_TkMu27): 0.999, and 0.98 to 1.00 in
   every bin above 20 GeV, so it is applied as measured.
+- **The DSA factor per run period** (notebook 10, section 7; campaign `dsa_prompt_data_v2`, the
+  skimmed DoubleMuon ntuples of every period, compared with the analysis triggers, since only the
+  skim holds periods A, B and D): data/Drell-Yan is 0.891, 0.886, 0.884 and 0.881 in periods A to D,
+  0.884 for all of 2018. In common bins of pT and |η| every period agrees with the year within the
+  uncertainty of the factor (at most 1.3% below |η| = 0.9 and 4.7% above 2.1, against 1.1 to 3.5%
+  and 5.5 to 10.4%), and 2018C sits at the average, so the factor of 2018C applies to all of 2018.
 - **Egamma-type lepton jets, FSR photons above 30 GeV:** **1.044 ± 0.041** (0.991 ± 0.039
   without): the photon pixel-seed veto factor (0.964 per barrel photon) lowers Drell-Yan by about
   5%. Unconverted photons 1.066 ± 0.037, converted 0.988 ± 0.105, above 60 GeV 0.894 ± 0.121.
+- **The pixel-seed veto and a second Drell-Yan generator** (notebook 12, section 3.1; campaign
+  `fsr_pixel_seed_v1`, Drell-Yan only, with the pixel seed and the make-up of the lepton jet of each
+  FSR probe). 11.5% of the FSR photons above 30 GeV have a pixel seed; they fail the photon
+  selection, yet 32% (MadGraph+Pythia) to 42% (MiNNLO+PHOTOS) of them still give a lepton jet, of
+  electrons only. So the veto factor applied per photon over-corrects: it lowers Drell-Yan by 5.0%,
+  where an efficiency reweighting of the veto gives 3.0% (data/Drell-Yan ×0.979). The generator
+  matters more: without the factors `DYJetsToMuMu_M50` (MiNNLO+PHOTOS) passes 0.894 ± 0.010 against
+  0.829 ± 0.024 for `DYJetsToLL_M50`, and with the low-mass sample and the factors data/Drell-Yan is
+  0.973 ± 0.026 instead of 1.044 ± 0.041. The closure stays with MadGraph+Pythia, the most
+  representative of the signal simulation, with the factor per photon (2026-11-26); the 4.4% covers
+  both generators.
 - **The additional systematic** (`CMS_ljreco_mu`, `CMS_ljreco_egm`, kind `per_lj`): max(|1 − r|,
   σ_r) over the measured range above the turn-on, unless a region nearest the signal differs from it
   by more than two standard deviations; none does (the largest difference is 1.3). **1.7% per
@@ -680,12 +697,14 @@ The table per point is in
    uncertainty, together with the isolation definition (corrections open item 5).
 7. The lepton-jet reconstruction efficiency: steps 1 to 3 are done. The lepton jets are corrected
    per constituent, with the DSA-muon scale factor measured here, and carry the additional
-   systematic of notebook 12 (1.7% per muon-type, 4.4% per egamma-type lepton jet). Open for the
-   group ([`lj_reco_efficiency.md`](lj_reco_efficiency.md)): whether the regions nearest the signal
-   should set the size even where they are less precise than the whole range (up to 8.3% for
-   muon-type and 12% for egamma-type lepton jets, instead of 1.7 and 4.4%); the DSA scale factor from 2018C alone (unskimmed ntuples exist for periods A and,
-   in blocks, D) and whether the analysis-trigger difference belongs in its uncertainty; and the
-   regions the control samples do not reach (coverage map).
+   systematic of notebook 12 (1.7% per muon-type, 4.4% per egamma-type lepton jet). Answered
+   (2026-11-26, [`lj_reco_efficiency.md`](lj_reco_efficiency.md)): the whole measured range sets the
+   size unless the regions nearest the signal show a dependence; the DSA factor's uncertainty keeps
+   the analysis-trigger difference; the FSR closure stays with MadGraph+Pythia Drell-Yan, the most
+   representative of the signal simulation (a second generator, MiNNLO+PHOTOS, gives 0.973 ± 0.026
+   instead of 1.044 ± 0.041, within the 4.4%; notebook 12, section 3.1); the DSA factor is stable
+   against the 2018 run period within its uncertainty (notebook 10, section 7). Open: the regions
+   the control samples do not reach (coverage map).
 
 ## Notebooks
 
@@ -700,9 +719,9 @@ The table per point is in
 | [`07_lj_reco_control_samples.ipynb`](07_lj_reco_control_samples.ipynb) | step 2 of the lepton-jet reconstruction efficiency, simulation part: the Z → μμγ and J/ψ → μμ probes, the safety check that decides which regions data may read (table written to EOS), the efficiencies the simulation expects; section 6, version 3: the closure test of the sideband subtraction, the efficiency against the J/ψ production radius, converted photons with the FSR selection, the J/ψ vertex displacement, and their safety check | `lj_reco_cr_v2`, `lj_reco_cr_v3` | about 1 min |
 | [`08_lj_reco_data.ipynb`](08_lj_reco_data.ipynb) | step 2 of the lepton-jet reconstruction efficiency, data part: the passing fractions of the control samples in data against the simulation, read only through the safety tables of 07; section 6, version 3: converted and unconverted photons of the FSR selection, and the J/ψ probes against their vertex displacement | `lj_reco_cr_data_v1`, `lj_reco_cr_v2`, `lj_reco_cr_data_v2`, `lj_reco_cr_v3` | about 10 min |
 | [`09_dsa_prompt_muons.ipynb`](09_dsa_prompt_muons.ipynb) | the DSA muons of prompt muons, in simulation: the displaced ID, Z → μμ tag and probe and J/ψ pairs, the bias of each trigger, the safety check of both regions (table written to EOS), and what the data measurement needs | `lj_reco_cr_v3` | about 2 min |
-| [`10_dsa_prompt_data.ipynb`](10_dsa_prompt_data.ipynb) | the DSA muons of prompt muons in data against the simulation, read only through the safety table of 09: single muons (Z → μμ tag and probe, Mu37_TkMu27) and J/ψ pairs; section 6 writes the scale factor per DSA muon (`sidm/data/corrections/dsa_muon_sf_2018.json`) | `dsa_prompt_data_v1` (data, unskimmed 2018C), `lj_reco_cr_v3` | about 2 min |
+| [`10_dsa_prompt_data.ipynb`](10_dsa_prompt_data.ipynb) | the DSA muons of prompt muons in data against the simulation, read only through the safety table of 09: single muons (Z → μμ tag and probe, Mu37_TkMu27) and J/ψ pairs; section 6 writes the scale factor per DSA muon (`sidm/data/corrections/dsa_muon_sf_2018.json`); section 7 compares the run periods of 2018 with the analysis triggers | `dsa_prompt_data_v1` (data, unskimmed 2018C), `dsa_prompt_data_v2` (data, every period, skimmed), `lj_reco_cr_v3` | about 5 min |
 | [`11_lj_coverage_map.ipynb`](11_lj_coverage_map.ipynb) | the coverage map of the control samples: where the signal's lepton jets lie against what each measurement reaches, and per point of the limit grid the fraction outside each range | `lj_reco_eff_v1` | about 1 min |
-| [`12_lj_corrected_closure.ipynb`](12_lj_corrected_closure.ipynb) | step 3: the control samples in data against the simulation with the scale factors per constituent applied to each passing probe's lepton jet (J/ψ → μμ, J/ψ pairs with two DSA muons, FSR photons), and the additional lepton-jet systematic per type | `lj_reco_cr_v4`, with the data of `lj_reco_cr_data_v1`, `lj_reco_cr_data_v2` and `dsa_prompt_data_v1` | about 5 min |
+| [`12_lj_corrected_closure.ipynb`](12_lj_corrected_closure.ipynb) | step 3: the control samples in data against the simulation with the scale factors per constituent applied to each passing probe's lepton jet (J/ψ → μμ, J/ψ pairs with two DSA muons, FSR photons), the pixel-seed veto and a second Drell-Yan generator in the FSR closure (section 3.1), and the additional lepton-jet systematic per type | `lj_reco_cr_v4`, `fsr_pixel_seed_v1`, with the data of `lj_reco_cr_data_v1`, `lj_reco_cr_data_v2` and `dsa_prompt_data_v1` | about 5 min |
 
 Notebooks 01 and 02 read the merged outputs of the corrections campaign
 (`corrections_study.CAMPAIGN_DIR`) through `corrections_study.load`, which copies them once

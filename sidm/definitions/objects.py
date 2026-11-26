@@ -246,10 +246,12 @@ def zmmg_probe_photons(objs, alone=False, fsr=False):
 
 def zmmg_probe_gen_fsr(probes):
     """Whether each Z -> mumu gamma probe photon is matched (Photon_genPartIdx) to a generated
-    photon radiated by a muon, the final-state radiation the control sample selects. Simulation
-    only."""
+    photon radiated by a muon, the final-state radiation the control sample selects: a photon whose
+    mother is a muon (Pythia, as in DYJetsToLL) or the Z (PHOTOS, as in DYJetsToMuMu, which attaches
+    the radiation to the decaying Z; Pythia never does). Simulation only."""
     gen = probes.matched_gen
-    return ak.fill_none((gen.pdgId == 22) & (abs(gen.parent.pdgId) == 13), False)
+    mother = gen.parent.pdgId
+    return ak.fill_none((gen.pdgId == 22) & ((abs(mother) == 13) | (mother == 23)), False)
 
 
 def jpsi_probe_dimuons(objs, alone=False, pt_max=None):

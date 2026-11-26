@@ -38,7 +38,9 @@ CMS_eff_g_pixelveto:
 # the identifications without a scale factor (12_lj_corrected_closure.ipynb, section 5). Per
 # lepton-jet type, max(|1 - r|, sigma_r) of the data/simulation ratio r in the control samples with
 # every scale factor applied: the muon type the larger of its PF-muon (J/psi above 50 GeV) and
-# DSA-muon (J/psi pairs with two DSA muons) regimes, the egamma type FSR photons above 30 GeV.
+# DSA-muon (J/psi pairs with two DSA muons) regimes, the egamma type FSR photons above 30 GeV. The
+# egamma type takes the closure with MadGraph+Pythia Drell-Yan, the most representative of the
+# signal simulation; MiNNLO+PHOTOS gives 0.973 +- 0.026 (2.7%), within it (notebook 12, section 3.1).
 CMS_ljreco_mu:
   per_lj: 0.017
   lj_type: muon

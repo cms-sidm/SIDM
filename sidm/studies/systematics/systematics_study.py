@@ -21,6 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import awkward as ak
 import fsspec
 import hist
 import matplotlib.pyplot as plt
@@ -28,6 +29,7 @@ import numpy as np
 
 from sidm import BASE_DIR
 from sidm.studies.corrections import corrections_study as study
+from sidm.tools.corrections import Corrections
 from sidm.tools.utilities import get_eff_hist, load_yaml
 
 # datacard_tools and shape_tools import each other by module name, as the limit
@@ -1435,16 +1437,21 @@ def readable_bins(rows, cr, axis):
             if f"{axis.name} {label}" in allowed]
 
 
-def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt", specs=None):
+def lj_cr_data(rows, directory=LJ_CR_DATA_DIR, split_axis="probe_pt", specs=None, samples=None):
     """{control sample: probe histogram summed over the data samples} of the alone versions of
     specs (LJ_CR by default), with every bin of the split axis (split_axis, or the spec's
     "split") that the safety table (rows, from lj_cr_verdicts) does not mark readable set to zero
     before anything else is done with it; stops through require_safe unless at least one region
-    is readable, and at any simulated sample"""
+    is readable, and at any simulated sample. samples, a function of the sample name, keeps some
+    of the data samples (one run period, say), and the files of the others are not read."""
     specs = LJ_CR if specs is None else specs
     out = {}
     for url in list_coffea(directory):
+        if samples is not None and not samples(os.path.basename(url).rsplit(".", 1)[0]):
+            continue
         for sample, sample_out in dt.read_coffea(url).items():
+            if samples is not None and not samples(sample):
+                continue
             if dt.is_simulation(sample, sample_out):
                 raise ValueError(f"{url}: {sample} is simulation, not data")
             for cr, spec in specs.items():
@@ -1485,6 +1492,26 @@ LJ_CR_DATA_V2_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/lj_reco_cr
 # and where 10_dsa_prompt_data.ipynb writes
 DSA_DATA_DIR = "/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1"
 DSA_DATA_RESULTS_DIR = "/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v1_results"
+# campaign dsa_prompt_data_v2: the Z -> mumu DSA tag and probe in every run period of 2018, from
+# the skimmed DoubleMuon ntuples, which keep the events of the analysis triggers; one sample per
+# block of a period, DoubleMuon_2018<period>_<block> (10_dsa_prompt_data.ipynb, section 7)
+DSA_PERIOD_DATA_DIR = "/store/user/scampbel/sidm_coffea_outputs/dsa_prompt_data_v2"
+RUN_PERIODS_2018 = ("A", "B", "C", "D")
+
+
+def in_period(period):
+    """A filter of the data sample names (lj_cr_data's samples) that keeps one run period of 2018"""
+    return lambda sample: sample.startswith(f"DoubleMuon_2018{period}")
+
+
+def period_spread(values, errors):
+    """(chi2, degrees of freedom, largest |pull|) of quantities measured in several run periods,
+    arrays of shape (periods, bins), around their weighted mean in each bin: how well one value
+    per bin describes every period"""
+    weights = 1 / errors ** 2
+    mean = (values * weights).sum(axis=0) / weights.sum(axis=0)
+    pulls = (values - mean) / errors
+    return float((pulls ** 2).sum()), values.size - values.shape[1], float(np.abs(pulls).max())
 
 
 def plot_mass_data_mc(data, inputs, cr, sel=None, ax=None, specs=None, scale=1.0):
@@ -1670,14 +1697,23 @@ def _fill_dsa_group(out, i, group, tallies):
                                  for alt in out["alternatives"].values()), default=0.0)
 
 
+def dsa_sf_groups(data, spec, *, min_probes=2000, trigger=DSA_SF_TRIGGER):
+    """The groups of probe-pT bins, per |eta| bin, that dsa_scale_factors merges for the data
+    histogram data (merge_groups of its probes after the subtraction): given to dsa_scale_factors
+    for other data, they make tables that compare bin by bin"""
+    return [merge_groups(sum(_dsa_counts(data, spec, trigger, {}, i)[:2]), min_probes)
+            for i in range(len(data.axes["probe_abseta"]))]
+
+
 def dsa_scale_factors(data, simulation, spec, *, alternatives=DSA_SF_ALTERNATIVES,
-                      min_probes=2000):
+                      min_probes=2000, trigger=DSA_SF_TRIGGER, groups=None):
     """The scale factor per DSA muon from the Z -> mumu tag and probe (data and simulation: its
     probe histograms, spec: DSA_CR["Z -> mumu, DSA"]): data over simulation of the fraction of
-    prompt muons with a selected DSA muon, with the trigger DSA_SF_TRIGGER, in the bins of probe
-    pT and |eta| of the histogram. In each |eta| bin, pT bins with fewer than min_probes probes in
+    prompt muons with a selected DSA muon, with the trigger DSA_SF_TRIGGER (or trigger, for the
+    run periods that only the skim holds), in the bins of probe pT and |eta| of the histogram. In each |eta| bin, pT bins with fewer than min_probes probes in
     data after the subtraction are merged with their neighbours (merge_groups), and the probes
-    above the last pT edge join the last bin. Each bin's uncertainty is its statistical one and,
+    above the last pT edge join the last bin; groups (dsa_sf_groups of other data) sets the
+    merged bins instead. Each bin's uncertainty is its statistical one and,
     as a systematic, the largest change of the scale factor with any of alternatives ((label,
     trigger, more slices)), measured on the same groups of bins.
 
@@ -1690,10 +1726,10 @@ def dsa_scale_factors(data, simulation, spec, *, alternatives=DSA_SF_ALTERNATIVE
            "probes": np.zeros(shape), "alternatives": {label: np.zeros(shape)
                                                        for label, _, _ in alternatives}}
     for i in range(len(eta_axis)):
-        tallies = {label: [_dsa_counts(h, spec, trigger, extra, i) for h in (data, simulation)]
-                  for label, trigger, extra in ((None, DSA_SF_TRIGGER, {}), *alternatives)}
+        tallies = {label: [_dsa_counts(h, spec, trig, extra, i) for h in (data, simulation)]
+                  for label, trig, extra in ((None, trigger, {}), *alternatives)}
         probes = tallies[None][0][0] + tallies[None][0][1]
-        for group in merge_groups(probes, min_probes):
+        for group in merge_groups(probes, min_probes) if groups is None else groups[i]:
             _fill_dsa_group(out, i, group, tallies)
     total = np.hypot(out["stat"], out["syst"])
     out["up"], out["down"] = out["sf"] + total, out["sf"] - total
@@ -1797,3 +1833,111 @@ def closure_size(ratio, err):
     corrections applied: the non-closure |1 - ratio|, or its statistical uncertainty where that
     is larger, since the test cannot exclude a non-closure of that size"""
     return max(abs(1 - ratio), err)
+
+
+# --- the FSR closure: the pixel-seed veto and a second Drell-Yan generator ---------------------
+
+# campaign fsr_pixel_seed_v1, Drell-Yan only: DYJetsToLL_M50 (MadGraph+Pythia, as in every other
+# campaign) and DYJetsToMuMu_M50 (MiNNLO+PHOTOS, independent events), with the FSR closure
+# histogram with the scale factors and the seed histogram (hists.zmmg_probe_seed_hist): each
+# probe's pixel seed, whether it passes the other cuts of the lepton-jet photons, whether a
+# selected electron lies within dR < 0.025, and the photons and electrons of its matched
+# egamma-type lepton jet; 12_lj_corrected_closure.ipynb, section 3.1
+FSR_SEED_DIR = "/store/user/scampbel/sidm_coffea_outputs/fsr_pixel_seed_v1"
+FSR_SEED_HIST = "lj_cr_zmmg_fsr_probes_alone_seed"
+# the |eta| bins of the seed histogram that take the barrel and the endcap factor of the veto; the
+# gap goes with the endcap, as photon_pixel_veto takes every photon outside the barrel as endcap
+PIXEL_VETO_REGIONS = {"barrel": slice(0, 1, sum), "endcap": slice(1, None, sum)}
+
+
+def pixel_veto_sf(year="2018"):
+    """{"barrel", "endcap": factor} of the photon pixel-seed veto as photon_pixel_veto applies it
+    (EGM, Loose, inclusive in R9), read through the corrections"""
+    photons = ak.Array([[{"pt": 40.0, "eta": 0.5, "isScEtaEB": True},
+                         {"pt": 40.0, "eta": 2.0, "isScEtaEB": False}]])
+    corr = Corrections(year, ["photon_pixel_veto"])
+    sf = ak.flatten(corr.object_sf("photon_pixel_veto", photons, "pixelSeed"))
+    return {"barrel": float(sf[0]), "endcap": float(sf[1])}
+
+
+def fsr_seed_inputs(directory=FSR_SEED_DIR):
+    """{sample: {"seed": seed histogram, FSR control sample: closure histogram with the scale
+    factors}} of campaign fsr_pixel_seed_v1, DYJetsToMuMu_M50 normalised without its
+    generator-weight outlier (corrections_study.drop_genweight_outliers), so that it can be added
+    to another sample. Stops at a data sample: the campaign is simulation only."""
+    fsr = "Z -> mumu gamma, FSR"
+    spec = with_sf({fsr: LJ_CR_V3[fsr]})[fsr]
+    inputs = {}
+    for url in list_coffea(directory):
+        for sample, out in dt.read_coffea(url).items():
+            if not dt.is_simulation(sample, out):
+                raise ValueError(f"{url}: {sample} is data; fsr_pixel_seed_v1 is simulation only")
+            if sample in study.GENWEIGHT_OUTLIERS:
+                study.drop_genweight_outliers(sample, out, study.background_skim_factor(sample))
+            inputs[sample] = {"seed": out["hists"][FSR_SEED_HIST][{"channel": spec["channel"]}],
+                              fsr: out["hists"][spec["hist"]][{"channel": spec["channel"]}]}
+    return inputs
+
+
+def seed_outcomes(h, pixel_seed, above=30):
+    """(with the photon, of electrons only, none): the fractions of the FSR probes above `above`
+    GeV matched to a generated FSR photon, with (pixel_seed 1) or without (0) a pixel seed, whose
+    matched egamma-type lepton jet holds the photon, holds only electrons, or that have none; h is
+    the seed histogram"""
+    t = h[{"gen_fsr": 1, "probe_pt": slice(hist.loc(above), None, sum), "m_mmg": sum,
+           "probe_r9": sum, "probe_abseta": sum, "probe_pixelSeed": pixel_seed,
+           "probe_photon_id": sum, "probe_electron_near": sum}]
+    v = t.values(flow=True)     # lepton-jet photons by electrons: -1 (no lepton jet), 0, 1, 2, >= 3
+    with_photon, electrons_only = v[2:, 1:].sum() / v.sum(), v[1, 2:].sum() / v.sum()
+    return with_photon, electrons_only, 1 - with_photon - electrons_only
+
+
+def seed_passing(h, pixel_seed, above=30):
+    """{"edges", "eff", "err"}: the fraction of the FSR probes matched to a generated FSR photon,
+    with or without a pixel seed, that have a matched egamma-type lepton jet, in each bin of the
+    probe pT from `above` GeV, with the binomial uncertainty of the effective entries; h is the
+    seed histogram"""
+    t = h[{"gen_fsr": 1, "m_mmg": sum, "probe_r9": sum, "probe_abseta": sum,
+           "probe_pixelSeed": pixel_seed}]
+    edges = t.axes["probe_pt"].edges
+    keep = [i for i, lo in enumerate(edges[:-1]) if lo >= above]
+    eff, err = [], []
+    for i in keep:
+        b = t[{"probe_pt": i}]
+        v, w2 = b.values(flow=True), b.variances(flow=True)
+        f = v[..., 1:, 1:].sum() / v.sum()
+        eff.append(f)
+        err.append(math.sqrt(max(f * (1 - f), 0.0) * w2.sum()) / v.sum())
+    return {"edges": edges[keep[0]:keep[-1] + 2], "eff": np.array(eff), "err": np.array(err)}
+
+
+def pixel_veto_factors(h, sf, spec=None, above=30):
+    """{region: (e, per photon, reweighted)} for "barrel", "endcap" and "both" (e None there): the
+    factor that the pixel-veto scale factor puts on the passing fraction of the FSR probes above
+    `above` GeV of the seed histogram h, after the sideband subtraction of the closure (spec, the
+    Z -> mumu gamma one by default). Per photon is how the closure applies it: each photon of the
+    passing lepton jet carries the factor. The efficiency reweighting of the veto acts on the
+    probes that pass the other photon cuts, x SF without a pixel seed and x (1 - SF e)/(1 - e) with
+    one (e the simulated fraction without a seed), so that the fraction without a seed becomes
+    SF e as in data, while a photon that fails the veto still passes when an electron makes its
+    lepton jet. sf: {"barrel", "endcap": factor} (pixel_veto_sf)"""
+    spec = LJ_CR["Z -> mumu gamma"] if spec is None else spec
+    (p_lo, p_hi), sidebands = spec["peak"], spec["sidebands"]
+    k = (p_hi - p_lo) / sum(hi - lo for lo, hi in sidebands)
+    out, totals = {}, np.zeros(3)
+    for region, abseta in PIXEL_VETO_REGIONS.items():
+        t = h[{"gen_fsr": sum, "probe_pt": slice(hist.loc(above), None, sum), "probe_r9": sum,
+               "probe_abseta": abseta}]
+        v = (mass_window(t, spec["mass"], p_lo, p_hi).values(flow=True)
+             - k * sum(mass_window(t, spec["mass"], lo, hi).values(flow=True) for lo, hi in sidebands))
+        # v: pixel seed, passes the other photon cuts, electron near, lepton-jet photons, electrons
+        passing = v[..., 1:, 1:]
+        n_photons = np.arange(passing.shape[3])          # 0, 1, 2, and >= 3 counted as 3
+        eps = v[0, 1].sum() / v[:, 1].sum()
+        per_photon = (passing * sf[region] ** n_photons[:, None]).sum()
+        reweighted = (passing[:, 0].sum() + sf[region] * passing[0, 1].sum()
+                      + (1 - sf[region] * eps) / (1 - eps) * passing[1, 1].sum())
+        out[region] = (eps, per_photon / passing.sum(), reweighted / passing.sum())
+        totals += (passing.sum(), per_photon, reweighted)
+    out["both"] = (None, totals[1] / totals[0], totals[2] / totals[0])
+    return out

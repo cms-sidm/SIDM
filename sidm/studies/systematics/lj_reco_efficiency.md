@@ -321,6 +321,15 @@ an additional systematic where needed.
   factor per DSA muon describes the pairs. On its own measurement (Z → μμ) it gives 0.999.
 - **Egamma-type, FSR photons above 30 GeV:** 1.044 ± 0.041 (0.991 ± 0.039 without; the pixel-seed
   veto factor, 0.964 per barrel photon, lowers Drell-Yan by about 5%).
+- **The FSR closure and the Drell-Yan generator** (notebook 12, section 3.1, campaign
+  `fsr_pixel_seed_v1`, 2026-11-25): 11.5% of the FSR photons above 30 GeV have a pixel seed. They
+  fail the photon selection, yet 32 to 42% of them still give a lepton jet, of electrons only, so
+  the veto factor applied per photon over-corrects: it lowers Drell-Yan by 5.0% where an efficiency
+  reweighting of the veto gives 3.0%. The generator matters more: without the factors
+  MiNNLO+PHOTOS (`DYJetsToMuMu_M50`) passes 7% more than MadGraph+Pythia (2.5 standard
+  deviations), and with them gives 0.973 ± 0.026. Kept as it is (2026-11-26): MadGraph+Pythia, the
+  most representative of the signal simulation, the factor per photon, and the 4.4%, which covers
+  both generators.
 - **The additional systematic:** no region nearest the signal differs from its whole range by more
   than 1.3 standard deviations, so `CMS_ljreco_mu` is 1.7% per muon-type lepton jet (the DSA
   regime, which also covers the displaced J/ψ) and `CMS_ljreco_egm` 4.4% per egamma-type one. They
@@ -336,17 +345,28 @@ These were the questions for the group; the answers so far are marked.
    regions are read. As with the earlier approvals, the signal region is never read.
 2. **SF granularity.** Answered (2026-11-24): per constituent, with the lepton-jet modelling
    checked with the corrections applied and an additional systematic where needed (step 3); the
-   nearest populated bin where the control samples do not reach. Done (step 3). Open: the rule
-   takes the whole measured range unless a region nearest the signal disagrees with it by more than
-   two standard deviations; taking the nearest regions regardless would give up to 8.3% (muon-type)
-   and 12% (egamma-type), set by their statistics, instead of 1.7 and 4.4%.
+   nearest populated bin where the control samples do not reach. Done (step 3). The size rule,
+   answered (2026-11-26): the whole measured range sets the size unless the regions nearest the
+   signal give meaningful evidence of a dependence on the kinematics (a difference of more than two
+   standard deviations); taking them regardless would have given up to 8.3% (muon-type) and 12%
+   (egamma-type), set by their statistics, instead of 1.7 and 4.4%.
 3. **Provisional value.** No longer needed: step 2 measured the prompt regime and step 3 applies
    it.
 4. **The sparse-bin rule** (raised by step 2, for the advisor). Whether a region's bins that expect
    under one background event should be judged together as one more region, as done here, or
    left out of the verdict, as in the working-point decks.
 5. **DSA muons in data.** Measured on 2018C (notebook 10) and applied per DSA muon in bins of pT
-   and |η| (step 3, answered 2026-11-24). Open: whether to add the other periods of 2018
-   (unskimmed DoubleMuon ntuples are on EOS for period A and, in blocks, for period D, not yet in
-   `data.yaml`), and whether the analysis-trigger difference belongs in its uncertainty (it sets
-   most of it).
+   and |η| (step 3, answered 2026-11-24). Answered (2026-11-26): the uncertainty keeps the
+   analysis-trigger difference, which covers a possible trigger bias and hardly changes the results
+   (all the systematics together raise the expected limits by a median 0.6 to 0.8%); the stability
+   of the factor against
+   the run period is to be looked at where the statistics allow, at low priority. The other periods
+   exist only as the skimmed ntuples, which keep the events of the analysis triggers, so they are
+   compared with those triggers, whose bias is common to all periods. Done (2026-11-26, notebook
+   10, section 7, campaign `dsa_prompt_data_v2`): data/Drell-Yan is 0.891, 0.886, 0.884 and 0.881
+   in periods A to D (0.884 for 2018), every period agrees with the year within the factor's
+   uncertainty in all 32 bins of pT and |η|, and 2018C sits at the average, so the factor of 2018C
+   applies to all of 2018.
+6. **The FSR closure and the Drell-Yan generator.** Answered (2026-11-26): MadGraph+Pythia stays, as
+   the most representative of the signal simulation, with the pixel-veto factor per photon and the
+   4.4% of `CMS_ljreco_egm` (notebook 12, section 3.1).
