@@ -52,6 +52,7 @@ job_lists:
     census_skip: null             # census skip list (a path, or a name in sidm/configs/census/)
     replace_xcache: false         # true on LPC, where root://xcache// does not resolve
     max_files: null               # files per sample, for a quick test
+    file_stride: null             # every Nth file of each sample: an even subset, e.g. of data
 
 # At most this many input files per job, whatever files_per_job says: each file costs a
 # fixed ~30 s, so a job of a few hundred tiny files runs for hours.

@@ -409,6 +409,16 @@ evt_cut_defs = {
     "= 2 muLJs": lambda objs: (ak.num(objs["mu_ljs"]) == 2) & (ak.num(objs["egm_ljs"]) == 0),
     "60 <= inv(Mu_0, Mu_1) <= 120": lambda objs : ((objs["muons"][:,:2].sum().mass) <= 120) &  ((objs["muons"][:,:2].sum().mass) >= 60),
     "n_mu == 2": lambda objs : ak.num(objs["muons"]) == 2,
+    # the lepton-jet control samples (sidm/studies/systematics/lj_reco_efficiency.md); "probe"
+    # in the name makes SidmProcessor load the uncut photon and muon collections
+    ">=1 Z->mumugamma probe photon": lambda objs: ak.num(derived_objs["zmmg_probe_photons"](objs)) >= 1,
+    ">=1 J/psi probe dimuon": lambda objs: ak.num(derived_objs["jpsi_probe_dimuons"](objs)) >= 1,
+    # the same probes without another lepton jet (objects._alone), so no event of the signal
+    # region enters: the versions a data campaign reads
+    ">=1 Z->mumugamma probe photon alone": lambda objs: ak.num(derived_objs["zmmg_probe_photons"](objs, True)) >= 1,
+    ">=1 J/psi probe dimuon alone": lambda objs: ak.num(derived_objs["jpsi_probe_dimuons"](objs, True)) >= 1,
+    # the prompt muons of the DSA-muon reconstruction study (objects.dsa_probe_muons)
+    ">=1 Z->mumu DSA probe muon alone": lambda objs: ak.num(derived_objs["dsa_probe_muons"](objs, True)) >= 1,
     "n_dsa >= 2": lambda objs : ak.num(objs["dsaMuons"]) >= 2,
     "n_bjet == 2": lambda objs : ak.num(objs["bjets"]) == 2,
     "n_jet == 2": lambda objs : ak.num(objs["jets"]) == 2,

@@ -1,0 +1,3 @@
+# the pixel-seed veto of the lepton-jet photons in the FSR closure (sidm/studies/systematics/lj_reco_efficiency.md, step 3): Drell-Yan above 50 GeV, DYJetsToLL and the independent, muon-only DYJetsToMuMu (PHOTOS for the radiation); simulation only
+DYJetsToLL_M50
+DYJetsToMuMu_M50

@@ -95,7 +95,7 @@ DEFAULTS = {
 }
 JOB_LIST_REQUIRED = ("job_args", "samples_file", "dataset", "location_cfg")
 JOB_LIST_DEFAULTS = {"files_per_job": 1, "files_per_job_map": None, "replace_xcache": False,
-                     "census_skip": None, "max_files": None}
+                     "census_skip": None, "max_files": None, "file_stride": None}
 
 
 def _plain(value, key):
@@ -243,6 +243,8 @@ class Campaign:
                "--job-args", os.path.join("condor", spec["job_args"])]
         if spec["files_per_job_map"]:
             cmd += ["--files-per-job-map", os.path.join("condor", spec["files_per_job_map"])]
+        if spec["file_stride"]:
+            cmd += ["--file-stride", str(spec["file_stride"])]
         if self.max_files_per_job:
             cmd += ["--max-files-per-job", str(self.max_files_per_job)]
         if spec["replace_xcache"]:

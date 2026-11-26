@@ -1,0 +1,33 @@
+# Step 1 of the lepton-jet reconstruction efficiency study
+# (sidm/studies/systematics/lj_reco_efficiency.md): every v10 signal point, simulation only,
+# in the efficiency channels of sidm/studies/ljRecoEffi_studies. The efficiency is the ratio
+# of the matched_lj channel's histograms to the denominator's (utilities.get_eff_hist), so
+# plain weighted histograms are enough.
+#
+#     python condor/campaign.py lj_reco_eff_v1 jobs
+#     python condor/campaign.py lj_reco_eff_v1 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py lj_reco_eff_v1 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py lj_reco_eff_v1 merge
+
+name: lj_reco_eff_v1
+chunk_dir: /store/user/$USER/sidm_condor/LjRecoEffChunks_v1
+merged_dir: /store/user/$USER/sidm_coffea_outputs/lj_reco_eff_v1
+
+channels: [baseNoLj_A_mumu, baseNoLj_A_mumu_matched_lj, baseNoLj_A_ee, baseNoLj_A_ee_matched_lj]
+hist_collections: [lj_reco_effi_systematics]
+corrections: none
+hist_mode: weighted
+
+job_lists:
+  - job_args: job_args_lj_reco_eff_v1_2mu2e.txt
+    samples_file: samples_corrections_2mu2e.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_2mu2e_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_lj_reco_eff_v1_4mu.txt
+    samples_file: samples_corrections_4mu.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_4mu_v10.yaml
+    files_per_job: 25
+    replace_xcache: true

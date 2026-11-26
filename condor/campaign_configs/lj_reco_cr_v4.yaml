@@ -1,0 +1,37 @@
+# Step 3 of the lepton-jet reconstruction efficiency study (sidm/studies/systematics/
+# lj_reco_efficiency.md): the lepton-jet reconstruction and selection with the corrections
+# applied, simulation only, every background of lj_reco_cr_v3 (no signal: the data regions and
+# their safety tables do not change).
+#
+# lj_reco_closure holds the probes of the control samples in the binning of the data histograms
+# of lj_reco_cr_data_v2 and dsa_prompt_data_v1, with an sf axis: each passing probe is weighted
+# by the scale factors of the constituents of the lepton jet that makes it pass (the PF-muon
+# Loose ID, the DSA muon of dsa_muon_id, the electron reconstruction and the photon pixel veto),
+# or of its DSA muons for the DSA probes, with their up and down shifts. The event weight carries
+# only the event-level corrections, so no scale factor enters twice. Data against these
+# histograms gives the modelling that the scale factors per constituent leave, the basis of the
+# additional lepton-jet systematic (12_lj_corrected_closure.ipynb).
+#
+#     python condor/campaign.py lj_reco_cr_v4 jobs
+#     python condor/campaign.py lj_reco_cr_v4 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py lj_reco_cr_v4 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py lj_reco_cr_v4 merge
+
+name: lj_reco_cr_v4
+chunk_dir: /store/user/$USER/sidm_condor/LjRecoCrChunks_v4
+merged_dir: /store/user/$USER/sidm_coffea_outputs/lj_reco_cr_v4
+
+channels: [lj_cr_Z_to_mumugamma_alone, lj_cr_JPsi_to_mumu_alone, dsa_cr_Z_to_mumu_alone, dsa_cr_JPsi_to_mumu_alone]
+hist_collections: [lj_reco_closure]
+corrections: [pileup, l1_prefiring]
+hist_mode: weighted
+
+job_lists:
+  - job_args: job_args_lj_reco_cr_v4_background.txt
+    samples_file: samples_lj_reco_cr_background.txt
+    dataset: skimmed_llpNanoAOD_v2
+    location_cfg: backgrounds.yaml
+    files_per_job: 25
+    files_per_job_map: files_per_job_corrections.yaml
+    census_skip: backgrounds_skimmed.skip.json
+    replace_xcache: true

@@ -15,7 +15,7 @@ from coffea.nanoevents.methods import vector
 
 import sidm
 from sidm.definitions.cuts import evt_cut_defs, obj_cut_defs
-from sidm.definitions.hists import hist_defs
+from sidm.definitions.hists import abcd_ljs, hist_defs
 from sidm.definitions.objects import add_lj_candidates, lj_parents
 from sidm.tools.corrections import Corrections
 from sidm.tools.selection import JaggedSelection, Selection
@@ -453,6 +453,43 @@ class LJCollectionsTest(unittest.TestCase):
                     if axis.name == "ljlj_mass":
                         values = axis.fill_func(objs, histogram.evt_mask(objs))
                         self.assertTrue(np.allclose(ak.to_numpy(values), ak.to_numpy(pair[expected_pair_mask].sum().mass)))
+
+    def test_abcd_histograms_use_the_analysis_pair(self):
+        """The abcd6d_* axes of the limits read the candidate pair, muon-type first.
+
+        The leading jet has one muon, so it fails "Mu >= 2" and the pair is jets 1 and 2,
+        while the two leading baseline jets are jets 0 and 1.
+        """
+        cases = (
+            ("SR_4mu", "4mu", [jet(0, mu=1, isolation=0.05, pixels=0, phi=0.0),
+                               jet(1, isolation=0.27, pixels=1, phi=0.5),
+                               jet(2, isolation=0.4, pixels=3, phi=3.0)],
+             [1, 2], {"iso0": 0.27, "iso1": 0.4, "disp0": 1, "disp1": 3}),
+            ("SR_2mu2e", "2mu2e", [jet(0, mu=1, isolation=0.05, pixels=0, phi=0.0),
+                                   jet(1, mu=0, ele=1, isolation=0.27, lost=2, phi=0.5),
+                                   jet(2, isolation=0.4, pixels=3, phi=3.0)],
+             [2, 1], {"iso0": 0.4, "iso1": 0.27, "disp0": 3, "disp1": 2}),
+        )
+        for channel, final_state, events, order, expected in cases:
+            objs = selected([events], channel)
+            self.assertEqual(ids(objs, "ljs"), [[0, 1, 2]])
+            self.assertEqual(ids(objs, "candidate_ljs"), [[1, 2]])
+            pair = objs["candidate_ljs"]
+            expected.update(abs_dphi=2.5, ljlj_mass=ak.to_list(pair.sum().mass)[0])
+            for suffix, scale in (("", 1.0), ("_iso_up", 1.10)):
+                name = f"abcd6d_{final_state}{suffix}"
+                with self.subTest(histogram=name):
+                    histogram = copy.deepcopy(hist_defs[name])
+                    mask = histogram.evt_mask(objs)
+                    self.assertEqual(ak.to_list(mask), [True])
+                    self.assertEqual(ak.to_list(abcd_ljs(objs, mask).idx), [order])
+                    for axis in histogram.axes:
+                        value = expected[axis.name] * (scale if axis.name.startswith("iso") else 1)
+                        np.testing.assert_allclose(
+                            ak.to_numpy(axis.fill_func(objs, mask)), [value], err_msg=axis.name)
+                    histogram.make_hist(name)
+                    histogram.fill(objs, objs["evt_weights"])
+                    self.assertEqual(histogram.hist.sum(flow=True).value, 1.0)
 
     def test_mixed_mass_variants_use_promoted_pair_but_ignore_unselected_extras(self):
         events = [[jet(0), jet(1), jet(2, mu=0, ele=1)],

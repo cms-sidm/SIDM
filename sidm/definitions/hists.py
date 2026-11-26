@@ -16,7 +16,9 @@ import numpy as np
 # local
 from sidm.tools import histogram as h
 from sidm.tools.utilities import delta_phi, dR, lxy, lxyz, lxyz_proper, betagamma, matched, dxy, lepton_dxy_resolution, cosAlpha, nearest_lj_index, get_pairs, dR_outer
-from sidm.definitions.objects import derived_objs, withMass
+from sidm.definitions.objects import (derived_objs, withMass, zmmg_probe_gen_fsr,
+                                      jpsi_probe_gen, jpsi_probe_vertex_lxy)
+from sidm.definitions.cuts import evt_cut_defs
 from sidm.tools.corrections import Corrections
 from sidm.definitions.cuts import obj_cut_defs
 # always reload local modules to pick up changes during development
@@ -314,6 +316,9 @@ def mu_lj_gen_a_lxy(objs, r=0.4):
 # and the dimuon-vertex tables, and computes vtx_chi2, only when a requested histogram is listed
 # here or a requested channel cuts on vtx_chi2. tests/test_vtx_chi2_inputs.py checks the list.
 vtx_chi2_or_raw_dsa_hists = {
+    # the dimuon-vertex table and the uncut DSA muons of the control samples
+    "lj_cr_jpsi_vertex_probes_alone", "dsa_cr_z_probes_alone", "dsa_cr_jpsi_probes_alone",
+    "lj_cr_jpsi_vertex_probes_alone_sf", "dsa_cr_z_probes_alone_sf", "dsa_cr_jpsi_probes_alone_sf",
     "mu_lj_vtx_chi2", "mu_lj_vtx_chi2_log",
     "dsaPfMatch_ptPf_ptDsa", "dsaPfMatch_response_relPtErr", "dsaPfMatch_response_abseta",
     "dsaPfMatch_response_nHits", "dsaPfMatch_ptPf_ptDsa_abseta", "dsaPfMatch_ptPf_ptDsa_nHits",
@@ -325,6 +330,330 @@ vtx_chi2_or_raw_dsa_hists = {
     "mu_lj_vtxChi2_genA_lxy_mumu_dR",
 }
 
+# The histograms of the lepton-jet control samples read the uncut photon and muon copies
+# (objects.on_demand_probe_objs), which SidmProcessor loads only when one of these histograms
+# is requested or a requested channel has a probe cut.
+probe_hists = {"lj_cr_zmmg_probes", "lj_cr_jpsi_probes", "lj_cr_zmmg_probes_alone",
+               "lj_cr_jpsi_probes_alone", "lj_cr_zmmg_fsr_probes_alone",
+               "lj_cr_jpsi_vertex_probes_alone", "lj_cr_zmmg_probes_alone_gen",
+               "lj_cr_zmmg_fsr_probes_alone_gen", "lj_cr_jpsi_probes_alone_gen",
+               "dsa_cr_z_probes_alone", "dsa_cr_jpsi_probes_alone",
+               "lj_cr_jpsi_probes_alone_sf", "lj_cr_jpsi_vertex_probes_alone_sf",
+               "lj_cr_zmmg_fsr_probes_alone_sf", "dsa_cr_z_probes_alone_sf",
+               "dsa_cr_jpsi_probes_alone_sf", "lj_cr_zmmg_fsr_probes_alone_seed"}
+
+
+def zmmg_probe_hist(alone=False, fsr=False, gen=False, sf=False):
+    """The probe histogram of the Z -> mumu gamma control sample (objects.zmmg_probe_photons):
+    one entry per probe, passing when a selected egamma-type lepton jet lies within dR < 0.2.
+
+    fsr selects final-state radiation (zmmg_probe_photons with fsr) and adds the photon's dR to
+    the nearer muon. gen, for simulation only, adds whether the photon is matched to a generated
+    photon radiated by a muon (objects.zmmg_probe_gen_fsr), the truth that checks the sideband
+    subtraction, and keeps of m(mumu gamma) only the bins of the peak and the sidebands. sf adds
+    the sf axis of the scale factors of the lepton jet that makes a probe pass (lj_probe_sf).
+    """
+    def probes(objs, mask):
+        return derived_objs["zmmg_probe_photons"](objs, alone, fsr)[mask]
+    mass_axis = (hist.axis.Variable([60, 75, 85, 95, 105, 120], name="m_mmg",
+                                    label=r"$m(\mu\mu\gamma)$ (GeV)") if gen else
+                 hist.axis.Regular(12, 60, 120, name="m_mmg", label=r"$m(\mu\mu\gamma)$ (GeV)"))
+    extra = []
+    if fsr:
+        extra.append(h.Axis(hist.axis.Variable([0.5, 0.8, 1.2, 2.0, 7.0], name="probe_dR_mu",
+                                               label=r"$\Delta R$ (probe photon, nearer muon)"),
+                            lambda objs, mask: probes(objs, mask).dR_mu))
+    if gen:
+        extra.append(h.Axis(hist.axis.Integer(0, 2, name="gen_fsr", underflow=False, overflow=False,
+                                              label="Probe matched to a generated FSR photon"),
+                            lambda objs, mask: ak.values_astype(
+                                zmmg_probe_gen_fsr(probes(objs, mask)), np.int32)))
+    return h.Histogram(
+        extra + [
+            h.Axis(hist.axis.Variable([20, 25, 30, 35, 40, 50, 60, 80, 120], name="probe_pt",
+                                      label=r"Probe photon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).pt),
+            h.Axis(hist.axis.Variable([0, 0.8, 1.4442, 1.566, 2.0, 2.4], name="probe_abseta",
+                                      label=r"Probe photon $|\eta|$"),
+                   lambda objs, mask: abs(probes(objs, mask).eta)),
+            h.Axis(hist.axis.Variable([0, 0.5, 0.8, 0.9, 0.94, 1.0], name="probe_r9",
+                                      label=r"Probe photon $R_9$"),
+                   lambda objs, mask: probes(objs, mask).r9),
+            h.Axis(hist.axis.Integer(0, 2, name="probe_pixelSeed", label="Probe photon pixel seed",
+                                     underflow=False, overflow=False),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).pixelSeed, np.int32)),
+            h.Axis(mass_axis, lambda objs, mask: probes(objs, mask).m_mmg),
+            h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                     label=r"Probe matched to a selected $e\gamma$-type lepton jet"),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        ],
+        entry_factors=(LJ_SF_CATEGORIES,
+                       lambda objs, mask: lj_probe_sf(objs, mask, probes(objs, mask), "egm_ljs"))
+        if sf else None,
+    )
+
+
+# the cuts of the lepton-jet photons (selections.yaml, ljsource_cuts) apart from the pixel-seed
+# veto and the dR veto against electrons, which zmmg_probe_seed_hist keeps as axes of their own
+LJ_PHOTON_ID_CUTS = ("pT > 20 GeV", "|eta| < 2.5", "Custom Cutbased", "eta-phi_veto")
+
+
+def probe_photon_cut(electrons, probes, cut):
+    """One cut of the lepton-jet photons (cuts.obj_cut_defs) evaluated on probe photons from the
+    uncut collection: the cut reads them as objs["photons"], and the selected electrons for the
+    dR veto. Returned as bool jagged like probes, since a cut built from Python lists (Custom
+    Cutbased) has an unknown type in a chunk without probes"""
+    passed = obj_cut_defs["photons"][cut]({"photons": probes, "electrons": electrons})
+    return ak.unflatten(np.asarray(ak.flatten(passed), dtype=bool), ak.num(probes))
+
+
+def zmmg_probe_seed_hist():
+    """The FSR probes of the Z -> mumu gamma control sample (objects.zmmg_probe_photons, alone,
+    FSR selection) for the pixel-seed veto of the lepton-jet photons: whether the probe has a
+    pixel seed, whether it passes the other cuts of the lepton-jet photons (LJ_PHOTON_ID_CUTS),
+    whether a selected electron lies within dR < 0.025 (the dR veto, which hands the deposit to
+    the electron), and what the egamma-type lepton jet that makes it pass is made of
+    (lj_composition; -1 for a failing probe). It tells whether a photon that fails the veto still
+    makes a lepton jet through an electron, which a scale factor per photon does not describe.
+    Simulation only: gen_fsr reads the generator record."""
+    def probes(objs, mask):
+        return derived_objs["zmmg_probe_photons"](objs, True, True)[mask]
+
+    def photon_id(objs, mask):
+        p = probes(objs, mask)
+        passed = p.pt > 0
+        for cut in LJ_PHOTON_ID_CUTS:
+            passed = passed & probe_photon_cut(objs["electrons"][mask], p, cut)
+        return ak.values_astype(passed, np.int32)
+
+    def electron_near(objs, mask):
+        veto = probe_photon_cut(objs["electrons"][mask], probes(objs, mask), "Photon DR Veto 0p025")
+        return ak.values_astype(~veto, np.int32)
+
+    def composition(objs, mask, which):
+        return lj_composition(probes(objs, mask), objs["egm_ljs"][mask])[which]
+
+    def flag(name, label, fill):
+        return h.Axis(hist.axis.Integer(0, 2, name=name, label=label, underflow=False, overflow=False), fill)
+
+    return h.Histogram([
+        flag("gen_fsr", "Probe matched to a generated FSR photon",
+             lambda objs, mask: ak.values_astype(zmmg_probe_gen_fsr(probes(objs, mask)), np.int32)),
+        h.Axis(hist.axis.Variable([20, 30, 40, 60, 120], name="probe_pt", label=r"Probe photon $p_T$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).pt),
+        h.Axis(hist.axis.Variable([0, 1.4442, 1.566, 2.4], name="probe_abseta", label=r"Probe photon $|\eta|$"),
+               lambda objs, mask: abs(probes(objs, mask).eta)),
+        h.Axis(hist.axis.Variable([0, 0.94, 1.5], name="probe_r9", label=r"Probe photon $R_9$"),
+               lambda objs, mask: probes(objs, mask).r9),
+        flag("probe_pixelSeed", "Probe photon pixel seed",
+             lambda objs, mask: ak.values_astype(probes(objs, mask).pixelSeed, np.int32)),
+        flag("probe_photon_id", "Probe passes the other lepton-jet photon cuts", photon_id),
+        flag("probe_electron_near", r"Selected electron within $\Delta R < 0.025$ of the probe", electron_near),
+        h.Axis(hist.axis.Variable([75, 85, 95, 105], name="m_mmg", label=r"$m(\mu\mu\gamma)$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).m_mmg),
+        h.Axis(hist.axis.Integer(-1, 3, name="lj_photons", underflow=False,
+                                 label="Photons of the lepton jet that makes the probe pass (-1: none)"),
+               lambda objs, mask: composition(objs, mask, 0)),
+        h.Axis(hist.axis.Integer(-1, 3, name="lj_electrons", underflow=False,
+                                 label="Electrons of the lepton jet that makes the probe pass (-1: none)"),
+               lambda objs, mask: composition(objs, mask, 1)),
+    ])
+
+
+def jpsi_probe_hist(alone=False, pt_max=None, sf=False):
+    """The probe histogram of the J/psi -> mumu control sample (objects.jpsi_probe_dimuons):
+    one entry per probe, passing when a selected muon-type lepton jet lies within dR < 0.2; sf
+    adds the sf axis of the scale factors of that lepton jet (lj_probe_sf)"""
+    def probes(objs, mask):
+        return derived_objs["jpsi_probe_dimuons"](objs, alone, pt_max)[mask]
+    return h.Histogram(
+        [
+            h.Axis(hist.axis.Variable([20, 30, 40, 50, 60, 80, 100, 150, 300], name="probe_pt",
+                                      label=r"Probe dimuon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).pt),
+            h.Axis(hist.axis.Variable([0, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.2, 0.4],
+                                      name="probe_dR", label=r"Probe $\Delta R(\mu, \mu)$"),
+                   lambda objs, mask: probes(objs, mask).dR),
+            h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.4], name="probe_abseta",
+                                      label=r"Probe dimuon $|\eta|$"),
+                   lambda objs, mask: abs(probes(objs, mask).eta)),
+            h.Axis(hist.axis.Variable([0, 10, 26, 13000], name="probe_min_pt",
+                                      label=r"Softer probe muon $p_T$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).min_pt),
+            h.Axis(hist.axis.Regular(20, 2.6, 3.6, name="m_mumu", label=r"$m(\mu\mu)$ (GeV)"),
+                   lambda objs, mask: probes(objs, mask).mass),
+            h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                     label=r"Probe matched to a selected $\mu$-type lepton jet"),
+                   lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        ],
+        entry_factors=(LJ_SF_CATEGORIES,
+                       lambda objs, mask: lj_probe_sf(objs, mask, probes(objs, mask), "mu_ljs"))
+        if sf else None,
+    )
+
+
+
+# axes shared by the J/psi -> mumu probe histograms below (objects.jpsi_probe_dimuons)
+JPSI_PT_EDGES = [20, 30, 40, 50, 60, 80, 100, 150, 300]
+JPSI_DR_EDGES = [0, 0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.2, 0.4]
+JPSI_ABSETA_EDGES = [0, 0.9, 1.2, 2.4]
+# the peak (2.9 to 3.3 GeV) and the sidebands of systematics_study.LJ_CR, for the histograms
+# that need no finer mass binning
+JPSI_WINDOW_EDGES = [2.6, 2.9, 3.3, 3.6]
+
+
+def jpsi_gen_probe_hist(alone=False):
+    """The J/psi -> mumu probes in simulation with their generator truth (objects.jpsi_probe_gen):
+    whether both muons come from one generated J/psi, and its production radius, the distance of
+    its vertex from the generated primary vertex. Unmatched probes sit at gen_match 0 and radius
+    0. The passing fraction against the radius is the efficiency against the displacement, and
+    the matched probes check the sideband subtraction."""
+    def probes(objs, mask):
+        return derived_objs["jpsi_probe_dimuons"](objs, alone)[mask]
+    return h.Histogram([
+        h.Axis(hist.axis.Variable(JPSI_PT_EDGES, name="probe_pt", label=r"Probe dimuon $p_T$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).pt),
+        h.Axis(hist.axis.Variable(JPSI_DR_EDGES, name="probe_dR", label=r"Probe $\Delta R(\mu, \mu)$"),
+               lambda objs, mask: probes(objs, mask).dR),
+        h.Axis(hist.axis.Variable(JPSI_ABSETA_EDGES, name="probe_abseta", label=r"Probe dimuon $|\eta|$"),
+               lambda objs, mask: abs(probes(objs, mask).eta)),
+        h.Axis(hist.axis.Variable(JPSI_WINDOW_EDGES, name="m_mumu", label=r"$m(\mu\mu)$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).mass),
+        h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                 label=r"Probe matched to a selected $\mu$-type lepton jet"),
+               lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        h.Axis(hist.axis.Integer(0, 2, name="gen_match", underflow=False, overflow=False,
+                                 label="Both muons from one generated J/psi"),
+               lambda objs, mask: ak.values_astype(jpsi_probe_gen(probes(objs, mask), objs["genVtx"][mask])[0],
+                                                   np.int32)),
+        h.Axis(hist.axis.Variable([0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5],
+                                  name="gen_rxy", label="Generated J/psi production radius (cm)"),
+               lambda objs, mask: jpsi_probe_gen(probes(objs, mask), objs["genVtx"][mask])[1]),
+    ])
+
+
+def jpsi_vertex_probe_hist(alone=False, sf=False):
+    """The J/psi -> mumu probes against the displacement of their fitted dimuon vertex
+    (objects.jpsi_probe_vertex_lxy), in data and simulation; pairs without a valid vertex fill
+    the underflow. sf adds the sf axis of the scale factors of the lepton jet that makes a probe
+    pass (lj_probe_sf)."""
+    def probes(objs, mask):
+        return derived_objs["jpsi_probe_dimuons"](objs, alone)[mask]
+    return h.Histogram([
+        h.Axis(hist.axis.Variable(JPSI_PT_EDGES, name="probe_pt", label=r"Probe dimuon $p_T$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).pt),
+        h.Axis(hist.axis.Variable(JPSI_ABSETA_EDGES, name="probe_abseta", label=r"Probe dimuon $|\eta|$"),
+               lambda objs, mask: abs(probes(objs, mask).eta)),
+        h.Axis(hist.axis.Regular(20, 2.6, 3.6, name="m_mumu", label=r"$m(\mu\mu)$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).mass),
+        h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                 label=r"Probe matched to a selected $\mu$-type lepton jet"),
+               lambda objs, mask: ak.values_astype(probes(objs, mask).passing, np.int32)),
+        h.Axis(hist.axis.Variable([0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 15], name="vtx_lxy",
+                                  label=r"Dimuon vertex $L_{xy}$ (cm)"),
+               lambda objs, mask: jpsi_probe_vertex_lxy(probes(objs, mask), objs["patMuonVertex"][mask],
+                                                        objs["pvs"][mask])),
+    ], entry_factors=(LJ_SF_CATEGORIES,
+                      lambda objs, mask: lj_probe_sf(objs, mask, probes(objs, mask), "mu_ljs"))
+       if sf else None)
+
+
+def selected_raw_dsa(objs):
+    """The DSA muons passing the LJ-source DSA cuts except the cross-cleaning
+    (dsa_ljsource_id_cuts), from the uncut copy: the cross-cleaning removes the DSA muon of a
+    prompt muon in favour of its PF muon, so the prompt DSA muons are kept only here. Cached in
+    objs, as in matched_dsa."""
+    cached = objs.get("_selected_raw_dsa")
+    if cached is not None:
+        return cached
+    dsa = objs["dsaMuonsRaw"]
+    for cut in dsa_ljsource_id_cuts:
+        dsa = dsa[obj_cut_defs["dsaMuons"][cut](objs, dsa)]
+    objs["_selected_raw_dsa"] = dsa
+    return dsa
+
+
+def trigger_axes(probes):
+    """Per-probe axes of the triggers of the DSA-muon study: the analysis triggers (DoubleL2Mu,
+    which need a standalone muon on both legs, so they bias the DSA reconstruction of a probe),
+    IsoMu24 (a single isolated muon, which the tag can fire alone) and Mu37_TkMu27 (whose second
+    leg needs only a tracker muon), each 0 or 1. probes(objs, mask) gives the probes."""
+    def flag(get):
+        return lambda objs, mask: ak.values_astype(
+            ak.broadcast_arrays(get(objs)[mask], probes(objs, mask).pt)[0], np.int32)
+    return [
+        h.Axis(hist.axis.Integer(0, 2, name="trig_analysis", underflow=False, overflow=False,
+                                 label="Analysis triggers"),
+               flag(lambda objs: evt_cut_defs["pass triggers"](objs))),
+        h.Axis(hist.axis.Integer(0, 2, name="trig_isomu24", underflow=False, overflow=False,
+                                 label="HLT_IsoMu24"),
+               flag(lambda objs: objs["hlt"].IsoMu24)),
+        h.Axis(hist.axis.Integer(0, 2, name="trig_tkmu", underflow=False, overflow=False,
+                                 label="HLT_Mu37_TkMu27"),
+               flag(lambda objs: objs["hlt"].Mu37_TkMu27)),
+    ]
+
+
+def dsa_z_probe_hist(alone=False, sf=False):
+    """The prompt muons of Z -> mumu (objects.dsa_probe_muons), passing when a DSA muon of
+    selected_raw_dsa lies within dR < 0.2: the DSA-muon reconstruction and selection efficiency
+    of prompt muons. probe_tight tells probes passing the tight ID, which itself needs muon
+    stations, apart. sf adds the sf axis of the scale factor of that DSA muon (dsa_probe_sf)."""
+    def probes(objs, mask):
+        return derived_objs["dsa_probe_muons"](objs, alone)[mask]
+    return h.Histogram([
+        h.Axis(hist.axis.Variable([10, 20, 30, 40, 50, 60, 80, 120, 200], name="probe_pt",
+                                  label=r"Probe muon $p_T$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).pt),
+        h.Axis(hist.axis.Variable([0, 0.9, 1.2, 2.1, 2.4], name="probe_abseta",
+                                  label=r"Probe muon $|\eta|$"),
+               lambda objs, mask: abs(probes(objs, mask).eta)),
+        h.Axis(hist.axis.Variable([71, 81, 101, 111], name="m_tp", label=r"$m$(tag, probe) (GeV)"),
+               lambda objs, mask: probes(objs, mask).m_tp),
+        h.Axis(hist.axis.Integer(0, 2, name="probe_tight", underflow=False, overflow=False,
+                                 label="Probe passes the tight ID"),
+               lambda objs, mask: ak.values_astype(probes(objs, mask).tightId, np.int32)),
+        h.Axis(hist.axis.Integer(0, 2, name="passing", underflow=False, overflow=False,
+                                 label="Probe matched to a selected DSA muon"),
+               lambda objs, mask: ak.values_astype(
+                   dR(probes(objs, mask), selected_raw_dsa(objs)[mask]) < 0.2, np.int32)),
+    ] + trigger_axes(probes),
+        entry_factors=(DSA_SF_CATEGORIES, lambda objs, mask: dsa_probe_sf(objs, mask, probes(objs, mask)))
+        if sf else None)
+
+
+def jpsi_dsa_count(probes, dsa):
+    """Number of distinct DSA muons (of dsa) matched within dR < 0.2 to the two muons of each
+    J/psi -> mumu probe, 0 to 2: 1 when one DSA muon is the nearest to both"""
+    d0 = probes.mu0.nearest(dsa, threshold=0.2)
+    d1 = probes.mu1.nearest(dsa, threshold=0.2)
+    has0, has1 = ~ak.is_none(d0, axis=1), ~ak.is_none(d1, axis=1)
+    distinct = ak.fill_none(d0.idx != d1.idx, True)
+    return ak.values_astype(has0, np.int32) + ak.values_astype(has1 & (~has0 | distinct), np.int32)
+
+
+def dsa_jpsi_probe_hist(alone=False, sf=False):
+    """The J/psi -> mumu probes (objects.jpsi_probe_dimuons) against the number of their muons
+    with a DSA muon of selected_raw_dsa (jpsi_dsa_count): the DSA reconstruction of two collimated
+    prompt muons. sf adds the sf axis of the product of the scale factors of those DSA muons
+    (dsa_pair_sf)."""
+    def probes(objs, mask):
+        return derived_objs["jpsi_probe_dimuons"](objs, alone)[mask]
+    return h.Histogram([
+        h.Axis(hist.axis.Variable(JPSI_PT_EDGES, name="probe_pt", label=r"Probe dimuon $p_T$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).pt),
+        h.Axis(hist.axis.Variable(JPSI_DR_EDGES, name="probe_dR", label=r"Probe $\Delta R(\mu, \mu)$"),
+               lambda objs, mask: probes(objs, mask).dR),
+        h.Axis(hist.axis.Variable(JPSI_ABSETA_EDGES, name="probe_abseta", label=r"Probe dimuon $|\eta|$"),
+               lambda objs, mask: abs(probes(objs, mask).eta)),
+        h.Axis(hist.axis.Variable(JPSI_WINDOW_EDGES, name="m_mumu", label=r"$m(\mu\mu)$ (GeV)"),
+               lambda objs, mask: probes(objs, mask).mass),
+        h.Axis(hist.axis.Integer(0, 3, name="n_dsa", underflow=False, overflow=False,
+                                 label="Probe muons matched to a selected DSA muon"),
+               lambda objs, mask: jpsi_dsa_count(probes(objs, mask), selected_raw_dsa(objs)[mask])),
+    ] + trigger_axes(probes)[:1],
+        entry_factors=(DSA_SF_CATEGORIES, lambda objs, mask: dsa_pair_sf(objs, mask, probes(objs, mask)))
+        if sf else None)
 
 # helpers for the corrections study (sidm/studies/corrections). The weight
 # factors, the working points of the object SFs and the year are added to objs
@@ -352,6 +681,116 @@ def lj_constituent_sf(objs, collection, correction, which="nominal"):
         return constituents.pt
     return corrections_for(objs["year"]).object_sf(
         correction, constituents, objs["object_corrections"][correction], which)
+
+# The scale factors of the lepton-jet constituents (configs/corrections.yaml), each with the
+# working point that the lepton-jet source cuts (selections.yaml, ljsource_cuts) select: what the
+# analysis applies to the constituents of its selected lepton jets. The probe histograms with
+# scale factors (the _sf versions of the control samples) weight each passing probe by them, so
+# the passing fraction in simulation is the one with the corrections applied.
+LJ_CONSTITUENT_SFS = {"muon_id": "looseID", "dsa_muon_id": "displaced ID",
+                      "electron_reco": "always", "photon_pixel_veto": "pixelSeed"}
+
+
+def sf_categories(names):
+    """The categories of the sf axis of a probe histogram with scale factors: "none" (no scale
+    factor), "nominal" (each at its nominal value), and <name>Up and <name>Down (one shifted) for
+    each correction in names"""
+    return ["none", "nominal"] + [f"{name}{shift}" for name in names for shift in ("Up", "Down")]
+
+
+LJ_SF_CATEGORIES = sf_categories(LJ_CONSTITUENT_SFS)
+DSA_SF_CATEGORIES = sf_categories(["dsa_muon_id"])
+
+
+def combine_sfs(per_correction, ones):
+    """{category of sf_categories: factor} from {correction: {"nominal", "up", "down": factor}},
+    the factors multiplied over the corrections; ones has the layout of the factors"""
+    def product(shifted=None, which="nominal"):
+        out = ones
+        for name, factors in per_correction.items():
+            out = out * factors[which if name == shifted else "nominal"]
+        return out
+    out = {"none": ones, "nominal": product()}
+    for name in per_correction:
+        out[f"{name}Up"], out[f"{name}Down"] = product(name, "up"), product(name, "down")
+    return out
+
+
+def lj_sf_factors(ljs, year):
+    """{category of LJ_SF_CATEGORIES: factor per lepton jet}, jagged like ljs: the product of the
+    scale factors (LJ_CONSTITUENT_SFS) of each lepton jet's constituents"""
+    corr = corrections_for(year)
+    counts = ak.num(ljs, axis=1)
+    flat = ak.flatten(ljs, axis=1)
+    per_correction = {}
+    for name, working_point in LJ_CONSTITUENT_SFS.items():
+        constituents = flat[corr.entry(name)["collection"]]
+        per_correction[name] = {
+            which: ak.unflatten(np.asarray(ak.prod(
+                corr.object_sf(name, constituents, working_point, which), axis=1)), counts)
+            for which in ("nominal", "up", "down")}
+    return combine_sfs(per_correction, ak.ones_like(ljs.pt))
+
+
+def nearest_factors(probes, others, factors):
+    """{category: factor per probe}: the factors (jagged like others) of the object of others
+    within dR < 0.2 of each probe, the one that makes it pass; one for a probe without one"""
+    for category, factor in factors.items():
+        others = ak.with_field(others, factor, f"sf_{category}")
+    closest = probes.nearest(others, threshold=0.2)
+    return {category: ak.fill_none(closest[f"sf_{category}"], 1.0) for category in factors}
+
+
+def lj_composition(probes, ljs):
+    """(photons, electrons): the number of each in the lepton jet of ljs within dR < 0.2 of each
+    probe, the one that makes it pass, as int32 arrays jagged like probes; -1 for a probe without
+    one"""
+    ljs = ak.with_field(ljs, ak.num(ljs.photons, axis=2), "n_photons")
+    ljs = ak.with_field(ljs, ak.num(ljs.electrons, axis=2), "n_electrons")
+    closest = probes.nearest(ljs, threshold=0.2)
+    return tuple(ak.values_astype(ak.fill_none(closest[field], -1), np.int32)
+                 for field in ("n_photons", "n_electrons"))
+
+
+def lj_probe_sf(objs, mask, probes, ljs_name):
+    """{category of LJ_SF_CATEGORIES: factor per probe}: the scale factors (lj_sf_factors) of the
+    selected lepton jet of objs[ljs_name] that makes each probe pass, as the analysis weights its
+    selected lepton jets; one for a failing probe"""
+    ljs = objs[ljs_name][mask]
+    return nearest_factors(probes, ljs, lj_sf_factors(ljs, objs["year"]))
+
+
+def dsa_sf_factors(dsa, year):
+    """{category of DSA_SF_CATEGORIES: scale factor per DSA muon}, jagged like dsa"""
+    corr = corrections_for(year)
+    working_point = LJ_CONSTITUENT_SFS["dsa_muon_id"]
+    return combine_sfs({"dsa_muon_id": {which: corr.object_sf("dsa_muon_id", dsa, working_point,
+                                                              which)
+                                        for which in ("nominal", "up", "down")}},
+                       ak.ones_like(dsa.pt))
+
+
+def dsa_probe_sf(objs, mask, probes):
+    """{category of DSA_SF_CATEGORIES: factor per Z -> mumu probe}: the scale factor of the DSA
+    muon of selected_raw_dsa that makes each probe pass; one for a failing probe"""
+    dsa = selected_raw_dsa(objs)[mask]
+    return nearest_factors(probes, dsa, dsa_sf_factors(dsa, objs["year"]))
+
+
+def dsa_pair_sf(objs, mask, probes):
+    """{category of DSA_SF_CATEGORIES: factor per J/psi -> mumu probe}: the product of the scale
+    factors of the distinct DSA muons of selected_raw_dsa matched to its two muons, the ones
+    jpsi_dsa_count counts"""
+    dsa = selected_raw_dsa(objs)[mask]
+    factors = dsa_sf_factors(dsa, objs["year"])
+    for category, factor in factors.items():
+        dsa = ak.with_field(dsa, factor, f"sf_{category}")
+    d0 = probes.mu0.nearest(dsa, threshold=0.2)
+    d1 = probes.mu1.nearest(dsa, threshold=0.2)
+    has0, has1 = ~ak.is_none(d0, axis=1), ~ak.is_none(d1, axis=1)
+    second = has1 & (~has0 | ak.fill_none(d0.idx != d1.idx, True))
+    return {c: (ak.where(has0, ak.fill_none(d0[f"sf_{c}"], 1.0), 1.0)
+                * ak.where(second, ak.fill_none(d1[f"sf_{c}"], 1.0), 1.0)) for c in factors}
 
 def lj_pfmuon_nearest_muon_dr(objs):
     """dR from each lepton-jet PF muon to the nearest other muon (PF or DSA) of its lepton jet
@@ -447,6 +886,61 @@ def lj_isolation_flip_hist(variant):
 
 def log_axis(nbins, xmin, xmax, name, label):
     return hist.axis.Regular(nbins, xmin, xmax, transform=hist.axis.transform.log, name=name, label=label)
+
+
+# Inputs of the ABCD limits (sidm/studies/limit_plotting/shape_tools.py, "the 6D inclusive
+# layout"): every variable that splits regions A to D is an axis, so shape_tools slices the
+# regions and the m_LJLJ shape out of one histogram per final state. The axes read the
+# analysis pair (candidate_ljs, sidm/definitions/README.md), the pair the 2mu2e and 4mu
+# event cuts select: LJ0 is its muon-type lepton jet (the leading one in 4mu), LJ1 the other
+# one (the egamma-type one in 2mu2e, the subleading one in 4mu). The edges hold the cuts of
+# every working point used so far, so that each region is a sum of whole bins.
+ABCD_ISO_EDGES = [0, 0.25, 0.3, 0.5]
+ABCD_HITS_EDGES = [-0.5, 0.5, 2.5, 3.5]
+ABCD_DPHI_EDGES = [0, 2.0, 2.4, 2.6, math.pi]
+ABCD_MASS_EDGES = [0, 150, 200, 300, 400, 600, 800, 1000, 1500, 2500]
+
+def abcd_ljs(objs, mask):
+    """The analysis pair of the masked events, muon-type first
+
+    The sort is stable, so in 4mu, where both are muon-type, they stay in pT order.
+    """
+    ljs = objs["candidate_ljs"][mask]
+    return ljs[ak.argsort(ljs.muon_n >= 2, ascending=False, stable=True)]
+
+def lj_pixel_hits(lj):
+    """Most pixel hits of a muon of the lepton jet, as in the muon-type LJ "displaced" cut"""
+    return ak.max(lj.muons.trkNumPixelHits, axis=-1)
+
+def lj_lost_hits(lj):
+    """Fewest missing inner hits of an electron or photon of the lepton jet, as in the
+    egamma-type LJ "displaced" cut; photons carry 999, which lands in the overflow"""
+    return ak.min(lj.egamma.lostHits, axis=-1)
+
+def abcd6d_hist(final_state, iso_scale=1.0):
+    """The 6D ABCD histogram of the 2mu2e or 4mu events
+
+    iso_scale multiplies both isolations: 1.10 gives the jet energy uncertainty of the
+    signal yield (sidm/studies/systematics, 02_jet_energy.ipynb), since the isolation is
+    proportional to the energy of the matched jet.
+    """
+    disp1, disp1_label = ((lj_lost_hits, "LJ1 missing inner hits") if final_state == "2mu2e"
+                          else (lj_pixel_hits, "LJ1 pixel hits"))
+    return h.Histogram([
+        h.Axis(hist.axis.Variable(ABCD_ISO_EDGES, name="iso0", label="LJ0 isolation"),
+               lambda objs, mask: abcd_ljs(objs, mask)[:, 0].isolation * iso_scale),
+        h.Axis(hist.axis.Variable(ABCD_ISO_EDGES, name="iso1", label="LJ1 isolation"),
+               lambda objs, mask: abcd_ljs(objs, mask)[:, 1].isolation * iso_scale),
+        h.Axis(hist.axis.Variable(ABCD_HITS_EDGES, name="disp0", label="LJ0 pixel hits"),
+               lambda objs, mask: lj_pixel_hits(abcd_ljs(objs, mask)[:, 0])),
+        h.Axis(hist.axis.Variable(ABCD_HITS_EDGES, name="disp1", label=disp1_label),
+               lambda objs, mask: disp1(abcd_ljs(objs, mask)[:, 1])),
+        h.Axis(hist.axis.Variable(ABCD_DPHI_EDGES, name="abs_dphi", label=r"$|\Delta\phi|$ (LJ0, LJ1)"),
+               lambda objs, mask: abs(delta_phi(objs["candidate_ljs"][mask, 1].phi,
+                                                objs["candidate_ljs"][mask, 0].phi))),
+        h.Axis(hist.axis.Variable(ABCD_MASS_EDGES, name="ljlj_mass", label=r"$m_{LJLJ}$ (GeV)"),
+               lambda objs, mask: objs["candidate_ljs"][mask].sum().mass),
+    ], evt_mask=evt_cut_defs[final_state])
 
 # muon mass (GeV) used to build the four-vectors of muon-LJ constituents, which mix PF and DSA
 # muons and therefore do not carry a consistent mass field
@@ -4133,6 +4627,50 @@ hist_defs = {
                    lambda objs, mask: daughters_dR(objs, mask, "genAs_toMu")),
         ],
     ),
+    # the same for dark photons decaying to electrons
+    "genA_toE_lxy_vs_daughters_dR": h.Histogram(
+        [
+            h.Axis(hist.axis.Regular(50, 0, 500, name="genA_toE_lxy",
+                                     label=r"$Z_d \rightarrow ee$ $l_{xy}$ [cm]"),
+                   lambda objs, mask: lxy(decayed_daughter_pairs(objs, mask, "genAs_toE"))),
+            h.Axis(hist.axis.Regular(48, 1e-4, 1.0, name="genA_toE_daughters_dR",
+                                     label=r"$\Delta R(e, e)$ from same $Z_d$",
+                                     transform=hist.axis.transform.log),
+                   lambda objs, mask: daughters_dR(objs, mask, "genAs_toE")),
+        ],
+    ),
+    # Probes of the lepton-jet control samples (sidm/studies/systematics/lj_reco_efficiency.md),
+    # one entry per probe. passing is 1 when a selected lepton jet of the tested type lies within
+    # dR < 0.2 of the probe; the efficiency is the passing fraction. Each probe definition keeps
+    # only its own mass window, so nothing else of the event's mass spectrum is filled.
+    "lj_cr_zmmg_probes": zmmg_probe_hist(),
+    "lj_cr_jpsi_probes": jpsi_probe_hist(),
+    # the versions without another lepton jet, which a data campaign fills (objects._alone)
+    "lj_cr_zmmg_probes_alone": zmmg_probe_hist(alone=True),
+    "lj_cr_jpsi_probes_alone": jpsi_probe_hist(alone=True),
+    # the purer Z -> mumu gamma probes (final-state radiation) and the J/psi probes against the
+    # displacement of their dimuon vertex, in data and simulation
+    "lj_cr_zmmg_fsr_probes_alone": zmmg_probe_hist(alone=True, fsr=True),
+    "lj_cr_jpsi_vertex_probes_alone": jpsi_vertex_probe_hist(alone=True),
+    # their generator truth, simulation only: never add these to a data campaign
+    "lj_cr_zmmg_probes_alone_gen": zmmg_probe_hist(alone=True, gen=True),
+    "lj_cr_zmmg_fsr_probes_alone_gen": zmmg_probe_hist(alone=True, fsr=True, gen=True),
+    "lj_cr_jpsi_probes_alone_gen": jpsi_gen_probe_hist(alone=True),
+    # the DSA-muon reconstruction and selection of prompt muons (lj_reco_efficiency.md)
+    "dsa_cr_z_probes_alone": dsa_z_probe_hist(alone=True),
+    "dsa_cr_jpsi_probes_alone": dsa_jpsi_probe_hist(alone=True),
+    # the same probes in simulation with an sf axis: each passing probe weighted by the scale
+    # factors of the constituents of its lepton jet (or of its DSA muons), with the event weight
+    # left without object scale factors (a campaign with event-level corrections only), so the
+    # passing fraction is the one with the corrections applied (lj_reco_efficiency.md, step 3)
+    "lj_cr_jpsi_probes_alone_sf": jpsi_probe_hist(alone=True, sf=True),
+    "lj_cr_jpsi_vertex_probes_alone_sf": jpsi_vertex_probe_hist(alone=True, sf=True),
+    "lj_cr_zmmg_fsr_probes_alone_sf": zmmg_probe_hist(alone=True, fsr=True, sf=True),
+    "dsa_cr_z_probes_alone_sf": dsa_z_probe_hist(alone=True, sf=True),
+    "dsa_cr_jpsi_probes_alone_sf": dsa_jpsi_probe_hist(alone=True, sf=True),
+    # the FSR probes with their pixel seed and what the lepton jet that makes them pass is made
+    # of, for the pixel-seed veto of the lepton-jet photons (simulation only)
+    "lj_cr_zmmg_fsr_probes_alone_seed": zmmg_probe_seed_hist(),
     "genA_toE_daughters_dR": h.Histogram(
         [
             h.Axis(hist.axis.Regular(100, 0, 1.0, name="genA_toE_daughters_dR",
@@ -6756,6 +7294,14 @@ hist_defs = {
     "lj_isolation_jes_up_flips": lj_isolation_flip_hist("jes_up"),
     "lj_isolation_jes_down_flips": lj_isolation_flip_hist("jes_down"),
     "lj_isolation_jer_flips": lj_isolation_flip_hist("jer"),
+
+    # ABCD limit inputs (shape_tools, "the 6D inclusive layout"); the _iso_up ones have
+    # both isolations scaled by 1.10, for the jet energy uncertainty
+    "abcd6d_2mu2e": abcd6d_hist("2mu2e"),
+    "abcd6d_4mu": abcd6d_hist("4mu"),
+    "abcd6d_2mu2e_iso_up": abcd6d_hist("2mu2e", iso_scale=1.10),
+    "abcd6d_4mu_iso_up": abcd6d_hist("4mu", iso_scale=1.10),
+
     # muon-LJ leading mu-mu pair: decay angle in the pair rest frame and its companions
     "mu_lj_mumu_absCosTheta": h.Histogram(
         [

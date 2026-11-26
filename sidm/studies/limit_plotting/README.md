@@ -49,11 +49,16 @@ the code.
 | `sidm/scripts/abcd_datacards.py` | SIDM (coffea) | `extract` coffea → shapes JSON (+ `--datacards`); `datacards` from an existing JSON |
 | `sidm/scripts/abcd_workspace.py` | **Combine** (ROOT) | shapes JSON → `RooParametricHist` workspace + shape datacards |
 | `sidm/scripts/run_combine_limits.py` | either | runs `combine -M AsymptoticLimits` over a card directory, collects `limits.csv` |
+| `sidm/scripts/run_combine_pulls.py` | either | `FitDiagnostics` on one card (Asimov, optionally with a signal, then only the signal-plus-background fit, started from the injected r): nuisance pulls and the correlation matrix, `pulls.json` |
+| `sidm/scripts/run_combine_impacts.py` | either | `combineTool.py -M Impacts` on one card, Asimov with a signal: `impacts.json` |
+| `sidm/scripts/run_combine_scan.py` | either | `MultiDimFit` likelihood scan of `r` or a nuisance on one card: `scan_<tag>.json` |
+| `sidm/scripts/run_combine_toys.py` | either | signal-injection test, `FitDiagnostics` on toys of one card: `toys.json` |
 | `sidm/scripts/abcd_plots.py` | SIDM | `results`, `compare`, `closure` |
 
 The split exists because ROOT and `RooParametricHist` live in the Combine release while coffea
-does not. Note that **nothing here runs Combine except `run_combine_limits.py`** — the others
-build its inputs or plot its outputs.
+does not. Note that **nothing here runs Combine except the `run_combine_*.py` scripts**, which
+dispatch themselves into the Combine release; the others build their inputs or plot their
+outputs (`plot_tools.py` draws every figure of the outputs above).
 
 ```bash
 # 1. extract + counting/ABCD cards          (SIDM release)
@@ -83,6 +88,8 @@ Two productions are analysed, with outputs side by side under `campaigns/<name>/
 |---|---|
 | `cosmic_veto_v1` | original; its merge left `metadata["is_data"]` empty |
 | `golden_hotspot_iso025_v1` | **default**; adds the eta-phi hotspot veto and 0.25 isolation; `is_data` populated |
+| `systematics_v1` | the 6D layout made in this repository, with the corrections and every weight variation (see "Systematic uncertainties of the signal" below); simulation only |
+| `systematics_v2` | `systematics_v1` remade with the processor that applies the generator-filter efficiency of the v10 signal samples; the input of `sidm/studies/systematics` |
 
 ```python
 datacard_tools.use_campaign("golden_hotspot_iso025_v1")
@@ -167,6 +174,33 @@ python sidm/scripts/plot_abcd_shapes.py --shapes .../shapes_mljlj_two_bin.json
   signal puts 0.01–0.6% of its region-A yield below 150 GeV against 19% of the background. The
   150 GeV cut is already well placed; any gain has to come from shape *above* it.
 
+### Systematic uncertainties of the signal, and the `systematics_v2` campaign
+
+The 6D layout is also produced in this repository:
+- the selections are `SR_2mu2e`/`SR_4mu` in `selections.yaml`;
+- the histograms are `abcd6d_2mu2e`/`abcd6d_4mu` in `hists.py`, in the `abcd_limits`
+  collection;
+- the campaign is `condor/campaign_configs/systematics_v2.yaml`, which merges signal and
+  background into one directory. `abcd_datacards.py extract` splits that directory by
+  sample name. It is `systematics_v1` remade after the processor began to apply the
+  generator-filter efficiency of the v10 signal samples; v1 lacks it.
+
+Its histograms carry every weight variation on a `syst` axis. `shape_tools.region_shapes_6d`
+reads one variation (`syst="pileupUp"`, ...) or a varied histogram (`variant="_iso_up"`), and
+it always selects the channel's own `channel`-axis entry. `datacard_tools.read_coffea` also
+takes `root://` URLs, read through fsspec, so merged outputs on EOS can be read where EOS is
+not mounted (CoffeaCasa).
+
+The signal's systematic uncertainties enter the shape cards with
+`abcd_workspace.py --signal-systematics FILE`. The file holds one log-normal value per point,
+nuisance and ABCD region. It replaces the default luminosity row, so an empty source list
+writes cards with no systematic uncertainty at all. `sidm/scripts/run_combine_pulls.py` gives
+the nuisance pulls of a card (`FitDiagnostics` on the Asimov dataset by default). The whole
+chain, with and without the corrections and systematics, is
+`sidm/studies/systematics/03_limits.ipynb`; `04_systematic_effects.ipynb` (templates, sizes,
+impacts, limit breakdown) and `05_fit_checks.ipynb` (signal injection, likelihood scans,
+correlations) in the same folder study the systematics on its cards.
+
 ## Provenance
 
 Every set of datacards and limits carries a `.meta.yaml` sidecar, the same convention the
@@ -204,6 +238,8 @@ Two productions are analysed, with outputs side by side under `campaigns/<name>/
 |---|---|
 | `cosmic_veto_v1` | original; its merge left `metadata["is_data"]` empty |
 | `golden_hotspot_iso025_v1` | **default**; adds the eta-phi hotspot veto and 0.25 isolation; `is_data` populated |
+| `systematics_v1` | the 6D layout made in this repository, with the corrections and every weight variation (see "Systematic uncertainties of the signal" below); simulation only |
+| `systematics_v2` | `systematics_v1` remade with the processor that applies the generator-filter efficiency of the v10 signal samples; the input of `sidm/studies/systematics` |
 
 ```python
 datacard_tools.use_campaign("golden_hotspot_iso025_v1")

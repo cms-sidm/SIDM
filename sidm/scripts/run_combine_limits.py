@@ -136,10 +136,12 @@ def read_normalisation(card):
     for line in Path(card).read_text().splitlines():
         if not line.startswith("#"):
             break
+        # "divided out" marks cards written since read_coffea imposes the
+        # reference; older ones held signal at its production cross section
         if "theory cross section" in line:
-            return "theory"
+            return "theory_xs" if "divided out" in line else "theory"
         if "normalised to" in line:
-            return "1fb"
+            return "1fb_ref" if "divided out" in line else "1fb"
     return ""
 
 
@@ -240,7 +242,14 @@ def build_command(card, workdir, args, rmax=None):
     if args.extra:
         combine += shlex.split(args.extra)
 
-    inner = f"cd {shlex.quote(str(workdir))} && {shlex.join(combine)}"
+    return in_combine_release(f"cd {shlex.quote(str(workdir))} && {shlex.join(combine)}", args)
+
+
+def in_combine_release(inner, args):
+    """``bash -c`` command running the shell command ``inner`` in the Combine release
+
+    ``args`` needs ``no_cmsenv`` and ``combine_cmssw``, as this script's options.
+    """
     if args.no_cmsenv:
         return ["bash", "-c", inner]
 
@@ -347,6 +356,32 @@ def load_existing(csv_path):
     return out
 
 
+def data_header(cards):
+    """The first ``# DATA`` header line among ``cards``, or None.
+
+    Writers that put observed data (or a stand-in for it) into ``data_obs`` say
+    so in a ``# DATA`` header line; cards without one hold simulation.
+    """
+    for card in cards:
+        for line in Path(card).read_text().splitlines():
+            if not line.startswith("#"):
+                break
+            if line.startswith("# DATA"):
+                return line[2:].strip()
+    return None
+
+
+def observation_warning(cards, has_observed):
+    """What an observed limit from these cards is, for the metadata."""
+    if not has_observed:
+        return None
+    header = data_header(cards)
+    if header:
+        return f"Observed limits from the cards' observation: {header}"
+    return ("Observed limits here are the fit run against simulation standing in "
+            "for data -- a closure test, not a measurement.")
+
+
 def write_limit_metadata(outdir, args, rows, errors, cards):
     """Write ``limits.meta.yaml`` next to ``limits.csv``.
 
@@ -402,8 +437,7 @@ def write_limit_metadata(outdir, args, rows, errors, cards):
             "max_expected_r": round(max(exp), 6) if exp else None,
             "median_observed_r": round(sorted(obs)[len(obs) // 2], 6) if obs else None,
         },
-        "warning": ("Observed limits here are the fit run against simulation standing in "
-                    "for data -- a closure test, not a measurement.") if obs else None,
+        "warning": observation_warning(cards, bool(obs)),
         "datacards": datacard_meta,
     }
     path = Path(outdir) / "limits.meta.yaml"
@@ -429,6 +463,17 @@ def write_results(rows, outdir):
     return csv_path, json_path
 
 
+def add_release_options(parser):
+    """The options that say where Combine is, as in_combine_release reads them, for this
+    script and the other Combine scripts in sidm/scripts"""
+    parser.add_argument("--combine-cmssw", default=os.environ.get(
+                            "COMBINE_CMSSW_BASE", DEFAULT_COMBINE_CMSSW),
+                        help="CMSSW release holding HiggsAnalysis/CombinedLimit "
+                             "(default: $COMBINE_CMSSW_BASE or %(default)s)")
+    parser.add_argument("--no-cmsenv", action="store_true",
+                        help="call combine directly instead of sourcing a CMSSW env")
+
+
 def parse_args(argv=None):
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -443,14 +488,9 @@ def parse_args(argv=None):
                         "(default: %(default)s)")
     p.add_argument("--logdir", default=None,
                    help="if set, save each combine log here")
-    p.add_argument("--combine-cmssw", default=os.environ.get(
-                       "COMBINE_CMSSW_BASE", DEFAULT_COMBINE_CMSSW),
-                   help="CMSSW release holding HiggsAnalysis/CombinedLimit "
-                        "(default: $COMBINE_CMSSW_BASE or %(default)s)")
+    add_release_options(p)
     p.add_argument("--combine", default="combine",
                    help="combine executable name (default: %(default)s)")
-    p.add_argument("--no-cmsenv", action="store_true",
-                   help="call combine directly instead of sourcing a CMSSW env")
     p.add_argument("--blind", action="store_true", default=True,
                    help="expected limits only, from the Asimov dataset (default)")
     p.add_argument("--unblind", dest="blind", action="store_false",

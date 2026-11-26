@@ -1,0 +1,52 @@
+# Step 2 of the lepton-jet reconstruction efficiency study, version 3
+# (sidm/studies/systematics/lj_reco_efficiency.md), simulation only, in the 96 signal points of
+# the limit grid and every background, the samples of lj_reco_cr_v2. It adds to v2, whose outputs
+# stay in use:
+# - lj_reco_control_samples_v3, the histograms a data campaign would fill: Z -> mumu gamma probes
+#   with the selection of final-state radiation (isolated muons, m(mumu) + m(mumu gamma) < 180 GeV,
+#   and the photon's distance to the nearer muon as an axis), a purer sample of photons for the
+#   converted ones; and the J/psi probes against the displacement of their fitted dimuon vertex.
+#   Their signal side is the safety check that comes before any data.
+# - lj_reco_control_samples_gen, the generator truth of the probes (simulation only): photons
+#   radiated by a muon and muon pairs of one J/psi with its production radius, for the closure
+#   test of the sideband subtraction and the efficiency against the production radius.
+# - dsa_prompt_probes, the DSA-muon reconstruction and selection of prompt muons (Z -> mumu and
+#   J/psi -> mumu), in the channels dsa_cr_*, which have no trigger: the histograms carry the
+#   trigger decisions as axes.
+# The provisional lepton scale factors stay applied (corrections: default), as in v2.
+#
+#     python condor/campaign.py lj_reco_cr_v3 jobs
+#     python condor/campaign.py lj_reco_cr_v3 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py lj_reco_cr_v3 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py lj_reco_cr_v3 merge
+
+name: lj_reco_cr_v3
+chunk_dir: /store/user/$USER/sidm_condor/LjRecoCrChunks_v3
+merged_dir: /store/user/$USER/sidm_coffea_outputs/lj_reco_cr_v3
+
+channels: [lj_cr_Z_to_mumugamma_alone, lj_cr_JPsi_to_mumu_alone, dsa_cr_Z_to_mumu_alone, dsa_cr_JPsi_to_mumu_alone]
+hist_collections: [lj_reco_control_samples_v3, lj_reco_control_samples_gen, dsa_prompt_probes]
+corrections: default
+hist_mode: weighted
+
+job_lists:
+  - job_args: job_args_lj_reco_cr_v3_2mu2e.txt
+    samples_file: samples_lj_reco_cr_2mu2e.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_2mu2e_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_lj_reco_cr_v3_4mu.txt
+    samples_file: samples_lj_reco_cr_4mu.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_4mu_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_lj_reco_cr_v3_background.txt
+    samples_file: samples_lj_reco_cr_background.txt
+    dataset: skimmed_llpNanoAOD_v2
+    location_cfg: backgrounds.yaml
+    files_per_job: 25
+    files_per_job_map: files_per_job_corrections.yaml
+    census_skip: backgrounds_skimmed.skip.json
+    replace_xcache: true

@@ -17,8 +17,11 @@ otherwise. The data/MC checks that normally go with these corrections are listed
   `corrections=None` the output is identical to `main`, cutflows and histograms bin
   by bin.
 * The default set is **pileup reweighting, the L1 prefiring weight, the PF-muon
-  Loose ID SF, the electron reconstruction SF and the photon pixel-veto SF**, read from
-  dated CVMFS snapshots pinned in [`sidm/configs/corrections.yaml`](../../configs/corrections.yaml).
+  Loose ID SF, the DSA-muon SF, the electron reconstruction SF and the photon pixel-veto
+  SF**, read from dated CVMFS snapshots pinned in
+  [`sidm/configs/corrections.yaml`](../../configs/corrections.yaml), except the DSA-muon SF,
+  which the analysis measured (`sidm/data/corrections`, from
+  [`sidm/studies/systematics`](../systematics/lj_reco_efficiency.md)).
 * A channel's event weight carries the SFs of the objects its event cuts use: the
   selected muons where the cuts read muons, the lepton-jet constituents where they read
   lepton jets, and none otherwise.
@@ -257,6 +260,7 @@ the CMS analysis-corrections area that replaced jsonpog-integration.
 | `muon_id` | yes | MUO `muon_JPsi` below 20 GeV, `muon_Z` above (2024-07-02) | PF muon `looseID` (or `tightID`, picked from the channel's cuts) | approximate: measured on prompt, isolated muons |
 | `electron_reco` | yes | EGM `electron`, RecoBelow20/RecoAbove20 (2024-07-02) | GSF electron reconstruction | approximate: measured on prompt electrons |
 | `photon_pixel_veto` | yes | EGM `photon`, PixVeto, Loose (2024-07-02) | photon pixel-seed veto | approximate: measured on real photons; ours are mostly electron pairs, for which the veto asks the same question (see below) |
+| `dsa_muon_id` | yes | our own, `sidm/data/corrections/dsa_muon_sf_2018.json` (2026-11-24) | DSA muon reconstruction and displaced ID | approximate: measured on prompt muons of Z decays (2018C, Mu37_TkMu27); the displacement dependence is not measured |
 | `electron_id` | no | EGM `electron`, Loose (2024-07-02) | cut-based Loose ID | not used by the lepton-jet selections |
 | `photon_id` | no | EGM `photon`, Loose (2024-07-02) | cut-based Loose ID | not used by the lepton-jet selections |
 | `jet_energy` | helper | JME `jet_jerc` (2026-06-10), `jer_smear` (2026-09-18) | JEC check, JES uncertainty, JER smearing | see below |
@@ -303,9 +307,11 @@ compared with DY muons in the Z $\to\mu\mu$ control region:
   $m_{Z_d}$ = 1.2 GeV). The main reason is the partner muon: 87–100% of the benchmark
   muons have another muon within $\Delta R$ = 0.3. At $c\tau$ = 1.9 mm three quarters
   also have at most two pixel hits.
-* **DSA muons** have no standard correction at all. They are in 1–23% of the
-  muon-type lepton jets for a median dark-photon $L_{xy}$ below 5 cm, 24–66% between 5
-  and 50 cm, and 48–88% beyond.
+* **DSA muons** have no standard correction at all; since 2026-11-24 the default set
+  includes our own (`dsa_muon_id`, data/simulation 0.76 to 0.89, measured on prompt
+  muons in [`sidm/studies/systematics`](../systematics/lj_reco_efficiency.md)). They are
+  in 1–23% of the muon-type lepton jets for a median dark-photon $L_{xy}$ below 5 cm,
+  24–66% between 5 and 50 cm, and 48–88% beyond.
 * **Electrons.** The analysis ID (`mvaFall17V2noIso_WPL`) has no SF; the closest
   working point with one, wp90noiso, keeps 15–87% of our electrons (57% at the
   shortest benchmark lifetime, 24–31% at the longer ones).
@@ -484,7 +490,8 @@ In rough order of how much they matter for the limits:
    it has to be measured (orthogonal triggers, or the cosmic-seeded paths) and
    entered as a correction of our own.
 2. **DSA muons**: identification and reconstruction efficiency, e.g. from cosmics or
-   standalone-track tag-and-probe.
+   standalone-track tag-and-probe. Done for prompt muons (Z tag and probe, 2018C):
+   `dsa_muon_id`, in the default set; the dependence on the displacement is open.
 3. **Displaced and close-by PF muons, displaced electrons, lepton-jet photons**: the
    applied SFs (muon ID, electron reconstruction, pixel veto) are provisional, and
    their quoted uncertainties (per mille level) describe prompt, isolated objects and

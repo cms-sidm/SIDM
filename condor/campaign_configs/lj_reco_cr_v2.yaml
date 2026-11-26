@@ -1,0 +1,50 @@
+# Step 2 of the lepton-jet reconstruction efficiency study
+# (sidm/studies/systematics/lj_reco_efficiency.md), simulation only: the control samples
+# Z -> mumu gamma (egamma-type lepton jets) and boosted J/psi -> mumu (muon-type lepton jets),
+# in the 96 signal points of the limit grid and every background. The signal side is the safety
+# check that comes before any data (the group's criteria, as in the 4mu working-point deck): a
+# region or bin of these histograms is read in data only if it is safe there. The provisional
+# lepton scale factors stay applied (corrections: default), so the data/simulation ratios measure
+# what they miss.
+#
+# Each control sample in two versions: *_alone, whose probes have no other lepton jet of the signal
+# selection's kinds (objects._alone), so no event of the signal region enters: the version a data
+# campaign fills and the safety check judges; and the version without that condition, to check in
+# simulation that it does not change the passing fraction. (v1 had only the second version and
+# was stopped at 24% when the first was added; its chunks are unused.)
+#
+#     python condor/campaign.py lj_reco_cr_v2 jobs
+#     python condor/campaign.py lj_reco_cr_v2 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py lj_reco_cr_v2 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py lj_reco_cr_v2 merge
+
+name: lj_reco_cr_v2
+chunk_dir: /store/user/$USER/sidm_condor/LjRecoCrChunks_v2
+merged_dir: /store/user/$USER/sidm_coffea_outputs/lj_reco_cr_v2
+
+channels: [lj_cr_Z_to_mumugamma_alone, lj_cr_JPsi_to_mumu_alone, lj_cr_Z_to_mumugamma, lj_cr_JPsi_to_mumu]
+hist_collections: [lj_reco_control_samples_alone, lj_reco_control_samples]
+corrections: default
+hist_mode: weighted
+
+job_lists:
+  - job_args: job_args_lj_reco_cr_v2_2mu2e.txt
+    samples_file: samples_lj_reco_cr_2mu2e.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_2mu2e_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_lj_reco_cr_v2_4mu.txt
+    samples_file: samples_lj_reco_cr_4mu.txt
+    dataset: llpNanoAOD_v2
+    location_cfg: signal_4mu_v10.yaml
+    files_per_job: 25
+    replace_xcache: true
+  - job_args: job_args_lj_reco_cr_v2_background.txt
+    samples_file: samples_lj_reco_cr_background.txt
+    dataset: skimmed_llpNanoAOD_v2
+    location_cfg: backgrounds.yaml
+    files_per_job: 25
+    files_per_job_map: files_per_job_corrections.yaml
+    census_skip: backgrounds_skimmed.skip.json
+    replace_xcache: true

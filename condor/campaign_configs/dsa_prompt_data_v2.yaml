@@ -1,0 +1,41 @@
+# Collision data for the stability of the DSA-muon scale factor against the 2018 run period
+# (sidm/studies/systematics/lj_reco_efficiency.md, step 3): the Z -> mumu tag and probe of the DSA
+# muons of prompt muons (dsa_cr_z_probes_alone, with the trigger decisions as axes) in every period
+# of 2018. The scale factor itself comes from the unskimmed DoubleMuon ntuples of 2018C (campaign
+# dsa_prompt_data_v1) with Mu37_TkMu27. 2018A, B and D exist only as the skimmed ntuples, which keep
+# the events of the analysis triggers, so the periods are compared with the analysis triggers,
+# whose bias on the probe (3.3 points in simulation) is common to all of them. 2018C is in both,
+# which checks the skim against the unskimmed ntuples. The comparison is 10_dsa_prompt_data.ipynb.
+#
+# Approved data use (2026-11-26, the advisor via the user): the stability of the scale factors
+# against the run period where the statistics allow, for the DSA-muon scale factor measured in
+# 2018C. Only the _alone version is filled, whose probes have no other lepton jet of the signal
+# selection's kinds, so no event of the signal region enters. The histogram was judged in
+# simulation at the luminosity of all of 2018 with the trigger decisions kept as axes (campaign
+# lj_reco_cr_v3, notebook 09, section 5; table in .../lj_reco_cr_v3_results/dsa_prompt/safety.json),
+# so the table covers every period and trigger: every region is safe, with the stricter sparse-bin
+# rule and the stress test (the worst signal point puts 3.3 events into the 64 million background
+# events of 2018, at most 1.4 in a bin of the probe pT, binned Z at most 0.06). The data step reads
+# the outputs only through systematics_study.lj_cr_data with that table.
+#
+#     python condor/campaign.py dsa_prompt_data_v2 jobs
+#     python condor/campaign.py dsa_prompt_data_v2 submit   # after packaging the code (condor/README.md, section 8)
+#     python condor/campaign.py dsa_prompt_data_v2 status   # then retry --submit / skipped --submit until done
+#     python condor/campaign.py dsa_prompt_data_v2 merge
+
+name: dsa_prompt_data_v2
+chunk_dir: /store/user/$USER/sidm_condor/DsaPromptDataChunks_v2
+merged_dir: /store/user/$USER/sidm_coffea_outputs/dsa_prompt_data_v2
+
+channels: [dsa_cr_Z_to_mumu_alone]
+hist_collections: [dsa_prompt_probes_z]
+corrections: none
+hist_mode: weighted
+allow_data: true
+
+job_lists:
+  - job_args: job_args_dsa_prompt_data_v2.txt
+    samples_file: samples_data_doublemuon_2018.txt
+    dataset: skimmed_llpNanoAOD_v2_skimsnano_v2
+    location_cfg: data_skimmed.yaml
+    files_per_job: 50

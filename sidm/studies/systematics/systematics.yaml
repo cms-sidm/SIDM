@@ -1,0 +1,49 @@
+# The systematic uncertainties of the signal yield that enter the limits: one entry per
+# datacard nuisance. 03_limits.ipynb turns every entry into log-normal values per signal
+# point and ABCD region, so adding a systematic means adding an entry here and rerunning
+# that notebook. README.md says why each value is what it is.
+#
+# Each entry has exactly one of:
+#   flat:     relative uncertainty, the same for every point and region
+#   syst:     a correction whose <syst>Up and <syst>Down weight categories are on the syst
+#             axis of the campaign's histograms (asymmetric)
+#   variant:  suffix of a histogram filled with a varied input, abcd6d_<channel><variant>
+#             (symmetric, with its sign per region)
+#   per_lj:   relative uncertainty per lepton jet of the type lj_type (muon or egamma), the
+#             same for every point and region; a 2mu2e event has one lepton jet of each type
+#             and a 4mu event two muon-type ones, which shift together
+
+lumi_13TeV:
+  flat: 0.0083
+CMS_pileup:
+  syst: pileup
+CMS_l1_prefiring:
+  flat: 0.01
+CMS_jet_energy:
+  variant: _iso_up
+# The scale factors of the lepton-jet constituents (sidm/configs/corrections.yaml, applied by
+# default), with the uncertainties of their measurements: the PF-muon Loose ID, the electron
+# reconstruction and the photon pixel-seed veto (POG), and the DSA muon (this study,
+# 10_dsa_prompt_data.ipynb). They are measured on prompt objects; the lepton-jet terms below
+# cover what the corrections per constituent leave (lj_reco_efficiency.md, step 3).
+CMS_eff_m_id:
+  syst: muon_id
+CMS_eff_m_dsa:
+  syst: dsa_muon_id
+CMS_eff_e_reco:
+  syst: electron_reco
+CMS_eff_g_pixelveto:
+  syst: photon_pixel_veto
+# What the corrections per constituent leave: the lepton-jet clustering, the lepton-jet cuts and
+# the identifications without a scale factor (12_lj_corrected_closure.ipynb, section 5). Per
+# lepton-jet type, max(|1 - r|, sigma_r) of the data/simulation ratio r in the control samples with
+# every scale factor applied: the muon type the larger of its PF-muon (J/psi above 50 GeV) and
+# DSA-muon (J/psi pairs with two DSA muons) regimes, the egamma type FSR photons above 30 GeV. The
+# egamma type takes the closure with MadGraph+Pythia Drell-Yan, the most representative of the
+# signal simulation; MiNNLO+PHOTOS gives 0.973 +- 0.026 (2.7%), within it (notebook 12, section 3.1).
+CMS_ljreco_mu:
+  per_lj: 0.017
+  lj_type: muon
+CMS_ljreco_egm:
+  per_lj: 0.044
+  lj_type: egamma

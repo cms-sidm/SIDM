@@ -6,20 +6,27 @@ with ``0 = A``, the signal region of the ABCD plane, so the SR count for a
 sample is simply that histogram summed over the observable axis at
 ``abcd_region == 0`` for the SR channel.
 
-Two details matter for getting the count right:
+These details matter for getting the count right:
 
-* ``region_yields`` reads histogram yields as stored. The datacard builders
-  assume signal inputs at a 1 fb reference cross section. ``use_theory_xs``
-  rescales them by ``sigma_theory / 1 fb``; ``target_lumi_pb`` can also rescale
-  all yields. Nothing here applies a generator-filter correction.
-  The current processor scales new weighted simulation outputs to
-  ``lumi * xs * gen_filter_eff`` and defaults signal to 1 fb, even for points
-  listed in ``configs/cross_sections.yaml``. Older outputs can use a different
-  cross section and lack the filter correction. Verify the campaign and convert
-  its signal yields to the 1 fb reference before building cards, applying any
-  missing filter correction exactly once. Otherwise the default card headers
-  and metadata mislabel the normalization, and ``use_theory_xs`` applies an
-  extra theory factor to yields that may already include it.
+* The histograms are already scaled by ``sidm_processor.postprocess``, so the
+  sums are yields, not raw entries. The current processor scales weighted
+  simulation to ``lumi * xs * gen_filter_eff`` and uses the 1 fb reference for
+  every signal point, even those listed in ``configs/cross_sections.yaml``; it
+  records the generator-filter efficiency it applied in the output metadata.
+  Older productions took ``xs`` from ``configs/cross_sections.yaml`` where the
+  point has an entry (its model cross section) and lack the filter correction.
+* ``read_coffea`` divides the production cross section back out
+  (``production_xs_pb`` tells the two conventions apart from the cutflow), so
+  every signal yield from this module is at the 1 fb reference and the Combine
+  signal strength ``r`` on a 1 fb card is the limit on sigma in fb.
+  ``use_theory_xs`` rescales those yields by ``sigma_theory / 1 fb``;
+  ``target_lumi_pb`` can also rescale all yields. Nothing here applies a
+  generator-filter correction: outputs made before the processor applied it
+  lack it, so verify the campaign and apply any missing factor exactly once.
+  ``region_yields`` reads the yields of the outputs it is given as stored.
+* Before 2026-11 the 1 fb reference was assumed, not imposed: limits from that
+  time carry the label ``1fb`` (new ones ``1fb_ref``) and are relative to the
+  production cross section, which ``plot_tools.load_limits`` corrects.
 * The observable axis is ``Regular`` and does overflow (a few percent for the
   pt axes), so sums must use ``flow=True``.  With flow included the SR sum
   reproduces the final row of the corresponding cutflow exactly.
@@ -31,6 +38,7 @@ statistical nuisance in the datacards is built from.
 
 from __future__ import annotations
 
+import functools
 import math
 import re
 from dataclasses import dataclass, field, fields
@@ -41,6 +49,7 @@ import platform
 import socket
 from datetime import datetime, timezone
 
+import fsspec
 import hist
 import yaml
 from coffea.util import load
@@ -123,6 +132,7 @@ _LEGACY_CHANNELS = _channels(
 
 
 _EOS = "/eos/uscms/store/user/dlee3/sidm_condor"
+_EOS_SYST = "/eos/uscms/store/user/scampbel/sidm_coffea_outputs"
 
 CAMPAIGNS = {
     "cosmic_veto_v1": Campaign(
@@ -181,6 +191,64 @@ CAMPAIGNS = {
              "so regions are sliced by shape_tools and m_ljlj can be the fit "
              "observable. No abcd_region axis at all -- the counting and ABCD "
              "helpers keyed on it do not apply; use shape_tools.collect_6d instead.",
+    ),
+    "systematics_v1": Campaign(
+        name="systematics_v1",
+        # condor/campaign_configs/systematics_v1.yaml merges signal and background
+        # into one directory, so both are read from it and told apart by name
+        # (parse_signal_name); it has no data.
+        bkg_dir=f"{_EOS_SYST}/systematics_v1",
+        signal_dir=f"{_EOS_SYST}/systematics_v1",
+        data_dir=f"{_EOS_SYST}/systematics_v1_has_no_data",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="6D inclusive layout made in this repository (hists.abcd6d_hist, "
+             "SR_2mu2e/SR_4mu in selections.yaml), with the default corrections and "
+             "every weight variation on a syst axis, plus the abcd6d_*_iso_up "
+             "histograms for the jet energy uncertainty (sidm/studies/systematics). "
+             "Unlike sixd_inclusive_v1 it has no HEM electron veto and no mu_veto, "
+             "which are not defined in this repository.",
+    ),
+    "systematics_v2": Campaign(
+        name="systematics_v2",
+        # as systematics_v1: signal and background in one directory; the data in the same
+        # channels come from the campaign systematics_data_v1, read for regions B, C and D
+        # only (approved 2026-11-16; region A never read)
+        bkg_dir=f"{_EOS_SYST}/systematics_v2",
+        signal_dir=f"{_EOS_SYST}/systematics_v2",
+        data_dir=f"{_EOS_SYST}/systematics_data_v1",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="systematics_v1 remade with the processor that applies the generator-filter "
+             "efficiency of the v10 signal samples (lumi * xs * gen_filter_eff, recorded in "
+             "the output metadata); same channels, histograms and samples. Data in the same "
+             "channels: systematics_data_v1, signal-plane regions B, C and D only.",
+    ),
+    "systematics_v3": Campaign(
+        name="systematics_v3",
+        # as systematics_v2; the data come from systematics_data_v2, read for regions B, C
+        # and D only (the use approved 2026-11-16; region A never read)
+        bkg_dir=f"{_EOS_SYST}/systematics_v3",
+        signal_dir=f"{_EOS_SYST}/systematics_v3",
+        data_dir=f"{_EOS_SYST}/systematics_data_v2",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="systematics_v2 remade with the abcd6d_* axes on the analysis pair "
+             "(candidate_ljs, PR #71) instead of the two leading lepton jets, and with the "
+             "events selected by that pair; same channels, histograms and samples. Data in "
+             "the same channels: systematics_data_v2, signal-plane regions B, C and D only.",
+    ),
+    "systematics_v4": Campaign(
+        name="systematics_v4",
+        # the signal of systematics_v3 remade with the scale factor per DSA muon in the default
+        # corrections; the simulated background stays that of systematics_v3, since the limits
+        # take the background from data (it enters only as a printed comparison)
+        bkg_dir=f"{_EOS_SYST}/systematics_v3",
+        signal_dir=f"{_EOS_SYST}/systematics_v4",
+        data_dir=f"{_EOS_SYST}/systematics_data_v2",
+        channels=_channels("SR_2mu2e", "SR_4mu"),
+        note="the signal of systematics_v3 with the default corrections of the lepton-jet "
+             "scale factors per constituent, which now include dsa_muon_id (the DSA-muon "
+             "scale factor measured in sidm/studies/systematics); same channels, histograms "
+             "and signal samples. Simulated background: systematics_v3 (without the DSA "
+             "scale factor). Data: systematics_data_v2, signal-plane regions B, C and D only.",
     ),
 }
 
@@ -440,9 +508,90 @@ def sr_yield(sample_out, channel, sample_name="", flow=True, allow_data_sr=False
     return None if regions is None else regions[SR_ABCD_REGION]
 
 
+@functools.lru_cache(maxsize=1)
+def _xs_menu():
+    from sidm.tools import utilities
+    return utilities.load_yaml(f"{BASE_DIR}/configs/cross_sections.yaml")
+
+
+def recorded_gen_filter_eff(sample_name, sample_out):
+    """The generator-filter efficiency the production applied to a sample, as
+    ``sidm_processor.postprocess`` records it in the output metadata; 1.0 for
+    outputs made before the processor applied one."""
+    recorded = sample_out.get("metadata", {}).get("gen_filter_eff")
+    if not recorded:
+        return 1.0
+    values = {float(v) for v in recorded}
+    if len(values) != 1:
+        raise ValueError(f"{sample_name}: the output records several generator-filter "
+                         f"efficiencies, {sorted(values)}")
+    return values.pop()
+
+
+def production_xs_pb(sample_name, sample_out=None):
+    """Cross section, in pb, that the production scaled a signal sample to.
+
+    ``sidm_processor.postprocess`` scales every simulated sample to lumi * xs.
+    For signal the productions behind the first campaigns here took xs from
+    ``cross_sections.yaml`` where the point has an entry, i.e. its model cross
+    section, and the 1 fb reference otherwise: what
+    ``utilities.get_xs(name, use_signal_xs=True)`` returns.  This repository's
+    processor uses the 1 fb reference for every point (``get_xs`` without
+    ``use_signal_xs``).  Given the sample's output, the weighted pre-selection
+    cutflow row (lumi * xs for an unskimmed sample; its genWeight-only
+    ``uncorrected`` variation when the corrections were applied) picks one of
+    the two, so a production normalised any other way fails loudly instead of
+    being silently mis-normalised.  The current processor also multiplies in the
+    generator-filter efficiency it records in the output metadata; it is
+    divided out of that row before the comparison, and stays in the yields.
+    """
+    model = _xs_menu().get(sample_name)
+    candidates = [xs for xs in (model, SIGNAL_REF_XS_PB) if xs is not None]
+    if sample_out is None:
+        return candidates[0]
+    eff = recorded_gen_filter_eff(sample_name, sample_out)
+    for cutflow in sample_out.get("cutflow", {}).values():
+        rows = getattr(cutflow, "rows", None)
+        if not rows:
+            continue
+        row = next(iter(rows.values()))
+        first = row.get("variations", {}).get("uncorrected", row["weighted"]) / eff
+        for xs in candidates:
+            if math.isclose(first, LUMI_PB * xs, rel_tol=1e-4):
+                return xs
+        raise ValueError(
+            f"{sample_name}: the pre-selection cutflow row is {first:g}, not lumi * xs "
+            f"for xs = {' or '.join(f'{xs:g}' for xs in candidates)} pb, so the "
+            f"production normalised this sample some other way")
+    return candidates[0]
+
+
 def read_coffea(path):
-    """Load a merged coffea file and return ``{sample: sample_output}``."""
-    return load(str(path))["out"]
+    """Load a merged coffea file and return ``{sample: sample_output}``.
+
+    Signal samples come back at the 1 fb reference.  The production scaled each
+    one to its own cross section (``production_xs_pb``), while every datacard,
+    limit and contamination figure here is written for 1 fb, so that cross
+    section is divided out of the histograms and cutflows of signal samples.
+
+    ``path`` may also be a URL such as ``root://cmseos.fnal.gov//store/...``,
+    read through fsspec, so outputs on EOS can be used where EOS is not mounted.
+    """
+    if "://" in str(path):
+        with fsspec.open(str(path), "rb") as f:
+            out = load(f)["out"]
+    else:
+        out = load(str(path))["out"]
+    for sample, sample_out in out.items():
+        if parse_signal_name(sample) is None:
+            continue
+        k = SIGNAL_REF_XS_PB / production_xs_pb(sample, sample_out)
+        if k != 1.0:
+            for name in sample_out.get("hists", {}):
+                sample_out["hists"][name] *= k     # Weight storage: variance * k**2
+            for cutflow in sample_out.get("cutflow", {}).values():
+                cutflow.scale(k)
+    return out
 
 
 def collect_yields(directory, channels=None, flow=True, progress=None,
@@ -521,7 +670,9 @@ def total_background(grouped, channel_name, region):
 class DatacardConfig:
     """Knobs for the counting-experiment datacards.
 
-    ``lumi_unc`` is the 2018 integrated-luminosity uncertainty (2.5%).
+    ``lumi_unc`` is the 2018 integrated-luminosity uncertainty: 0.83% from the
+    Run 2 legacy measurement (CMS-LUM-20-001, arXiv:2606.26832), which replaced
+    the 2.5% of CMS-PAS-LUM-18-002.
     ``bkg_norm_unc`` is an optional flat normalisation uncertainty applied to
     every background process -- a placeholder for the ABCD closure/transfer
     uncertainty, which is not derivable from the SR count alone.  Set it to
@@ -547,7 +698,7 @@ class DatacardConfig:
     its relative MC error is at the sub-percent level.
     """
 
-    lumi_unc: float = 0.025
+    lumi_unc: float = 0.0083
     # Luminosity the yields should be extrapolated to, in /pb.  The histograms
     # come out of sidm_processor scaled to LUMI_PB (2018), so setting this
     # rescales both signal and background by target/LUMI_PB.  None means "leave
@@ -618,9 +769,10 @@ def _norm_comment(signal_name, config):
     if config.use_theory_xs:
         xs_fb = signal_xs_scale(signal_name, config) * SIGNAL_REF_XS_PB * 1000
         return (f"# signal normalised to its theory cross section "
-                f"{xs_fb:g} fb at {lumi_fb:g} /fb, so r = sigma_limit/sigma_theory "
-                f"and r < 1 means excluded")
-    return (f"# signal normalised to {SIGNAL_REF_XS_PB * 1000:g} fb at {lumi_fb:g} /fb, "
+                f"{xs_fb:g} fb at {lumi_fb:g} /fb (production cross section divided "
+                f"out), so r = sigma_limit/sigma_theory and r < 1 means excluded")
+    return (f"# signal normalised to {SIGNAL_REF_XS_PB * 1000:g} fb at {lumi_fb:g} /fb "
+            f"(production cross section divided out), "
             f"so r = sigma / {SIGNAL_REF_XS_PB * 1000:g} fb")
 
 
